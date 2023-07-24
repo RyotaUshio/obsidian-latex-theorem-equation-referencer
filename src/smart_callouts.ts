@@ -1,6 +1,6 @@
 import { SmartCalloutTitleInner } from 'smart_callouts';
 import { SmartCalloutModal } from 'modals';
-import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata } from "obsidian";
+import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, TFile } from "obsidian";
 import { MATH_SETTINGS_KEYS, MathSettings } from 'settings';
 import { TheoremLikeEnv, getTheoremLikeEnv } from 'env';
 import LanguageManager from 'language';
@@ -11,14 +11,18 @@ export class SmartCallout extends MarkdownRenderChild {
     env: TheoremLikeEnv;
     renderedTitleElements: (HTMLElement | string)[];
 
-    constructor(containerEl: HTMLElement, public config: MathSettings, public plugin: MathPlugin) {
+    constructor(containerEl: HTMLElement, public app: App, public plugin: MathPlugin, public config: MathSettings,) {
         super(containerEl);
         this.env = getTheoremLikeEnv(this.config.type);
-        this.resolveSettings();
     }
 
-    resolveSettings() {
-        this.config = Object.assign({}, this.plugin.settings, this.config);
+    async resolveSettings(currentFile: TFile) {
+        await this.app.fileManager.processFrontMatter(
+            currentFile,
+            (frontmatter) => {
+                this.config = Object.assign({}, this.plugin.settings, frontmatter.math, this.config);
+            }
+        );
     }
 
     formatTitle(): string {
@@ -26,13 +30,15 @@ export class SmartCallout extends MarkdownRenderChild {
         if (this.config.number) {
             let numberString = '';
             if (this.config.number == 'auto') {
-                numberString = `${+this.config.autoIndex + +this.config.number_init}`;
+                if (this.config.autoIndex !== undefined) {
+                    numberString = `${+this.config.autoIndex + +this.config.number_init}`;
+                }
             } else {
                 numberString = this.config.number;
             }
-             
-            title += ` ${this.config.number_prefix}${numberString}${this.config.number_suffix}`;
-            
+            if (numberString) {
+                title += ` ${this.config.number_prefix}${numberString}${this.config.number_suffix}`;
+            }
         }
         if (this.config.title) {
             title += ` (${this.config.title})`;
@@ -89,7 +95,7 @@ export function sortedAutoNumberedMathCallouts(cache: CachedMetadata) {
             let settings = readMathCalloutMetadata(editor, start.line);
             if (settings && settings.number == 'auto') {
                 autoNumberedCallouts.push(
-                    {cache: calloutCache, settings: settings}
+                    { cache: calloutCache, settings: settings }
                 );
             }
         }
@@ -104,26 +110,26 @@ export function sortedAutoNumberedMathCallouts(cache: CachedMetadata) {
 
 
 
-export function autoIndexMathCallouts(app: App, editor: Editor) {
-    let currentFile = getCurrentMarkdown(app);
-    let cache = app.metadataCache.getFileCache(currentFile);
-    if (cache) {
-        let callouts = sortedAutoNumberedMathCallouts(cache);
-        callouts?.forEach((callout, index) => {
-            callout.settings.autoIndex = index;
-            overwriteMathCalloutMetadata(
-                editor, 
-                callout.cache.position.start.line, 
-                callout.settings,
-            )
-        });
-    }
+export function autoIndexMathCallouts(cache: CachedMetadata, editor: Editor) {
+    let callouts = sortedAutoNumberedMathCallouts(cache);
+    callouts?.forEach((callout, index) => {
+        callout.settings.autoIndex = index;
+        overwriteMathCalloutMetadata(
+            editor,
+            callout.cache.position.start.line,
+            callout.settings,
+        )
+    });
+
 }
+
+
+
 
 
 export function matchMathCallout(editor: Editor, lineNumber: number): RegExpExecArray | null {
     const firstLine = editor.getLine(lineNumber);
-    if (lineNumber) {
+    if (firstLine) {
         return (/\> *\[\! *math *\|(.*)\]/).exec(firstLine)
     }
     return null;

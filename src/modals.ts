@@ -1,52 +1,57 @@
+import { MathContextSettings } from 'theorem_note';
+import { MathPlugin } from 'main';
 import { App, Modal, Setting, TextComponent, prepareFuzzySearch, prepareSimpleSearch, SuggestModal, Notice } from 'obsidian';
 
 import { TheoremLikeEnv, getTheoremLikeEnv, ENVs } from 'env';
 import LanguageManager from 'language';
-import { MathSettings, MathContextSettings, MathItemSettings, MathItemSettingsHelper, MathContextSettingsHelper } from 'settings';
+import { MathSettings, MathContextSettings, MathItemSettings, MathItemSettingsHelper, MathContextSettingsHelper, MATH_CONTXT_SETTINGS_KEYS } from 'settings';
+import { getCurrentMarkdown } from 'utils';
 
 
-export class SmartCalloutModal extends Modal {
-    smartCalloutConfig: MathSettings;
 
-    constructor(app: App, public callback: (config: MathSettings) => void) {
+abstract class MathSettingModal<SettingsType> extends Modal {
+    settings: SettingsType;
+    defaultSettings: MathContextSettings; // this is different from DEFAULT_SETTINGS
+    // this.default.Settings determines what is preset in the input elements in the modal
+
+    constructor(app: App, public plugin: MathPlugin, public callback: (settings: SettingsType) => void) {
         super(app);
-        this.smartCalloutConfig = {} as MathSettings;
+        this.settings = {} as SettingsType;
+        this.defaultSettings = {} as MathContextSettings;
     }
 
-    onOpen(): void {
+    onClose(): void {
+        this.contentEl.empty();
+    }
+
+    async resolveDefaultSettings() {
+        await this.app.fileManager.processFrontMatter(
+            getCurrentMarkdown(this.app),
+            (frontmatter) => {
+                Object.assign(this.defaultSettings, this.plugin.settings, frontmatter.math);
+            }
+        )
+    }
+
+    addButton(buttonText: string) {
         const { contentEl } = this;
-
-        contentEl.createEl('h4', { text: 'Item-specific settings' });
-
-        const itemSettingsHelper = new MathItemSettingsHelper(contentEl, this.smartCalloutConfig);
-        itemSettingsHelper.makeSettingPane();
-
-        contentEl.createEl('h4', { text: 'Override context settings' });
-
-        const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.smartCalloutConfig);
-        contextSettingsHelper.makeSettingPane();
-
         new Setting(contentEl)
             .addButton((btn) => {
-                // buttonContainer.appendChild(btn.buttonEl);
                 btn
-                    .setButtonText("Insert")
+                    .setButtonText(buttonText)
                     .setCta()
                     .onClick(() => {
-                        this.checkIfComplete();
                         this.close();
-                        this.callback(this.smartCalloutConfig);
+                        this.callback(this.settings);
                     });
                 btn.buttonEl.classList.add("insert-math-item-button");
             });
 
         let button = contentEl.querySelector(".insert-math-item-button");
         let settingTextboxes = contentEl.querySelectorAll("input");
-        console.log(button);
         if (button) {
             settingTextboxes.forEach((textbox) => {
                 textbox.addEventListener("keypress", (event) => {
-                    // event.preventDefault();
                     if (event.key === "Enter") {
                         // @ts-ignore
                         button.click();
@@ -54,26 +59,39 @@ export class SmartCalloutModal extends Modal {
                 });
             });
         }
-
-
-        // new Setting(contentEl)
-        //     .addExtraButton((btn) => {
-        //         // buttonContainer.appendChild(btn.buttonEl);
-        //         btn
-        //             // .setButtonText("Cancel")
-        //             .onClick(() => {
-        //                 this.close();
-        //             });
-        //     });
-
     }
+}
 
-    onClose(): void {
-        this.contentEl.empty();
+
+export class SmartCalloutModal extends MathSettingModal<MathSettings> {
+    
+
+    onOpen(): void {
+        const { contentEl } = this;
+
+        contentEl.createEl('h4', { text: 'Item-specific settings' });
+        const itemSettingsHelper = new MathItemSettingsHelper(contentEl, this.settings);
+        itemSettingsHelper.makeSettingPane();
+
+        contentEl.createEl('h4', { text: 'Override context settings' });
+        const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.settings, this.defaultSettings);
+        contextSettingsHelper.makeSettingPane();
+
+        this.addButton('insert');
     }
+}
 
-    checkIfComplete(): void {
-        this.smartCalloutConfig.type
+
+
+export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
+    onOpen(): void {
+        const { contentEl } = this;
+
+        contentEl.createEl('h4', { text: 'Local context settings' });
+        const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.settings, this.defaultSettings);
+        contextSettingsHelper.makeSettingPane();
+
+        this.addButton('Confirm');
     }
 }
 

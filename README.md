@@ -20,6 +20,8 @@ The `Insert math callout` command
 
 ## CSS
 
+You can customize the appearance of math-callouts to be specific to languages or environments (theorem/definition/...)
+
 ```css
 .callout[data-callout="math"] {
     --callout-color: 192, 7, 7;

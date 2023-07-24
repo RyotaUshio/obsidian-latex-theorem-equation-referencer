@@ -67,7 +67,7 @@ export const DEFAULT_SETTINGS = {
     lang: DEFAULT_LANG,
     number_prefix: "",
     number_suffix: "",
-    number_init: 0,
+    number_init: 1,
     label_prefix: "",
 }
 
@@ -125,7 +125,6 @@ export class MathItemSettingsHelper {
 
 
                     let labelTextComp: TextComponent;
-                    // let labelInputEl: HTMLElement;
                     labelPane.addText((text) => {
                         labelTextComp = text;
                         text.inputEl.setAttribute('style', 'width: 300px;')
@@ -147,7 +146,6 @@ export class MathItemSettingsHelper {
                     this.settings.type = value;
                     this.env = getTheoremLikeEnv(value);
                     labelPrefixEl.textContent = this.env.prefix + ":";
-                    // textComponent.setValue(this.settings.title.replaceAll(' ', '-').toLowerCase());
                 });
 
 
@@ -162,30 +160,29 @@ export class MathContextSettingsHelper {
     constructor(
         public contentEl: HTMLElement,
         public settings: MathContextSettings,
+        public defaultSettings: MathContextSettings, 
         public plugin?: MathPlugin, // passed if called from the plugin's setting tab
     ) { }
 
 
-    addTextSetting(name: keyof MathContextSettings, defaultValue?: string): Setting {
+    addTextSetting(name: keyof MathContextSettings): Setting {
         let callback: (value: string) => void | Promise<void>;
         if (this.plugin) {
-            defaultValue = String(this.settings[name]);
             callback = async (value: string): Promise<void> => {
-                this.settings[name] = value;
+                Object.assign(this.settings, {[name]: value});
                 await this.plugin?.saveSettings();
             };
         } else {
             callback = (value: string): void => {
-                this.settings[name] = value;
+                Object.assign(this.settings, {[name]: value});
             };
         }
         return new Setting(this.contentEl)
             .setName(name)
             .addText((text) => {
-                if (defaultValue) {
-                    text.setValue(defaultValue);
-                }
-                text.onChange(callback)
+                text
+                .setValue(String(this.defaultSettings[name]))
+                .onChange(callback)
             });
     }
 
@@ -198,6 +195,7 @@ export class MathContextSettingsHelper {
             .addDropdown((dropdown) => {
                 for (let lang of LanguageManager.supported) {
                     dropdown.addOption(lang, lang);
+                    dropdown.setValue(this.defaultSettings.lang as string);
                 }
                 dropdown.onChange((value) => {
                     this.settings.lang = value;

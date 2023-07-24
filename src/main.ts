@@ -23,8 +23,8 @@ import {
 
 import { MathSettings, MathContextSettings, DEFAULT_SETTINGS, MathContextSettingsHelper } from 'settings';
 import { getLinksAndEmbedsInFile, increaseQuoteLevel, linktext2TFile, getCurrentMarkdown } from 'utils';
-import { SmartCallout, autoIndexMathCallouts, insertMathCalloutCallback } from 'smart_callouts';
-import { SmartCalloutModal } from 'modals';
+import { SmartCallout, autoIndexMathCallouts, autoIndexNewMathCallouts, insertMathCalloutCallback } from 'smart_callouts';
+import { ContextSettingModal, SmartCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
 
 
@@ -73,7 +73,7 @@ export default class MathPlugin extends Plugin {
 			editorCallback: insertDisplayMath
 		});
 
-		this.register
+
 
 
 
@@ -103,11 +103,43 @@ export default class MathPlugin extends Plugin {
 		this.addCommand({
 			id: 'insert-math-callout',
 			name: 'Insert math callout',
-			editorCallback: (editor, context) => {
-				new SmartCalloutModal(
+			editorCallback: async (editor, context) => {
+				let modal = new SmartCalloutModal(
 					this.app,
-					(config) => insertMathCalloutCallback(editor, config),
-				).open();
+					this,
+					(config) => {
+						let insertLineNumber = editor.getCursor().line;
+						insertMathCalloutCallback(editor, config);
+					},
+				);
+				await modal.resolveDefaultSettings();
+				modal.open();
+			}
+		});
+
+
+
+		this.addCommand({
+			id: 'open-note-level-settings',
+			name: 'Open note-level settings',
+			callback: async () => {
+				let modal = new ContextSettingModal(
+					this.app,
+					this,
+					(settings) => {
+						this.app.fileManager.processFrontMatter(
+							getCurrentMarkdown(this.app),
+							(frontmatter) => {
+								if (!frontmatter.math) {
+									frontmatter["math"] = {};
+								}
+								Object.assign(frontmatter.math, settings);
+							}
+						)
+					}
+				);
+				await modal.resolveDefaultSettings();
+				modal.open();
 			}
 		});
 
@@ -116,9 +148,27 @@ export default class MathPlugin extends Plugin {
 			id: 'auto-index-math-callouts',
 			name: 'Auto-index math callouts',
 			editorCallback: (editor) => {
-				autoIndexMathCallouts(this.app, editor);
+				let currentFile = getCurrentMarkdown(this.app);
+				let cache = app.metadataCache.getFileCache(currentFile);
+				if (cache) {
+					autoIndexMathCallouts(cache, editor);
+				}
 			}
 		});
+
+
+		this.registerEvent(
+			this.app.metadataCache.on(
+				'changed',
+				(file, data, cache) => {
+					let activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+					let editor = activeView?.editor;
+					if (activeView && editor && file == activeView.file) {
+						autoIndexMathCallouts(cache, editor);
+					}
+				}
+			)
+		);
 
 
 		this.registerMarkdownPostProcessor(async (element, context) => {
@@ -133,27 +183,18 @@ export default class MathPlugin extends Plugin {
 					const isSmartCallout = (type?.toLowerCase() == 'math');
 
 					if (isSmartCallout) {
+						console.log("sourcePath: ", context.sourcePath);
 						const settings = JSON.parse(metadata);
 
-							let smartCallout = new SmartCallout(callout, settings, this);
+						let smartCallout = new SmartCallout(callout, this.app, this, settings);
+						let currentFile = this.app.vault.getAbstractFileByPath(context.sourcePath);
+						if (currentFile instanceof TFile) {
+							await smartCallout.resolveSettings(currentFile);
 							await smartCallout.renderTitle();
 							context.addChild(smartCallout);
-
-
-						// const calloutTitleInner = callout.querySelector<HTMLElement>('.callout-title-inner');
-						// if (calloutTitleInner) {
-						// 	let smartCalloutTitleInner = new SmartCallout(callout, settings, this);
-						// 	await smartCalloutTitleInner.renderTitle();
-						// 	context.addChild(smartCalloutTitleInner);
-						// }
-
-						// const calloutContent = callout.querySelector<HTMLElement>('.callout-content');
-						// if (calloutContent) {
-						// 	context.addChild();
-						// }
+						}
 					}
 				}
-
 			}
 		});
 
@@ -235,7 +276,23 @@ export class MathSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		containerEl.createEl("h3", { text: "Context settings" });
-		(new MathContextSettingsHelper(containerEl, this.plugin.settings, this.plugin)).makeSettingPane();
+		(new MathContextSettingsHelper(
+			containerEl,
+			this.plugin.settings,
+			this.plugin.settings,
+			this.plugin
+		)).makeSettingPane();
+
+		new Setting(containerEl)
+			.addButton((btn) => {
+				btn.setButtonText("Restore default");
+				btn.onClick((event) => {
+					Object.assign(this.plugin.settings, DEFAULT_SETTINGS);
+					this.plugin.saveSettings();
+					this.display();
+				})
+			})
+
 
 	}
 
