@@ -1,10 +1,10 @@
 import { SmartCalloutModal } from 'modals';
 import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, TFile, Menu, setIcon } from "obsidian";
-import { MATH_SETTINGS_KEYS, MathSettings } from 'settings';
+import { MATH_SETTINGS_KEYS, MathSettings, findNearestAncestorContextSettings } from 'settings';
 import { TheoremLikeEnv, getTheoremLikeEnv } from 'env';
 import LanguageManager from 'language';
 import { getCurrentMarkdown, increaseQuoteLevel, renderTextWithMath } from 'utils';
-import MathPlugin from 'main';
+import MathPlugin, { VAULT_ROOT } from 'main';
 
 export class SmartCallout extends MarkdownRenderChild {
     env: TheoremLikeEnv;
@@ -16,10 +16,11 @@ export class SmartCallout extends MarkdownRenderChild {
     }
 
     async resolveSettings(currentFile: TFile) {
+        let folderContextSettings = findNearestAncestorContextSettings(this.plugin, currentFile)
         await this.app.fileManager.processFrontMatter(
             currentFile,
             (frontmatter) => {
-                this.config = Object.assign({}, this.plugin.settings, frontmatter.math, this.config);
+                this.config = Object.assign({}, this.plugin.settings[VAULT_ROOT], folderContextSettings, frontmatter.math, this.config);
             }
         );
     }
@@ -174,9 +175,6 @@ export function autoIndexMathCallouts(cache: CachedMetadata, editor: Editor) {
 }
 
 
-
-
-
 export function matchMathCallout(editor: Editor, lineNumber: number): RegExpExecArray | null {
     const firstLine = editor.getLine(lineNumber);
     if (firstLine) {
@@ -206,4 +204,230 @@ export function overwriteMathCalloutMetadata(editor: Editor, lineNumber: number,
         `> [!math|${JSON.stringify(settings)}] `,
     );
 }
+
+
+
+
+
+
+
+
+////////////////////////////
+
+
+
+
+
+
+
+
+
+// import { SmartCalloutModal } from 'modals';
+// import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, TFile, Menu, setIcon } from "obsidian";
+// import { MATH_SETTINGS_KEYS, MathSettings } from 'settings';
+// import { TheoremLikeEnv, getTheoremLikeEnv } from 'env';
+// import LanguageManager from 'language';
+// import { getCurrentMarkdown, increaseQuoteLevel, renderTextWithMath } from 'utils';
+// import MathPlugin from 'main';
+
+// export class SmartCallout extends MarkdownRenderChild {
+//     env: TheoremLikeEnv;
+//     renderedTitleElements: (HTMLElement | string)[];
+
+//     constructor(containerEl: HTMLElement, public app: App, public plugin: MathPlugin, public config: MathSettings,) {
+//         super(containerEl);
+//         this.env = getTheoremLikeEnv(this.config.type);
+//     }
+
+//     async resolveSettings(currentFile: TFile) {
+//         await this.app.fileManager.processFrontMatter(
+//             currentFile,
+//             (frontmatter) => {
+//                 this.config = Object.assign({}, this.plugin.settings, frontmatter.math, this.config);
+//             }
+//         );
+//     }
+
+//     formatTitle(): string {
+//         let title = ''; 
+//         if (this.config.rename && this.config.rename[this.env.id]) {
+//             title = this.config.rename[this.env.id] as string;
+//         } else {
+//             title = this.env.printedNames[this.config.lang as string];
+//         }
+//         if (this.config.number) {
+//             let numberString = '';
+//             if (this.config.number == 'auto') {
+//                 if (this.config.autoIndex !== undefined) {
+//                     this.config.number_init = this.config.number_init ?? 1;
+//                     numberString = `${+this.config.autoIndex + +this.config.number_init}`;
+//                 }
+//             } else {
+//                 numberString = this.config.number;
+//             }
+//             if (numberString) {
+//                 title += ` ${this.config.number_prefix}${numberString}${this.config.number_suffix}`;
+//             }
+//         }
+//         if (this.config.title) {
+//             title += ` (${this.config.title})`;
+//         }
+//         return title;
+//     }
+
+//     async renderTitle(): Promise<void> {
+//         this.renderedTitleElements = await renderTextWithMath(this.formatTitle());
+//     }
+
+//     onload() {
+//         let titleInner = this.containerEl.querySelector<HTMLElement>('.callout-title-inner');
+//         titleInner?.replaceChildren(...this.renderedTitleElements);
+//         this.containerEl.classList.add("math-callout-" + this.config.lang);
+//         this.containerEl.classList.add("math-callout-" + this.config.type);
+//         let title = this.containerEl.querySelector<HTMLElement>('.callout-title');
+//         if (title) {
+//             title.onclick = async () => {
+//                 const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+//                 const editor = view?.editor;
+//                 if (editor) {
+//                     let modal = new SmartCalloutModal(
+//                         this.app,
+//                         this.plugin,
+//                         (settings) => {
+//                             overwriteMathCalloutMetadata(editor, editor.getCursor().line, settings)
+//                         },
+//                         this.config,
+//                     );
+//                     await modal.resolveDefaultSettings();
+//                     modal.open();
+//                 }
+
+//             }
+//         }
+//         // let button = title?.createEl(
+//         //     'button', 
+//         //     { 
+//         //         cls: 'math-callout-setting-button', 
+//         //     }
+//         // );
+//         // if (button) {
+//         //     setIcon(button, "file-edit");        
+//         //     button.onclick = async () => {
+//         //         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+//         //         const editor = view?.editor;
+//         //         if (editor) {
+//         //             let modal = new SmartCalloutModal(
+//         //                 this.app,
+//         //                 this.plugin,
+//         //                 (settings) => {
+//         //                     overwriteMathCalloutMetadata(editor, editor.getCursor().line, settings)
+//         //                 },
+//         //             );
+//         //             await modal.resolveDefaultSettings();
+//         //             modal.open();    
+//         //         }
+
+//         //     }
+//         // }
+//     }
+// }
+
+
+
+
+// export function insertMathCalloutCallback(editor: Editor, config: MathSettings) {
+//     let selection = editor.getSelection();
+//     let cursorPos = editor.getCursor();
+//     if (selection) {
+//         editor.replaceSelection(
+//             `> [!math|${JSON.stringify(config)}] \n`
+//             + increaseQuoteLevel(selection)
+//         );
+//     } else {
+//         editor.replaceRange(
+//             `> [!math|${JSON.stringify(config)}] \n> `,
+//             cursorPos
+//         )
+//     }
+//     cursorPos.line += 1;
+//     cursorPos.ch = 2;
+//     editor.setCursor(cursorPos);
+// }
+
+
+
+// export function sortedAutoNumberedMathCallouts(cache: CachedMetadata) {
+//     let calloutCaches = cache.sections?.filter(
+//         (sectionCache) => sectionCache.type == "callout"
+//     );
+//     if (calloutCaches) {
+//         let autoNumberedCallouts = [];
+//         for (let calloutCache of calloutCaches) {
+//             let { start, end } = calloutCache.position;
+//             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+//             const editor = view?.editor;
+//             let settings = readMathCalloutMetadata(editor, start.line);
+//             if (settings && settings.number == 'auto') {
+//                 autoNumberedCallouts.push(
+//                     { cache: calloutCache, settings: settings }
+//                 );
+//             }
+//         }
+//         autoNumberedCallouts.sort(
+//             (callout1, callout2) => {
+//                 return callout1.cache.position.start.line - callout2.cache.position.start.line;
+//             }
+//         )
+//         return autoNumberedCallouts;
+//     }
+// }
+
+
+
+// export function autoIndexMathCallouts(cache: CachedMetadata, editor: Editor) {
+//     let callouts = sortedAutoNumberedMathCallouts(cache);
+//     callouts?.forEach((callout, index) => {
+//         callout.settings.autoIndex = index;
+//         overwriteMathCalloutMetadata(
+//             editor,
+//             callout.cache.position.start.line,
+//             callout.settings,
+//         )
+//     });
+
+// }
+
+
+
+
+
+// export function matchMathCallout(editor: Editor, lineNumber: number): RegExpExecArray | null {
+//     const firstLine = editor.getLine(lineNumber);
+//     if (firstLine) {
+//         return (/\> *\[\! *math *\|(.*)\]/).exec(firstLine)
+//     }
+//     return null;
+// }
+
+
+// export function readMathCalloutMetadata(editor: Editor, lineNumber: number): MathSettings | undefined {
+//     const matchResult = matchMathCallout(editor, lineNumber);
+//     if (matchResult) {
+//         let settings = JSON.parse(matchResult[1]) as MathSettings;
+//         return settings;
+//     }
+// }
+
+
+// export function overwriteMathCalloutMetadata(editor: Editor, lineNumber: number, settings: MathSettings) {
+//     const matchResult = matchMathCallout(editor, lineNumber);
+//     if (!matchResult) {
+//         throw Error(`Math callout not found at line ${lineNumber}, could not overwrite`);
+//     }
+
+//     editor.setLine(
+//         lineNumber,
+//         `> [!math|${JSON.stringify(settings)}] `,
+//     );
+// }
 

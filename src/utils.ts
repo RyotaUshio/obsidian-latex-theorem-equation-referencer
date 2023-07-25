@@ -1,6 +1,6 @@
 // Generic utility functions handing files.
 
-import { App, TFile, getLinkpath, LinkCache, MarkdownView, renderMath, finishRenderMath } from 'obsidian';
+import { App, TFile, getLinkpath, LinkCache, MarkdownView, renderMath, finishRenderMath, TAbstractFile, TFolder } from 'obsidian';
 
 
 export function validateLinktext(text: string): string {
@@ -92,4 +92,26 @@ export async function renderTextWithMath(source: string): Promise<(HTMLElement |
 
     return elements;
 
+}
+
+
+export function isEqualToOrChildOf(fileOrFolder: TAbstractFile, folder: TFolder): boolean {
+    if (folder.isRoot()) {
+        return true;
+    }
+    if ((fileOrFolder instanceof TFolder) && (fileOrFolder == folder)) {
+        return true;
+    }
+    let ancestor = fileOrFolder.parent;
+    while (true) {
+        if (ancestor == folder) {
+            return true;
+        }
+        if (ancestor) {
+            if (ancestor.isRoot()) {
+                return false;
+            }
+            ancestor = ancestor.parent
+        }
+    }
 }
