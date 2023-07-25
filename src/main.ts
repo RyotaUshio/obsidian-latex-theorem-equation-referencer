@@ -17,6 +17,7 @@ import {
 	loadMathJax,
 	renderMath,
 	finishRenderMath,
+	FuzzySuggestModal,
 } from 'obsidian';
 // import { parse, stringify } from 'yaml';
 
@@ -108,9 +109,9 @@ export default class MathPlugin extends Plugin {
 					this.app,
 					this,
 					(config) => {
-						let insertLineNumber = editor.getCursor().line;
 						insertMathCalloutCallback(editor, config);
 					},
+					{}
 				);
 				await modal.resolveDefaultSettings();
 				modal.open();
@@ -200,9 +201,11 @@ export default class MathPlugin extends Plugin {
 
 
 
-
 		this.registerEvent(
 			this.app.workspace.on("editor-menu", (menu, editor, view) => {
+				console.log("MENU: ", menu);
+				console.log("EDITOR: ", editor);
+				console.log("VIEW: ", view);
 				menu.addItem((item) => {
 					item.setTitle("Edit math settings")
 						.setIcon("document")
@@ -275,7 +278,7 @@ export class MathSettingTab extends PluginSettingTab {
 		let { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl("h3", { text: "Context settings" });
+		containerEl.createEl("h3", { text: "Global context settings" });
 		(new MathContextSettingsHelper(
 			containerEl,
 			this.plugin.settings,
@@ -291,8 +294,19 @@ export class MathSettingTab extends PluginSettingTab {
 					this.plugin.saveSettings();
 					this.display();
 				})
-			})
+			});
 
+		containerEl.createEl("h3", { text: "Folder-local context settings" });
+		// new Setting(containerEl)
+		// 	.addButton((btn) => {
+		// 		btn
+		// 		.setButtonText("Add")
+		// 		.setCta()
+		// 		.onClick((event) => {
+					
+		// 		})
+		// 	});
+		
 
 	}
 

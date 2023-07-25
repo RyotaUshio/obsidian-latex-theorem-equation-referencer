@@ -1,9 +1,11 @@
-import { ENVs, TheoremLikeEnv, getTheoremLikeEnv } from "env";
+import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from "env";
 import MathPlugin from "main";
 import { DEFAULT_LANG } from "default_lang";
 
 import { App, Plugin, PluginSettingTab, Setting, TextComponent } from "obsidian";
 
+
+export type RenameEnv = {[K in typeof ENV_IDs[number]]: string};
 
 export interface MathContextSettings {
     lang?: string;
@@ -11,8 +13,9 @@ export interface MathContextSettings {
     number_suffix?: string;
     number_init?: number;
     label_prefix?: string;
-    rename?: Record<string, string>;
+    rename? : RenameEnv;
 }
+
 
 export interface MathItemSettings {
     type: string;
@@ -28,6 +31,7 @@ export interface MathItemPrivateFields {
 
 // export type MathMetadata = MathContextSettings & MathItemSettings;
 export type MathSettings = MathContextSettings & MathItemSettings & MathItemPrivateFields;
+export type CalloutSettings = MathSettings;
 
 
 
@@ -69,32 +73,36 @@ export const DEFAULT_SETTINGS = {
     number_suffix: "",
     number_init: 1,
     label_prefix: "",
+    rename: {},
 }
 
 
 
 
 import LanguageManager from "language";
+import { ContextSettingModal } from "modals";
 
 
 
 
 export class MathItemSettingsHelper {
     env: TheoremLikeEnv;
-    constructor(public contentEl: HTMLElement, public settings: MathItemSettings) { }
+    constructor(
+        public contentEl: HTMLElement, 
+        public settings: MathItemSettings, 
+        public defaultSettings: Partial<MathItemSettings>, 
+    ) { }
 
     makeSettingPane() {
         const { contentEl } = this;
-
-
         new Setting(contentEl)
             .setName("type")
             .addDropdown((dropdown) => {
                 for (let env of ENVs) {
-                    dropdown.addOption(
-                        env.id,
-                        `${env.printedNames["ja"]}/${env.printedNames["en"]}`,
-                    );
+                    dropdown.addOption(env.id, env.id);
+                    if (this.defaultSettings.type) {
+                        dropdown.setValue(String(this.defaultSettings.type));
+                    }
                 }
 
                 let initType = dropdown.getValue();
@@ -105,7 +113,9 @@ export class MathItemSettingsHelper {
                 new Setting(contentEl)
                     .setName("number")
                     .addText((text) => {
-                        text.setValue("auto");
+                        text.setValue(
+                            this.defaultSettings.number ?? "auto"
+                        );
                         this.settings.number = text.getValue();
                         text.onChange((value) => {
                             this.settings.title = value;
@@ -122,12 +132,18 @@ export class MathItemSettingsHelper {
 
                 titlePane.addText((text) => {
                     text.inputEl.setAttribute('style', 'width: 300px;')
+                    if (this.defaultSettings.title) {
+                        text.setValue(this.defaultSettings.title);
+                    }
 
 
                     let labelTextComp: TextComponent;
                     labelPane.addText((text) => {
                         labelTextComp = text;
                         text.inputEl.setAttribute('style', 'width: 300px;')
+                        if (this.defaultSettings.label) {
+                            text.setValue(this.defaultSettings.label);
+                        }
                         text.onChange((value) => {
                             this.settings.label = value;
                         });
@@ -166,17 +182,15 @@ export class MathContextSettingsHelper {
 
 
     addTextSetting(name: keyof MathContextSettings): Setting {
-        let callback: (value: string) => void | Promise<void>;
+        let callback = (value: string): void => {
+            Object.assign(this.settings, {[name]: value});
+        };
         if (this.plugin) {
             callback = async (value: string): Promise<void> => {
                 Object.assign(this.settings, {[name]: value});
                 await this.plugin?.saveSettings();
             };
-        } else {
-            callback = (value: string): void => {
-                Object.assign(this.settings, {[name]: value});
-            };
-        }
+        } 
         return new Setting(this.contentEl)
             .setName(name)
             .addText((text) => {
@@ -195,8 +209,8 @@ export class MathContextSettingsHelper {
             .addDropdown((dropdown) => {
                 for (let lang of LanguageManager.supported) {
                     dropdown.addOption(lang, lang);
-                    dropdown.setValue(this.defaultSettings.lang as string);
                 }
+                dropdown.setValue(this.defaultSettings.lang as string);
                 dropdown.onChange((value) => {
                     this.settings.lang = value;
                 });
@@ -205,6 +219,30 @@ export class MathContextSettingsHelper {
         this.addTextSetting("number_suffix");
         this.addTextSetting("number_init");
         this.addTextSetting("label_prefix");
+        let renamePane = new Setting(contentEl).setName("rename");
+
+        renamePane.addDropdown((dropdown) => {
+                for (let envId of ENV_IDs) {
+                    dropdown.addOption(envId, envId);
+                }
+                dropdown.onChange((selectedEnvId) => {
+                    let renamePaneTextBox = new Setting(renamePane.controlEl).addText((text) => {
+                        text.onChange((newName) => {
+                            if (this.settings.rename === undefined) {
+                                this.settings.rename = {} as RenameEnv;
+                            }
+                            Object.assign(this.settings.rename, {[selectedEnvId]: newName});
+                        })
+                    });
+                    let inputEl = renamePaneTextBox.settingEl.querySelector<HTMLElement>("input");
+                    if (inputEl) {
+                        renamePaneTextBox.settingEl.replaceWith(inputEl);                        
+                    }
+                });
+            });
+
+
+
     }
 }
 

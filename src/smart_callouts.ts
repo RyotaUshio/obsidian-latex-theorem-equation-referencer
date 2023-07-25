@@ -1,6 +1,5 @@
-import { SmartCalloutTitleInner } from 'smart_callouts';
 import { SmartCalloutModal } from 'modals';
-import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, TFile } from "obsidian";
+import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, TFile, Menu, setIcon } from "obsidian";
 import { MATH_SETTINGS_KEYS, MathSettings } from 'settings';
 import { TheoremLikeEnv, getTheoremLikeEnv } from 'env';
 import LanguageManager from 'language';
@@ -26,11 +25,17 @@ export class SmartCallout extends MarkdownRenderChild {
     }
 
     formatTitle(): string {
-        let title = this.env.printedNames[this.config.lang as string];
+        let title = ''; 
+        if (this.config.rename && this.config.rename[this.env.id]) {
+            title = this.config.rename[this.env.id] as string;
+        } else {
+            title = this.env.printedNames[this.config.lang as string];
+        }
         if (this.config.number) {
             let numberString = '';
             if (this.config.number == 'auto') {
                 if (this.config.autoIndex !== undefined) {
+                    this.config.number_init = this.config.number_init ?? 1;
                     numberString = `${+this.config.autoIndex + +this.config.number_init}`;
                 }
             } else {
@@ -55,6 +60,51 @@ export class SmartCallout extends MarkdownRenderChild {
         titleInner?.replaceChildren(...this.renderedTitleElements);
         this.containerEl.classList.add("math-callout-" + this.config.lang);
         this.containerEl.classList.add("math-callout-" + this.config.type);
+        let title = this.containerEl.querySelector<HTMLElement>('.callout-title');
+        if (title) {
+            title.onclick = async () => {
+                const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+                const editor = view?.editor;
+                if (editor) {
+                    let modal = new SmartCalloutModal(
+                        this.app,
+                        this.plugin,
+                        (settings) => {
+                            overwriteMathCalloutMetadata(editor, editor.getCursor().line, settings)
+                        },
+                        this.config,
+                    );
+                    await modal.resolveDefaultSettings();
+                    modal.open();
+                }
+
+            }
+        }
+        // let button = title?.createEl(
+        //     'button', 
+        //     { 
+        //         cls: 'math-callout-setting-button', 
+        //     }
+        // );
+        // if (button) {
+        //     setIcon(button, "file-edit");        
+        //     button.onclick = async () => {
+        //         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        //         const editor = view?.editor;
+        //         if (editor) {
+        //             let modal = new SmartCalloutModal(
+        //                 this.app,
+        //                 this.plugin,
+        //                 (settings) => {
+        //                     overwriteMathCalloutMetadata(editor, editor.getCursor().line, settings)
+        //                 },
+        //             );
+        //             await modal.resolveDefaultSettings();
+        //             modal.open();    
+        //         }
+
+        //     }
+        // }
     }
 }
 

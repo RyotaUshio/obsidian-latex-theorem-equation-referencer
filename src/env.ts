@@ -1,13 +1,39 @@
+// import { THEOREM_LIKE_ENV_IDs } from './env';
 // Mathematical environments, such as definitions, theorems, proofs, and so on.
 
 import LanguageManager from './language';
 
 
+export const NON_THEOREM_LIKE_ENV_IDs = [
+    "proof", 
+    "solution",
+] as const;
+
+
+export const THEOREM_LIKE_ENV_IDs = [
+    "lemma", 
+    "proposition", 
+    "theorem",
+    "corollary",
+    "definition",
+    "claim", 
+    "assumption",
+    "example",
+    "exercise",
+    "conjecture",
+    "hypothesis",
+] as const;
+
+export const ENV_IDs = [...THEOREM_LIKE_ENV_IDs, ...NON_THEOREM_LIKE_ENV_IDs, ] as const;
+
+export type ENV_ID = typeof ENV_IDs[number];
+export type THEOREM_LIKE_ENV_ID = typeof THEOREM_LIKE_ENV_IDs[number];
+
 export class Env {
     public printedNames: Record<string, string>;
 
     constructor(
-        public id: string,
+        public id: ENV_ID,
         printedNames: Record<string, string>
     ) {
         this.printedNames = {};
@@ -28,7 +54,7 @@ export const SOLUTION = new Env('solution', { ja: '解答', en: 'Solution' });
 
 export class TheoremLikeEnv extends Env {
     constructor(
-        public id: string,
+        public id: THEOREM_LIKE_ENV_ID,
         public printedNames: Record<string, string>,
         public prefix: string,
         public proofEnv?: Env
@@ -52,6 +78,8 @@ export class TheoremLikeEnv extends Env {
         return false;
     }
 }
+
+
 
 
 export const ENVs = [
@@ -120,6 +148,8 @@ export const ENVs = [
         "hyp",
     )
 ]
+
+
 
 
 export function getTheoremLikeEnv(key: string): TheoremLikeEnv {
