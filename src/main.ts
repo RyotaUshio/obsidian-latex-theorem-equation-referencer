@@ -1,4 +1,3 @@
-import { VAULT_ROOT } from 'main';
 import {
 	App,
 	Editor,
@@ -27,7 +26,7 @@ import {
 import { MathSettings, MathContextSettings, DEFAULT_SETTINGS, MathContextSettingsHelper, findNearestAncestorContextSettings } from 'settings';
 import { getLinksAndEmbedsInFile, increaseQuoteLevel, linktext2TFile, getCurrentMarkdown } from 'utils';
 import { SmartCallout, autoIndexMathCallouts, insertMathCalloutCallback } from 'smart_callouts';
-import { ContextSettingModal, ExcludeManageModal, ExcludedFolderManageModal, FolderContextSettingsSuggestModal, FolderExcludeSuggestModal, FolderSuggestModal, SmartCalloutModal, folderContextSettingsSuggestModal, folderExcludeSuggestModal } from 'modals';
+import { ContextSettingModal, ExcludedFileManageModal, LocalContextSettingsSuggestModal, FolderExcludeSuggestModal, FolderSuggestModal, SmartCalloutModal, folderContextSettingsSuggestModal, folderExcludeSuggestModal, addRestoreDefaultsBottun } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
 
 
@@ -38,7 +37,7 @@ export const VAULT_ROOT = '/';
 
 export default class MathPlugin extends Plugin {
 	settings: Record<string, MathContextSettings>;
-	excludedFolders: string[];
+	excludedFiles: string[];
 
 
 	// async indexSmartCallouts() {
@@ -93,7 +92,7 @@ export default class MathPlugin extends Plugin {
 						insertMathCalloutCallback(editor, config);
 					},
 				);
-				await modal.resolveDefaultSettings();
+				modal.resolveDefaultSettings(getCurrentMarkdown(this.app));
 				modal.open();
 			}
 		});
@@ -101,26 +100,15 @@ export default class MathPlugin extends Plugin {
 
 
 		this.addCommand({
-			id: 'open-note-level-settings',
-			name: 'Open note-level settings',
-			callback: async () => {
-				let modal = new ContextSettingModal(
-					this.app,
-					this,
-					(settings) => {
-						this.app.fileManager.processFrontMatter(
-							getCurrentMarkdown(this.app),
-							(frontmatter) => {
-								if (!frontmatter.math) {
-									frontmatter["math"] = {};
-								}
-								Object.assign(frontmatter.math, settings);
-							}
-						)
-					}
-				);
-				await modal.resolveDefaultSettings();
-				modal.open();
+			id: 'open-local-settings-for-current-note',
+			name: 'Open Local Settings for the Current Note',
+			callback: () => {
+				let currentFile = getCurrentMarkdown(this.app);
+				if (currentFile) {
+					let modal = new ContextSettingModal(this.app, this, currentFile.path);
+					modal.resolveDefaultSettings(getCurrentMarkdown(this.app));
+					modal.open();	
+				}
 			}
 		});
 
@@ -192,19 +180,18 @@ export default class MathPlugin extends Plugin {
 		console.log("loadedData: ", loadedData);
 		if (loadedData) {
 			console.log("loadedData:", loadedData);
-			let {settings, excludedFolders} = loadedData;
+			let {settings, excludedFiles} = loadedData;
 			this.settings = Object.assign({}, {[VAULT_ROOT]: DEFAULT_SETTINGS}, settings);
-			this.excludedFolders = excludedFolders;	
+			this.excludedFiles = excludedFiles;	
 		} else {
 			this.settings = Object.assign({}, {[VAULT_ROOT]: DEFAULT_SETTINGS}, undefined);
-			this.excludedFolders = [];	
+			this.excludedFiles = [];	
 		}
 	}
 
 	async saveSettings() {
-		await console.log("BEFORE SAVE: ", this.excludedFolders);
-		await this.saveData({settings: this.settings, excludedFolders: this.excludedFolders});
-		await console.log("AFTER SAVE: ", this.excludedFolders);
+		console.log("BEFORE SAVE", this.settings);
+		await this.saveData({settings: this.settings, excludedFiles: this.excludedFiles});
 	}
 
 }
@@ -232,17 +219,19 @@ export class MathSettingTab extends PluginSettingTab {
 	}
 
 	displayUnit(key: string) {
-		if (! (key in this.plugin.settings)) {
-			let folder = this.app.vault.getAbstractFileByPath(key);
-			if (folder) {
-				let folderContextSettings = findNearestAncestorContextSettings(this.plugin, folder);
-				this.plugin.settings[key] = Object.assign({}, this.plugin.settings[VAULT_ROOT], folderContextSettings);
-			}			
-		}
+		let defaultSettings: MathContextSettings = {};
+		// if (! (key in this.plugin.settings)) {
+		let folder = this.app.vault.getAbstractFileByPath(key);
+		if (folder) {
+			let contextSettings = findNearestAncestorContextSettings(this.plugin, folder);
+			defaultSettings = Object.assign({}, this.plugin.settings[VAULT_ROOT], contextSettings);
+		}			
+		// }
 		(new MathContextSettingsHelper(
 			this.containerEl,
 			this.plugin.settings[key],
-			this.plugin.settings[key],
+			defaultSettings,
+			// this.plugin.settings[key],
 			this.plugin,
 		)).makeSettingPane(true);
 		this.addRestoreDefaultsBottun(key);
@@ -257,41 +246,24 @@ export class MathSettingTab extends PluginSettingTab {
 
 		containerEl.createEl("h3", { text: "Local settings" });
 
-		// for (let folderName in this.plugin.settings) {
-		// 	if (folderName == VAULT_ROOT) {
-		// 		continue;
-		// 	}
-		// 	let folderSetting = new Setting(containerEl).setName(folderName);
-		// 	folderSetting.addButton(
-		// 		(button) => {
-		// 			button
-		// 			.setButtonText("Open settings")
-		// 			.onClick((event) => {
-		// 				containerEl.empty();
-		// 				containerEl.createEl("h3", { text: "Context settings for " + folderName});
-		// 				this.displayUnit(folderName);
-		// 			});
-		// 		}
-		// 	);
-		// }
 
 		new Setting(containerEl).setName("Local settings")
 			.setDesc("You can set up file-specific or folder-specific configurations, which have more precedence than the global settings.")
 			.addButton((btn) => {
 				btn.setButtonText("Search files & folders")
 					.onClick((event) => {
-						new FolderContextSettingsSuggestModal(this.app, this.plugin, this).open();
+						new LocalContextSettingsSuggestModal(this.app, this.plugin, this).open();
 					});
 			});
 
 		
 		new Setting(containerEl)
-		.setName("Excluded folders")
-		.setDesc("You can make your search results more visible by excluding certain folders.")
+		.setName("Excluded files")
+		.setDesc("You can make your search results more visible by excluding certain files or folders.")
 		.addButton((btn) => {
 			btn.setButtonText("Manage")
 				.onClick((event) => {
-					new ExcludedFolderManageModal(this.app, this.plugin).open();
+					new ExcludedFileManageModal(this.app, this.plugin).open();
 				});
 		});
 	}

@@ -73,7 +73,7 @@ export const DEFAULT_SETTINGS = {
     number_suffix: "",
     number_init: 1,
     label_prefix: "",
-    rename: {},
+    rename: {} as RenameEnv,
 }
 
 
@@ -264,6 +264,9 @@ export class MathContextSettingsHelper {
 
 
 export function findNearestAncestorContextSettings(plugin: MathPlugin, file: TAbstractFile): MathContextSettings | undefined {
+    if (file.path in plugin.settings) {
+        return plugin.settings[file.path];
+    }
     let folder = file.parent;
     if (folder) {
         while (true) {

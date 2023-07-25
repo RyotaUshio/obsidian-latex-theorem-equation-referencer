@@ -16,17 +16,19 @@ export class SmartCallout extends MarkdownRenderChild {
     }
 
     async resolveSettings(currentFile: TFile) {
-        let folderContextSettings = findNearestAncestorContextSettings(this.plugin, currentFile)
-        await this.app.fileManager.processFrontMatter(
-            currentFile,
-            (frontmatter) => {
-                this.config = Object.assign({}, this.plugin.settings[VAULT_ROOT], folderContextSettings, frontmatter.math, this.config);
-            }
-        );
+        let contextSettings = findNearestAncestorContextSettings(this.plugin, currentFile)
+        this.config = Object.assign({}, this.plugin.settings[VAULT_ROOT], contextSettings, this.config);
+
+        // await this.app.fileManager.processFrontMatter(
+        //     currentFile,
+        //     (frontmatter) => {
+        //         this.config = Object.assign({}, this.plugin.settings[VAULT_ROOT], folderContextSettings, frontmatter.math, this.config);
+        //     }
+        // );
     }
 
     formatTitle(): string {
-        let title = ''; 
+        let title = '';
         if (this.config.rename && this.config.rename[this.env.id]) {
             title = this.config.rename[this.env.id] as string;
         } else {

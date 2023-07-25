@@ -1,11 +1,11 @@
-import { Plugin } from 'obsidian';
+import { Plugin, TAbstractFile, TFile } from 'obsidian';
 import MathPlugin, { MathSettingTab, VAULT_ROOT } from 'main';
 import { App, Modal, Setting, TextComponent, prepareFuzzySearch, prepareSimpleSearch, SuggestModal, Notice, FuzzySuggestModal, TFolder } from 'obsidian';
 
 import { TheoremLikeEnv, getTheoremLikeEnv, ENVs } from 'env';
 import LanguageManager from 'language';
-import { MathSettings, MathContextSettings, MathItemSettings, MathItemSettingsHelper, MathContextSettingsHelper, MATH_CONTXT_SETTINGS_KEYS, CalloutSettings, findNearestAncestorContextSettings } from 'settings';
-import { getCurrentMarkdown, isChildOf, isEqualToOrChildOf } from 'utils';
+import { MathSettings, MathContextSettings, MathItemSettings, MathItemSettingsHelper, MathContextSettingsHelper, MATH_CONTXT_SETTINGS_KEYS, CalloutSettings, findNearestAncestorContextSettings, DEFAULT_SETTINGS } from 'settings';
+import { getCurrentMarkdown, isEqualToOrChildOf } from 'utils';
 
 
 
@@ -17,11 +17,10 @@ abstract class MathSettingModal<SettingsType> extends Modal {
     constructor(
         app: App,
         public plugin: MathPlugin,
-        public callback: (settings: SettingsType) => void,
+        public callback?: (settings: SettingsType) => void,
         public currentCalloutSettings?: CalloutSettings,
     ) {
         super(app);
-        this.settings = {} as SettingsType;
         this.defaultSettings = {} as Partial<MathSettings>;
     }
 
@@ -29,18 +28,9 @@ abstract class MathSettingModal<SettingsType> extends Modal {
         this.contentEl.empty();
     }
 
-    async resolveDefaultSettings() {
-        let currentFile = getCurrentMarkdown(this.app);
-        let folderContextSettings = findNearestAncestorContextSettings(this.plugin, currentFile)
-        console.log("folderContextSettings: ", folderContextSettings);
-        console.log("this.plugin.settings[VAULT_ROOT]: ", this.plugin.settings[VAULT_ROOT]);
-        console.log("this.plugin.settings: ", this.plugin.settings);
-        await this.app.fileManager.processFrontMatter(
-            currentFile,
-            (frontmatter) => {
-                Object.assign(this.defaultSettings, this.plugin.settings[VAULT_ROOT], folderContextSettings, frontmatter.math);
-            }
-        )
+    resolveDefaultSettings(currentFile: TAbstractFile) {
+        let contextSettings = findNearestAncestorContextSettings(this.plugin, currentFile)
+        Object.assign(this.defaultSettings, this.plugin.settings[VAULT_ROOT], contextSettings);
         if (this.currentCalloutSettings) {
             Object.assign(this.defaultSettings, this.currentCalloutSettings);
         }
@@ -55,7 +45,9 @@ abstract class MathSettingModal<SettingsType> extends Modal {
                     .setCta()
                     .onClick(() => {
                         this.close();
-                        this.callback(this.settings);
+                        if (this.callback) {
+                            this.callback(this.settings);
+                        }
                     });
                 btn.buttonEl.classList.add("insert-math-item-button");
             });
@@ -80,6 +72,7 @@ export class SmartCalloutModal extends MathSettingModal<MathSettings> {
 
 
     onOpen(): void {
+        this.settings = {} as MathSettings;
         const { contentEl } = this;
 
         contentEl.createEl('h4', { text: 'Item-specific settings' });
@@ -97,86 +90,109 @@ export class SmartCalloutModal extends MathSettingModal<MathSettings> {
 
 
 export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
+
+    constructor(app: App, plugin: MathPlugin, public path: string) {
+        super(app, plugin);
+    }
+
     onOpen(): void {
         const { contentEl } = this;
 
-        contentEl.createEl('h4', { text: 'Local context settings' });
-        const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.settings, this.defaultSettings);
-        contextSettingsHelper.makeSettingPane(true);
+        contentEl
+        .createEl('h3', { text: 'Local context settings for ' + this.path});
 
-        this.addButton('Confirm');
+        if (this.plugin.settings[this.path] === undefined) {
+            this.plugin.settings[this.path] = {} as MathContextSettings;
+        }
+        const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.path], this.defaultSettings, this.plugin);
+        contextSettingsHelper.makeSettingPane(true);
+        this.addButton('Save');
     }
 }
 
 
 
 
-abstract class FolderSuggestModal extends FuzzySuggestModal<TFolder> {
+
+abstract class FileSuggestModal extends FuzzySuggestModal<TAbstractFile> {
 
     constructor(app: App, public plugin: MathPlugin) {
         super(app);
     }
 
-    getItems(): TFolder[] {
+    getItems(): TAbstractFile[] {
         return this.app.vault
             .getAllLoadedFiles()
-            .filter((abstractFile) => {
-                if (!(abstractFile instanceof TFolder)) {
-                    return false;
-                }
-                if (abstractFile.isRoot()) {
-                    return false;
-                }
-                for (let folderPath of this.plugin.excludedFolders) {
-                    let folder = this.app.vault.getAbstractFileByPath(folderPath)
-                    if (folder instanceof TFolder && isEqualToOrChildOf(abstractFile, folder)) {
-                        return false
-                    }
-                }
-                for (let folderPath in this.plugin.settings) {
-                    if (folderPath == abstractFile.path) {
-                        return false;
-                    }
-                }
-                return true;
-            }) as TFolder[];
+            .filter(this.filterCallback.bind(this));
+        // https://javascript.info/bind
+        // https://stackoverflow.com/a/59060545/13613783
     }
 
-    getItemText(folder: TFolder): string {
-        return folder.path;
+    getItemText(file: TAbstractFile): string {
+        return file.path;
+    }
+
+    filterCallback(abstractFile: TAbstractFile): boolean {
+        if (abstractFile instanceof TFile && abstractFile.extension != 'md') {
+            return false;
+        }
+        if (abstractFile instanceof TFolder && abstractFile.isRoot()) {
+            return false;
+        }
+        for (let path of this.plugin.excludedFiles) {
+            let file = this.app.vault.getAbstractFileByPath(path)
+            if (file && isEqualToOrChildOf(abstractFile, file)) {
+                return false
+            }
+        }
+        return true;
     }
 }
 
 
 
-export class FolderContextSettingsSuggestModal extends FolderSuggestModal {
-
+export class LocalContextSettingsSuggestModal extends FileSuggestModal {
     constructor(app: App, plugin: MathPlugin, public settingTab: MathSettingTab) {
         super(app, plugin);
     }
 
-    onChooseItem(folder: TFolder, evt: MouseEvent | KeyboardEvent) {
-        let { containerEl } = this.settingTab;
-        containerEl.empty();
-        containerEl.createEl("h3", { text: "Local settings for " + folder.path });
-        this.settingTab.displayUnit(folder.path);
+    onChooseItem(file: TAbstractFile, evt: MouseEvent | KeyboardEvent) {
+        let modal = new ContextSettingModal(this.app, this.plugin, file.path);
+        modal.resolveDefaultSettings(file);
+        modal.open();
+        // let { containerEl } = this.settingTab;
+        // containerEl.empty();
+        // containerEl
+        //     .createEl("h3", { text: "Local settings for " })
+        //     .createEl("b", { text: file.path });
+        // this.settingTab.displayUnit(file.path);
     }
 }
 
 
-export class FolderExcludeSuggestModal extends FolderSuggestModal {
-    constructor(app: App, plugin: MathPlugin, public manageModal: ExcludedFolderManageModal) {
+
+export class FileExcludeSuggestModal extends FileSuggestModal {
+    constructor(app: App, plugin: MathPlugin, public manageModal: ExcludedFileManageModal) {
         super(app, plugin);
     }
 
-    onChooseItem(folder: TFolder, evt: MouseEvent | KeyboardEvent) {
-        this.plugin.excludedFolders.push(folder.path);
+    onChooseItem(file: TAbstractFile, evt: MouseEvent | KeyboardEvent) {
+        this.plugin.excludedFiles.push(file.path);
         this.manageModal.newDisplay();
+    }
+
+    filterCallback(abstractFile: TAbstractFile): boolean {
+        for (let path in this.plugin.settings) {
+            if (path == abstractFile.path) {
+                return false;
+            }
+        }
+        return super.filterCallback(abstractFile);
     }
 }
 
 
-export class ExcludedFolderManageModal extends Modal {
+export class ExcludedFileManageModal extends Modal {
     constructor(app: App, public plugin: MathPlugin) {
         super(app);
     }
@@ -189,15 +205,14 @@ export class ExcludedFolderManageModal extends Modal {
         await this.plugin.saveSettings();
         let { contentEl } = this;
         contentEl.empty();
-        contentEl.createEl('h3', { text: 'Excluded folders' });
-        // contentEl.createEl('p', { text: 'The folders in this list and their descendants will be excluded from suggestion for folder context settings.' });
+        contentEl.createEl('h3', { text: 'Excluded files/folders' });
 
         let addButtonContainer = new Setting(contentEl)
-            .setName('The folders in this list and their descendants will be excluded from suggestion for folder context settings.')
+            .setName('The files/folders in this list and their descendants will be excluded from suggestion for local settings.')
             .addButton((btn) => {
                 btn.setIcon("plus")
                     .onClick((event) => {
-                        new FolderExcludeSuggestModal(this.app, this.plugin, this).open();
+                        new FileExcludeSuggestModal(this.app, this.plugin, this).open();
                     });
             });
 
@@ -219,13 +234,13 @@ export class ExcludedFolderManageModal extends Modal {
         // }
         // contentEl.removeChild(saveButtonContainer.settingEl);
 
-        if (this.plugin.excludedFolders.length) {
+        if (this.plugin.excludedFiles.length) {
             let list = contentEl.createEl('ul');
-            for (let folderPath of this.plugin.excludedFolders) {
+            for (let path of this.plugin.excludedFiles) {
                 let item = list.createEl('li').createDiv();
-                new Setting(item).setName(folderPath).addExtraButton((btn) => {
+                new Setting(item).setName(path).addExtraButton((btn) => {
                     btn.setIcon('x').onClick(async () => {
-                        this.plugin.excludedFolders.remove(folderPath);
+                        this.plugin.excludedFiles.remove(path);
                         this.newDisplay();
                         await this.plugin.saveSettings();
                     });

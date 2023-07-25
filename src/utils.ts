@@ -95,16 +95,16 @@ export async function renderTextWithMath(source: string): Promise<(HTMLElement |
 }
 
 
-export function isEqualToOrChildOf(fileOrFolder: TAbstractFile, folder: TFolder): boolean {
-    if (folder.isRoot()) {
+export function isEqualToOrChildOf(file1: TAbstractFile, file2: TAbstractFile): boolean {
+    if (file1 == file2) {
         return true;
     }
-    if ((fileOrFolder instanceof TFolder) && (fileOrFolder == folder)) {
+    if (file2 instanceof TFolder && file2.isRoot()) {
         return true;
     }
-    let ancestor = fileOrFolder.parent;
+    let ancestor = file1.parent;
     while (true) {
-        if (ancestor == folder) {
+        if (ancestor == file2) {
             return true;
         }
         if (ancestor) {
