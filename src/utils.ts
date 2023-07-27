@@ -1,6 +1,6 @@
 // Generic utility functions handing files.
 
-import { App, TFile, getLinkpath, LinkCache, MarkdownView, renderMath, finishRenderMath, TAbstractFile, TFolder } from 'obsidian';
+import { App, TFile, getLinkpath, LinkCache, MarkdownView, renderMath, finishRenderMath, TAbstractFile, TFolder, TextFileView } from 'obsidian';
 
 
 export function validateLinktext(text: string): string {
@@ -114,4 +114,48 @@ export function isEqualToOrChildOf(file1: TAbstractFile, file2: TAbstractFile): 
             ancestor = ancestor.parent
         }
     }
+}
+
+
+
+// https://github.com/wei2912/obsidian-latex/blob/e71e2bbf459354f9768ba90c7717114fc5f2b177/main.ts#L21C3-L33C1
+export async function loadPreamble(preamblePath: string) {
+    const preamble = await this.app.vault.adapter.read(preamblePath);
+
+    if (MathJax.tex2chtml == undefined) {
+        MathJax.startup.ready = () => {
+            MathJax.startup.defaultReady();
+            MathJax.tex2chtml(preamble);
+        };
+    } else {
+        MathJax.tex2chtml(preamble);
+    }
+}
+
+
+export function getActiveTextView(app: App): TextFileView | null {
+    let view = app.workspace.getActiveViewOfType(TextFileView);
+    if (!view) {
+        return null;
+    }
+
+    return view;
+}
+
+
+export function generateBlockID(app: App, length: number = 6): string {
+    // https://stackoverflow.com/a/58326357/13613783
+    let id = '';
+    let file = getCurrentMarkdown(app);
+    let cache = app.metadataCache.getFileCache(file);
+
+    while (true) {
+        id = [...Array(length)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+        if (cache && cache.blocks && id in cache.blocks) {
+            continue;
+        } else {
+            break;
+        }
+    }
+    return id;
 }

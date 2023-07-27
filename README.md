@@ -2,9 +2,17 @@
 
 This is a plugin for [Obsidian.md](https://obsidian.md), which enhances your mathematical note taking experience.
 
-# Features
+Obsidian is great, but when it comes to mathematical notes, it lacks some of important features that $\LaTeX$ has.
 
-## Math callouts
+- theorem environments
+- automatic, dynamic numbering of theorems & equations
+- clever references
+
+
+
+## Features
+
+### Math callouts
 
 In $\LaTeX$, the `amsthm` package allows us to use a variety of theorem-like environments, such as Theorem, Definitions, Remarks, etc.
 
@@ -18,44 +26,57 @@ The `Insert math callout` command
 - automatic numbering
 - custom styling with CSS snippets
 
+### MathLinks Integration
+
+Obisidian Mathematics can dynamically generate theorem titles and display it well, even if they contain inline math. 
+By integrating with [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks.git), the auto-generated titles can also be 
+displaye in internal links.
+
+
+MathLinks is another powerful community plugin that enables Obsidian to render internal links containing inline math. 
+
+
+
+## Docs
+
+
+<dl>
+  <dt>Type</dt>
+  <dd>Either of the following: <br><em>lemma, 
+    proposition, 
+    theorem,
+    corollary,
+    definition,
+    claim, 
+    assumption,
+    example,
+    exercise,
+    conjecture,
+    hypothesis
+    </em>
+</dd>
+  <dt>Number</dt>
+  <dd>How this env will be numbered. Allowed values are: 
+  <ul>
+  <li> 
+  <em>auto</em>: automatically numbered within the currennt note, across different types of environments. 
+  <br>
+  ex) Definition 1, Lemma 2, Lemma 3, Theorem 4, ...
+  </li>
+  <li> <em>(blank)</em>: unnumbered. </li>
+  </ul>
+  </dd>
+</dl>
+
 ## CSS
 
 You can customize the appearance of math-callouts to be specific to languages or environments (theorem/definition/...)
 
-```css
-.callout[data-callout="math"] {
-    --callout-color: 192, 7, 7;
-    border-left:  5px solid rgb(var(--callout-color));
-    border-radius: 0px;
-    padding: 0px;
-}
+### CSS classes defined by this plugin
 
-.callout[data-callout="math"] > .callout-title {
-    padding: 6px;
-    padding-left: 12px;
-}
+- `.math-callout-{type}`: Indicates the environment type. For example, a math callout whose type is "theorem" will be given the `.math-callout-theorem` class.
+- `.math-callout-{language code}`: Indicates the language used for the math callout. Currently only _en_ and _ja_ are available.
 
-.callout[data-callout="math"] > .callout-title > .callout-icon {
-    display: none;
-}
-
-.callout[data-callout="math"] > .callout-title > .callout-title-inner {
-    font-weight: 500;
-    color: rgb(var(--callout-color));
-}
-
-
-.callout[data-callout="math"] > .callout-content {
-    background-color: var(--background); /* --background is defined in the Sanctum theme.css */
-    padding: 1px 20px 2px 20px;
-}
-
-
-.callout[data-callout="math"].math-callout-en > .callout-title > .callout-title-inner {
-    font-style: italic;
-}
-
-.callout[data-callout="math"].math-callout-en > .callout-content {
-    font-style: italic;
-}
-```
+### Obsidian built-in CSS classes
+- `.callout-title-inner`
+- `.callout-content`

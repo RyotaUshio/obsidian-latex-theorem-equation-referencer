@@ -147,6 +147,10 @@ export const ENVs = [
 ]
 
 
+export const ENVs_MAP = Object.fromEntries(
+    ENVs.map((env) => [env.id, env])
+);
+
 
 
 export function getTheoremLikeEnv(key: string): TheoremLikeEnv {

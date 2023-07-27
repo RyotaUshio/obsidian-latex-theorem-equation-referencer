@@ -69,21 +69,33 @@ abstract class MathSettingModal<SettingsType> extends Modal {
 
 
 export class SmartCalloutModal extends MathSettingModal<MathSettings> {
+    buttonText: string;
+
+    constructor(
+        app: App, 
+        plugin: MathPlugin, 
+        callback: (settings: MathSettings) => void,
+        currentCalloutSettings?: CalloutSettings, 
+        buttonText?: string, 
+    ) {
+        super(app, plugin, callback, currentCalloutSettings);
+        this.buttonText = buttonText ?? "Insert";
+    }
 
 
     onOpen(): void {
         this.settings = {} as MathSettings;
         const { contentEl } = this;
 
-        contentEl.createEl('h4', { text: 'Item-specific settings' });
+        contentEl.createEl('h5', { text: 'Item-specific settings' });
         const itemSettingsHelper = new MathItemSettingsHelper(contentEl, this.settings, this.defaultSettings);
         itemSettingsHelper.makeSettingPane();
 
-        contentEl.createEl('h4', { text: 'Override context settings' });
+        contentEl.createEl('h5', { text: 'Override context settings' });
         const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.settings, this.defaultSettings);
         contextSettingsHelper.makeSettingPane(false);
 
-        this.addButton('Confirm');
+        this.addButton(this.buttonText);
     }
 }
 

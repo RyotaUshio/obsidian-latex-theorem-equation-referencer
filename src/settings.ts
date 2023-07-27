@@ -14,6 +14,7 @@ export interface MathContextSettings {
     number_init?: number;
     label_prefix?: string;
     rename?: RenameEnv;
+    preamblePath?: string;
 }
 
 
@@ -22,6 +23,7 @@ export interface MathItemSettings {
     number?: string;
     title?: string;
     label?: string;
+    mathLink?: string;
 }
 
 export interface MathItemPrivateFields {
@@ -42,13 +44,15 @@ export const MATH_CONTXT_SETTINGS_KEYS = [
     "number_init",
     "label_prefix",
     "rename",
+    "preamblePath",
 ]
 
 export const MATH_ITEM_SETTINGS_KEYS = [
     "type",
     "number",
     "title",
-    "label"
+    "label", 
+    "mathLink",
 ]
 
 export const MATH_ITEM_PRIVATE_FIELDS_KEYS = [
@@ -74,6 +78,7 @@ export const DEFAULT_SETTINGS = {
     number_init: 1,
     label_prefix: "",
     rename: {} as RenameEnv,
+    preamblePath: "",
 }
 
 
@@ -96,7 +101,7 @@ export class MathItemSettingsHelper {
     makeSettingPane() {
         const { contentEl } = this;
         new Setting(contentEl)
-            .setName("type")
+            .setName("Type")
             .addDropdown((dropdown) => {
                 for (let env of ENVs) {
                     dropdown.addOption(env.id, env.id);
@@ -110,24 +115,42 @@ export class MathItemSettingsHelper {
                 this.env = getTheoremLikeEnv(initType);
 
 
-                new Setting(contentEl)
-                    .setName("number")
-                    .addText((text) => {
-                        text.setValue(
-                            this.defaultSettings.number ?? "auto"
-                        );
-                        this.settings.number = text.getValue();
-                        text.onChange((value) => {
-                            this.settings.title = value;
-                        });
-                    })
+                let numberSetting = new Setting(contentEl)
+                    .setName("Number")
+                    .setDesc("Allowed values:");
+                let numberSettingDescList = numberSetting.descEl.createEl("ul");
+                numberSettingDescList.createEl(
+                    "li", 
+                    { text: '"auto" - automatically numbered' }
+                );
+                numberSettingDescList.createEl(
+                    "li", 
+                    { text: "(blank) - unnumbered" }
+                );
+                numberSettingDescList.createEl(
+                    "li", 
+                    { text: "otherwise - used as is" }
+                );
+
+
+                numberSetting.addText((text) => {
+                    text.setValue(
+                        this.defaultSettings.number ?? "auto"
+                    );
+                    this.settings.number = text.getValue();
+                    text.onChange((value) => {
+                        this.settings.number = value;
+                    });
+                })
 
 
                 let titleComp: TextComponent;
-                let titlePane = new Setting(contentEl).setName("title")
+                let titlePane = new Setting(contentEl)
+                .setName("Title")
+                .setDesc("You may use inline math");
 
 
-                let labelPane = new Setting(contentEl).setName("label");
+                let labelPane = new Setting(contentEl).setName("LaTeX Label");
                 let labelPrefixEl = labelPane.controlEl.createDiv({ text: this.env.prefix + ":" });
 
                 titlePane.addText((text) => {
@@ -151,10 +174,14 @@ export class MathItemSettingsHelper {
                     });
 
                     text
-                        .setPlaceholder("e.g. Uniform law of large numbers")
+                        .setPlaceholder("e.g. $\\sigma$-algebra")
                         .onChange((value) => {
                             this.settings.title = value;
-                            labelTextComp.setValue(this.settings.title.replaceAll(' ', '-').replaceAll("'s", '').replaceAll("\\", "").replaceAll("$", "").toLowerCase());
+                            // labelTextComp.setValue(this.settings.title.replaceAll(' ', '-').replaceAll("'s", '').replaceAll("\\", "").replaceAll("$", "").toLowerCase());
+                            let labelInit = this.settings.title.replaceAll(' ', '-').replaceAll("'s", '').toLowerCase();
+                            labelInit = labelInit.replaceAll(/[^a-z0-1\-]/g, '');
+                            labelTextComp.setValue(labelInit);
+                            
                         })
                 });
 
@@ -228,13 +255,15 @@ export class MathContextSettingsHelper {
         if (displayRename) {
             this.addRenameSetting();
         }
+
+        this.addTextSetting("preamblePath", "Preamble path");
     }
 
     addRenameSetting() {
         let { contentEl } = this;
         let renamePane = new Setting(contentEl)
-        .setName("Rename environments")
-        .setDesc("e.g. print \"exercise\" as \"Problem,\" not \"Exercise\"");
+            .setName("Rename environments")
+            .setDesc("e.g. print \"exercise\" as \"Problem,\" not \"Exercise\"");
 
         renamePane.addDropdown((dropdown) => {
             for (let envId of ENV_IDs) {
