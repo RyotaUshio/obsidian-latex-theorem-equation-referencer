@@ -1,4 +1,4 @@
-> :warning: **This plugin is in the vary early stages of development!**
+> :warning: **This plugin is in the very early stages of development!**
 
 # Obsidian Mathematics
 
@@ -9,6 +9,8 @@ Obsidian is great, but when it comes to mathematical notes, it lacks some of imp
 - theorem environments
 - automatic, dynamic numbering of theorems & equations
 - clever references
+
+And this is where Obsidian Mathematics comes in!
 
 ## Installation
 
