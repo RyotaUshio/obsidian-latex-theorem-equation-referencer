@@ -146,7 +146,10 @@ export function autoIndexMathCallouts(cache: CachedMetadata, editor: Editor, cur
     plugin.app.fileManager.processFrontMatter(
         currentFile, 
         (frontmatter) => {
-        if (JSON.stringify(frontmatter["mathLinks-block"]) != JSON.stringify(mathLinkCache)) {
+        if (
+            Object.keys(mathLinkCache).length 
+            && JSON.stringify(frontmatter["mathLinks-block"]) != JSON.stringify(mathLinkCache)
+        ) {
             frontmatter["mathLinks-block"] = mathLinkCache;
         }
     });

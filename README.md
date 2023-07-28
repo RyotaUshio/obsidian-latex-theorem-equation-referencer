@@ -35,6 +35,7 @@ displaye in internal links.
 
 MathLinks is another powerful community plugin that enables Obsidian to render internal links containing inline math. 
 
+I personally recommend you to use [Quick Switcher++](https://github.com/darlal/obsidian-switcher-plus.git)'s symbol command (`@`) to insert internal links to math callouts.
 
 
 ## Docs
