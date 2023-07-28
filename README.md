@@ -1,3 +1,5 @@
+> :warning: **This plugin is in the vary early stages of development!**
+
 # Obsidian Mathematics
 
 This is a plugin for [Obsidian.md](https://obsidian.md), which enhances your mathematical note taking experience.
@@ -8,7 +10,9 @@ Obsidian is great, but when it comes to mathematical notes, it lacks some of imp
 - automatic, dynamic numbering of theorems & equations
 - clever references
 
+## Installation
 
+Since this plugin is before official submission, you can only manually install it.
 
 ## Features
 
