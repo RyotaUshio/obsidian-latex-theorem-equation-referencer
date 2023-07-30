@@ -1,6 +1,7 @@
+import { addRestoreDefaultsBottun } from 'modals';
 // Generic utility functions handing files.
 
-import { App, TFile, getLinkpath, LinkCache, MarkdownView, renderMath, finishRenderMath, TAbstractFile, TFolder, TextFileView } from 'obsidian';
+import { App, TFile, getLinkpath, LinkCache, MarkdownView, renderMath, finishRenderMath, TAbstractFile, TFolder, TextFileView, EditorPosition, Loc, CachedMetadata } from 'obsidian';
 
 
 export function validateLinktext(text: string): string {
@@ -159,3 +160,27 @@ export function generateBlockID(app: App, length: number = 6): string {
     }
     return id;
 }
+
+
+export function locToEditorPosition(loc: Loc): EditorPosition {
+    return {ch: loc.col, line: loc.line};
+}
+
+
+export function getMathTag(cache: CachedMetadata, lineStart: number): string {
+    let tag = '';
+    if (cache.sections) {
+        let sectionCache = Object.values(cache.sections).find((sectionCache) =>
+            sectionCache.type == 'math'
+            && sectionCache.position.start.line == lineStart
+        );
+        if (sectionCache?.id && cache.frontmatter) {
+            tag = cache.frontmatter["mathLinks-block"][sectionCache.id] ?? '';
+        }
+    }
+    return tag;
+}
+
+
+
+

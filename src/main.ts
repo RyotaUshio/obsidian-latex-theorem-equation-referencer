@@ -20,16 +20,19 @@ import {
 	FuzzySuggestModal,
 	TFolder,
 	resolveSubpath,
+	WorkspaceLeaf,
 } from 'obsidian';
 
 
 import { MathSettings, MathContextSettings, DEFAULT_SETTINGS, MathContextSettingsHelper, findNearestAncestorContextSettings } from 'settings';
-import { getLinksAndEmbedsInFile, increaseQuoteLevel, linktext2TFile, getCurrentMarkdown, getActiveTextView } from 'utils';
+import { getLinksAndEmbedsInFile, increaseQuoteLevel, linktext2TFile, getCurrentMarkdown, getActiveTextView, getMathTag } from 'utils';
 import { SmartCallout, autoIndexMathCallouts, insertMathCalloutCallback, resolveSettings } from 'smart_callouts';
 import { ContextSettingModal, ExcludedFileManageModal, LocalContextSettingsSuggestModal, SmartCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
 import { ExampleView, VIEW_TYPE_EXAMPLE } from 'views';
-import { MathCalloutField } from 'editor_extensions';
+// import { MathCalloutField } from 'editor_extensions';
+import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
+import { autoIndex, sortedEquations } from 'autoIndex';
 
 
 export const VAULT_ROOT = '/';
@@ -66,7 +69,7 @@ export default class MathPlugin extends Plugin {
 			name: "Link Text Test",
 			callback: () => {
 				// Let's parse this linktext!
-				let linktext = "Smart Callouts#^b549cb"; 
+				let linktext = "Smart Callouts#^b549cb";
 
 				// decompose linktext into path (linkpath) and subpath
 				let { path, subpath } = parseLinktext(linktext);
@@ -91,7 +94,7 @@ export default class MathPlugin extends Plugin {
 						console.log("SubpathResult object: ", subpathResult);
 						// -> SubpathResult object:  {type: 'block', block: {…}, list: {…}, start: {…}, end: {…}}
 					}
-					
+
 					// generate linktext from a TFile object
 					console.log(`generated linktext = ${this.app.metadataCache.fileToLinktext(file, "")}`);
 					// -> generated linktext = Smart Callouts
@@ -113,7 +116,13 @@ export default class MathPlugin extends Plugin {
 		this.addCommand({
 			id: 'insert-display-math',
 			name: 'Insert Display Math',
-			editorCallback: insertDisplayMath
+			editorCallback: (editor) => insertDisplayMath(editor, false, this.app)
+		});
+
+		this.addCommand({
+			id: 'insert-display-math-auto-numbered',
+			name: 'Insert Display Math (Auto-numbered)',
+			editorCallback: (editor) => insertDisplayMath(editor, true, this.app)
 		});
 
 		this.addCommand({
@@ -145,20 +154,6 @@ export default class MathPlugin extends Plugin {
 			}
 		});
 
-		this.addCommand({
-			id: 'auto-index-math-callouts',
-			name: 'Auto-index Math Callouts',
-			editorCallback: (editor) => {
-				let currentFile = getCurrentMarkdown(this.app);
-				let cache = app.metadataCache.getFileCache(currentFile);
-				if (cache) {
-					autoIndexMathCallouts(cache, editor, currentFile, this);
-				}
-			}
-		});
-
-		this.registerEditorExtension(MathCalloutField);
-
 		this.registerEvent(
 			this.app.metadataCache.on(
 				'changed',
@@ -166,11 +161,34 @@ export default class MathPlugin extends Plugin {
 					let activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 					let editor = activeView?.editor;
 					if (activeView && editor && file == activeView.file) {
-						autoIndexMathCallouts(cache, editor, file, this);
+						autoIndex(cache, editor, file, this);
 					}
 				}
 			)
 		);
+
+
+		// this.registerEditorExtension(equationNumberPlugin);
+
+
+		this.app.workspace.onLayoutReady(() => {
+			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
+				if (leaf.view instanceof MarkdownView) {
+					this.registerEditorExtension(buildEquationNumberPlugin(this.app, leaf.view.file.path));
+				}
+			});
+		});
+
+		this.app.workspace.on("active-leaf-change", (leaf: WorkspaceLeaf) => {
+			if (leaf.view instanceof MarkdownView) {
+				this.registerEditorExtension(buildEquationNumberPlugin(this.app, leaf.view.file.path));
+			}
+		});
+
+
+
+
+
 
 		this.registerMarkdownPostProcessor(async (element, context) => {
 			const callouts = element.querySelectorAll<HTMLElement>(".callout");
@@ -195,6 +213,36 @@ export default class MathPlugin extends Plugin {
 						}
 					}
 				}
+			}
+		});
+
+
+		this.registerMarkdownPostProcessor((element, context) => {
+			let displayMathElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax mjx-math[display="true"]');
+			if (displayMathElements) {
+				displayMathElements.forEach((displayMathEl) => {
+					let tag = '';
+					let cache = this.app.metadataCache.getCache(context.sourcePath);
+					let info = context.getSectionInfo(displayMathEl);
+					if (cache && info) {
+						tag = getMathTag(cache, info.lineStart);
+					}
+
+					// let tag = '';
+					// let cache = this.app.metadataCache.getCache(context.sourcePath);
+					// if (cache?.sections) {
+					// 	let info = context.getSectionInfo(displayMathEl);
+					// 	let sectionCache = Object.values(cache.sections).find((sectionCache) =>
+					// 		sectionCache.type == 'math'
+					// 		&& info
+					// 		&& sectionCache.position.start.line == info.lineStart
+					// 	);
+					// 	if (sectionCache?.id) {
+					// 		tag = context.frontmatter["mathLinks-block"][sectionCache.id] ?? '';
+					// 	}
+					// }
+					context.addChild(new DisplayMathRenderChild(displayMathEl, tag));
+				});
 			}
 		});
 

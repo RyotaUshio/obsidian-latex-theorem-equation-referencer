@@ -87,7 +87,7 @@ export function insertMathCalloutCallback(app: App, editor: Editor, config: Math
 }
 
 
-
+    
 export function sortedAutoNumberedMathCallouts(cache: CachedMetadata) {
     let calloutCaches = cache.sections?.filter(
         (sectionCache) => sectionCache.type == "callout"
