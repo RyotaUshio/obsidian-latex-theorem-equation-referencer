@@ -1,11 +1,6 @@
-import { PluginValue, ViewUpdate } from '@codemirror/view';
+import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, SectionCache, MarkdownSectionInformation, } from "obsidian";
+import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
-import { SyntaxNodeRef } from '@lezer/common';
-import { foldInside, syntaxTree } from '@codemirror/language';
-import { EditorState, StateEffect, StateField, Transaction, RangeSetBuilder, Extension } from '@codemirror/state';
-import { Decoration, DecorationSet, EditorView, ViewPlugin, WidgetType } from '@codemirror/view';
-
-import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, TFile, Menu, setIcon, MetadataCache, SectionCache, MarkdownSectionInformation, MarkdownRenderer } from "obsidian";
 import { getMathCache, getMathCacheFromPos, getMathTag, locToEditorPosition } from 'utils';
 
 
@@ -27,9 +22,9 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
                 if (mathCache && mathCache.id) {
                     this.id = mathCache.id;
                 }
-            }    
+            }
         }
-    } 
+    }
 
     getCache(): CachedMetadata | null {
         return this.app.metadataCache.getCache(this.context.sourcePath);
@@ -48,12 +43,6 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         if (this.text && this.tag) {
             replaceMathTag(this.containerEl, this.text, this.tag);
         }
-    }
-
-    printInfo() {
-        console.log(`id = "${this.id}"`);
-        console.log(`text = "${this.text}"`);
-        console.log(`tag = "${this.tag}"`);
     }
 
     getTag(info: MarkdownSectionInformation): string {
@@ -110,33 +99,17 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, path:
             if (cache) {
                 if (displayMathElements) {
                     for (let i = 0; i < displayMathElements.length; i++) {
-
-                        try {
-
                         let displayMathEl = displayMathElements[i];
                         let pos = view.posAtDOM(displayMathEl);
-                        console.log("---------------");
-                        console.log(`displayMathEl = `, displayMathEl);
-                        console.log(`pos = ${pos}`);
-                        console.log("cache = ", cache);
-                        // let line = view.state.doc.lineAt(pos);
-                        // let lineNumber = line.number - 1; // CodeMirror6 uses 1-origin line numbers
                         let mathCache = getMathCacheFromPos(cache, pos);
                         if (tagAll === undefined && mathCache) {
                             tag = getMathTag(cache, mathCache);
                             if (tag) {
                                 let text = getMathText(view, mathCache);
-                                
-                                console.log(`text = "${text}"`);
-                                console.log(`tag = "${tag}"`);
                                 replaceMathTag(displayMathEl, text, tag);
                             }
                         }
-                    } catch (err) {
-                        // console.log(err);
-                        throw err;
                     }
-                }
                 }
             }
         }
@@ -147,41 +120,10 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, path:
 }
 
 
-
 function getTagEl(displayMathEl: HTMLElement): HTMLElement | null {
     // displayMathEl: HTMLElement selected by 'mjx-container.MathJax mjx-math[display="true"]'
     return displayMathEl.querySelector<HTMLElement>("mjx-mtext.mjx-n");
 }
-
-
-// function replaceMathTag(tagEl: HTMLElement, tag: string): void {
-//     // replace the tag number as (@) => ([tag])
-//     let numberEl = renderMath("\\text{" + tag + "}", false);
-//     finishRenderMath();
-
-//     let contentEl = numberEl.querySelector("mjx-mtext.mjx-n");
-//     if (contentEl) {
-//         contentEl.classList.add("auto-number");
-//         tagEl.replaceWith(contentEl);
-//     }
-// }
-
-
-// function isAutoNumbered(tagEl: HTMLElement): boolean {
-//     if (tagEl) {
-//         if (tagEl.classList.contains("auto-number")) {
-//             return true;
-//         }
-
-//         let tagCharElements = tagEl.children;
-//         return Boolean(
-//             tagCharElements.item(0)?.matches("mjx-c.mjx-c28")
-//             && tagCharElements.item(1)?.matches("mjx-c.mjx-c40")
-//             && tagCharElements.item(2)?.matches("mjx-c.mjx-c29")
-//         );
-//     }
-//     return false;
-// }
 
 
 export function getMathText(view: EditorView, mathCache: SectionCache) {
@@ -202,60 +144,17 @@ export function getMathTextWithTag(text: string, tag: string): string | undefine
 
 
 export function replaceMathTag(displayMathEl: HTMLElement, text: string, tag: string) {
+    let tagMatch = text.match(/\\tag\{.*\}/);
+    if (tagMatch) {
+        return;
+    }
     let taggedText = getMathTextWithTag(text, tag);
-    console.log(`taggedText = "${taggedText}"`);
     if (taggedText) {
         let mjxContainerEl = renderMath(taggedText, true);
         finishRenderMath();
-
-        let parentNode = displayMathEl.parentNode;
         let parentEl = displayMathEl.parentElement;
-
-        if (parentEl && parentNode) {
-            let grandParentEl = parentNode.parentElement;
-            if (grandParentEl) {
-                grandParentEl.removeChild(parentNode);
-                grandParentEl.appendChild(mjxContainerEl);
-            }
-           
+        if (parentEl) {
+            parentEl.replaceWith(mjxContainerEl);
         }
-        
-        
-
-        // let mjxMathEl = mjxContainerEl.querySelector<HTMLElement>("mjx-math");
-        // if (mjxMathEl) {
-        //     console.log("I WAS CALLED");
-        //     console.log(mjxMathEl);
-        //     displayMathEl.replaceWith(mjxMathEl);
-        // }
     }
 }
-
-
-
-// export function markdownPostProcessor(element: HTMLElement, context: MarkdownPostProcessorContext) {
-//     console.log("sec:", this.app.metadataCache.getCache(context.sourcePath)?.sections);
-//     console.log("el:", element);
-//     console.log("child:", element.children);
-//     let displayMathElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax mjx-math[display="true"]');
-//     console.log("mathels:", displayMathElements);
-//     if (displayMathElements) {
-//         displayMathElements.forEach((displayMathEl) => {
-//             let tag = '';
-//             let cache = this.app.metadataCache.getCache(context.sourcePath);
-//             let info = context.getSectionInfo(displayMathEl);
-//             console.log("outside:cache:", cache);
-//             console.log("outside:info:", info);
-//             if (cache && info) {
-//                 let mathCache = getMathCache(cache, info.lineStart);
-//                 if (mathCache) {
-//                     tag = getMathTag(cache, mathCache);
-//                     console.log("inside:mathCache:", mathCache);
-//                     console.log("inside:tag:", tag);
-//                 }
-//             }
-//             context.addChild(new DisplayMathRenderChild(displayMathEl, context, tag));
-//         });
-//     }
-// }
-
