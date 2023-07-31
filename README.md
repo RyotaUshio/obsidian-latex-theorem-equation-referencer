@@ -25,12 +25,24 @@ In $\LaTeX$, the `amsthm` package allows us to use a variety of theorem-like env
 In Obsidian, however, we don't have any built-in features taylor-made for such a purpose.
 One of the most natural alteranatives would be using Obsidian's [Callouts](https://help.obsidian.md/Editing+and+formatting/Callouts).
 
-hogehoge.
+This plugin offers callouts for such theorem-like environments. And they are on STEROID.
 
 The `Insert math callout` command
 
 - automatic numbering
 - custom styling with CSS snippets
+
+### Automatic equation numbering 
+
+Automatically numbering equations in a referencable manner has been one of the long-standing unsolved problems of Obsidian
+(see [this topic](https://forum.obsidian.md/t/automatic-equation-numbering-latex-math/1325/30) on the forum).
+
+But it isn't anymore! :tada:
+
+Obsidian Mathematics automatically & dynamically indexes displayed (i.e. full-width) equations `$$ ... $$` with [block IDs](https://help.obsidian.md/Linking+notes+and+files/Internal+links#Link+to+a+block+in+a+note) (e.g. `^my-id`) and renders their equation number both in Live Preview & Reading Mode. 
+
+In other words, there's nothing that you have to do. When you insert a link to an equation, Obsidian generates a block ID for it. 
+And then, this plugin automatically adjusts the equation numbers to it.
 
 ### MathLinks Integration
 
