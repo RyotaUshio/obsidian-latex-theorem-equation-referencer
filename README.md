@@ -16,7 +16,18 @@ And this is where Obsidian Mathematics comes in!
 
 Since this plugin is before official submission, you can only manually install it.
 
+## Dependencies 
+
+Although many features of this plugin don't depend on other community plugins, I strongly recommend you to install [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks)  together.
+
+
+
+
+
 ## Features
+
+- Math callouts
+- Automatic equation numbering
 
 ### Math callouts
 
@@ -26,11 +37,6 @@ In Obsidian, however, we don't have any built-in features taylor-made for such a
 One of the most natural alteranatives would be using Obsidian's [Callouts](https://help.obsidian.md/Editing+and+formatting/Callouts).
 
 This plugin offers callouts for such theorem-like environments. And they are on STEROID.
-
-The `Insert math callout` command
-
-- automatic numbering
-- custom styling with CSS snippets
 
 ### Automatic equation numbering 
 
@@ -46,14 +52,29 @@ And then, this plugin automatically adjusts the equation numbers to it.
 
 ### MathLinks Integration
 
-Obisidian Mathematics can dynamically generate theorem titles and display it well, even if they contain inline math. 
+Obsidian Mathematics can dynamically generate theorem titles and display them well, even if they contain inline math. 
 By integrating with [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks.git), the auto-generated titles can also be 
-displaye in internal links.
+displayed in internal links.
 
 
 MathLinks is another powerful community plugin that enables Obsidian to render internal links containing inline math. 
 
 I personally recommend you to use [Quick Switcher++](https://github.com/darlal/obsidian-switcher-plus.git)'s symbol command (`@`) to insert internal links to math callouts.
+
+
+## Commands
+
+### Insert Display Math
+
+### Insert Inline Math
+
+### Insert Math Callout
+
+### Open Local Settings for the Current Note
+
+
+## Settings
+
 
 
 ## Docs
