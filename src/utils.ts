@@ -1,7 +1,7 @@
-import { addRestoreDefaultsBottun } from 'modals';
+
 // Generic utility functions handing files.
 
-import { App, TFile, getLinkpath, LinkCache, MarkdownView, renderMath, finishRenderMath, TAbstractFile, TFolder, TextFileView, EditorPosition, Loc, CachedMetadata } from 'obsidian';
+import { App, TFile, getLinkpath, LinkCache, MarkdownView, renderMath, finishRenderMath, TAbstractFile, TFolder, TextFileView, EditorPosition, Loc, CachedMetadata, SectionCache } from 'obsidian';
 
 
 export function validateLinktext(text: string): string {
@@ -119,19 +119,19 @@ export function isEqualToOrChildOf(file1: TAbstractFile, file2: TAbstractFile): 
 
 
 
-// https://github.com/wei2912/obsidian-latex/blob/e71e2bbf459354f9768ba90c7717114fc5f2b177/main.ts#L21C3-L33C1
-export async function loadPreamble(preamblePath: string) {
-    const preamble = await this.app.vault.adapter.read(preamblePath);
+// // https://github.com/wei2912/obsidian-latex/blob/e71e2bbf459354f9768ba90c7717114fc5f2b177/main.ts#L21C3-L33C1
+// export async function loadPreamble(preamblePath: string) {
+//     const preamble = await this.app.vault.adapter.read(preamblePath);
 
-    if (MathJax.tex2chtml == undefined) {
-        MathJax.startup.ready = () => {
-            MathJax.startup.defaultReady();
-            MathJax.tex2chtml(preamble);
-        };
-    } else {
-        MathJax.tex2chtml(preamble);
-    }
-}
+//     if (MathJax.tex2chtml == undefined) {
+//         MathJax.startup.ready = () => {
+//             MathJax.startup.defaultReady();
+//             MathJax.tex2chtml(preamble);
+//         };
+//     } else {
+//         MathJax.tex2chtml(preamble);
+//     }
+// }
 
 
 export function getActiveTextView(app: App): TextFileView | null {
@@ -163,24 +163,43 @@ export function generateBlockID(app: App, length: number = 6): string {
 
 
 export function locToEditorPosition(loc: Loc): EditorPosition {
-    return {ch: loc.col, line: loc.line};
+    return { ch: loc.col, line: loc.line };
 }
 
 
-export function getMathTag(cache: CachedMetadata, lineStart: number): string {
-    let tag = '';
+
+export function getMathCache(cache: CachedMetadata, lineStart: number): SectionCache | undefined {
     if (cache.sections) {
         let sectionCache = Object.values(cache.sections).find((sectionCache) =>
             sectionCache.type == 'math'
             && sectionCache.position.start.line == lineStart
         );
-        if (sectionCache?.id && cache.frontmatter) {
-            tag = cache.frontmatter["mathLinks-block"][sectionCache.id] ?? '';
-        }
+        return sectionCache;
+    }
+}
+
+
+export function getMathCacheFromPos(cache: CachedMetadata, pos: number): SectionCache | undefined {
+    // pos: CodeMirror offset units
+    if (cache.sections) {
+        let sectionCache = Object.values(cache.sections).find((sectionCache) =>
+            sectionCache.type == 'math'
+            && (sectionCache.position.start.offset == pos || sectionCache.position.end.offset == pos)
+        );
+        return sectionCache;
+    }
+}
+
+
+
+
+export function getMathTag(cache: CachedMetadata, mathCache: SectionCache): string {
+    let tag = '';
+    if (mathCache?.id && cache.frontmatter) {
+        tag = cache.frontmatter["mathLinks-block"][mathCache.id] ?? '';
     }
     return tag;
 }
-
 
 
 

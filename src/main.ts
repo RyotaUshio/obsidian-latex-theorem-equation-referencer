@@ -1,3 +1,5 @@
+import { EditorState } from '@codemirror/state';
+import { locToEditorPosition } from 'utils';
 import {
 	App,
 	Editor,
@@ -21,18 +23,21 @@ import {
 	TFolder,
 	resolveSubpath,
 	WorkspaceLeaf,
+	MarkdownPreviewRenderer,
+	MarkdownPreviewView,
 } from 'obsidian';
 
 
 import { MathSettings, MathContextSettings, DEFAULT_SETTINGS, MathContextSettingsHelper, findNearestAncestorContextSettings } from 'settings';
-import { getLinksAndEmbedsInFile, increaseQuoteLevel, linktext2TFile, getCurrentMarkdown, getActiveTextView, getMathTag } from 'utils';
-import { SmartCallout, autoIndexMathCallouts, insertMathCalloutCallback, resolveSettings } from 'smart_callouts';
+import { getLinksAndEmbedsInFile, increaseQuoteLevel, linktext2TFile, getCurrentMarkdown, getActiveTextView, getMathTag, getMathCache } from 'utils';
+import { SmartCallout, insertMathCalloutCallback, resolveSettings } from 'smart_callouts';
 import { ContextSettingModal, ExcludedFileManageModal, LocalContextSettingsSuggestModal, SmartCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
 import { ExampleView, VIEW_TYPE_EXAMPLE } from 'views';
 // import { MathCalloutField } from 'editor_extensions';
-import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
+import { DisplayMathRenderChild, buildEquationNumberPlugin, replaceMathTag } from 'equation_number';
 import { autoIndex, sortedEquations } from 'autoIndex';
+import { render } from 'react-dom';
 
 
 export const VAULT_ROOT = '/';
@@ -168,6 +173,23 @@ export default class MathPlugin extends Plugin {
 		);
 
 
+		// auto-index without editor (global)
+		// this.registerEvent(
+		// 	this.app.metadataCache.on(
+		// 		'changed',
+		// 		(file, data, cache) => {
+		// 			autoIndex(file, data, cache, this);
+		// 		}
+		// 	)
+		// );
+
+
+
+
+
+
+
+
 		// this.registerEditorExtension(equationNumberPlugin);
 
 
@@ -217,34 +239,99 @@ export default class MathPlugin extends Plugin {
 		});
 
 
-		this.registerMarkdownPostProcessor((element, context) => {
-			let displayMathElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax mjx-math[display="true"]');
-			if (displayMathElements) {
-				displayMathElements.forEach((displayMathEl) => {
-					let tag = '';
-					let cache = this.app.metadataCache.getCache(context.sourcePath);
-					let info = context.getSectionInfo(displayMathEl);
-					if (cache && info) {
-						tag = getMathTag(cache, info.lineStart);
-					}
 
-					// let tag = '';
-					// let cache = this.app.metadataCache.getCache(context.sourcePath);
-					// if (cache?.sections) {
-					// 	let info = context.getSectionInfo(displayMathEl);
-					// 	let sectionCache = Object.values(cache.sections).find((sectionCache) =>
-					// 		sectionCache.type == 'math'
-					// 		&& info
-					// 		&& sectionCache.position.start.line == info.lineStart
-					// 	);
-					// 	if (sectionCache?.id) {
-					// 		tag = context.frontmatter["mathLinks-block"][sectionCache.id] ?? '';
-					// 	}
-					// }
-					context.addChild(new DisplayMathRenderChild(displayMathEl, tag));
-				});
+
+
+
+		this.registerMarkdownPostProcessor((element, context) => {
+			let mjxElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax mjx-math[display="true"]');
+			if (mjxElements) {
+				for (let i = 0; i < mjxElements.length; i++) {
+					let mjxEl = mjxElements[i];
+					let renderChild = new DisplayMathRenderChild(mjxEl, this.app, context);
+					context.addChild(renderChild);
+				}
 			}
 		});
+
+
+		this.registerEvent(this.app.metadataCache.on("changed", (file, data, cache) => {
+			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
+				if (leaf.view instanceof MarkdownView && leaf.view.getMode() == 'preview') {
+					leaf.view.previewMode.rerender(true);
+				}
+			});
+		}));
+
+
+
+		// this.registerMarkdownPostProcessor((element, context) => {
+		// 	console.log("Element: ", element);
+		// 	console.log("Context: ", context);
+		// 	let mathElements = element.querySelectorAll<HTMLElement>('.math.math-block.is-loaded');
+		// 	let mjxElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax mjx-math[display="true"]');
+		// 	if (mathElements) {
+		// 		console.log("mathElements: ", mathElements);
+		// 	}
+
+		// 	if (mjxElements) {
+		// 		console.log("mjxElements: ", mjxElements);
+		// 	}
+
+		// 	if (mjxElements) {
+		// 		for (let i=0; i<mjxElements.length; i++) {
+		// 			let mjxEl = mjxElements[i];
+		// 			console.log("mjxEl: ", mjxEl);
+		// 			let tag = '';
+		// 			let cache = this.app.metadataCache.getCache(context.sourcePath);
+		// 			let info = context.getSectionInfo(mjxEl);
+		// 			console.log("outside:cache:", cache);
+		// 			console.log("outside:info:", info);
+		// 			if (cache && info) {
+		// 				let mathCache = getMathCache(cache, info.lineStart);
+		// 				if (mathCache) {
+		// 					tag = getMathTag(cache, mathCache);
+		// 					console.log("inside:mathCache:", mathCache);
+		// 					console.log("inside:tag:", tag);
+		// 					context.addChild(new DisplayMathRenderChild(mjxEl, this.app, context));
+		// 				}
+		// 			}
+		// 		}
+		// 		// mjxElements.forEach((displayMathEl) => {
+		// 		// 	let tag = '';
+		// 		// 	let cache = this.app.metadataCache.getCache(context.sourcePath);
+		// 		// 	let info = context.getSectionInfo(displayMathEl);
+		// 		// 	console.log("outside:cache:", cache);
+		// 		// 	console.log("outside:info:", info);
+		// 		// 	if (cache && info) {
+		// 		// 		let mathCache = getMathCache(cache, info.lineStart);
+		// 		// 		if (mathCache) {
+		// 		// 			tag = getMathTag(cache, mathCache);
+		// 		// 			console.log("inside:mathCache:", mathCache);
+		// 		// 			console.log("inside:tag:", tag);
+		// 		// 		}
+		// 		// 	}
+		// 		// 	context.addChild(new DisplayMathRenderChild(displayMathEl, context, tag));
+		// 		// });
+		// 	}
+
+
+		// });
+
+
+
+
+
+		// this.app.workspace.onLayoutReady(() => {
+		// 	this.registerMarkdownPostProcessor(markdownPostProcessor);
+		// });
+
+		// this.app.workspace.on("active-leaf-change", (leaf: WorkspaceLeaf) => {
+		// 	this.registerMarkdownPostProcessor(markdownPostProcessor);
+		// });
+
+
+
 
 		this.addSettingTab(new MathSettingTab(this.app, this));
 	}

@@ -6,6 +6,7 @@ import LanguageManager from 'language';
 import { generateBlockID, getCurrentMarkdown, increaseQuoteLevel, renderTextWithMath } from 'utils';
 import MathPlugin, { VAULT_ROOT } from 'main';
 import { StringStream } from 'codemirror';
+import { matchMathCallout, sortedMathCallouts } from 'autoIndex';
 
 export class SmartCallout extends MarkdownRenderChild {
     env: TheoremLikeEnv;
@@ -88,116 +89,116 @@ export function insertMathCalloutCallback(app: App, editor: Editor, config: Math
 
 
     
-export function sortedAutoNumberedMathCallouts(cache: CachedMetadata) {
-    let calloutCaches = cache.sections?.filter(
-        (sectionCache) => sectionCache.type == "callout"
-    );
-    if (calloutCaches) {
-        let autoNumberedCallouts = [];
-        for (let calloutCache of calloutCaches) {
-            let { start, end } = calloutCache.position;
-            const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-            const editor = view?.editor;
-            let settings = readMathCalloutMetadata(editor.getLine(start.line));
-            if (settings && settings.number == 'auto') {
-                autoNumberedCallouts.push(
-                    { cache: calloutCache, settings: settings }
-                );
-            }
-        }
-        autoNumberedCallouts.sort(
-            (callout1, callout2) => {
-                return callout1.cache.position.start.line - callout2.cache.position.start.line;
-            }
-        )
-        return autoNumberedCallouts;
-    }
-}
+// export function sortedAutoNumberedMathCallouts(cache: CachedMetadata) {
+//     let calloutCaches = cache.sections?.filter(
+//         (sectionCache) => sectionCache.type == "callout"
+//     );
+//     if (calloutCaches) {
+//         let autoNumberedCallouts = [];
+//         for (let calloutCache of calloutCaches) {
+//             let { start, end } = calloutCache.position;
+//             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+//             const editor = view?.editor;
+//             let settings = readMathCalloutMetadata(editor.getLine(start.line));
+//             if (settings && settings.number == 'auto') {
+//                 autoNumberedCallouts.push(
+//                     { cache: calloutCache, settings: settings }
+//                 );
+//             }
+//         }
+//         autoNumberedCallouts.sort(
+//             (callout1, callout2) => {
+//                 return callout1.cache.position.start.line - callout2.cache.position.start.line;
+//             }
+//         )
+//         return autoNumberedCallouts;
+//     }
+// }
 
 
 
-export function autoIndexMathCallouts(cache: CachedMetadata, editor: Editor, currentFile: TFile, plugin: MathPlugin) {
-    let callouts = sortedAutoNumberedMathCallouts(cache);
+// export function autoIndexMathCallouts(cache: CachedMetadata, editor: Editor, currentFile: TFile, plugin: MathPlugin) {
+//     let callouts = sortedMathCallouts(cache);
 
-    let mathLinkCache: Record<string, string> = {}; // {[id]: [mathLink], ...}
+//     let mathLinkCache: Record<string, string> = {}; // {[id]: [mathLink], ...}
 
-    callouts?.forEach((callout, index) => {
-        callout.settings.autoIndex = index;
-        let resolvedSettings = resolveSettings(callout.settings, plugin, currentFile);
-        let newTitle = formatTitle(resolvedSettings);
-        let oldSettingsAndTitle = readMathCalloutSettingsAndTitle(editor.getLine(callout.cache.position.start.line));
-        if (oldSettingsAndTitle) {
-            let {settings, title} = oldSettingsAndTitle;
-            if (JSON.stringify(settings) != JSON.stringify(callout.settings) || title != newTitle) {
-                overwriteMathCalloutMetadata(
-                    editor,
-                    callout.cache.position.start.line,
-                    callout.settings,
-                    newTitle,
-                )        
-            }
-            let id = callout.cache.id;
-            if (id) {
-                mathLinkCache[id] = newTitle;
-            }
-        }
-    });
+//     callouts?.forEach((callout, index) => {
+//         callout.settings.autoIndex = index;
+//         let resolvedSettings = resolveSettings(callout.settings, plugin, currentFile);
+//         let newTitle = formatTitle(resolvedSettings);
+//         let oldSettingsAndTitle = readMathCalloutSettingsAndTitle(editor.getLine(callout.cache.position.start.line));
+//         if (oldSettingsAndTitle) {
+//             let {settings, title} = oldSettingsAndTitle;
+//             if (JSON.stringify(settings) != JSON.stringify(callout.settings) || title != newTitle) {
+//                 overwriteMathCalloutMetadata(
+//                     editor,
+//                     callout.cache.position.start.line,
+//                     callout.settings,
+//                     newTitle,
+//                 )        
+//             }
+//             let id = callout.cache.id;
+//             if (id) {
+//                 mathLinkCache[id] = newTitle;
+//             }
+//         }
+//     });
 
-    plugin.app.fileManager.processFrontMatter(
-        currentFile, 
-        (frontmatter) => {
-        if (
-            Object.keys(mathLinkCache).length 
-            && JSON.stringify(frontmatter["mathLinks-block"]) != JSON.stringify(mathLinkCache)
-        ) {
-            frontmatter["mathLinks-block"] = mathLinkCache;
-        }
-    });
-}
+//     plugin.app.fileManager.processFrontMatter(
+//         currentFile, 
+//         (frontmatter) => {
+//         if (
+//             Object.keys(mathLinkCache).length 
+//             && JSON.stringify(frontmatter["mathLinks-block"]) != JSON.stringify(mathLinkCache)
+//         ) {
+//             frontmatter["mathLinks-block"] = mathLinkCache;
+//         }
+//     });
+// }
 
 
 
-export const MATH_CALLOUT_PATTERN = /\> *\[\! *math *\|(.*)\](.*)/;
+// export const MATH_CALLOUT_PATTERN = /\> *\[\! *math *\|(.*)\](.*)/;
 
-// export function matchMathCallout(editor: Editor, lineNumber: number): RegExpExecArray | null {
-//     const firstLine = editor.getLine(lineNumber);
-//     if (firstLine) {
-//         return MATH_CALLOUT_PATTERN.exec(firstLine)
+// // export function matchMathCallout(editor: Editor, lineNumber: number): RegExpExecArray | null {
+// //     const firstLine = editor.getLine(lineNumber);
+// //     if (firstLine) {
+// //         return MATH_CALLOUT_PATTERN.exec(firstLine)
+// //     }
+// //     return null;
+// // }
+
+// export function matchMathCallout(line: string): RegExpExecArray | null {
+//     if (line) {
+//         return MATH_CALLOUT_PATTERN.exec(line)
 //     }
 //     return null;
 // }
 
-export function matchMathCallout(line: string): RegExpExecArray | null {
-    if (line) {
-        return MATH_CALLOUT_PATTERN.exec(line)
-    }
-    return null;
-}
 
 
+// export function readMathCalloutSettingsAndTitle(line: string): {settings:MathSettings, title:string} | undefined {
+//     const matchResult = matchMathCallout(line);
+//     if (matchResult) {
+//         let settings = JSON.parse(matchResult[1]) as MathSettings;
+//         let title = matchResult[2].trim();
+//         return {settings, title};
+//     }
+// }
 
-export function readMathCalloutSettingsAndTitle(line: string): {settings:MathSettings, title:string} | undefined {
-    const matchResult = matchMathCallout(line);
-    if (matchResult) {
-        let settings = JSON.parse(matchResult[1]) as MathSettings;
-        let title = matchResult[2].trim();
-        return {settings, title};
-    }
-}
+// export function readMathCalloutMetadata(line: string): MathSettings | undefined {    // const matchResult = matchMathCallout(editor, lineNumber);
+//     let result = readMathCalloutSettingsAndTitle(line);
+//     if (result) {
+//         return result.settings;
+//     }    
+// }
 
-export function readMathCalloutMetadata(line: string): MathSettings | undefined {    // const matchResult = matchMathCallout(editor, lineNumber);
-    let result = readMathCalloutSettingsAndTitle(line);
-    if (result) {
-        return result.settings;
-    }    
-}
-
-export function readMathCalloutTitle(line: string): string | undefined {    // const matchResult = matchMathCallout(editor, lineNumber);
-    let result = readMathCalloutSettingsAndTitle(line);
-    if (result) {
-        return result.title;
-    }    
-}
+// export function readMathCalloutTitle(line: string): string | undefined {    // const matchResult = matchMathCallout(editor, lineNumber);
+//     let result = readMathCalloutSettingsAndTitle(line);
+//     if (result) {
+//         return result.title;
+//     }    
+// }
 
 export function overwriteMathCalloutMetadata(editor: Editor, lineNumber: number, settings: MathSettings, title?: string) {
     const matchResult = matchMathCallout(editor.getLine(lineNumber));

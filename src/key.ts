@@ -15,7 +15,8 @@ export function insertDisplayMath(editor: Editor, number: boolean, app: App) {
     let insertText = '$$\n' + quoteMark + '\n' + quoteMark + '$$';
     if (number) {
         let id = generateBlockID(app);
-        insertText = '$$\n' + quoteMark + '\n' + quoteMark + '\\tag{@}\n' + quoteMark + '$$\n' + quoteMark + `^${id}`;
+        // insertText = '$$\n' + quoteMark + '\n' + quoteMark + '\\tag{@}\n' + quoteMark + '$$\n' + quoteMark + `^${id}`;
+        insertText = '$$\n' + quoteMark + '\n' + quoteMark + '$$\n' + quoteMark + `^${id}`;
     }
     editor.replaceRange(insertText, cursorPos);
     cursorPos.line += 1;
