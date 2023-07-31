@@ -1,3 +1,5 @@
+import { EditorState } from '@codemirror/state';
+import { locToEditorPosition } from 'utils';
 import {
 	App,
 	Editor,
@@ -20,16 +22,22 @@ import {
 	FuzzySuggestModal,
 	TFolder,
 	resolveSubpath,
+	WorkspaceLeaf,
+	MarkdownPreviewRenderer,
+	MarkdownPreviewView,
 } from 'obsidian';
 
 
 import { MathSettings, MathContextSettings, DEFAULT_SETTINGS, MathContextSettingsHelper, findNearestAncestorContextSettings } from 'settings';
-import { getLinksAndEmbedsInFile, increaseQuoteLevel, linktext2TFile, getCurrentMarkdown, getActiveTextView } from 'utils';
-import { SmartCallout, autoIndexMathCallouts, insertMathCalloutCallback, resolveSettings } from 'smart_callouts';
+import { getLinksAndEmbedsInFile, increaseQuoteLevel, linktext2TFile, getCurrentMarkdown, getActiveTextView, getMathTag, getMathCache } from 'utils';
+import { SmartCallout, insertMathCalloutCallback, resolveSettings } from 'smart_callouts';
 import { ContextSettingModal, ExcludedFileManageModal, LocalContextSettingsSuggestModal, SmartCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
 import { ExampleView, VIEW_TYPE_EXAMPLE } from 'views';
-import { MathCalloutField } from 'editor_extensions';
+// import { MathCalloutField } from 'editor_extensions';
+import { DisplayMathRenderChild, buildEquationNumberPlugin, replaceMathTag } from 'equation_number';
+import { autoIndex, sortedEquations } from 'autoIndex';
+import { render } from 'react-dom';
 
 
 export const VAULT_ROOT = '/';
@@ -66,7 +74,7 @@ export default class MathPlugin extends Plugin {
 			name: "Link Text Test",
 			callback: () => {
 				// Let's parse this linktext!
-				let linktext = "Smart Callouts#^b549cb"; 
+				let linktext = "Smart Callouts#^b549cb";
 
 				// decompose linktext into path (linkpath) and subpath
 				let { path, subpath } = parseLinktext(linktext);
@@ -91,7 +99,7 @@ export default class MathPlugin extends Plugin {
 						console.log("SubpathResult object: ", subpathResult);
 						// -> SubpathResult object:  {type: 'block', block: {…}, list: {…}, start: {…}, end: {…}}
 					}
-					
+
 					// generate linktext from a TFile object
 					console.log(`generated linktext = ${this.app.metadataCache.fileToLinktext(file, "")}`);
 					// -> generated linktext = Smart Callouts
@@ -113,7 +121,13 @@ export default class MathPlugin extends Plugin {
 		this.addCommand({
 			id: 'insert-display-math',
 			name: 'Insert Display Math',
-			editorCallback: insertDisplayMath
+			editorCallback: (editor) => insertDisplayMath(editor, false, this.app)
+		});
+
+		this.addCommand({
+			id: 'insert-display-math-auto-numbered',
+			name: 'Insert Display Math (Auto-numbered)',
+			editorCallback: (editor) => insertDisplayMath(editor, true, this.app)
 		});
 
 		this.addCommand({
@@ -145,20 +159,6 @@ export default class MathPlugin extends Plugin {
 			}
 		});
 
-		this.addCommand({
-			id: 'auto-index-math-callouts',
-			name: 'Auto-index Math Callouts',
-			editorCallback: (editor) => {
-				let currentFile = getCurrentMarkdown(this.app);
-				let cache = app.metadataCache.getFileCache(currentFile);
-				if (cache) {
-					autoIndexMathCallouts(cache, editor, currentFile, this);
-				}
-			}
-		});
-
-		this.registerEditorExtension(MathCalloutField);
-
 		this.registerEvent(
 			this.app.metadataCache.on(
 				'changed',
@@ -166,11 +166,51 @@ export default class MathPlugin extends Plugin {
 					let activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 					let editor = activeView?.editor;
 					if (activeView && editor && file == activeView.file) {
-						autoIndexMathCallouts(cache, editor, file, this);
+						autoIndex(cache, editor, file, this);
 					}
 				}
 			)
 		);
+
+
+		// auto-index without editor (global)
+		// this.registerEvent(
+		// 	this.app.metadataCache.on(
+		// 		'changed',
+		// 		(file, data, cache) => {
+		// 			autoIndex(file, data, cache, this);
+		// 		}
+		// 	)
+		// );
+
+
+
+
+
+
+
+
+		// this.registerEditorExtension(equationNumberPlugin);
+
+
+		this.app.workspace.onLayoutReady(() => {
+			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
+				if (leaf.view instanceof MarkdownView) {
+					this.registerEditorExtension(buildEquationNumberPlugin(this.app, leaf.view.file.path));
+				}
+			});
+		});
+
+		this.app.workspace.on("active-leaf-change", (leaf: WorkspaceLeaf) => {
+			if (leaf.view instanceof MarkdownView) {
+				this.registerEditorExtension(buildEquationNumberPlugin(this.app, leaf.view.file.path));
+			}
+		});
+
+
+
+
+
 
 		this.registerMarkdownPostProcessor(async (element, context) => {
 			const callouts = element.querySelectorAll<HTMLElement>(".callout");
@@ -197,6 +237,101 @@ export default class MathPlugin extends Plugin {
 				}
 			}
 		});
+
+
+
+
+
+
+		this.registerMarkdownPostProcessor((element, context) => {
+			let mjxElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax mjx-math[display="true"]');
+			if (mjxElements) {
+				for (let i = 0; i < mjxElements.length; i++) {
+					let mjxEl = mjxElements[i];
+					let renderChild = new DisplayMathRenderChild(mjxEl, this.app, context);
+					context.addChild(renderChild);
+				}
+			}
+		});
+
+
+		this.registerEvent(this.app.metadataCache.on("changed", (file, data, cache) => {
+			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
+				if (leaf.view instanceof MarkdownView && leaf.view.getMode() == 'preview') {
+					leaf.view.previewMode.rerender(true);
+				}
+			});
+		}));
+
+
+
+		// this.registerMarkdownPostProcessor((element, context) => {
+		// 	console.log("Element: ", element);
+		// 	console.log("Context: ", context);
+		// 	let mathElements = element.querySelectorAll<HTMLElement>('.math.math-block.is-loaded');
+		// 	let mjxElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax mjx-math[display="true"]');
+		// 	if (mathElements) {
+		// 		console.log("mathElements: ", mathElements);
+		// 	}
+
+		// 	if (mjxElements) {
+		// 		console.log("mjxElements: ", mjxElements);
+		// 	}
+
+		// 	if (mjxElements) {
+		// 		for (let i=0; i<mjxElements.length; i++) {
+		// 			let mjxEl = mjxElements[i];
+		// 			console.log("mjxEl: ", mjxEl);
+		// 			let tag = '';
+		// 			let cache = this.app.metadataCache.getCache(context.sourcePath);
+		// 			let info = context.getSectionInfo(mjxEl);
+		// 			console.log("outside:cache:", cache);
+		// 			console.log("outside:info:", info);
+		// 			if (cache && info) {
+		// 				let mathCache = getMathCache(cache, info.lineStart);
+		// 				if (mathCache) {
+		// 					tag = getMathTag(cache, mathCache);
+		// 					console.log("inside:mathCache:", mathCache);
+		// 					console.log("inside:tag:", tag);
+		// 					context.addChild(new DisplayMathRenderChild(mjxEl, this.app, context));
+		// 				}
+		// 			}
+		// 		}
+		// 		// mjxElements.forEach((displayMathEl) => {
+		// 		// 	let tag = '';
+		// 		// 	let cache = this.app.metadataCache.getCache(context.sourcePath);
+		// 		// 	let info = context.getSectionInfo(displayMathEl);
+		// 		// 	console.log("outside:cache:", cache);
+		// 		// 	console.log("outside:info:", info);
+		// 		// 	if (cache && info) {
+		// 		// 		let mathCache = getMathCache(cache, info.lineStart);
+		// 		// 		if (mathCache) {
+		// 		// 			tag = getMathTag(cache, mathCache);
+		// 		// 			console.log("inside:mathCache:", mathCache);
+		// 		// 			console.log("inside:tag:", tag);
+		// 		// 		}
+		// 		// 	}
+		// 		// 	context.addChild(new DisplayMathRenderChild(displayMathEl, context, tag));
+		// 		// });
+		// 	}
+
+
+		// });
+
+
+
+
+
+		// this.app.workspace.onLayoutReady(() => {
+		// 	this.registerMarkdownPostProcessor(markdownPostProcessor);
+		// });
+
+		// this.app.workspace.on("active-leaf-change", (leaf: WorkspaceLeaf) => {
+		// 	this.registerMarkdownPostProcessor(markdownPostProcessor);
+		// });
+
+
+
 
 		this.addSettingTab(new MathSettingTab(this.app, this));
 	}
