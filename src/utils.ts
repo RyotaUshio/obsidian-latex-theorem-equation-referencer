@@ -203,3 +203,7 @@ export function getMathTag(cache: CachedMetadata, mathCache: SectionCache): stri
 
 
 
+export function insertAfter(referenceNode: HTMLElement, newNode: HTMLElement) {
+    // https://stackoverflow.com/a/4793630/13613783
+    referenceNode.parentNode?.insertBefore(newNode, referenceNode.nextSibling);
+}
