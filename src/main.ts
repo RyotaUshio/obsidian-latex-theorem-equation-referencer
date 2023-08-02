@@ -38,7 +38,7 @@ import { ExampleView, VIEW_TYPE_EXAMPLE } from 'views';
 import { DisplayMathRenderChild, buildEquationNumberPlugin, replaceMathTag } from 'equation_number';
 import { autoIndex, sortedEquations } from 'autoIndex';
 import { render } from 'react-dom';
-import { calloutViewPlugin } from 'callout_view';
+import { blockquoteMathPreviewPlugin, calloutViewPlugin } from 'callout_view';
 
 
 export const VAULT_ROOT = '/';
@@ -169,7 +169,8 @@ export default class MathPlugin extends Plugin {
 
 
 
-		this.registerEditorExtension(calloutViewPlugin);
+		// this.registerEditorExtension(calloutViewPlugin);
+		this.registerEditorExtension(blockquoteMathPreviewPlugin);
 
 
 
