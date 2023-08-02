@@ -172,7 +172,7 @@ export const blockquoteMathPreviewPlugin2 = StateField.define<DecorationSet>({
             return impl(transaction.state);
         }
         console.log("out of quote");
-        return value;
+        return Decoration.none;
     },
     provide(field: StateField<DecorationSet>): Extension {
         return EditorView.decorations.from(field);
