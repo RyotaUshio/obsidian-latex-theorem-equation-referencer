@@ -69,7 +69,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
                 let from = locToEditorPosition(sectionCache.position.start);
                 let to = locToEditorPosition(sectionCache.position.end);
                 let text = editor.getRange(from, to);
-                let tag = cache.frontmatter["mathLinks-block"][this.id];
+                let tag = cache.frontmatter["mathLink-blocks"][this.id];
                 this.text = text;
                 this.tag = tag;
             }

@@ -116,9 +116,9 @@ export function autoIndex(cache: CachedMetadata, editor: Editor, currentFile: TF
         (frontmatter) => {
             if (
                 Object.keys(mathLinkCache).length
-                && JSON.stringify(frontmatter["mathLinks-block"]) != JSON.stringify(mathLinkCache)
+                && JSON.stringify(frontmatter["mathLink-blocks"]) != JSON.stringify(mathLinkCache)
             ) {
-                frontmatter["mathLinks-block"] = mathLinkCache;
+                frontmatter["mathLink-blocks"] = mathLinkCache;
             }
         });
 }

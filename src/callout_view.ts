@@ -1,7 +1,22 @@
 import { EditorState } from '@codemirror/state';
-import { EditorView, PluginValue, ViewPlugin, ViewUpdate } from "@codemirror/view";
+import { EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { Editor, finishRenderMath, renderMath } from "obsidian";
 import { insertAfter } from "utils";
+
+
+
+class MathPreviewWidget extends WidgetType {
+    constructor(public mathText: string) {
+        super();
+    }
+
+    toDOM(view: EditorView): HTMLElement {
+        let displayMathEl = renderMath(this.mathText, true);
+        finishRenderMath();
+        return displayMathEl;
+    }
+}
+
 
 export const calloutViewPlugin = ViewPlugin.fromClass(
     class implements PluginValue {

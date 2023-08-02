@@ -196,7 +196,7 @@ export function getMathCacheFromPos(cache: CachedMetadata, pos: number): Section
 export function getMathTag(cache: CachedMetadata, mathCache: SectionCache): string {
     let tag = '';
     if (mathCache?.id && cache.frontmatter) {
-        tag = cache.frontmatter["mathLinks-block"][mathCache.id] ?? '';
+        tag = cache.frontmatter["mathLink-blocks"][mathCache.id] ?? '';
     }
     return tag;
 }
