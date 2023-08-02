@@ -1,18 +1,18 @@
-import { toInt } from './../../obsidian-zotero-integration/src/bbt/queue';
+import { Extension } from '@codemirror/state';
+import { Transaction } from '@codemirror/state';
+import { StateField } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
 import { RangeSetBuilder } from '@codemirror/state';
 import { EditorState } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, PluginSpec, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { SyntaxNodeRef } from '@lezer/common';
-import { Editor, finishRenderMath, renderMath } from "obsidian";
-import { insertAfter } from "utils";
+import { finishRenderMath, renderMath } from "obsidian";
 
 
 const DISPLAY_MATH_BEGIN = "formatting_formatting-math_formatting-math-begin_keyword_math_math-block";
 const INLINE_MATH_BEGIN = "formatting_formatting-math_formatting-math-begin_keyword_math";
 const MATH_END = "formatting_formatting-math_formatting-math-end_keyword_math_math-";
 const BLOCKQUOTE = /HyperMD-quote_HyperMD-quote-([1-9][0-9]*)/;
-const quoteSymbol = (level: number) => `formatting_formatting-quote_formatting-quote-${level}_quote_quote-${level}`;
 
 
 class MathPreviewWidget extends WidgetType {
@@ -26,7 +26,7 @@ class MathPreviewWidget extends WidgetType {
 }
 
 
-// with decoration
+// with decoration & view plugin
 
 type MathNodeStack = { nodes: Array<SyntaxNodeRef>, display: boolean };
 
@@ -148,3 +148,118 @@ export const blockquoteMathPreviewPlugin = ViewPlugin.fromClass(
     BlockquoteMathPreviewPlugin,
     pluginSpec
 );
+
+
+
+
+
+
+
+
+
+// with state field
+
+export const blockquoteMathPreviewPlugin2 = StateField.define<DecorationSet>({
+    create(state: EditorState): DecorationSet {
+        return Decoration.none;
+    },
+    update(value: DecorationSet, transaction: Transaction): DecorationSet {
+        return impl(transaction.state);
+    },
+    provide(field: StateField<DecorationSet>): Extension {
+        return EditorView.decorations.from(field);
+    },
+});
+
+
+function impl(state: EditorState): DecorationSet {
+    let builder = new RangeSetBuilder<Decoration>();
+    let maths = getMathInfo(state);
+    for (let math of maths) {
+        let range = state.selection.ranges[0];
+
+        if (math.to <= range.from || math.from >= range.to) {
+            let mathEl = renderMath(math.mathText, math.display);
+            finishRenderMath();
+            builder.add(
+                math.from,
+                math.to,
+                Decoration.replace({
+                    widget: new MathPreviewWidget(mathEl),
+                })
+            );
+        }
+    }
+    return builder.finish();
+}
+
+
+function getMathNodeStacks(state: EditorState): MathNodeStack[] {
+    let builder = new RangeSetBuilder<Decoration>();
+    let tree = syntaxTree(state);
+
+    let mathNodeStacks: MathNodeStack[] = [];
+    let mathNodes: SyntaxNodeRef[] = [];
+    let insideMath = false;
+    let display: boolean | undefined;
+    let quoteContentStart = 0;
+
+    tree.iterate({
+        enter(node) {
+            if (node.from < quoteContentStart) {
+                return;
+            }
+            if (insideMath) {
+                if (node.name == MATH_END) {
+                    mathNodes.push(node.node);
+                    mathNodeStacks.push(
+                        { nodes: mathNodes, display: display as boolean }
+                    );
+                    mathNodes = [];
+                    insideMath = false;
+                    display = undefined;
+                } else {
+                    let match = node.name.match(BLOCKQUOTE);
+                    if (match) {
+                        if (node.node.firstChild) {
+                            quoteContentStart = node.node.firstChild.to;
+                        }
+                    } else {
+                        if (node.name.contains("math")) {
+                            mathNodes.push(node.node);
+                        }
+                    }
+                }
+            } else {
+                if (node.name == DISPLAY_MATH_BEGIN) {
+                    insideMath = true;
+                    display = true;
+                    mathNodes.push(node.node);
+                } else if (node.name == INLINE_MATH_BEGIN) {
+                    insideMath = true;
+                    display = false;
+                    mathNodes.push(node.node);
+                }
+            }
+        }
+    });
+
+    return mathNodeStacks;
+}
+
+function getMathInfo(state: EditorState): { mathText: string, display: boolean, from: number, to: number }[] {
+    return getMathNodeStacks(state).map(
+        (mathNodeStack: MathNodeStack) => {
+            return {
+                mathText: mathNodeStack.nodes
+                    .slice(1, -1) // remove dollar signs
+                    .map(node => state.sliceDoc(node.from, node.to))
+                    .join(""),
+                display: mathNodeStack.display,
+                from: mathNodeStack.nodes[0].from,
+                to: mathNodeStack.nodes[mathNodeStack.nodes.length - 1].to,
+            }
+        }
+    );
+}
+
