@@ -166,7 +166,13 @@ export const blockquoteMathPreviewPlugin2 = StateField.define<DecorationSet>({
         return Decoration.none;
     },
     update(value: DecorationSet, transaction: Transaction): DecorationSet {
-        return impl(transaction.state);
+        // return impl(transaction.state);
+        if (isInBlockquoteOrCallout(transaction.startState)) {
+            console.log("in quote");
+            return impl(transaction.state);
+        }
+        console.log("out of quote");
+        return value;
     },
     provide(field: StateField<DecorationSet>): Extension {
         return EditorView.decorations.from(field);
@@ -269,22 +275,24 @@ function getMathInfos(state: EditorState): MathInfo[] {
     return mathInfos;
 }
 
-// function getMathInfo(state: EditorState): { mathText: string, display: boolean, from: number, to: number }[] {
-//     return getMathNodeStacks(state).map(
-//         (mathNodeStack: MathNodeStack) => {
-//             return {
-//                 mathText: mathNodeStack.nodes
-//                     .slice(1, -1) // remove dollar signs
-//                     .map(node => state.sliceDoc(node.from, node.to))
-//                     .join(""),
-//                 display: mathNodeStack.display,
-//                 from: mathNodeStack.nodes[0].from,
-//                 to: mathNodeStack.nodes[mathNodeStack.nodes.length - 1].to,
-//             }
-//         }
-//     );
-// }
-
 function nodeText(node: SyntaxNodeRef, state: EditorState): string {
     return state.sliceDoc(node.from, node.to);
+}
+
+function isInBlockquoteOrCallout(state: EditorState): boolean {
+    let cursor = state.selection.ranges[0].head;
+    let tree = syntaxTree(state);
+    let foundQuote = false;
+    tree.iterate({
+        enter(node) {
+            let match = node.name.match(BLOCKQUOTE);
+            if (match) {
+                if (node.from <= cursor && cursor <= node.to) {
+                    foundQuote = true;
+                    return false;
+                }
+            }
+        }
+    });
+    return foundQuote;
 }
