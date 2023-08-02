@@ -38,6 +38,7 @@ import { ExampleView, VIEW_TYPE_EXAMPLE } from 'views';
 import { DisplayMathRenderChild, buildEquationNumberPlugin, replaceMathTag } from 'equation_number';
 import { autoIndex, sortedEquations } from 'autoIndex';
 import { render } from 'react-dom';
+import { calloutViewPlugin } from 'callout_view';
 
 
 export const VAULT_ROOT = '/';
@@ -125,12 +126,6 @@ export default class MathPlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'insert-display-math-auto-numbered',
-			name: 'Insert Display Math (Auto-numbered)',
-			editorCallback: (editor) => insertDisplayMath(editor, true, this.app)
-		});
-
-		this.addCommand({
 			id: 'insert-math-callout',
 			name: 'Insert Math Callout',
 			editorCallback: async (editor, context) => {
@@ -173,24 +168,9 @@ export default class MathPlugin extends Plugin {
 		);
 
 
-		// auto-index without editor (global)
-		// this.registerEvent(
-		// 	this.app.metadataCache.on(
-		// 		'changed',
-		// 		(file, data, cache) => {
-		// 			autoIndex(file, data, cache, this);
-		// 		}
-		// 	)
-		// );
 
+		this.registerEditorExtension(calloutViewPlugin);
 
-
-
-
-
-
-
-		// this.registerEditorExtension(equationNumberPlugin);
 
 
 		this.app.workspace.onLayoutReady(() => {
