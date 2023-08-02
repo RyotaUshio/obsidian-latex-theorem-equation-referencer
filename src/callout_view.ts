@@ -26,128 +26,128 @@ class MathPreviewWidget extends WidgetType {
 }
 
 
-// with decoration & view plugin
+// // with decoration & view plugin
 
-type MathNodeStack = { nodes: Array<SyntaxNodeRef>, display: boolean };
+// type MathNodeStack = { nodes: Array<SyntaxNodeRef>, display: boolean };
 
-class BlockquoteMathPreviewPlugin implements PluginValue {
+// class BlockquoteMathPreviewPlugin implements PluginValue {
 
-    decorations: DecorationSet;
+//     decorations: DecorationSet;
 
-    constructor(view: EditorView) {
-        this.impl(view);
-    }
+//     constructor(view: EditorView) {
+//         this.impl(view);
+//     }
 
-    async update(update: ViewUpdate) {
-        if (update.docChanged || update.viewportChanged || update.selectionSet) {
-            await this.impl(update.view);
-        }
-    }
+//     async update(update: ViewUpdate) {
+//         if (update.docChanged || update.viewportChanged || update.selectionSet) {
+//             await this.impl(update.view);
+//         }
+//     }
 
-    async impl(view: EditorView) {
-        let builder = new RangeSetBuilder<Decoration>();
-        let maths = this.getMathInfo(view);
-        for (let math of maths) {
-            let range = view.state.selection.ranges[0];
+//     async impl(view: EditorView) {
+//         let builder = new RangeSetBuilder<Decoration>();
+//         let maths = this.getMathInfo(view);
+//         for (let math of maths) {
+//             let range = view.state.selection.ranges[0];
 
-            if (math.to <= range.from || math.from >= range.to) {
-                let mathEl = renderMath(math.mathText, math.display);
-                await finishRenderMath();
-                builder.add(
-                    math.from,
-                    math.to,
-                    Decoration.replace({
-                        widget: new MathPreviewWidget(mathEl),
-                    })
-                );
-            }
-        }
-        this.decorations = builder.finish();
-    }
+//             if (math.to <= range.from || math.from >= range.to) {
+//                 let mathEl = renderMath(math.mathText, math.display);
+//                 await finishRenderMath();
+//                 builder.add(
+//                     math.from,
+//                     math.to,
+//                     Decoration.replace({
+//                         widget: new MathPreviewWidget(mathEl),
+//                     })
+//                 );
+//             }
+//         }
+//         this.decorations = builder.finish();
+//     }
 
-    getMathInfo(view: EditorView): { mathText: string, display: boolean, from: number, to: number }[] {
-        return this.getMathNodeStacks(view).map(
-            mathNodeStack => {
-                return {
-                    mathText: mathNodeStack.nodes
-                        .slice(1, -1) // remove dollar signs
-                        .map(node => view.state.sliceDoc(node.from, node.to))
-                        .join(""),
-                    display: mathNodeStack.display,
-                    from: mathNodeStack.nodes[0].from,
-                    to: mathNodeStack.nodes[mathNodeStack.nodes.length - 1].to,
-                }
-            }
-        );
-    }
+//     getMathInfo(view: EditorView): { mathText: string, display: boolean, from: number, to: number }[] {
+//         return this.getMathNodeStacks(view).map(
+//             mathNodeStack => {
+//                 return {
+//                     mathText: mathNodeStack.nodes
+//                         .slice(1, -1) // remove dollar signs
+//                         .map(node => view.state.sliceDoc(node.from, node.to))
+//                         .join(""),
+//                     display: mathNodeStack.display,
+//                     from: mathNodeStack.nodes[0].from,
+//                     to: mathNodeStack.nodes[mathNodeStack.nodes.length - 1].to,
+//                 }
+//             }
+//         );
+//     }
 
-    getMathNodeStacks(view: EditorView): MathNodeStack[] {
-        let builder = new RangeSetBuilder<Decoration>();
-        let tree = syntaxTree(view.state);
+//     getMathNodeStacks(view: EditorView): MathNodeStack[] {
+//         let builder = new RangeSetBuilder<Decoration>();
+//         let tree = syntaxTree(view.state);
 
-        let mathNodeStacks: MathNodeStack[] = [];
-        let mathNodes: SyntaxNodeRef[] = [];
-        let insideMath = false;
-        let display: boolean | undefined;
-        let quoteContentStart = 0;
+//         let mathNodeStacks: MathNodeStack[] = [];
+//         let mathNodes: SyntaxNodeRef[] = [];
+//         let insideMath = false;
+//         let display: boolean | undefined;
+//         let quoteContentStart = 0;
 
-        for (let { from, to } of view.visibleRanges) {
-            tree.iterate({
-                from,
-                to,
-                enter(node) {
-                    if (node.from < quoteContentStart) {
-                        return;
-                    }
+//         for (let { from, to } of view.visibleRanges) {
+//             tree.iterate({
+//                 from,
+//                 to,
+//                 enter(node) {
+//                     if (node.from < quoteContentStart) {
+//                         return;
+//                     }
 
-                    if (insideMath) {
-                        if (node.name == MATH_END) {
-                            mathNodes.push(node.node);
-                            mathNodeStacks.push(
-                                { nodes: mathNodes, display: display as boolean }
-                            );
-                            mathNodes = [];
-                            insideMath = false;
-                            display = undefined;
-                        } else {
-                            let match = node.name.match(BLOCKQUOTE);
-                            if (match) {
-                                if (node.node.firstChild) {
-                                    quoteContentStart = node.node.firstChild.to;
-                                }
-                            } else {
-                                if (node.name.contains("math")) {
-                                    mathNodes.push(node.node);
-                                }
-                            }
-                        }
-                    } else {
-                        if (node.name == DISPLAY_MATH_BEGIN) {
-                            insideMath = true;
-                            display = true;
-                            mathNodes.push(node.node);
-                        } else if (node.name == INLINE_MATH_BEGIN) {
-                            insideMath = true;
-                            display = false;
-                            mathNodes.push(node.node);
-                        }
-                    }
-                }
-            });
-        }
-        return mathNodeStacks;
-    }
-}
+//                     if (insideMath) {
+//                         if (node.name == MATH_END) {
+//                             mathNodes.push(node.node);
+//                             mathNodeStacks.push(
+//                                 { nodes: mathNodes, display: display as boolean }
+//                             );
+//                             mathNodes = [];
+//                             insideMath = false;
+//                             display = undefined;
+//                         } else {
+//                             let match = node.name.match(BLOCKQUOTE);
+//                             if (match) {
+//                                 if (node.node.firstChild) {
+//                                     quoteContentStart = node.node.firstChild.to;
+//                                 }
+//                             } else {
+//                                 if (node.name.contains("math")) {
+//                                     mathNodes.push(node.node);
+//                                 }
+//                             }
+//                         }
+//                     } else {
+//                         if (node.name == DISPLAY_MATH_BEGIN) {
+//                             insideMath = true;
+//                             display = true;
+//                             mathNodes.push(node.node);
+//                         } else if (node.name == INLINE_MATH_BEGIN) {
+//                             insideMath = true;
+//                             display = false;
+//                             mathNodes.push(node.node);
+//                         }
+//                     }
+//                 }
+//             });
+//         }
+//         return mathNodeStacks;
+//     }
+// }
 
 
-const pluginSpec: PluginSpec<BlockquoteMathPreviewPlugin> = {
-    decorations: (value: BlockquoteMathPreviewPlugin) => value.decorations,
-};
+// const pluginSpec: PluginSpec<BlockquoteMathPreviewPlugin> = {
+//     decorations: (value: BlockquoteMathPreviewPlugin) => value.decorations,
+// };
 
-export const blockquoteMathPreviewPlugin = ViewPlugin.fromClass(
-    BlockquoteMathPreviewPlugin,
-    pluginSpec
-);
+// export const blockquoteMathPreviewPlugin = ViewPlugin.fromClass(
+//     BlockquoteMathPreviewPlugin,
+//     pluginSpec
+// );
 
 
 
@@ -158,6 +158,8 @@ export const blockquoteMathPreviewPlugin = ViewPlugin.fromClass(
 
 
 // with state field
+
+type MathInfo = { mathText: string, display: boolean, from: number, to: number };
 
 export const blockquoteMathPreviewPlugin2 = StateField.define<DecorationSet>({
     create(state: EditorState): DecorationSet {
@@ -174,18 +176,28 @@ export const blockquoteMathPreviewPlugin2 = StateField.define<DecorationSet>({
 
 function impl(state: EditorState): DecorationSet {
     let builder = new RangeSetBuilder<Decoration>();
-    let maths = getMathInfo(state);
+    let maths = getMathInfos(state);
     for (let math of maths) {
         let range = state.selection.ranges[0];
 
-        if (math.to <= range.from || math.from >= range.to) {
-            let mathEl = renderMath(math.mathText, math.display);
-            finishRenderMath();
+        let mathEl = renderMath(math.mathText, math.display);
+        finishRenderMath();
+
+        if (math.to < range.from || math.from >= range.to) {
             builder.add(
                 math.from,
                 math.to,
                 Decoration.replace({
                     widget: new MathPreviewWidget(mathEl),
+                })
+            );
+        } else if (math.display) {
+            builder.add(
+                math.to + 1,
+                math.to + 1,
+                Decoration.widget({
+                    widget: new MathPreviewWidget(mathEl),
+                    block: true,
                 })
             );
         }
@@ -194,12 +206,13 @@ function impl(state: EditorState): DecorationSet {
 }
 
 
-function getMathNodeStacks(state: EditorState): MathNodeStack[] {
-    let builder = new RangeSetBuilder<Decoration>();
+function getMathInfos(state: EditorState): MathInfo[] {
     let tree = syntaxTree(state);
 
-    let mathNodeStacks: MathNodeStack[] = [];
-    let mathNodes: SyntaxNodeRef[] = [];
+    let mathInfos: MathInfo[] = [];
+    let from: number;
+    let to: number;
+    let mathText: string;
     let insideMath = false;
     let display: boolean | undefined;
     let quoteContentStart = 0;
@@ -211,22 +224,29 @@ function getMathNodeStacks(state: EditorState): MathNodeStack[] {
             }
             if (insideMath) {
                 if (node.name == MATH_END) {
-                    mathNodes.push(node.node);
-                    mathNodeStacks.push(
-                        { nodes: mathNodes, display: display as boolean }
-                    );
-                    mathNodes = [];
+                    mathInfos.push({ 
+                        mathText: mathText, 
+                        display: display as boolean, 
+                        from: from, 
+                        to: node.to,
+                    });
                     insideMath = false;
                     display = undefined;
                 } else {
                     let match = node.name.match(BLOCKQUOTE);
                     if (match) {
+                        let quoteLevel = Number(match[1]);
                         if (node.node.firstChild) {
                             quoteContentStart = node.node.firstChild.to;
+                            let quoteSymbolPattern = new RegExp(`((>\\s*){${quoteLevel}})(.*)`);
+                            let quoteSymbolMatch = nodeText(node.node.firstChild, state).match(quoteSymbolPattern);
+                            if (quoteSymbolMatch) {
+                                mathText += quoteSymbolMatch.slice(-1)[0];
+                            }
                         }
                     } else {
                         if (node.name.contains("math")) {
-                            mathNodes.push(node.node);
+                            mathText += nodeText(node, state);
                         }
                     }
                 }
@@ -234,32 +254,37 @@ function getMathNodeStacks(state: EditorState): MathNodeStack[] {
                 if (node.name == DISPLAY_MATH_BEGIN) {
                     insideMath = true;
                     display = true;
-                    mathNodes.push(node.node);
+                    from = node.from;
+                    mathText = "";
                 } else if (node.name == INLINE_MATH_BEGIN) {
                     insideMath = true;
                     display = false;
-                    mathNodes.push(node.node);
+                    from = node.from;
+                    mathText = "";
                 }
             }
         }
     });
 
-    return mathNodeStacks;
+    return mathInfos;
 }
 
-function getMathInfo(state: EditorState): { mathText: string, display: boolean, from: number, to: number }[] {
-    return getMathNodeStacks(state).map(
-        (mathNodeStack: MathNodeStack) => {
-            return {
-                mathText: mathNodeStack.nodes
-                    .slice(1, -1) // remove dollar signs
-                    .map(node => state.sliceDoc(node.from, node.to))
-                    .join(""),
-                display: mathNodeStack.display,
-                from: mathNodeStack.nodes[0].from,
-                to: mathNodeStack.nodes[mathNodeStack.nodes.length - 1].to,
-            }
-        }
-    );
-}
+// function getMathInfo(state: EditorState): { mathText: string, display: boolean, from: number, to: number }[] {
+//     return getMathNodeStacks(state).map(
+//         (mathNodeStack: MathNodeStack) => {
+//             return {
+//                 mathText: mathNodeStack.nodes
+//                     .slice(1, -1) // remove dollar signs
+//                     .map(node => state.sliceDoc(node.from, node.to))
+//                     .join(""),
+//                 display: mathNodeStack.display,
+//                 from: mathNodeStack.nodes[0].from,
+//                 to: mathNodeStack.nodes[mathNodeStack.nodes.length - 1].to,
+//             }
+//         }
+//     );
+// }
 
+function nodeText(node: SyntaxNodeRef, state: EditorState): string {
+    return state.sliceDoc(node.from, node.to);
+}
