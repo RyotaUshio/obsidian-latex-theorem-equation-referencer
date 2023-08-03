@@ -167,13 +167,6 @@ export default class MathPlugin extends Plugin {
 			)
 		);
 
-
-
-		// this.registerEditorExtension(calloutViewPlugin);
-		this.registerEditorExtension(blockquoteMathPreviewPlugin2.extension);
-
-
-
 		this.app.workspace.onLayoutReady(() => {
 			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
 				if (leaf.view instanceof MarkdownView) {
@@ -190,9 +183,8 @@ export default class MathPlugin extends Plugin {
 			}
 		});
 
-
-
-
+					
+		this.registerEditorExtension(blockquoteMathPreviewPlugin2.extension);
 
 
 		this.registerMarkdownPostProcessor(async (element, context) => {
