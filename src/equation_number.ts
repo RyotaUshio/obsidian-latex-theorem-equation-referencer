@@ -103,7 +103,11 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, path:
                         let pos = view.posAtDOM(displayMathEl);
                         let mathCache = getMathCacheFromPos(cache, pos);
                         if (tagAll === undefined && mathCache) {
-                            tag = getMathTag(cache, mathCache);
+                            try {
+                                tag = getMathTag(cache, mathCache);
+                            } catch (err) {
+                                // retry later if it was too soon
+                            }
                             if (tag) {
                                 let text = getMathText(view, mathCache);
                                 replaceMathTag(displayMathEl, text, tag);
