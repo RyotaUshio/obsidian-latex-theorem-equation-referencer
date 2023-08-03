@@ -113,9 +113,10 @@ I personally recommend you to use [Quick Switcher++](https://github.com/darlal/o
   </dd>
 </dl>
 
-## CSS
+## Style Your Theorems
 
-You can customize the appearance of math-callouts to be specific to languages or environments (theorem/definition/...)
+You can customize the appearance of math callouts to be specific to languages or environments (theorem/definition/...).
+This can be done using [CSS snippets](https://help.obsidian.md/Extending+Obsidian/CSS+snippets) (and [Style Settings Plugin](https://github.com/mgmeyers/obsidian-style-settings.git) in the near future).
 
 ### CSS classes defined by this plugin
 
