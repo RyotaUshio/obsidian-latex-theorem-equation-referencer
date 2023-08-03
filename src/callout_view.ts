@@ -166,12 +166,9 @@ export const blockquoteMathPreviewPlugin2 = StateField.define<DecorationSet>({
         return Decoration.none;
     },
     update(value: DecorationSet, transaction: Transaction): DecorationSet {
-        // return impl(transaction.state);
         if (isInBlockquoteOrCallout(transaction.startState)) {
-            console.log("in quote");
             return impl(transaction.state);
         }
-        console.log("out of quote");
         return Decoration.none;
     },
     provide(field: StateField<DecorationSet>): Extension {
