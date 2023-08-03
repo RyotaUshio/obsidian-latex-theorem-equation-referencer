@@ -177,14 +177,16 @@ export default class MathPlugin extends Plugin {
 		this.app.workspace.onLayoutReady(() => {
 			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
 				if (leaf.view instanceof MarkdownView) {
-					this.registerEditorExtension(buildEquationNumberPlugin(this.app, leaf.view.file.path));
+					let settings = resolveSettings(undefined, this, leaf.view.file);
+					this.registerEditorExtension(buildEquationNumberPlugin(this.app, leaf.view.file.path, Boolean(settings.lineByLine)));
 				}
 			});
 		});
 
 		this.app.workspace.on("active-leaf-change", (leaf: WorkspaceLeaf) => {
 			if (leaf.view instanceof MarkdownView) {
-				this.registerEditorExtension(buildEquationNumberPlugin(this.app, leaf.view.file.path));
+				let settings = resolveSettings(undefined, this, leaf.view.file);
+				this.registerEditorExtension(buildEquationNumberPlugin(this.app, leaf.view.file.path, Boolean(settings.lineByLine)));
 			}
 		});
 
@@ -229,7 +231,7 @@ export default class MathPlugin extends Plugin {
 			if (mjxElements) {
 				for (let i = 0; i < mjxElements.length; i++) {
 					let mjxEl = mjxElements[i];
-					let renderChild = new DisplayMathRenderChild(mjxEl, this.app, context);
+					let renderChild = new DisplayMathRenderChild(mjxEl, this.app, this, context);
 					context.addChild(renderChild);
 				}
 			}
@@ -371,7 +373,7 @@ export class MathSettingTab extends PluginSettingTab {
 			defaultSettings,
 			// this.plugin.settings[key],
 			this.plugin,
-		)).makeSettingPane(true);
+		)).makeSettingPane(true, true);
 		this.addRestoreDefaultsBottun(key);
 	}
 

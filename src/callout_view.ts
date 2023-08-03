@@ -189,7 +189,7 @@ function impl(state: EditorState): DecorationSet {
         let mathEl = renderMath(math.mathText, math.display);
         finishRenderMath();
 
-        if (math.to < range.from || math.from >= range.to) {
+        if (math.to < range.from || math.from > range.to) {
             builder.add(
                 math.from,
                 math.to,
