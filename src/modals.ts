@@ -93,7 +93,7 @@ export class SmartCalloutModal extends MathSettingModal<MathSettings> {
 
         contentEl.createEl('h5', { text: 'Override context settings' });
         const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.settings, this.defaultSettings);
-        contextSettingsHelper.makeSettingPane(false);
+        contextSettingsHelper.makeSettingPane(false, false);
 
         this.addButton(this.buttonText);
     }
@@ -117,7 +117,7 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
             this.plugin.settings[this.path] = {} as MathContextSettings;
         }
         const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.path], this.defaultSettings, this.plugin);
-        contextSettingsHelper.makeSettingPane(true);
+        contextSettingsHelper.makeSettingPane(true, true);
         this.addButton('Save');
     }
 }

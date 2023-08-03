@@ -1,7 +1,10 @@
-import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, SectionCache, MarkdownSectionInformation, } from "obsidian";
+import { resolveSettings } from 'smart_callouts';
+import MathPlugin from 'main';
+import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, SectionCache, MarkdownSectionInformation, TFile, } from "obsidian";
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
 import { getMathCache, getMathCacheFromPos, getMathTag, locToEditorPosition } from 'utils';
+import { MathContextSettings, MathSettings } from 'settings';
 
 
 export class DisplayMathRenderChild extends MarkdownRenderChild {
@@ -9,7 +12,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
     text: string | undefined;
     tag: string | undefined;
 
-    constructor(containerEl: HTMLElement, public app: App, public context: MarkdownPostProcessorContext) {
+    constructor(containerEl: HTMLElement, public app: App, public plugin: MathPlugin, public context: MarkdownPostProcessorContext) {
         super(containerEl);
     }
 
@@ -40,8 +43,9 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
             this.setTextAndTag(view.editor);
         }
 
-        if (this.text && this.tag) {
-            replaceMathTag(this.containerEl, this.text, this.tag);
+        if (view && this.text && this.tag) {
+            let settings = resolveSettings(undefined, this.plugin, view.file);
+            replaceMathTag(this.containerEl, this.text, this.tag, Boolean(settings.lineByLine));
         }
     }
 
@@ -79,7 +83,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
 }
 
 
-export function buildEquationNumberPlugin<V extends PluginValue>(app: App, path: string): ViewPlugin<V> {
+export function buildEquationNumberPlugin<V extends PluginValue>(app: App, path: string, lineByLine: boolean): ViewPlugin<V> {
 
     return ViewPlugin.fromClass(class implements PluginValue {
         constructor(public view: EditorView) {
@@ -110,7 +114,7 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, path:
                             }
                             if (tag) {
                                 let text = getMathText(view, mathCache);
-                                replaceMathTag(displayMathEl, text, tag);
+                                replaceMathTag(displayMathEl, text, tag, lineByLine);
                             }
                         }
                     }
@@ -138,45 +142,46 @@ export function getMathText(view: EditorView, mathCache: SectionCache) {
 }
 
 
-export function getMathTextWithTag(text: string, tag: string): string | undefined {
+export function getMathTextWithTag(text: string, tag: string, lineByLine?: boolean): string | undefined {
     let textResult = text.match(/^\$\$([\s\S]*)\$\$/);
     let tagResult = tag.match(/^\((.*)\)$/);
     if (textResult && tagResult) {
         let textContent = textResult[1];
         let tagContent = tagResult[1];
-        return insertTagInMathText(textContent, tagContent);
+        return insertTagInMathText(textContent, tagContent, lineByLine);
     }
 }
 
-export function insertTagInMathText(textContent: string, tagContent: string): string {
-    let alignResult = textContent.match(/^\s*\\begin\{align\}([\s\S]*)\\end\{align\}\s*$/);
-    console.log(`textContent = ${textContent}`);
-    console.log(`tagContent = ${tagContent}`);
-    if (alignResult) {
-        let taggedText = "";
-        let index = 1;
-        for (let line of alignResult[1].split("\\\\")) {
-            if (line.trim()) {
-                taggedText += line.contains("\\nonumber") ?
-                line :
-                line.trim() + `\\tag{${tagContent}-${index++}}`;
-                taggedText += "\\\\";
+export function insertTagInMathText(textContent: string, tagContent: string, lineByLine?: boolean): string {
+    if (lineByLine) {
+        let alignResult = textContent.match(/^\s*\\begin\{align\}([\s\S]*)\\end\{align\}\s*$/);
+        console.log(`textContent = ${textContent}`);
+        console.log(`tagContent = ${tagContent}`);
+        if (alignResult) {
+            let taggedText = "";
+            let index = 1;
+            for (let line of alignResult[1].split("\\\\")) {
+                if (line.trim()) {
+                    taggedText += line.contains("\\nonumber") ?
+                        line :
+                        line.trim() + `\\tag{${tagContent}-${index++}}`;
+                    taggedText += "\\\\";
+                }
             }
+            return "\\begin{align}" + taggedText + "\\end{align}";
         }
-        return "\\begin{align}" + taggedText + "\\end{align}";
-    } else {
-        return textContent.replace(/[\n\r]/g, ' ') + `\\tag{${tagContent}}`;
     }
+    return textContent.replace(/[\n\r]/g, ' ') + `\\tag{${tagContent}}`;
+
 }
 
 
-
-export function replaceMathTag(displayMathEl: HTMLElement, text: string, tag: string) {
+export function replaceMathTag(displayMathEl: HTMLElement, text: string, tag: string, lineByLine: boolean) {
     let tagMatch = text.match(/\\tag\{.*\}/);
     if (tagMatch) {
         return;
     }
-    let taggedText = getMathTextWithTag(text, tag);
+    let taggedText = getMathTextWithTag(text, tag, lineByLine);
     if (taggedText) {
         let mjxContainerEl = renderMath(taggedText, true);
         finishRenderMath();

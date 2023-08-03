@@ -99,7 +99,7 @@ export function overwriteMathCalloutMetadata(editor: Editor, lineNumber: number,
     );
 }
 
-export function resolveSettings(settings: MathSettings, plugin: MathPlugin, currentFile: TFile) {
+export function resolveSettings(settings: MathSettings | undefined, plugin: MathPlugin, currentFile: TFile) {
     // Resolves settings. Does not overwride, but returns a new settings object.
     let contextSettings = findNearestAncestorContextSettings(plugin, currentFile);
     return Object.assign({}, plugin.settings[VAULT_ROOT], contextSettings, settings);
