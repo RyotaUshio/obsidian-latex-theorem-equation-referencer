@@ -1,8 +1,8 @@
-> :warning: **This plugin is in the very early stages of development!**
-
 # Obsidian Mathematics
 
-This is a plugin for [Obsidian.md](https://obsidian.md), which enhances your mathematical note taking experience.
+> :warning: **This plugin is in the very early stages of development!**
+
+This is a plugin for [Obsidian.md](https://obsidian.md), which enhances your mathematical note taking experience by introducing $\LaTeX$-like features into Obsidian.
 
 Obsidian is great, but when it comes to mathematical notes, it lacks some of important features that $\LaTeX$ has.
 
@@ -12,11 +12,22 @@ Obsidian is great, but when it comes to mathematical notes, it lacks some of imp
 
 And this is where Obsidian Mathematics comes in!
 
+This plugin also offers **math preview in blockquotes & callouts**.
+
 ## Installation
 
-Since this plugin is before official submission, you can only manually install it.
+Since this plugin is before official submission, you can only manually install it for now.
+
+## Dependencies
+
+Although many features of this plugin don't depend on other community plugins, I strongly recommend you to install [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) ver. >= 0.4.0 together.
 
 ## Features
+
+The most important features of this plugin are:
+- Math callouts
+- Automatic equation numbering
+- Math preview in blockquotes & callouts
 
 ### Math callouts
 
@@ -26,11 +37,6 @@ In Obsidian, however, we don't have any built-in features taylor-made for such a
 One of the most natural alteranatives would be using Obsidian's [Callouts](https://help.obsidian.md/Editing+and+formatting/Callouts).
 
 This plugin offers callouts for such theorem-like environments. And they are on STEROID.
-
-The `Insert math callout` command
-
-- automatic numbering
-- custom styling with CSS snippets
 
 ### Automatic equation numbering 
 
@@ -44,16 +50,36 @@ Obsidian Mathematics automatically & dynamically indexes displayed (i.e. full-wi
 In other words, there's nothing that you have to do. When you insert a link to an equation, Obsidian generates a block ID for it. 
 And then, this plugin automatically adjusts the equation numbers to it.
 
+### Math preview in blockquotes & callouts
+
+Obsidian doesn't render MathJax equations in blockquotes or callouts. 
+So this plugin get this job done and makes your math note taking much more seemless.
+
 ### MathLinks Integration
 
-Obisidian Mathematics can dynamically generate theorem titles and display it well, even if they contain inline math. 
+Obsidian Mathematics can dynamically generate theorem titles and display them well, even if they contain inline math. 
 By integrating with [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks.git), the auto-generated titles can also be 
-displaye in internal links.
+displayed in internal links.
 
 
 MathLinks is another powerful community plugin that enables Obsidian to render internal links containing inline math. 
 
 I personally recommend you to use [Quick Switcher++](https://github.com/darlal/obsidian-switcher-plus.git)'s symbol command (`@`) to insert internal links to math callouts.
+
+
+## Commands
+
+### Insert Display Math
+
+### Insert Inline Math
+
+### Insert Math Callout
+
+### Open Local Settings for the Current Note
+
+
+## Settings
+
 
 
 ## Docs
