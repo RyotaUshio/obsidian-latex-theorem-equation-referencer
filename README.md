@@ -125,3 +125,22 @@ You can customize the appearance of math-callouts to be specific to languages or
 ### Obsidian built-in CSS classes
 - `.callout-title-inner`
 - `.callout-content`
+
+## Tips
+
+### Hide Block IDs
+
+I recommend you using the following CSS snippet from [hey_look_its_shiny's Reddit post](https://www.reddit.com/r/ObsidianMD/comments/xd0sir/hidden_block_id_snippet/) to hide block IDs not on the current line.
+
+```css
+/* Hide block IDs on inactive lines */
+.cm-blockid {
+    opacity: 0;
+}
+/* Show block IDs on active lines */
+.cm-active .cm-blockid {
+    opacity: 1;
+}
+```
+
+### Insert Links to Math Callouts with Quick Switcher++
