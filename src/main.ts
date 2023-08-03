@@ -133,7 +133,9 @@ export default class MathPlugin extends Plugin {
 					this.app,
 					this,
 					(config) => {
-						insertMathCalloutCallback(this.app, editor, config);
+						if (context.file) {
+							insertMathCalloutCallback(this.app, this, editor, config, context.file);
+						}
 					},
 				);
 				modal.resolveDefaultSettings(getCurrentMarkdown(this.app));
