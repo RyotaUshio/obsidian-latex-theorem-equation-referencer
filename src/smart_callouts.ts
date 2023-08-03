@@ -5,8 +5,7 @@ import { ENVs_MAP, TheoremLikeEnv, getTheoremLikeEnv } from 'env';
 import LanguageManager from 'language';
 import { generateBlockID, getCurrentMarkdown, increaseQuoteLevel, renderTextWithMath } from 'utils';
 import MathPlugin, { VAULT_ROOT } from 'main';
-import { StringStream } from 'codemirror';
-import { matchMathCallout, sortedMathCallouts } from 'autoIndex';
+import { formatTitleWithoutSubtitle, matchMathCallout } from 'autoIndex';
 
 export class SmartCallout extends MarkdownRenderChild {
     env: TheoremLikeEnv;
@@ -18,9 +17,25 @@ export class SmartCallout extends MarkdownRenderChild {
         this.config = resolveSettings(this.config, this.plugin, this.currentFile);
     }
 
+    async setRenderedTitleElements() {
+        // ex) "Theorem 1.1", not "Theorem 1.1 (Cauchy-Schwarz)"
+        let titleWithoutSubtitle = await renderTextWithMath(formatTitleWithoutSubtitle(this.config));
+        this.renderedTitleElements = [
+            ...titleWithoutSubtitle
+        ];
+        if (this.config.title) {
+            // ex) "(Cauchy-Schwarz)"
+            let subtitle = await renderTextWithMath(`(${this.config.title})`);
+            let subtitleEl = createSpan({ cls: "math-callout-subtitle" });
+            subtitleEl.replaceChildren(...subtitle)
+            this.renderedTitleElements.push(" ", subtitleEl);
+        }
+    }
+
     onload() {
+        // make sure setRenderedTitleElements() is called beforehand
         let titleInner = this.containerEl.querySelector<HTMLElement>('.callout-title-inner');
-        // titleInner?.replaceChildren(...this.renderedTitleElements);
+        titleInner?.replaceChildren(...this.renderedTitleElements);
 
         // add classes for CSS snippets
         this.containerEl.classList.add("math-callout-" + this.config.lang);
@@ -46,7 +61,7 @@ export class SmartCallout extends MarkdownRenderChild {
                             let title = formatTitle(resolvedSettings);
                             overwriteMathCalloutMetadata(editor, editor.getCursor().line, settings, title);
                         },
-                        this.config, 
+                        this.config,
                         "Confirm"
                     );
                     modal.resolveDefaultSettings(view.file);
@@ -79,7 +94,7 @@ export function insertMathCalloutCallback(app: App, plugin: MathPlugin, editor: 
             `> [!math|${JSON.stringify(config)}] ${title}\n> \n^${id}`,
             cursorPos
         )
-    }    
+    }
     cursorPos.line += 1;
     cursorPos.ch = 2;
     editor.setCursor(cursorPos);

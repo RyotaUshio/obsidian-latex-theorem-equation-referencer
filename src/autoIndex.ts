@@ -182,7 +182,7 @@ export function resolveSettings(settings: MathSettings, plugin: MathPlugin, curr
 }
 
 
-export function formatTitle(settings: MathSettings): string {
+export function formatTitleWithoutSubtitle(settings: MathSettings): string {
     let env = ENVs_MAP[settings.type];
 
     let title = '';
@@ -205,6 +205,11 @@ export function formatTitle(settings: MathSettings): string {
             title += ` ${settings.number_prefix}${numberString}${settings.number_suffix}`;
         }
     }
+    return title;
+}
+
+export function formatTitle(settings: MathSettings): string {
+    let title = formatTitleWithoutSubtitle(settings);
     if (settings.title) {
         title += ` (${settings.title})`;
     }
