@@ -206,8 +206,7 @@ export default class MathPlugin extends Plugin {
 						let currentFile = this.app.vault.getAbstractFileByPath(context.sourcePath);
 						if (currentFile instanceof TFile) {
 							let smartCallout = new SmartCallout(callout, this.app, this, settings, currentFile);
-							// smartCallout.resolveSettings(currentFile);
-							// await smartCallout.renderTitle();
+							await smartCallout.setRenderedTitleElements();
 							context.addChild(smartCallout);
 						}
 					}

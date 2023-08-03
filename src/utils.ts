@@ -190,9 +190,6 @@ export function getMathCacheFromPos(cache: CachedMetadata, pos: number): Section
     }
 }
 
-
-
-
 export function getMathTag(cache: CachedMetadata, mathCache: SectionCache): string {
     let tag = '';
     if (mathCache?.id && cache.frontmatter) {
@@ -200,8 +197,6 @@ export function getMathTag(cache: CachedMetadata, mathCache: SectionCache): stri
     }
     return tag;
 }
-
-
 
 export function insertAfter(referenceNode: HTMLElement, newNode: HTMLElement) {
     // https://stackoverflow.com/a/4793630/13613783
