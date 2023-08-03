@@ -18,10 +18,6 @@ export class SmartCallout extends MarkdownRenderChild {
         this.config = resolveSettings(this.config, this.plugin, this.currentFile);
     }
 
-    // async renderTitle(): Promise<void> {
-    //     this.renderedTitleElements = await renderTextWithMath(formatTitle(this.config));
-    // }
-
     onload() {
         let titleInner = this.containerEl.querySelector<HTMLElement>('.callout-title-inner');
         // titleInner?.replaceChildren(...this.renderedTitleElements);
@@ -65,20 +61,22 @@ export class SmartCallout extends MarkdownRenderChild {
 
 
 
-export function insertMathCalloutCallback(app: App, editor: Editor, config: MathSettings) {
+export function insertMathCalloutCallback(app: App, plugin: MathPlugin, editor: Editor, config: MathSettings, currentFile: TFile) {
     let selection = editor.getSelection();
     let cursorPos = editor.getCursor();
     let id = generateBlockID(app);
+    let resolvedSettings = resolveSettings(config, plugin, currentFile);
+    let title = formatTitle(resolvedSettings);
 
     if (selection) {
         editor.replaceSelection(
-            `> [!math|${JSON.stringify(config)}] \n`
+            `> [!math|${JSON.stringify(config)}] ${title}\n`
             + increaseQuoteLevel(selection)
-            + `\n\n^${id}`
+            + `\n^${id}`
         );
     } else {
         editor.replaceRange(
-            `> [!math|${JSON.stringify(config)}] \n> \n\n^${id}`,
+            `> [!math|${JSON.stringify(config)}] ${title}\n> \n^${id}`,
             cursorPos
         )
     }    
