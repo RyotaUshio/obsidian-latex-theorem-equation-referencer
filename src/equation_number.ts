@@ -142,9 +142,33 @@ export function getMathTextWithTag(text: string, tag: string): string | undefine
     let textResult = text.match(/^\$\$([\s\S]*)\$\$/);
     let tagResult = tag.match(/^\((.*)\)$/);
     if (textResult && tagResult) {
-        return textResult[1].replace(/[\n\r]/g, ' ') + `\\tag{${tagResult[1]}}`;
+        let textContent = textResult[1];
+        let tagContent = tagResult[1];
+        return insertTagInMathText(textContent, tagContent);
     }
 }
+
+export function insertTagInMathText(textContent: string, tagContent: string): string {
+    let alignResult = textContent.match(/^\s*\\begin\{align\}([\s\S]*)\\end\{align\}\s*$/);
+    console.log(`textContent = ${textContent}`);
+    console.log(`tagContent = ${tagContent}`);
+    if (alignResult) {
+        let taggedText = "";
+        let index = 1;
+        for (let line of alignResult[1].split("\\\\")) {
+            if (line.trim()) {
+                taggedText += line.contains("\\nonumber") ?
+                line :
+                line.trim() + `\\tag{${tagContent}-${index++}}`;
+                taggedText += "\\\\";
+            }
+        }
+        return "\\begin{align}" + taggedText + "\\end{align}";
+    } else {
+        return textContent.replace(/[\n\r]/g, ' ') + `\\tag{${tagContent}}`;
+    }
+}
+
 
 
 export function replaceMathTag(displayMathEl: HTMLElement, text: string, tag: string) {
