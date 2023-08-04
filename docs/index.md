@@ -3,7 +3,7 @@ layout: home
 title: Obsidian Mathematics
 ---
 
-This is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note taking experience by several powerful features, including:
+This is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note taking experience with several powerful features, including:
 
 - [Special Callouts for Theorems/Definitions/Exercises/...](math-callouts)
 - [Automatic Equation Numbering](equation-number)
@@ -19,8 +19,8 @@ You can choose between the following two methods for installation.
 
 1. Install the [BRAT](obsidian://show-plugin?id=obsidian42-brat) community plugin and enable it.
 2. Go to **Options**. In the **Beta Plugin List** section, click on the **Add Beta plugin** button. 
-3. Paste `https://github.com/RyotaUshio/obsidian-math` in the pop-up prompt and click on **Add Plugin**.
-5. (Optional) Turn on **Auto-update plugins at startup** on the top of the page.
+3. Copy and paste `https://github.com/RyotaUshio/obsidian-math` in the pop-up prompt and click on **Add Plugin**.
+5. (Optional) Turn on **Auto-update plugins at startup** at the top of the page.
 4. Go to **Community plugins > Installed plugins**. You will find "Obsidian Mathematics" in the list. Click on the toggle button to enable it.
 
 ### Manual installation
@@ -32,6 +32,6 @@ You can choose between the following two methods for installation.
 
 ## Dependency
 
-Although many features of this plugin works without any other community plugins, **I strongly recommend you to install [MathLinks](obsidian://show-plugin?id=mathlinks) version >= 0.4.0 together**.
+Although many features of this plugin work without any other community plugins, **I strongly recommend you to install [MathLinks](obsidian://show-plugin?id=mathlinks) version >= 0.4.0 together**.
 
 It allows you to enjoy the [clever referencing](cleveref) feature of this plugin, which will greatly boost your experience.
