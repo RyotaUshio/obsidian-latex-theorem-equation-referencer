@@ -1,4 +1,3 @@
-import { Callback } from 'nunjucks';
 import { Setting, TAbstractFile, TextComponent } from "obsidian";
 
 import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from "env";
@@ -6,6 +5,7 @@ import MathPlugin, { VAULT_ROOT } from "main";
 import { DEFAULT_LANG } from "default_lang";
 import LanguageManager from "language";
 
+export type NumberStyle = "arabic" | "alph" | "Alph" | "roman" | "Roman";
 
 export type RenameEnv = { [K in typeof ENV_IDs[number]]: string };
 
@@ -14,6 +14,7 @@ export interface MathContextSettings {
     number_prefix?: string;
     number_suffix?: string;
     number_init?: number;
+    number_style?: NumberStyle;
     label_prefix?: string;
     rename?: RenameEnv;
     preamblePath?: string;
@@ -43,6 +44,7 @@ export const MATH_CONTXT_SETTINGS_KEYS = [
     "number_prefix",
     "number_suffix",
     "number_init",
+    "number_style", 
     "label_prefix",
     "rename",
     "preamblePath",
@@ -72,6 +74,7 @@ export const DEFAULT_SETTINGS = {
     number_prefix: "",
     number_suffix: "",
     number_init: 1,
+    number_style: "arabic", 
     label_prefix: "",
     rename: {} as RenameEnv,
     preamblePath: "",
@@ -243,6 +246,7 @@ export class MathContextSettingsHelper {
         this.addTextSetting("number_prefix", "Number prefix", "e.g. \"A.\" -> Definition A.1 / Lemma A.2 / Theorem A.3 / ...");
         this.addTextSetting("number_suffix", "Number suffix", "e.g. \".\" -> Definition 1. / Lemma 2. / Theorem 3. / ...");
         this.addTextSetting("number_init", "Initial count", 'e.g. "5" -> Definition 5 / Lemma 6 / Theorem 7 / ...');
+        this.addNumberStyleSetting();
         this.addTextSetting("label_prefix", "LaTeX label prefix", 'e.g. if "geometry:", a theorem with label="pythhagorean-theorem" will be given a LaTeX label "thm:geometry:pythhagorean-theorem"');
 
         if (displayRename) {
@@ -283,7 +287,6 @@ export class MathContextSettingsHelper {
         });
     }
 
-
     addLineByLineSetting() {
         let setting = new Setting(this.contentEl).setName("Number line by line in align");
         let callback = this.getCallback<boolean>("lineByLine");
@@ -293,7 +296,20 @@ export class MathContextSettingsHelper {
                 .onChange(callback)
         });
         return setting;
+    }
 
+    addNumberStyleSetting() {
+        let setting = new Setting(this.contentEl).setName("Numbering style");
+        let callback = this.getCallback<NumberStyle>("number_style");
+        setting.addDropdown((dropdown) => {
+            for (let style of ["arabic", "alph", "Alph", "roman", "Roman"]) {
+                dropdown.addOption(style, style);
+            }
+            dropdown
+            .setValue(this.defaultSettings.number_style ?? DEFAULT_SETTINGS.number_style)
+            .onChange(callback)
+        });
+        return setting;
     }
 }
 
