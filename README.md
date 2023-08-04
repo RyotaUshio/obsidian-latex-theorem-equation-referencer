@@ -14,10 +14,7 @@ plugin that enhances your mathematical note taking experience by several powerfu
 - [Clever Reference to Theorems & Equations](https://ryotaushio.github.io/obsidian-math/cleveref)
 - [Math Preview in Callouts & Blockquotes](https://ryotaushio.github.io/obsidian-math/math-preview)
 
-See the [documentation](https://ryotaushio.github.io/obsidian-math) for the details.
+See the [documentation](https://ryotaushio.github.io/obsidian-math) for the details and installation instructions.
 
 ## Demos
 
-## Installation
-
-See the [doc](https://ryotaushio.github.io/obsidian-math/) for instructions.
