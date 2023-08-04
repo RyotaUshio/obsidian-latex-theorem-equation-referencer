@@ -205,7 +205,7 @@ export function formatTitleWithoutSubtitle(settings: MathSettings): string {
             if (settings.autoIndex !== undefined) {
                 settings.number_init = settings.number_init ?? 1;
                 let num = +settings.autoIndex + +settings.number_init;
-                let style = settings.number_style ?? DEFAULT_SETTINGS.eq_number_style as NumberStyle;
+                let style = settings.number_style ?? DEFAULT_SETTINGS.number_style as NumberStyle;
                 numberString = CONVERTER[style](num);
             }
         } else {
