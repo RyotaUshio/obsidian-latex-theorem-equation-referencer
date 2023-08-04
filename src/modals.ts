@@ -93,18 +93,17 @@ export class SmartCalloutModal extends MathSettingModal<MathSettings> {
 
         contentEl.createEl('h5', { text: 'Override context settings' });
         const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.settings, this.defaultSettings);
-        contextSettingsHelper.makeSettingPane(false, false);
+        contextSettingsHelper.makeSettingPane(false, false, false);
 
         this.addButton(this.buttonText);
     }
 }
 
 
-
 export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
 
-    constructor(app: App, plugin: MathPlugin, public path: string) {
-        super(app, plugin);
+    constructor(app: App, plugin: MathPlugin, public path: string, callback?: (settings: MathContextSettings) => void) {
+        super(app, plugin, callback);
     }
 
     onOpen(): void {
@@ -117,13 +116,10 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
             this.plugin.settings[this.path] = {} as MathContextSettings;
         }
         const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.path], this.defaultSettings, this.plugin);
-        contextSettingsHelper.makeSettingPane(true, true);
+        contextSettingsHelper.makeSettingPane(true, true, true);
         this.addButton('Save');
     }
 }
-
-
-
 
 
 abstract class FileSuggestModal extends FuzzySuggestModal<TAbstractFile> {
@@ -172,12 +168,6 @@ export class LocalContextSettingsSuggestModal extends FileSuggestModal {
         let modal = new ContextSettingModal(this.app, this.plugin, file.path);
         modal.resolveDefaultSettings(file);
         modal.open();
-        // let { containerEl } = this.settingTab;
-        // containerEl.empty();
-        // containerEl
-        //     .createEl("h3", { text: "Local settings for " })
-        //     .createEl("b", { text: file.path });
-        // this.settingTab.displayUnit(file.path);
     }
 }
 

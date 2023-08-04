@@ -15,6 +15,7 @@ export interface MathContextSettings {
     number_suffix?: string;
     number_init?: number;
     number_style?: NumberStyle;
+    eq_number_style?: NumberStyle;
     label_prefix?: string;
     rename?: RenameEnv;
     preamblePath?: string;
@@ -45,6 +46,7 @@ export const MATH_CONTXT_SETTINGS_KEYS = [
     "number_suffix",
     "number_init",
     "number_style", 
+    "eq_number_style", 
     "label_prefix",
     "rename",
     "preamblePath",
@@ -75,6 +77,7 @@ export const DEFAULT_SETTINGS = {
     number_suffix: "",
     number_init: 1,
     number_style: "arabic", 
+    eq_number_style: "arabic", 
     label_prefix: "",
     rename: {} as RenameEnv,
     preamblePath: "",
@@ -228,7 +231,7 @@ export class MathContextSettingsHelper {
     }
 
 
-    makeSettingPane(displayRename: boolean, displayLineByLine: boolean) {
+    makeSettingPane(displayRename: boolean, displayLineByLine: boolean, displayEqNumberStyle: boolean) {
         const { contentEl } = this;
 
         new Setting(contentEl)
@@ -246,7 +249,10 @@ export class MathContextSettingsHelper {
         this.addTextSetting("number_prefix", "Number prefix", "e.g. \"A.\" -> Definition A.1 / Lemma A.2 / Theorem A.3 / ...");
         this.addTextSetting("number_suffix", "Number suffix", "e.g. \".\" -> Definition 1. / Lemma 2. / Theorem 3. / ...");
         this.addTextSetting("number_init", "Initial count", 'e.g. "5" -> Definition 5 / Lemma 6 / Theorem 7 / ...');
-        this.addNumberStyleSetting();
+        this.addNumberStyleSetting("number_style", "Math callouts numbering style");
+        if (displayEqNumberStyle) {
+            this.addNumberStyleSetting("eq_number_style", "Equation numbering style");
+        }
         this.addTextSetting("label_prefix", "LaTeX label prefix", 'e.g. if "geometry:", a theorem with label="pythhagorean-theorem" will be given a LaTeX label "thm:geometry:pythhagorean-theorem"');
 
         if (displayRename) {
@@ -298,15 +304,21 @@ export class MathContextSettingsHelper {
         return setting;
     }
 
-    addNumberStyleSetting() {
-        let setting = new Setting(this.contentEl).setName("Numbering style");
-        let callback = this.getCallback<NumberStyle>("number_style");
+    addNumberStyleSetting(name: "number_style" | "eq_number_style", prettyName?: string, description?: string) {
+        let setting = new Setting(this.contentEl);
+        if (prettyName) {
+            setting.setName(prettyName);
+        }
+        if (description) {
+            setting.setDesc(description);
+        }
+        let callback = this.getCallback<NumberStyle>(name);
         setting.addDropdown((dropdown) => {
             for (let style of ["arabic", "alph", "Alph", "roman", "Roman"]) {
                 dropdown.addOption(style, style);
             }
             dropdown
-            .setValue(this.defaultSettings.number_style ?? DEFAULT_SETTINGS.number_style)
+            .setValue(this.defaultSettings[name] ?? DEFAULT_SETTINGS[name])
             .onChange(callback)
         });
         return setting;

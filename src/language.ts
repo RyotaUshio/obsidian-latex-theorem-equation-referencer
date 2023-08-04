@@ -5,7 +5,7 @@ import { DEFAULT_LANG } from 'default_lang';
 export default class LanguageManager {
     static default: string = DEFAULT_LANG;
     // DEFAULT_SETTINGS.lang;
-    static supported: Array<string> = ['ja', 'en'];
+    static supported: Array<string> = ['en', 'ja'];
     
     static supports(lang: string): boolean {
         return LanguageManager.supported.includes(lang);

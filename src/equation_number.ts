@@ -1,10 +1,10 @@
-import { resolveSettings } from 'smart_callouts';
 import MathPlugin from 'main';
 import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, SectionCache, MarkdownSectionInformation, TFile, } from "obsidian";
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
 import { getMathCache, getMathCacheFromPos, getMathTag, locToEditorPosition } from 'utils';
 import { MathContextSettings, MathSettings } from 'settings';
+import { resolveSettings } from 'autoIndex';
 
 
 export class DisplayMathRenderChild extends MarkdownRenderChild {
@@ -155,8 +155,6 @@ export function getMathTextWithTag(text: string, tag: string, lineByLine?: boole
 export function insertTagInMathText(textContent: string, tagContent: string, lineByLine?: boolean): string {
     if (lineByLine) {
         let alignResult = textContent.match(/^\s*\\begin\{align\}([\s\S]*)\\end\{align\}\s*$/);
-        console.log(`textContent = ${textContent}`);
-        console.log(`tagContent = ${tagContent}`);
         if (alignResult) {
             let taggedText = "";
             let index = 1;

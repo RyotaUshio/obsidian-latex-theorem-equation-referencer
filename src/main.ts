@@ -1,5 +1,3 @@
-import { EditorState } from '@codemirror/state';
-import { locToEditorPosition } from 'utils';
 import {
 	App,
 	Editor,
@@ -30,14 +28,13 @@ import {
 
 import { MathSettings, MathContextSettings, DEFAULT_SETTINGS, MathContextSettingsHelper, findNearestAncestorContextSettings } from 'settings';
 import { getLinksAndEmbedsInFile, increaseQuoteLevel, linktext2TFile, getCurrentMarkdown, getActiveTextView, getMathTag, getMathCache } from 'utils';
-import { SmartCallout, insertMathCalloutCallback, resolveSettings } from 'smart_callouts';
+import { SmartCallout, insertMathCalloutCallback } from 'smart_callouts';
 import { ContextSettingModal, ExcludedFileManageModal, LocalContextSettingsSuggestModal, SmartCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
 import { ExampleView, VIEW_TYPE_EXAMPLE } from 'views';
 // import { MathCalloutField } from 'editor_extensions';
 import { DisplayMathRenderChild, buildEquationNumberPlugin, replaceMathTag } from 'equation_number';
-import { autoIndex, sortedEquations } from 'autoIndex';
-import { render } from 'react-dom';
+import { autoIndex, resolveSettings, sortedEquations } from 'autoIndex';
 import { blockquoteMathPreviewPlugin2 } from 'callout_view';
 
 
@@ -58,58 +55,6 @@ export default class MathPlugin extends Plugin {
 
 
 	async onload() {
-
-		await loadMathJax();
-
-		// @ts-ignore
-		if (!MathJax) {
-			console.warn("MathJax was not defined despite loading it.");
-			return;
-		}
-
-		// @ts-ignore
-		console.log("MathJax is ", MathJax);
-
-		this.addCommand({
-			id: "link-text-test",
-			name: "Link Text Test",
-			callback: () => {
-				// Let's parse this linktext!
-				let linktext = "Smart Callouts#^b549cb";
-
-				// decompose linktext into path (linkpath) and subpath
-				let { path, subpath } = parseLinktext(linktext);
-				console.log(`path = ${path}, subpath = ${subpath}`);
-				// -> path = Smart Callouts, subpath = #^b549cb
-
-				// If you want path (linkpath) only, use getLinkpath
-				console.log(`path by getLinkpath = ${getLinkpath(linktext)}`);
-				// -> path by getLinkpath = Smart Callouts
-
-				// get TFile from path (linkpath)
-				let file = this.app.metadataCache.getFirstLinkpathDest(path, "");
-				console.log("TFile object: ", file);
-				// -> TFile object:  t {parent: t, deleted: false, vault: t, path: 'Smart Callouts.md', name: 'Smart Callouts.md', …}
-
-				if (file) {
-					// prepare CachedMetadata of the file
-					let cache = this.app.metadataCache.getFileCache(file);
-					if (cache) {
-						// get cached info from the subpath
-						let subpathResult = resolveSubpath(cache, subpath);
-						console.log("SubpathResult object: ", subpathResult);
-						// -> SubpathResult object:  {type: 'block', block: {…}, list: {…}, start: {…}, end: {…}}
-					}
-
-					// generate linktext from a TFile object
-					console.log(`generated linktext = ${this.app.metadataCache.fileToLinktext(file, "")}`);
-					// -> generated linktext = Smart Callouts
-
-					// actually open the link in Obsidian!
-					this.app.workspace.openLinkText(linktext, "");
-				}
-			}
-		});
 
 		await this.loadSettings();
 
@@ -147,9 +92,12 @@ export default class MathPlugin extends Plugin {
 			id: 'open-local-settings-for-current-note',
 			name: 'Open Local Settings for the Current Note',
 			callback: () => {
-				let currentFile = getCurrentMarkdown(this.app);
-				if (currentFile) {
-					let modal = new ContextSettingModal(this.app, this, currentFile.path);
+				let view = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (view) {
+					let modal = new ContextSettingModal(
+						this.app, 
+						this, view.file.path
+					);
 					modal.resolveDefaultSettings(getCurrentMarkdown(this.app));
 					modal.open();
 				}
@@ -184,7 +132,6 @@ export default class MathPlugin extends Plugin {
 				this.registerEditorExtension(buildEquationNumberPlugin(this.app, leaf.view.file.path, Boolean(settings.lineByLine)));
 			}
 		});
-
 					
 		this.registerEditorExtension(blockquoteMathPreviewPlugin2.extension);
 
@@ -214,11 +161,6 @@ export default class MathPlugin extends Plugin {
 			}
 		});
 
-
-
-
-
-
 		this.registerMarkdownPostProcessor((element, context) => {
 			let mjxElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax mjx-math[display="true"]');
 			if (mjxElements) {
@@ -238,76 +180,6 @@ export default class MathPlugin extends Plugin {
 				}
 			});
 		}));
-
-
-
-		// this.registerMarkdownPostProcessor((element, context) => {
-		// 	console.log("Element: ", element);
-		// 	console.log("Context: ", context);
-		// 	let mathElements = element.querySelectorAll<HTMLElement>('.math.math-block.is-loaded');
-		// 	let mjxElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax mjx-math[display="true"]');
-		// 	if (mathElements) {
-		// 		console.log("mathElements: ", mathElements);
-		// 	}
-
-		// 	if (mjxElements) {
-		// 		console.log("mjxElements: ", mjxElements);
-		// 	}
-
-		// 	if (mjxElements) {
-		// 		for (let i=0; i<mjxElements.length; i++) {
-		// 			let mjxEl = mjxElements[i];
-		// 			console.log("mjxEl: ", mjxEl);
-		// 			let tag = '';
-		// 			let cache = this.app.metadataCache.getCache(context.sourcePath);
-		// 			let info = context.getSectionInfo(mjxEl);
-		// 			console.log("outside:cache:", cache);
-		// 			console.log("outside:info:", info);
-		// 			if (cache && info) {
-		// 				let mathCache = getMathCache(cache, info.lineStart);
-		// 				if (mathCache) {
-		// 					tag = getMathTag(cache, mathCache);
-		// 					console.log("inside:mathCache:", mathCache);
-		// 					console.log("inside:tag:", tag);
-		// 					context.addChild(new DisplayMathRenderChild(mjxEl, this.app, context));
-		// 				}
-		// 			}
-		// 		}
-		// 		// mjxElements.forEach((displayMathEl) => {
-		// 		// 	let tag = '';
-		// 		// 	let cache = this.app.metadataCache.getCache(context.sourcePath);
-		// 		// 	let info = context.getSectionInfo(displayMathEl);
-		// 		// 	console.log("outside:cache:", cache);
-		// 		// 	console.log("outside:info:", info);
-		// 		// 	if (cache && info) {
-		// 		// 		let mathCache = getMathCache(cache, info.lineStart);
-		// 		// 		if (mathCache) {
-		// 		// 			tag = getMathTag(cache, mathCache);
-		// 		// 			console.log("inside:mathCache:", mathCache);
-		// 		// 			console.log("inside:tag:", tag);
-		// 		// 		}
-		// 		// 	}
-		// 		// 	context.addChild(new DisplayMathRenderChild(displayMathEl, context, tag));
-		// 		// });
-		// 	}
-
-
-		// });
-
-
-
-
-
-		// this.app.workspace.onLayoutReady(() => {
-		// 	this.registerMarkdownPostProcessor(markdownPostProcessor);
-		// });
-
-		// this.app.workspace.on("active-leaf-change", (leaf: WorkspaceLeaf) => {
-		// 	this.registerMarkdownPostProcessor(markdownPostProcessor);
-		// });
-
-
-
 
 		this.addSettingTab(new MathSettingTab(this.app, this));
 	}
@@ -342,7 +214,7 @@ export class MathSettingTab extends PluginSettingTab {
 	addRestoreDefaultsBottun(key: string) {
 		new Setting(this.containerEl)
 			.addButton((btn) => {
-				btn.setButtonText("Restore default");
+				btn.setButtonText("Restore defaults");
 				btn.onClick(async (event) => {
 					Object.assign(this.plugin.settings[key], DEFAULT_SETTINGS);
 					await this.plugin.saveSettings();
@@ -353,20 +225,16 @@ export class MathSettingTab extends PluginSettingTab {
 
 	displayUnit(key: string) {
 		let defaultSettings: MathContextSettings = {};
-		// if (! (key in this.plugin.settings)) {
 		let folder = this.app.vault.getAbstractFileByPath(key);
 		if (folder) {
-			let contextSettings = findNearestAncestorContextSettings(this.plugin, folder);
-			defaultSettings = Object.assign({}, this.plugin.settings[VAULT_ROOT], contextSettings);
+			defaultSettings = resolveSettings(undefined, this.plugin, folder);
 		}
-		// }
 		(new MathContextSettingsHelper(
 			this.containerEl,
 			this.plugin.settings[key],
 			defaultSettings,
-			// this.plugin.settings[key],
 			this.plugin,
-		)).makeSettingPane(true, true);
+		)).makeSettingPane(true, true, true);
 		this.addRestoreDefaultsBottun(key);
 	}
 
@@ -378,8 +246,6 @@ export class MathSettingTab extends PluginSettingTab {
 		this.displayUnit(VAULT_ROOT);
 
 		containerEl.createEl("h3", { text: "Local settings" });
-
-
 		new Setting(containerEl).setName("Local settings")
 			.setDesc("You can set up file-specific or folder-specific configurations, which have more precedence than the global settings.")
 			.addButton((btn) => {
