@@ -14,15 +14,10 @@ This is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathema
 
 Since this plugin is before its official submission, you can only install it manually for the time being.
 
-```bash
-$ cd <root of your vault>/.obsidian/plugins
-$ git clone https://github.com/RyotaUshio/obsidian-math.git
-$ cd obsidian-math
-$ npm install
-$ npm run build
-```
-After running these commands, you will find "Obsidian Mathematics" in Settings > Community plugins > Installed plugins. 
-Click on the toggle button to enable it.
+1. Make a folder `<root of your vault>/.obsidian/plugins/obsidian-math`.
+2. Visit the [release page](https://github.com/RyotaUshio/obsidian-math/releases) of the GitHub repository, and download `main.js`, `manifest.json` and `style.css` in the "Assets" section of the latest release. Put these files in the folder that you've just made in the previous step.
+3. Go to Obsidian's **Settings > Community plugins > Installed plugins**. You will find "Obsidian Mathematics" it the list (if not, make sure the [restricted mode](https://help.obsidian.md/Extending+Obsidian/Plugin+security#Restricted+mode) is turned off). 
+4. Click on the toggle button to enable it.
 
 ## Dependency
 
