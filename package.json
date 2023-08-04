@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-mathematics",
-	"version": "0.0.1",
-	"description": "Help you write mathematical documents in Obsidian.",
+	"version": "0.2.0",
+	"description": "Introduce LaTeX-like mathematic note taking features into Obsidian",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
