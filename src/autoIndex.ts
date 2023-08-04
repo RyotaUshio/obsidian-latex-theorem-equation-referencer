@@ -1,8 +1,8 @@
 import { ENVs_MAP } from "env";
 import MathPlugin, { VAULT_ROOT } from "main";
 import { CachedMetadata, Editor, Loc, MarkdownView, SectionCache, TFile } from "obsidian";
-import { MathSettings, findNearestAncestorContextSettings } from "settings";
-import { locToEditorPosition } from "utils";
+import { MathSettings, NumberStyle, findNearestAncestorContextSettings } from "settings";
+import { CONVERTER, locToEditorPosition } from "utils";
 
 
 type CalloutInfo = { cache: SectionCache, settings: MathSettings };
@@ -209,7 +209,6 @@ export function resolveSettings(settings: MathSettings, plugin: MathPlugin, curr
     return Object.assign({}, plugin.settings[VAULT_ROOT], contextSettings, settings);
 }
 
-
 export function formatTitleWithoutSubtitle(settings: MathSettings): string {
     let env = ENVs_MAP[settings.type];
 
@@ -224,7 +223,8 @@ export function formatTitleWithoutSubtitle(settings: MathSettings): string {
         if (settings.number == 'auto') {
             if (settings.autoIndex !== undefined) {
                 settings.number_init = settings.number_init ?? 1;
-                numberString = `${+settings.autoIndex + +settings.number_init}`;
+                let num = +settings.autoIndex + +settings.number_init;
+                numberString = CONVERTER[settings.number_style ?? "arabic"](num);
             }
         } else {
             numberString = settings.number;

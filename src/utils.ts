@@ -202,3 +202,41 @@ export function insertAfter(referenceNode: HTMLElement, newNode: HTMLElement) {
     // https://stackoverflow.com/a/4793630/13613783
     referenceNode.parentNode?.insertBefore(newNode, referenceNode.nextSibling);
 }
+
+const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
+    "", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC",
+    "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
+
+export function toRomanUpper(num: number): string {
+    // https://stackoverflow.com/a/9083076/13613783
+    let digits = String(num).split("");
+    let roman = "";
+    let i = 3;
+    while (i--) {
+        // @ts-ignore
+        roman = (ROMAN[+digits.pop() + (i * 10)] ?? "") + roman;
+    }
+    return Array(+digits.join("") + 1).join("M") + roman;
+}
+
+export function toRomanLower(num: number): string{
+    return toRomanUpper(num).toLowerCase();
+}
+
+export const ALPH = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+export function toAlphUpper(num: number): string {
+    return (num - 1).toString(26).split("").map(str => ALPH[parseInt(str, 26)]).join("");
+}
+
+export function toAlphLower(num: number): string {
+    return toAlphUpper(num).toLowerCase();
+}
+
+export const CONVERTER = {
+    "arabic": String, 
+    "alph": toAlphLower, 
+    "Alph": toAlphUpper, 
+    "roman": toRomanLower, 
+    "Roman": toRomanUpper,
+}
