@@ -1,9 +1,9 @@
 title: Obsidian Mathematics
 theme: minima
 header_pages:
-  - math-callouts
-  - equation-number
-  - math-preview
+  - math-callouts.md
+  - equation-number.md
+  - math-preview.md
 minima:
   skin: auto
   
