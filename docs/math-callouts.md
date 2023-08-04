@@ -1,4 +1,7 @@
-# Math Callouts
+---
+layout: page
+title: Math Callouts
+---
 
 You can insert **math callouts** specifically designed for mathematical theorems, lemmas, propositions, definitions, and so on, just like the `amsthm` package in $\LaTeX$.
 

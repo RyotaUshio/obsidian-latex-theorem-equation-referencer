@@ -1,2 +1,9 @@
 title: Obsidian Mathematics
+author:
+  name: Ryota Ushio
+  email: "ushio@ms.k.u-tokyo.ac.jp"
 theme: minima
+header_pages:
+minima:
+  skin: auto
+  

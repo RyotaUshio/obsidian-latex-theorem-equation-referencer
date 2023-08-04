@@ -1,4 +1,7 @@
-# Equation Numbering
+---
+layout: page
+title: Equation Numbering
+---
 
 When you insert a link to a math equation block (`[[#^block-ID]]` or `[[note-title#^block-ID]]`), this plugin automatically detects it and assigns an equation number to the equation. 
 This can take a few seconds because this plugin has to wait until Obsidian finishes updating the metadata caches.
