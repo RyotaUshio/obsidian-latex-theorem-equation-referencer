@@ -12,7 +12,18 @@ This is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathema
 
 ## Installation
 
-Since this plugin is before its official submission, you can only install it manually for the time being.
+This plugin is before an official submission. 
+You can choose between the following two methods for installation. 
+
+### Install via BRAT (recommended)
+
+1. Install the [BRAT](obsidian://show-plugin?id=obsidian42-brat) community plugin and enable it.
+2. Go to **Options**. In the **Beta Plugin List** section, click on the **Add Beta plugin** button. 
+3. Paste `https://github.com/RyotaUshio/obsidian-math` in the pop-up prompt and click on **Add Plugin**.
+5. (Optional) Turn on **Auto-update plugins at startup** on the top of the page.
+4. Go to **Community plugins > Installed plugins**. You will find "Obsidian Mathematics" it the list. Click on the toggle button to enable it.
+
+### Manual installation
 
 1. Make a folder `<root of your vault>/.obsidian/plugins/obsidian-math`.
 2. Visit the [release page](https://github.com/RyotaUshio/obsidian-math/releases) of the GitHub repository, and download `main.js`, `manifest.json` and `style.css` in the "Assets" section of the latest release. Put these files in the folder that you've just made in the previous step.
