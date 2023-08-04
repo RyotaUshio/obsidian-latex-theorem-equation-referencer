@@ -28,11 +28,9 @@ import {
 
 import { MathSettings, MathContextSettings, DEFAULT_SETTINGS, MathContextSettingsHelper, findNearestAncestorContextSettings } from 'settings';
 import { getLinksAndEmbedsInFile, increaseQuoteLevel, linktext2TFile, getCurrentMarkdown, getActiveTextView, getMathTag, getMathCache } from 'utils';
-import { SmartCallout, insertMathCalloutCallback } from 'smart_callouts';
-import { ContextSettingModal, ExcludedFileManageModal, LocalContextSettingsSuggestModal, SmartCalloutModal } from 'modals';
+import { MathCallout, insertMathCalloutCallback } from 'math_callouts';
+import { ContextSettingModal, ExcludedFileManageModal, LocalContextSettingsSuggestModal, MathCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
-import { ExampleView, VIEW_TYPE_EXAMPLE } from 'views';
-// import { MathCalloutField } from 'editor_extensions';
 import { DisplayMathRenderChild, buildEquationNumberPlugin, replaceMathTag } from 'equation_number';
 import { autoIndex, resolveSettings, sortedEquations } from 'autoIndex';
 import { blockquoteMathPreviewPlugin2 } from 'callout_view';
@@ -74,17 +72,22 @@ export default class MathPlugin extends Plugin {
 			id: 'insert-math-callout',
 			name: 'Insert Math Callout',
 			editorCallback: async (editor, context) => {
-				let modal = new SmartCalloutModal(
-					this.app,
-					this,
-					(config) => {
-						if (context.file) {
-							insertMathCalloutCallback(this.app, this, editor, config, context.file);
-						}
-					},
-				);
-				modal.resolveDefaultSettings(getCurrentMarkdown(this.app));
-				modal.open();
+				if (context instanceof MarkdownView) {
+					let modal = new MathCalloutModal(
+						this.app,
+						this,
+						context, 
+						(config) => {
+							if (context.file) {
+								insertMathCalloutCallback(this.app, this, editor, config, context.file);
+							}
+						},
+						"Insert", 
+						"Insert a Math Callout",
+					);
+					modal.resolveDefaultSettings(getCurrentMarkdown(this.app));
+					modal.open();	
+				}
 			}
 		});
 
@@ -96,9 +99,15 @@ export default class MathPlugin extends Plugin {
 				if (view) {
 					let modal = new ContextSettingModal(
 						this.app, 
-						this, view.file.path
+						this, view.file.path, 
+						(settings) => {
+							// @ts-ignore
+							let cache = this.app.metadataCache.getCache(view.file.path);
+							// @ts-ignore
+							autoIndex(cache, view.editor, view.file, this);
+						}
 					);
-					modal.resolveDefaultSettings(getCurrentMarkdown(this.app));
+					modal.resolveDefaultSettings(view.file);
 					modal.open();
 				}
 			}
@@ -152,7 +161,7 @@ export default class MathPlugin extends Plugin {
 
 						let currentFile = this.app.vault.getAbstractFileByPath(context.sourcePath);
 						if (currentFile instanceof TFile) {
-							let smartCallout = new SmartCallout(callout, this.app, this, settings, currentFile);
+							let smartCallout = new MathCallout(callout, this.app, this, settings, currentFile);
 							await smartCallout.setRenderedTitleElements();
 							context.addChild(smartCallout);
 						}

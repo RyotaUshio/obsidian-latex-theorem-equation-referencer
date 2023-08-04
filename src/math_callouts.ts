@@ -1,13 +1,13 @@
-import { SmartCalloutModal } from 'modals';
+import { MathCalloutModal } from 'modals';
 import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, TFile, Menu, setIcon } from "obsidian";
 import { MATH_SETTINGS_KEYS, MathSettings, findNearestAncestorContextSettings } from 'settings';
 import { ENVs_MAP, TheoremLikeEnv, getTheoremLikeEnv } from 'env';
 import LanguageManager from 'language';
 import { generateBlockID, getCurrentMarkdown, increaseQuoteLevel, renderTextWithMath } from 'utils';
 import MathPlugin, { VAULT_ROOT } from 'main';
-import { formatTitle, formatTitleWithoutSubtitle, matchMathCallout, resolveSettings } from 'autoIndex';
+import { formatTitle, formatTitleWithoutSubtitle, matchMathCallout, overwriteMathCalloutMetadata, resolveSettings } from 'autoIndex';
 
-export class SmartCallout extends MarkdownRenderChild {
+export class MathCallout extends MarkdownRenderChild {
     env: TheoremLikeEnv;
     renderedTitleElements: (HTMLElement | string)[];
 
@@ -48,9 +48,10 @@ export class SmartCallout extends MarkdownRenderChild {
                 const view = this.app.workspace.getActiveViewOfType(MarkdownView);
                 const editor = view?.editor;
                 if (editor) {
-                    let modal = new SmartCalloutModal(
+                    let modal = new MathCalloutModal(
                         this.app,
                         this.plugin,
+                        view, 
                         (settings) => {
                             // new title is set here, but it will soon be overwritten by this.registerEvent(this.app.metadataCache.on('changed', ...
                             // so the title here is only temporary
@@ -59,10 +60,11 @@ export class SmartCallout extends MarkdownRenderChild {
                                 resolvedSettings["autoIndex"] = this.config.autoIndex;
                             }
                             let title = formatTitle(resolvedSettings);
-                            overwriteMathCalloutMetadata(editor, editor.getCursor().line, settings, title);
+                            overwriteMathCalloutMetadata(editor, editor.getCursor().line, settings, title, true);
                         },
+                        "Confirm", 
+                        "Edit Math Callout Settings", 
                         this.config,
-                        "Confirm"
                     );
                     modal.resolveDefaultSettings(view.file);
                     modal.open();
@@ -72,8 +74,6 @@ export class SmartCallout extends MarkdownRenderChild {
         }
     }
 }
-
-
 
 
 export function insertMathCalloutCallback(app: App, plugin: MathPlugin, editor: Editor, config: MathSettings, currentFile: TFile) {
@@ -101,13 +101,13 @@ export function insertMathCalloutCallback(app: App, plugin: MathPlugin, editor: 
 }
 
 
-export function overwriteMathCalloutMetadata(editor: Editor, lineNumber: number, settings: MathSettings, title?: string) {
-    const matchResult = matchMathCallout(editor.getLine(lineNumber));
-    if (!matchResult) {
-        throw Error(`Math callout not found at line ${lineNumber}, could not overwrite`);
-    }
-    editor.setLine(
-        lineNumber,
-        `> [!math|${JSON.stringify(settings)}] ${title ?? ""}`,
-    );
-}
+// export function overwriteMathCalloutMetadata(editor: Editor, lineNumber: number, settings: MathSettings, title?: string) {
+//     const matchResult = matchMathCallout(editor.getLine(lineNumber));
+//     if (!matchResult) {
+//         throw Error(`Math callout not found at line ${lineNumber}, could not overwrite`);
+//     }
+//     editor.setLine(
+//         lineNumber,
+//         `> [!math|${JSON.stringify(settings)}] ${title ?? ""}`,
+//     );
+// }

@@ -22,7 +22,6 @@ export interface MathContextSettings {
     lineByLine?: boolean;
 }
 
-
 export interface MathItemSettings {
     type: string;
     number?: string;
@@ -35,10 +34,8 @@ export interface MathItemPrivateFields {
     autoIndex?: number;
 }
 
-
 export type MathSettings = MathContextSettings & MathItemSettings & MathItemPrivateFields;
 export type CalloutSettings = MathSettings;
-
 
 export const MATH_CONTXT_SETTINGS_KEYS = [
     "lang",
@@ -85,7 +82,6 @@ export const DEFAULT_SETTINGS = {
 }
 
 
-
 export class MathItemSettingsHelper {
     env: TheoremLikeEnv;
     constructor(
@@ -109,7 +105,6 @@ export class MathItemSettingsHelper {
                 let initType = dropdown.getValue();
                 this.settings.type = initType;
                 this.env = getTheoremLikeEnv(initType);
-
 
                 let numberSetting = new Setting(contentEl)
                     .setName("Number")
@@ -138,7 +133,6 @@ export class MathItemSettingsHelper {
                     });
                 })
 
-
                 let titleComp: TextComponent;
                 let titlePane = new Setting(contentEl)
                     .setName("Title")
@@ -154,7 +148,6 @@ export class MathItemSettingsHelper {
                         text.setValue(this.defaultSettings.title);
                     }
 
-
                     let labelTextComp: TextComponent;
                     labelPane.addText((text) => {
                         labelTextComp = text;
@@ -165,18 +158,16 @@ export class MathItemSettingsHelper {
                         text.onChange((value) => {
                             this.settings.label = value;
                         });
-
                     });
 
                     text
-                        .setPlaceholder("e.g. $\\sigma$-algebra")
+                        .setPlaceholder("ex) $\\sigma$-algebra")
                         .onChange((value) => {
                             this.settings.title = value;
-                            // labelTextComp.setValue(this.settings.title.replaceAll(' ', '-').replaceAll("'s", '').replaceAll("\\", "").replaceAll("$", "").toLowerCase());
                             let labelInit = this.settings.title.replaceAll(' ', '-').replaceAll("'s", '').toLowerCase();
                             labelInit = labelInit.replaceAll(/[^a-z0-1\-]/g, '');
                             labelTextComp.setValue(labelInit);
-
+                            this.settings.label = labelInit;
                         })
                 });
 
@@ -185,13 +176,9 @@ export class MathItemSettingsHelper {
                     this.env = getTheoremLikeEnv(value);
                     labelPrefixEl.textContent = this.env.prefix + ":";
                 });
-
-
             });
-
     }
 }
-
 
 
 export class MathContextSettingsHelper {
@@ -230,7 +217,6 @@ export class MathContextSettingsHelper {
         return setting;
     }
 
-
     makeSettingPane(displayRename: boolean, displayLineByLine: boolean, displayEqNumberStyle: boolean) {
         const { contentEl } = this;
 
@@ -246,14 +232,14 @@ export class MathContextSettingsHelper {
                     await this.plugin?.saveSettings();
                 });
             });
-        this.addTextSetting("number_prefix", "Number prefix", "e.g. \"A.\" -> Definition A.1 / Lemma A.2 / Theorem A.3 / ...");
-        this.addTextSetting("number_suffix", "Number suffix", "e.g. \".\" -> Definition 1. / Lemma 2. / Theorem 3. / ...");
-        this.addTextSetting("number_init", "Initial count", 'e.g. "5" -> Definition 5 / Lemma 6 / Theorem 7 / ...');
+        this.addTextSetting("number_prefix", "Number prefix", "ex) \"A.\" -> Definition A.1 / Lemma A.2 / Theorem A.3 / ...");
+        this.addTextSetting("number_suffix", "Number suffix", "ex) \".\" -> Definition 1. / Lemma 2. / Theorem 3. / ...");
+        this.addTextSetting("number_init", "Initial count", 'ex) "5" -> Definition 5 / Lemma 6 / Theorem 7 / ...');
         this.addNumberStyleSetting("number_style", "Math callouts numbering style");
         if (displayEqNumberStyle) {
             this.addNumberStyleSetting("eq_number_style", "Equation numbering style");
         }
-        this.addTextSetting("label_prefix", "LaTeX label prefix", 'e.g. if "geometry:", a theorem with label="pythhagorean-theorem" will be given a LaTeX label "thm:geometry:pythhagorean-theorem"');
+        this.addTextSetting("label_prefix", "LaTeX label prefix", 'ex) if "geometry:", a theorem with label="pythhagorean-theorem" will be given a LaTeX label "thm:geometry:pythhagorean-theorem"');
 
         if (displayRename) {
             this.addRenameSetting();
@@ -270,7 +256,7 @@ export class MathContextSettingsHelper {
         let { contentEl } = this;
         let renamePane = new Setting(contentEl)
             .setName("Rename environments")
-            .setDesc("e.g. print \"exercise\" as \"Problem,\" not \"Exercise\"");
+            .setDesc("ex) print \"exercise\" as \"Problem,\" not \"Exercise\"");
 
         renamePane.addDropdown((dropdown) => {
             for (let envId of ENV_IDs) {
@@ -324,10 +310,6 @@ export class MathContextSettingsHelper {
         return setting;
     }
 }
-
-
-
-
 
 
 export function findNearestAncestorContextSettings(plugin: MathPlugin, file: TAbstractFile): MathContextSettings | undefined {
