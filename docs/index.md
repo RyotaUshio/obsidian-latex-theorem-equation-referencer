@@ -1,4 +1,8 @@
-# Overview
+---
+layout: page
+title: About
+permalink: /about/
+---
 
 Obsidian Mathematics is a [Obsidian.md](https://obsidian.md/) plugin for mathematical note takers.
 
