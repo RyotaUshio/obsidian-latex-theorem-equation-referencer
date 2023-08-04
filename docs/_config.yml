@@ -1,20 +1,10 @@
 title: Obsidian Mathematics
-author:
-  name: GitHub User
-  email: your-email@domain.com
 
-plugins:
-  - jekyll-remote-theme
-
-remote_theme: jekyll/minima
+theme: minima
 
 header_pages:
   - math-callouts.md
   - equation-number.md
   - math-preview.md
 
-minima:
-  skin: dark
-  social_links:
-    - { platform: github,  user_url: "https://github.com/RyotaUshio/obsidian-math" }
-  
+github_username: RyotaUshio
