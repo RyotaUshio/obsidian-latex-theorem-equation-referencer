@@ -40,11 +40,14 @@ see ...
 
 ### Modify settings afterward
 
-Click the title of an existing math callout to modify its settings. 
+Click the title of an existing math callout to modify its settings.
 
 [image]
 
-Alternatively, you can directly edit the JSON metadata.
+Alternatively, you can directly edit the JSON metadata, although I don't recommend it since it will be more error-prone.
+
+Also note that any changes that you make directly to the theorem title will be canceled. 
+If you want to change it, click on the title bar of the math callout and edit the _title_ section in the pop-up setting window (or edit the JSON).
 
 [image]
 
