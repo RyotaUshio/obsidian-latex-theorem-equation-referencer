@@ -1,14 +1,10 @@
-import { mathCalloutTitlePlulgin } from 'math_callouts_view';
 import { RangeSetBuilder } from '@codemirror/state';
 import { syntaxTree } from "@codemirror/language";
 import { Decoration, DecorationSet, EditorView, MatchDecorator, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view"
 import { MATH_CALLOUT_PATTERN, formatTitleWithoutSubtitle, matchMathCallout, readMathCalloutMetadata, readMathCalloutSettingsAndTitle } from "autoIndex"
 import MathPlugin from "main";
-import { SmartCalloutModal } from "modals";
 import { App, Editor, MarkdownView, TFile } from "obsidian";
-import { MathSettings } from "settings";
-import { formatTitle, overwriteMathCalloutMetadata, resolveSettings } from "smart_callouts";
-import { nodeText, renderTextWithMath } from "utils";
+import { nodeText } from 'utils';
 
 
 export const MATH_CALLOUT_PATTERN_GLOBAL = new RegExp(MATH_CALLOUT_PATTERN.source, "g");

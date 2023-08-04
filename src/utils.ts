@@ -1,3 +1,5 @@
+import { EditorState } from '@codemirror/state';
+import { SyntaxNodeRef } from '@lezer/common';
 
 // Generic utility functions handing files.
 
@@ -201,6 +203,10 @@ export function getMathTag(cache: CachedMetadata, mathCache: SectionCache): stri
 export function insertAfter(referenceNode: HTMLElement, newNode: HTMLElement) {
     // https://stackoverflow.com/a/4793630/13613783
     referenceNode.parentNode?.insertBefore(newNode, referenceNode.nextSibling);
+}
+
+export function nodeText(node: SyntaxNodeRef, state: EditorState): string {
+    return state.sliceDoc(node.from, node.to);
 }
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
