@@ -1,9 +1,9 @@
 title: Obsidian Mathematics
-author:
-  name: RyotaUshio
-  email: ushio@ms.k.u-tokyo.ac.jp
 theme: minima
 header_pages:
+  - math-callouts
+  - equation-number
+  - math-preview
 minima:
   skin: auto
   
