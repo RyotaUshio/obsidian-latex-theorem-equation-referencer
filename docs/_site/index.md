@@ -5,5 +5,5 @@ Obsidian Mathematics is a [Obsidian.md](https://obsidian.md/) plugin for mathema
 Core features are:
 
 - [Math Callouts for Theorems/Definitions/Exercises/...](math-callouts)
-- [Automatic Equation Numbering](equation-number)
-- [Math Preview in Callouts & Blockquotes](math-preview)
+- Automatic Equation Numbering
+- Math Preview in Callouts & Blockquotes
