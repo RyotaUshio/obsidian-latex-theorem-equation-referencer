@@ -39,7 +39,7 @@ export function sortedMathCallouts(editor: Editor, cache: CachedMetadata): Callo
         editor, cache, "callout",
         (sections, sectionCache, editor) => {
             let settings = readMathCalloutMetadata(editor.getLine(sectionCache.position.start.line));
-            if (settings && settings.number == 'auto') {
+            if (settings) {
                 sections.push(
                     { cache: sectionCache, settings: settings }
                 );
@@ -75,8 +75,11 @@ export function autoIndex(cache: CachedMetadata, editor: Editor, currentFile: TF
 
     let mathLinkCache: Record<string, string> = {}; // {[id]: [mathLink], ...}
 
-    callouts.forEach((callout, index) => {
-        callout.settings.autoIndex = index;
+    let index = 0;
+    for (let callout of callouts) {
+        if (callout.settings.number == 'auto') {
+            callout.settings.autoIndex = index++;
+        }
         let resolvedSettings = resolveSettings(callout.settings, plugin, currentFile);
         let newTitle = formatTitle(resolvedSettings);
         let oldSettingsAndTitle = readMathCalloutSettingsAndTitle(editor.getLine(callout.cache.position.start.line));
@@ -95,7 +98,28 @@ export function autoIndex(cache: CachedMetadata, editor: Editor, currentFile: TF
                 mathLinkCache[id] = newTitle;
             }
         }
-    });
+    }
+    // callouts.forEach((callout, index) => {
+    //     callout.settings.autoIndex = index;
+    //     let resolvedSettings = resolveSettings(callout.settings, plugin, currentFile);
+    //     let newTitle = formatTitle(resolvedSettings);
+    //     let oldSettingsAndTitle = readMathCalloutSettingsAndTitle(editor.getLine(callout.cache.position.start.line));
+    //     if (oldSettingsAndTitle) {
+    //         let { settings, title } = oldSettingsAndTitle;
+    //         if (JSON.stringify(settings) != JSON.stringify(callout.settings) || title != newTitle) {
+    //             overwriteMathCalloutMetadata(
+    //                 editor,
+    //                 callout.cache.position.start.line,
+    //                 callout.settings,
+    //                 newTitle,
+    //             )
+    //         }
+    //         let id = callout.cache.id;
+    //         if (id) {
+    //             mathLinkCache[id] = newTitle;
+    //         }
+    //     }
+    // });
 
     let equationNumber = 1;
     for (let i = 0; i < equations.length; i++) {
@@ -164,6 +188,10 @@ export function readMathCalloutTitle(line: string): string | undefined {    // c
 
 
 export function overwriteMathCalloutMetadata(editor: Editor, lineNumber: number, settings: MathSettings, title?: string) {
+    let cursorPos = editor.getCursor();
+    if (cursorPos.line == lineNumber) {
+        return; // do nothing, avoid conflict
+    }
     const matchResult = matchMathCallout(editor.getLine(lineNumber));
     if (!matchResult) {
         throw Error(`Math callout not found at line ${lineNumber}, could not overwrite`);
