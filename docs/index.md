@@ -1,11 +1,9 @@
 ---
 layout: page
-title: Obsididan Mathematics
+title: Obsidian Mathematics
 ---
 
-Obsidian Mathematics is a [Obsidian.md](https://obsidian.md/) plugin for mathematical note takers.
-
-Core features are:
+This is a [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note taking experience by several powerful features, including:
 
 - [Math Callouts for Theorems/Definitions/Exercises/...](math-callouts)
 - [Automatic Equation Numbering](equation-number)
