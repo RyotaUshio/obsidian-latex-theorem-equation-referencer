@@ -1,7 +1,7 @@
 import { ENVs_MAP } from "env";
 import MathPlugin, { VAULT_ROOT } from "main";
-import { CachedMetadata, Editor, Loc, MarkdownView, SectionCache, TFile } from "obsidian";
-import { MathSettings, NumberStyle, findNearestAncestorContextSettings } from "settings";
+import { CachedMetadata, Editor, Loc, MarkdownView, SectionCache, TAbstractFile, TFile } from "obsidian";
+import { DEFAULT_SETTINGS, MathSettings, NumberStyle, findNearestAncestorContextSettings } from "settings";
 import { CONVERTER, locToEditorPosition } from "utils";
 
 
@@ -99,28 +99,9 @@ export function autoIndex(cache: CachedMetadata, editor: Editor, currentFile: TF
             }
         }
     }
-    // callouts.forEach((callout, index) => {
-    //     callout.settings.autoIndex = index;
-    //     let resolvedSettings = resolveSettings(callout.settings, plugin, currentFile);
-    //     let newTitle = formatTitle(resolvedSettings);
-    //     let oldSettingsAndTitle = readMathCalloutSettingsAndTitle(editor.getLine(callout.cache.position.start.line));
-    //     if (oldSettingsAndTitle) {
-    //         let { settings, title } = oldSettingsAndTitle;
-    //         if (JSON.stringify(settings) != JSON.stringify(callout.settings) || title != newTitle) {
-    //             overwriteMathCalloutMetadata(
-    //                 editor,
-    //                 callout.cache.position.start.line,
-    //                 callout.settings,
-    //                 newTitle,
-    //             )
-    //         }
-    //         let id = callout.cache.id;
-    //         if (id) {
-    //             mathLinkCache[id] = newTitle;
-    //         }
-    //     }
-    // });
 
+    let contextSettings = findNearestAncestorContextSettings(plugin, currentFile);
+    let style = contextSettings?.eq_number_style ?? DEFAULT_SETTINGS.eq_number_style as NumberStyle;
     let equationNumber = 1;
     for (let i = 0; i < equations.length; i++) {
         let equation = equations[i];
@@ -129,7 +110,7 @@ export function autoIndex(cache: CachedMetadata, editor: Editor, currentFile: TF
             if (equation.manualTag) {
                 mathLinkCache[id] = `(${equation.manualTag})`;
             } else {
-                mathLinkCache[id] =  `(${equationNumber})`;
+                mathLinkCache[id] =  "(" + CONVERTER[style](equationNumber) + ")";
                 equationNumber++;
             }
         }
@@ -203,7 +184,7 @@ export function overwriteMathCalloutMetadata(editor: Editor, lineNumber: number,
 }
 
 
-export function resolveSettings(settings: MathSettings, plugin: MathPlugin, currentFile: TFile) {
+export function resolveSettings(settings: MathSettings | undefined, plugin: MathPlugin, currentFile: TAbstractFile) {
     // Resolves settings. Does not overwride, but returns a new settings object.
     let contextSettings = findNearestAncestorContextSettings(plugin, currentFile);
     return Object.assign({}, plugin.settings[VAULT_ROOT], contextSettings, settings);
@@ -224,7 +205,8 @@ export function formatTitleWithoutSubtitle(settings: MathSettings): string {
             if (settings.autoIndex !== undefined) {
                 settings.number_init = settings.number_init ?? 1;
                 let num = +settings.autoIndex + +settings.number_init;
-                numberString = CONVERTER[settings.number_style ?? "arabic"](num);
+                let style = settings.number_style ?? DEFAULT_SETTINGS.eq_number_style as NumberStyle;
+                numberString = CONVERTER[style](num);
             }
         } else {
             numberString = settings.number;

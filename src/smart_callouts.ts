@@ -5,7 +5,7 @@ import { ENVs_MAP, TheoremLikeEnv, getTheoremLikeEnv } from 'env';
 import LanguageManager from 'language';
 import { generateBlockID, getCurrentMarkdown, increaseQuoteLevel, renderTextWithMath } from 'utils';
 import MathPlugin, { VAULT_ROOT } from 'main';
-import { formatTitleWithoutSubtitle, matchMathCallout } from 'autoIndex';
+import { formatTitle, formatTitleWithoutSubtitle, matchMathCallout, resolveSettings } from 'autoIndex';
 
 export class SmartCallout extends MarkdownRenderChild {
     env: TheoremLikeEnv;
@@ -110,39 +110,4 @@ export function overwriteMathCalloutMetadata(editor: Editor, lineNumber: number,
         lineNumber,
         `> [!math|${JSON.stringify(settings)}] ${title ?? ""}`,
     );
-}
-
-export function resolveSettings(settings: MathSettings | undefined, plugin: MathPlugin, currentFile: TFile) {
-    // Resolves settings. Does not overwride, but returns a new settings object.
-    let contextSettings = findNearestAncestorContextSettings(plugin, currentFile);
-    return Object.assign({}, plugin.settings[VAULT_ROOT], contextSettings, settings);
-}
-
-export function formatTitle(settings: MathSettings): string {
-    let env = ENVs_MAP[settings.type];
-
-    let title = '';
-    if (settings.rename && settings.rename[env.id]) {
-        title = settings.rename[env.id] as string;
-    } else {
-        title = env.printedNames[settings.lang as string];
-    }
-    if (settings.number) {
-        let numberString = '';
-        if (settings.number == 'auto') {
-            if (settings.autoIndex !== undefined) {
-                settings.number_init = settings.number_init ?? 1;
-                numberString = `${+settings.autoIndex + +settings.number_init}`;
-            }
-        } else {
-            numberString = settings.number;
-        }
-        if (numberString) {
-            title += ` ${settings.number_prefix}${numberString}${settings.number_suffix}`;
-        }
-    }
-    if (settings.title) {
-        title += ` (${settings.title})`;
-    }
-    return title;
 }
