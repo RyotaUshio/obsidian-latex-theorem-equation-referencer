@@ -1,4 +1,4 @@
-import { Plugin, TAbstractFile, TFile } from 'obsidian';
+import { MarkdownView, Plugin, TAbstractFile, TFile } from 'obsidian';
 import MathPlugin, { MathSettingTab, VAULT_ROOT } from 'main';
 import { App, Modal, Setting, TextComponent, prepareFuzzySearch, prepareSimpleSearch, SuggestModal, Notice, FuzzySuggestModal, TFolder } from 'obsidian';
 
@@ -68,15 +68,16 @@ abstract class MathSettingModal<SettingsType> extends Modal {
 }
 
 
-export class SmartCalloutModal extends MathSettingModal<MathSettings> {
-    buttonText: string;
+export class MathCalloutModal extends MathSettingModal<MathSettings> {
 
     constructor(
-        app: App, 
-        plugin: MathPlugin, 
+        app: App,
+        plugin: MathPlugin,
+        public view: MarkdownView,
         callback: (settings: MathSettings) => void,
-        currentCalloutSettings?: CalloutSettings, 
-        buttonText?: string, 
+        public buttonText?: string,
+        public headerText?: string, 
+        currentCalloutSettings?: CalloutSettings,
     ) {
         super(app, plugin, callback, currentCalloutSettings);
         this.buttonText = buttonText ?? "Insert";
@@ -87,13 +88,31 @@ export class SmartCalloutModal extends MathSettingModal<MathSettings> {
         this.settings = {} as MathSettings;
         const { contentEl } = this;
 
-        contentEl.createEl('h5', { text: 'Item-specific settings' });
+        if (this.headerText) {
+            contentEl.createEl("h4", {text: this.headerText});
+        }
+
         const itemSettingsHelper = new MathItemSettingsHelper(contentEl, this.settings, this.defaultSettings);
         itemSettingsHelper.makeSettingPane();
 
-        contentEl.createEl('h5', { text: 'Override context settings' });
-        const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.settings, this.defaultSettings);
-        contextSettingsHelper.makeSettingPane(false, false, false);
+        new Setting(contentEl)
+            .setName('Override context settings')
+            .addButton((button) => {
+                button.setButtonText("Open")
+                    .onClick((event) => {
+                        let modal = new ContextSettingModal(
+                            this.app,
+                            this.plugin, 
+                            this.view.file.path, 
+                            undefined, 
+                            false, 
+                            false, 
+                            false,
+                        );
+                        modal.resolveDefaultSettings(this.view.file);
+                        modal.open();
+                    })
+            });
 
         this.addButton(this.buttonText);
     }
@@ -102,7 +121,15 @@ export class SmartCalloutModal extends MathSettingModal<MathSettings> {
 
 export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
 
-    constructor(app: App, plugin: MathPlugin, public path: string, callback?: (settings: MathContextSettings) => void) {
+    constructor(
+        app: App, 
+        plugin: MathPlugin, 
+        public path: string, 
+        callback?: (settings: MathContextSettings) => void, 
+        public displayRename: boolean = true, 
+        public displayLineByLine: boolean = true, 
+        public displayEqNumberStyle: boolean = true, 
+    ) {
         super(app, plugin, callback);
     }
 
@@ -110,13 +137,17 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
         const { contentEl } = this;
 
         contentEl
-        .createEl('h3', { text: 'Local context settings for ' + this.path});
+            .createEl('h3', { text: 'Local context settings for ' + this.path });
 
         if (this.plugin.settings[this.path] === undefined) {
             this.plugin.settings[this.path] = {} as MathContextSettings;
         }
         const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.path], this.defaultSettings, this.plugin);
-        contextSettingsHelper.makeSettingPane(true, true, true);
+        contextSettingsHelper.makeSettingPane(
+            this.displayRename, 
+            this.displayLineByLine, 
+            this.displayEqNumberStyle
+        );
         this.addButton('Save');
     }
 }

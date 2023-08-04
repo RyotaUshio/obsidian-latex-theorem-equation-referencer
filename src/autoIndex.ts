@@ -168,9 +168,9 @@ export function readMathCalloutTitle(line: string): string | undefined {    // c
 }
 
 
-export function overwriteMathCalloutMetadata(editor: Editor, lineNumber: number, settings: MathSettings, title?: string) {
+export function overwriteMathCalloutMetadata(editor: Editor, lineNumber: number, settings: MathSettings, title?: string, force: boolean = false) {
     let cursorPos = editor.getCursor();
-    if (cursorPos.line == lineNumber) {
+    if (!force && cursorPos.line == lineNumber) {
         return; // do nothing, avoid conflict
     }
     const matchResult = matchMathCallout(editor.getLine(lineNumber));
