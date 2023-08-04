@@ -69,18 +69,16 @@ abstract class MathSettingModal<SettingsType> extends Modal {
 
 
 export class MathCalloutModal extends MathSettingModal<MathSettings> {
-
     constructor(
         app: App,
         plugin: MathPlugin,
         public view: MarkdownView,
         callback: (settings: MathSettings) => void,
-        public buttonText?: string,
-        public headerText?: string, 
+        public buttonText: string,
+        public headerText: string, 
         currentCalloutSettings?: CalloutSettings,
     ) {
         super(app, plugin, callback, currentCalloutSettings);
-        this.buttonText = buttonText ?? "Insert";
     }
 
 

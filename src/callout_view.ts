@@ -1,12 +1,9 @@
-import { Extension } from '@codemirror/state';
-import { Transaction } from '@codemirror/state';
-import { StateField } from '@codemirror/state';
-import { syntaxTree } from '@codemirror/language';
-import { RangeSetBuilder } from '@codemirror/state';
-import { EditorState } from '@codemirror/state';
-import { Decoration, DecorationSet, EditorView, WidgetType } from "@codemirror/view";
-import { SyntaxNodeRef } from '@lezer/common';
 import { finishRenderMath, renderMath } from "obsidian";
+import { Extension, Transaction, StateField, RangeSetBuilder, EditorState } from '@codemirror/state';
+import { Decoration, DecorationSet, EditorView, WidgetType } from "@codemirror/view";
+import { syntaxTree } from '@codemirror/language';
+
+import { nodeText } from 'utils';
 
 
 const DISPLAY_MATH_BEGIN = "formatting_formatting-math_formatting-math-begin_keyword_math_math-block";
@@ -137,10 +134,6 @@ function getMathInfos(state: EditorState): MathInfo[] {
     });
 
     return mathInfos;
-}
-
-function nodeText(node: SyntaxNodeRef, state: EditorState): string {
-    return state.sliceDoc(node.from, node.to);
 }
 
 function isInBlockquoteOrCallout(state: EditorState): boolean {

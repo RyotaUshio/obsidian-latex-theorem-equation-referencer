@@ -23,6 +23,7 @@
 	},
 	"dependencies": {
 		"@lezer/common": "^1.0.3",
+		"@codemirror/language": "^6.0.0",
 		"yaml": "^2.3.1"
 	}
 }
