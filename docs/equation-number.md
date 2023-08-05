@@ -10,8 +10,10 @@ As an exception, if your equation has `\tag{...}` already, it will be retained a
 
 Note that you have to include at least one line break between `$$ ... $$` if you want the equation to be numbered.
 Otherwise, Obsidian will not recognize it as a math block.
-Also note that you cannot insert a link to equations in callouts or blockquotes. 
-This is a inherent limitation of Obsidian, rather than this plugin.[^1]
+Also, note that you cannot insert a link to equations in callouts or blockquotes. 
+This is an inherent limitation of Obsidian rather than this plugin.[^1]
+
+See [Obsidian help](https://help.obsidian.md/Linking+notes+and+files/Internal+links#Link+to+a+block+in+a+note) for how to insert a link to callouts or equations.
 
 [^1]: Technically, it is possible to display an equation number for an equation in callouts. However, I think there is no point to do it if the equation cannot be referenced.
 
