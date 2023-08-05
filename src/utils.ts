@@ -259,6 +259,11 @@ export function getBlockIdsWithBacklink(path: string, app: App): string[] {
     return ids;
 }
 
+export function splitIntoLines(text: string): string[] {
+    // https://stackoverflow.com/a/5035005/13613783
+    return text.split(/\r?\n/);
+}
+
 export const MATH_CALLOUT_PATTERN = /\> *\[\! *math *\|(.*)\](.*)/;
 
 export function matchMathCallout(line: string): RegExpExecArray | null {

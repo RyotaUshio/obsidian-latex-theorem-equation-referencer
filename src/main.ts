@@ -8,7 +8,7 @@ import { insertDisplayMath, insertInlineMath } from 'key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
 import { blockquoteMathPreviewPlugin } from 'math_live_preview_in_callouts';
 import { isPluginEnabled } from 'obsidian-dataview';
-import { CurrentFileIndexer } from 'indexer';
+import { ActiveFileIndexer } from 'indexer';
 
 
 export const VAULT_ROOT = '/';
@@ -94,7 +94,7 @@ export default class MathPlugin extends Plugin {
 					let view = this.app.workspace.getActiveViewOfType(MarkdownView);
 					let cache = this.app.metadataCache.getFileCache(file);
 					if (view && cache) {
-						let indexer = new CurrentFileIndexer(this.app, this, view);
+						let indexer = new ActiveFileIndexer(this.app, this, view);
 						indexer.run(cache);
 					}
 				}

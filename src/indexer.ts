@@ -2,7 +2,7 @@ import { App, CachedMetadata, Editor, MarkdownView, Pos, SectionCache, TFile } f
 
 import MathPlugin from 'main';
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, findNearestAncestorContextSettings } from 'settings';
-import { getBlockIdsWithBacklink, locToEditorPosition, readMathCalloutSettings, getLinksAndEmbedsInFile, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout } from 'utils';
+import { getBlockIdsWithBacklink, locToEditorPosition, readMathCalloutSettings, getLinksAndEmbedsInFile, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines } from 'utils';
 
 
 type CalloutInfo = { cache: SectionCache, settings: MathSettings };
@@ -143,7 +143,7 @@ abstract class SinceFileIndexer {
     }
 }
 
-export class CurrentFileIndexer extends SinceFileIndexer {
+export class ActiveFileIndexer extends SinceFileIndexer {
     editor: Editor;
 
     constructor(public app: App, public plugin: MathPlugin, view: MarkdownView) {
@@ -171,6 +171,33 @@ export class CurrentFileIndexer extends SinceFileIndexer {
         if (cursorPos.line == lineNumber) {
             return false;
         }
+        return true;
+    }
+}
+
+
+export class NonActiveFileIndexer extends SinceFileIndexer {
+
+    async setLine(lineNumber: number, text: string): Promise<void> {
+        this.app.vault.process(this.file, (data: string): string => {
+            let lines = splitIntoLines(data);
+            lines[lineNumber] = text;
+            return lines.join('\n');
+        })
+    }
+
+    async getLine(lineNumber: number): Promise<string> {
+        let data = await this.app.vault.cachedRead(this.file);
+        let lines = splitIntoLines(data);
+        return lines[lineNumber];
+    }
+
+    async getRange(position: Pos): Promise<string> {
+        let content = await this.app.vault.cachedRead(this.file);
+        return content.slice(position.start.offset, position.end.offset);
+    }
+
+    isSafe(lineNumber: number): boolean {
         return true;
     }
 }
