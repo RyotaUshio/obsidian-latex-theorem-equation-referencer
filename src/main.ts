@@ -1,6 +1,6 @@
-import { MarkdownView, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
+import { MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 
-import { MathContextSettings, DEFAULT_SETTINGS, MathSettingTab } from 'settings';
+import { MathContextSettings, DEFAULT_SETTINGS, MathSettingTab, PLUGIN_NAME } from 'settings';
 import { getCurrentMarkdown } from 'utils';
 import { MathCallout, insertMathCalloutCallback } from 'math_callouts';
 import { ContextSettingModal, MathCalloutModal } from 'modals';
@@ -8,6 +8,7 @@ import { insertDisplayMath, insertInlineMath } from 'key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
 import { autoIndex, resolveSettings } from 'autoIndex';
 import { blockquoteMathPreviewPlugin } from 'math_live_preview_in_callouts';
+import { isPluginEnabled } from 'obsidian-dataview';
 
 
 export const VAULT_ROOT = '/';
@@ -76,6 +77,22 @@ export default class MathPlugin extends Plugin {
 					modal.resolveDefaultSettings(view.file);
 					modal.open();
 				}
+			}
+		});
+
+		this.app.workspace.onLayoutReady(() => {
+			if (!isPluginEnabled(this.app)) {
+				new Notice(
+					`${PLUGIN_NAME}: Make sure Dataview is installed & enabled.`, 
+					100000
+				);
+			}
+			// @ts-ignore
+			if (!this.app.plugins.enabledPlugins.has("mathlinks")) {
+				new Notice(
+					`${PLUGIN_NAME}: Make sure MathLinks is installed & enabled.`, 
+					100000
+				);
 			}
 		});
 
