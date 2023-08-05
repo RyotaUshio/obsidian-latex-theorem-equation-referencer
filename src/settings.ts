@@ -27,7 +27,7 @@ export interface MathContextSettings {
     lineByLine?: boolean;
 }
 
-export interface MathItemSettings {
+export interface MathCalloutSettings {
     type: string;
     number?: string;
     title?: string;
@@ -35,11 +35,11 @@ export interface MathItemSettings {
     mathLink?: string;
 }
 
-export interface MathItemPrivateFields {
+export interface MathCalloutPrivateFields {
     autoIndex?: number;
 }
 
-export type MathSettings = MathContextSettings & MathItemSettings & MathItemPrivateFields;
+export type MathSettings = MathContextSettings & MathCalloutSettings & MathCalloutPrivateFields;
 export type CalloutSettings = MathSettings;
 
 export const MATH_CONTXT_SETTINGS_KEYS = [
@@ -87,13 +87,13 @@ export const DEFAULT_SETTINGS = {
 }
 
 
-export class MathItemSettingsHelper {
+export class MathCalloutSettingsHelper {
     env: TheoremLikeEnv;
     constructor(
         public contentEl: HTMLElement,
-        public settings: MathItemSettings,
-        public defaultSettings: Partial<MathItemSettings>,
-    ) { }
+        public settings: MathCalloutSettings,
+        public defaultSettings: Partial<MathSettings>,
+    ) {}
 
     makeSettingPane() {
         const { contentEl } = this;
@@ -145,7 +145,9 @@ export class MathItemSettingsHelper {
 
 
                 let labelPane = new Setting(contentEl).setName("LaTeX Label");
-                let labelPrefixEl = labelPane.controlEl.createDiv({ text: this.env.prefix + ":" });
+                let labelPrefixEl = labelPane.controlEl.createDiv({ 
+                    text: this.env.prefix + ":" + (this.defaultSettings.label_prefix ?? "")
+                });
 
                 titlePane.addText((text) => {
                     text.inputEl.setAttribute('style', 'width: 300px;')
@@ -180,6 +182,9 @@ export class MathItemSettingsHelper {
                     this.settings.type = value;
                     this.env = getTheoremLikeEnv(value);
                     labelPrefixEl.textContent = this.env.prefix + ":";
+                    if (this.defaultSettings.label_prefix) {
+                        labelPrefixEl.textContent += this.defaultSettings.label_prefix;
+                    }
                 });
             });
     }
