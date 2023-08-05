@@ -1,9 +1,11 @@
-import { Setting, TAbstractFile, TextComponent } from "obsidian";
+import { App, MarkdownEditView, MarkdownView, PluginSettingTab, Setting, TAbstractFile, TextComponent } from "obsidian";
 
 import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from "env";
 import MathPlugin, { VAULT_ROOT } from "main";
 import { DEFAULT_LANG } from "default_lang";
 import LanguageManager from "language";
+import { autoIndex, resolveSettings } from "autoIndex";
+import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "modals";
 
 
 export const PLUGIN_NAME = "Obsidian Mathematics";
@@ -45,8 +47,8 @@ export const MATH_CONTXT_SETTINGS_KEYS = [
     "number_prefix",
     "number_suffix",
     "number_init",
-    "number_style", 
-    "eq_number_style", 
+    "number_style",
+    "eq_number_style",
     "label_prefix",
     "rename",
     "preamblePath",
@@ -76,8 +78,8 @@ export const DEFAULT_SETTINGS = {
     number_prefix: "",
     number_suffix: "",
     number_init: 1,
-    number_style: "arabic", 
-    eq_number_style: "arabic", 
+    number_style: "arabic",
+    eq_number_style: "arabic",
     label_prefix: "",
     rename: {} as RenameEnv,
     preamblePath: "",
@@ -307,8 +309,8 @@ export class MathContextSettingsHelper {
                 dropdown.addOption(style, style);
             }
             dropdown
-            .setValue(this.defaultSettings[name] ?? DEFAULT_SETTINGS[name])
-            .onChange(callback)
+                .setValue(this.defaultSettings[name] ?? DEFAULT_SETTINGS[name])
+                .onChange(callback)
         });
         return setting;
     }
@@ -332,6 +334,80 @@ export function findNearestAncestorContextSettings(plugin: MathPlugin, file: TAb
                 folder = folder.parent;
             } else {
                 throw Error(`Cannot find the parent of ${folder.path}`);
+            }
+        }
+    }
+}
+
+export class MathSettingTab extends PluginSettingTab {
+    constructor(app: App, public plugin: MathPlugin) {
+        super(app, plugin);
+    }
+
+    addRestoreDefaultsBottun(key: string) {
+        new Setting(this.containerEl)
+            .addButton((btn) => {
+                btn.setButtonText("Restore defaults");
+                btn.onClick(async (event) => {
+                    Object.assign(this.plugin.settings[key], DEFAULT_SETTINGS);
+                    await this.plugin.saveSettings();
+                    this.display();
+                })
+            });
+    }
+
+    displayUnit(key: string) {
+        let defaultSettings: MathContextSettings = {};
+        let folder = this.app.vault.getAbstractFileByPath(key);
+        if (folder) {
+            defaultSettings = resolveSettings(undefined, this.plugin, folder);
+        }
+        (new MathContextSettingsHelper(
+            this.containerEl,
+            this.plugin.settings[key],
+            defaultSettings,
+            this.plugin,
+        )).makeSettingPane(true, true, true);
+        this.addRestoreDefaultsBottun(key);
+    }
+
+    display() {
+        let { containerEl } = this;
+        containerEl.empty();
+
+        containerEl.createEl("h3", { text: "Global settings" });
+        this.displayUnit(VAULT_ROOT);
+
+        containerEl.createEl("h3", { text: "Local settings" });
+        new Setting(containerEl).setName("Local settings")
+            .setDesc("You can set up file-specific or folder-specific configurations, which have more precedence than the global settings.")
+            .addButton((btn) => {
+                btn.setButtonText("Search files & folders")
+                    .onClick((event) => {
+                        new LocalContextSettingsSuggestModal(this.app, this.plugin, this).open();
+                    });
+            });
+
+        new Setting(containerEl)
+            .setName("Excluded files")
+            .setDesc("You can make your search results more visible by excluding certain files or folders.")
+            .addButton((btn) => {
+                btn.setButtonText("Manage")
+                    .onClick((event) => {
+                        new ExcludedFileManageModal(this.app, this.plugin).open();
+                    });
+            });
+    }
+
+    hide(): any {
+        super.hide();
+
+        // run auto-reload so that the new settings comes into effect
+        let view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (view) {
+            let cache = this.app.metadataCache.getFileCache(view.file);
+            if (cache) {
+                autoIndex(cache, view.editor, view.file, this.plugin);
             }
         }
     }

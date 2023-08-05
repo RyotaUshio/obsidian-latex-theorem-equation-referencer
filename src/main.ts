@@ -1,23 +1,19 @@
 import {
-	App,
 	MarkdownView,
 	Plugin,
-	PluginSettingTab,
-	Setting,
 	TFile,
 	MarkdownRenderChild,
 	WorkspaceLeaf,
 } from 'obsidian';
 
-import { MathContextSettings, DEFAULT_SETTINGS, MathContextSettingsHelper } from 'settings';
+import { MathContextSettings, DEFAULT_SETTINGS, MathSettingTab } from 'settings';
 import { getCurrentMarkdown } from 'utils';
 import { MathCallout, insertMathCalloutCallback } from 'math_callouts';
-import { ContextSettingModal, ExcludedFileManageModal, LocalContextSettingsSuggestModal, MathCalloutModal } from 'modals';
+import { ContextSettingModal, MathCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
 import { autoIndex, resolveSettings } from 'autoIndex';
 import { blockquoteMathPreviewPlugin2 } from 'callout_view';
-
 
 export const VAULT_ROOT = '/';
 
@@ -195,68 +191,5 @@ export default class MathPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData({ settings: this.settings, excludedFiles: this.excludedFiles });
-	}
-}
-
-
-export class MathSettingTab extends PluginSettingTab {
-	constructor(app: App, public plugin: MathPlugin) {
-		super(app, plugin);
-	}
-
-	addRestoreDefaultsBottun(key: string) {
-		new Setting(this.containerEl)
-			.addButton((btn) => {
-				btn.setButtonText("Restore defaults");
-				btn.onClick(async (event) => {
-					Object.assign(this.plugin.settings[key], DEFAULT_SETTINGS);
-					await this.plugin.saveSettings();
-					this.display();
-				})
-			});
-	}
-
-	displayUnit(key: string) {
-		let defaultSettings: MathContextSettings = {};
-		let folder = this.app.vault.getAbstractFileByPath(key);
-		if (folder) {
-			defaultSettings = resolveSettings(undefined, this.plugin, folder);
-		}
-		(new MathContextSettingsHelper(
-			this.containerEl,
-			this.plugin.settings[key],
-			defaultSettings,
-			this.plugin,
-		)).makeSettingPane(true, true, true);
-		this.addRestoreDefaultsBottun(key);
-	}
-
-	display() {
-		let { containerEl } = this;
-		containerEl.empty();
-
-		containerEl.createEl("h3", { text: "Global settings" });
-		this.displayUnit(VAULT_ROOT);
-
-		containerEl.createEl("h3", { text: "Local settings" });
-		new Setting(containerEl).setName("Local settings")
-			.setDesc("You can set up file-specific or folder-specific configurations, which have more precedence than the global settings.")
-			.addButton((btn) => {
-				btn.setButtonText("Search files & folders")
-					.onClick((event) => {
-						new LocalContextSettingsSuggestModal(this.app, this.plugin, this).open();
-					});
-			});
-
-
-		new Setting(containerEl)
-			.setName("Excluded files")
-			.setDesc("You can make your search results more visible by excluding certain files or folders.")
-			.addButton((btn) => {
-				btn.setButtonText("Manage")
-					.onClick((event) => {
-						new ExcludedFileManageModal(this.app, this.plugin).open();
-					});
-			});
 	}
 }
