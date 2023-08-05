@@ -34,7 +34,7 @@ Then, the equation will be numbered and the link will be displayed with the numb
 
 ![Result](fig/equation_number_2.png)
 
-Next, let's insert a link to the first equation:
+Next, let's insert a link to the equation at the top:
 
 ![Second link](fig/equation_number_3.png)
 
@@ -88,7 +88,12 @@ This is an inherent limitation of Obsidian rather than this plugin.[^1]
 ## The `align` Environment
 
 You can choose whether multi-line equations in an `align` environment are numbered _collectively as a group_ or _individually_.
-
 Go to the "Number line by line in align" section in the plugin preferences to change the current setting.
 
-![individually](fig/equation_number_align_0.png)
+![Collectively](fig/equation_number_align_0.png)
+
+![Collectively](fig/equation_number_align_1.png)
+
+When "Number line by line in align" is turned on, you can exclude a line from numbering by inserting `\nonumber`, just like in LaTeX.
+
+![Collectively](fig/equation_number_align_2.png)
