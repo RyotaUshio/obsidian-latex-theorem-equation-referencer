@@ -3,8 +3,6 @@ layout: page
 title: Equation Numbering
 ---
 
-**Remark**: This feature requires the [Dataview](obsidian://show-plugin?id=dataview) community plugin installed & enabled.
-
 When you insert a link to a math equation block (`[[#^block-ID]]` or `[[note-title#^block-ID]]`), this plugin automatically detects it and assigns an equation number to the equation. 
 This can take a few seconds because this plugin has to wait until Dataview finishes updating the metadata cache.
 
