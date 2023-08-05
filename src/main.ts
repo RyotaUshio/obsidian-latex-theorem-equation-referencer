@@ -25,6 +25,7 @@ import {
 	MarkdownPreviewView,
 } from 'obsidian';
 
+import { getAPI } from "obsidian-dataview";
 
 import { MathSettings, MathContextSettings, DEFAULT_SETTINGS, MathContextSettingsHelper, findNearestAncestorContextSettings } from 'settings';
 import { getLinksAndEmbedsInFile, increaseQuoteLevel, linktext2TFile, getCurrentMarkdown, getActiveTextView, getMathTag, getMathCache } from 'utils';
@@ -32,7 +33,7 @@ import { MathCallout, insertMathCalloutCallback } from 'math_callouts';
 import { ContextSettingModal, ExcludedFileManageModal, LocalContextSettingsSuggestModal, MathCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin, replaceMathTag } from 'equation_number';
-import { autoIndex, resolveSettings, sortedEquations } from 'autoIndex';
+import { autoIndex, getBacklinks, resolveSettings, sortedEquations } from 'autoIndex';
 import { blockquoteMathPreviewPlugin2 } from 'callout_view';
 
 
@@ -55,6 +56,14 @@ export default class MathPlugin extends Plugin {
 	async onload() {
 
 		await this.loadSettings();
+
+		this.addCommand({
+			id: "dataview-test", 
+			name: "Dataview Test", 
+			callback: () => {
+				getBacklinks("Hello", this.app);
+			}
+		});
 
 		this.addCommand({
 			id: 'insert-inline-math',
