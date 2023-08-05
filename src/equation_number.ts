@@ -110,12 +110,11 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, path:
                             try {
                                 tag = getMathTag(cache, mathCache);
                             } catch (err) {
-                                // retry later if it was too soon
+                                // retry later if it was too soons (= cache is not readly yet)
                             }
-                            if (tag) {
-                                let text = getMathText(view, mathCache);
-                                replaceMathTag(displayMathEl, text, tag, lineByLine);
-                            }
+
+                            let text = getMathText(view, mathCache);
+                            replaceMathTag(displayMathEl, text, tag, lineByLine);
                         }
                     }
                 }
@@ -179,12 +178,28 @@ export function replaceMathTag(displayMathEl: HTMLElement, text: string, tag: st
     if (tagMatch) {
         return;
     }
+
+    if (!tag) {
+        let tagEls = displayMathEl.getElementsByClassName("auto-numbered");
+        if (tagEls) {
+            for (let i = 0; i < tagEls.length; i++) {
+                let tagEl = tagEls[i];
+                tagEl.remove();
+            }
+        }
+        return;
+    }
+
     let taggedText = getMathTextWithTag(text, tag, lineByLine);
     if (taggedText) {
         let mjxContainerEl = renderMath(taggedText, true);
         finishRenderMath();
         let parentEl = displayMathEl.parentElement;
         if (parentEl) {
+            let tagEl = mjxContainerEl.querySelector<HTMLElement>('mjx-itable[align="right"]');
+            if (tagEl) {
+                tagEl.classList.add("auto-numbered");
+            }
             parentEl.replaceWith(mjxContainerEl);
         }
     }
