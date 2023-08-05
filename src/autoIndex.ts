@@ -71,6 +71,15 @@ export function sortedEquations(editor: Editor, cache: CachedMetadata, path: str
 }
 
 export function autoIndex(cache: CachedMetadata, editor: Editor, currentFile: TFile, plugin: MathPlugin) {
+    // do noting while editing the frontmatter
+    let cursorLine = editor.getCursor().line;
+    if ((cache.frontmatter && cursorLine <= cache.frontmatter.position.end.line)
+        || 
+        (cache.sections && cache.sections[0].type == 'yaml' && cursorLine <= cache.sections[0].position.end.line)
+    ) {
+        return;
+    }
+
     let callouts = sortedMathCallouts(editor, cache);
     let equations = sortedEquations(editor, cache, currentFile.path, plugin.app);
 
