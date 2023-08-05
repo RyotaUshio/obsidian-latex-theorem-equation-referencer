@@ -14,5 +14,12 @@ The core features of this plugin include:
 
 See the [documentation](https://ryotaushio.github.io/obsidian-math) for the details and installation instructions.
 
+## Dependencies
+
+The following community plugin is required to be installed and enabled.
+
+- [Dataview](obsidian://show-plugin?id=dataview) version >= 0.5.0
+- [MathLinks](obsidian://show-plugin?id=mathlinks) version >= 0.4.0
+
 ## Demos
 
