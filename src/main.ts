@@ -100,7 +100,6 @@ export default class MathPlugin extends Plugin {
 			// @ts-ignore
 			this.app.metadataCache.on("dataview:metadata-change",
 				(type: string, file: TFile, oldPath?: string) => {
-					console.log("Dataview: metadata changed!");
 					let activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 					let editor = activeView?.editor;
 					let cache = this.app.metadataCache.getFileCache(file);
