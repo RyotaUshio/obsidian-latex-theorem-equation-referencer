@@ -3,8 +3,7 @@ import { ENVs_MAP } from "env";
 import MathPlugin, { VAULT_ROOT } from "main";
 import { App, CachedMetadata, Editor, Loc, MarkdownView, SectionCache, TAbstractFile, TFile, parseLinktext, resolveSubpath } from "obsidian";
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, findNearestAncestorContextSettings } from "settings";
-import { CONVERTER, locToEditorPosition } from "utils";
-import { DataviewApi } from 'obsidian-dataview';
+import { CONVERTER, getBlockIdsWithBacklink, locToEditorPosition } from "utils";
 
 
 type CalloutInfo = { cache: SectionCache, settings: MathSettings };
@@ -50,65 +49,13 @@ export function sortedMathCallouts(editor: Editor, cache: CachedMetadata): Callo
     );
 }
 
-
-export function sortedEquations(editor: Editor, cache: CachedMetadata): EquationInfo[] {
-    return sortedBlocks<EquationInfo>(
-        editor, cache, "math",
-        (sections, sectionCache, editor) => {
-            if (sectionCache.id) {
-                let from = locToEditorPosition(sectionCache.position.start);
-                let to = locToEditorPosition(sectionCache.position.end);
-                let text = editor.getRange(from, to);
-                let tagMatch = text.match(/\\tag\{(.*)\}/);
-                if (tagMatch) {
-                    sections.push({ cache: sectionCache, manualTag: tagMatch[1] });
-                } else {
-                    sections.push({ cache: sectionCache });
-                }
-            }
-        }
-    );
-}
-
-export function getBlockIdsWithBacklink(path: string, app: App) {
-    const dv = getAPI(app); // Dataview API
-    if (dv) {
-        let page = dv.page(path); // Dataview page object
-        if (page) {
-            for (let inlink of page.file.inlinks) {
-                // cache of the source of this link (source --link--> target)
-                let cache = app.metadataCache.getCache(inlink.path); 
-                if (cache) {
-                    cache?.links?.forEach(
-                        (item) => {
-                            let linktext = item.link;
-                            let { path, subpath } = parseLinktext(linktext);
-                            // @ts-ignore
-                            let targetFile = app.metadataCache.getFirstLinkpathDest(path, inlink.path);
-                            if (targetFile) {
-                                let targetCache = app.metadataCache.getFileCache(targetFile);
-                                if (targetCache) {
-                                    let subpathResult = resolveSubpath(targetCache, subpath);
-                                    if (subpathResult && subpathResult.type == "block") {
-                                        let blockCache = subpathResult.block;
-                                        let id = blockCache.id;
-                                    }
-                                }
-                            }
-                    )
-
-                }
-            }
-        }
-    }
-}
-
-export function sortedEquations2(editor: Editor, cache: CachedMetadata): EquationInfo[] {
+export function sortedEquations(editor: Editor, cache: CachedMetadata, path: string, app: App): EquationInfo[] {
     // based on backlinks, not blockIDs.
+    let linkedBlockIds = getBlockIdsWithBacklink(path, app);
     return sortedBlocks<EquationInfo>(
         editor, cache, "math",
         (sections, sectionCache, editor) => {
-            if (sectionCache.id) {
+            if (sectionCache.id && linkedBlockIds.contains(sectionCache.id)) {
                 let from = locToEditorPosition(sectionCache.position.start);
                 let to = locToEditorPosition(sectionCache.position.end);
                 let text = editor.getRange(from, to);
@@ -125,7 +72,7 @@ export function sortedEquations2(editor: Editor, cache: CachedMetadata): Equatio
 
 export function autoIndex(cache: CachedMetadata, editor: Editor, currentFile: TFile, plugin: MathPlugin) {
     let callouts = sortedMathCallouts(editor, cache);
-    let equations = sortedEquations(editor, cache);
+    let equations = sortedEquations(editor, cache, currentFile.path, plugin.app);
 
     let mathLinkCache: Record<string, string> = {}; // {[id]: [mathLink], ...}
 

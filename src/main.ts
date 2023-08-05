@@ -1,39 +1,21 @@
 import {
 	App,
-	Editor,
 	MarkdownView,
-	Modal,
-	Notice,
 	Plugin,
 	PluginSettingTab,
 	Setting,
-	parseLinktext,
-	MetadataCache,
-	FileSystemAdapter,
-	getLinkpath,
 	TFile,
-	LinkCache,
 	MarkdownRenderChild,
-	loadMathJax,
-	renderMath,
-	finishRenderMath,
-	FuzzySuggestModal,
-	TFolder,
-	resolveSubpath,
 	WorkspaceLeaf,
-	MarkdownPreviewRenderer,
-	MarkdownPreviewView,
 } from 'obsidian';
 
-import { getAPI } from "obsidian-dataview";
-
-import { MathSettings, MathContextSettings, DEFAULT_SETTINGS, MathContextSettingsHelper, findNearestAncestorContextSettings } from 'settings';
-import { getLinksAndEmbedsInFile, increaseQuoteLevel, linktext2TFile, getCurrentMarkdown, getActiveTextView, getMathTag, getMathCache } from 'utils';
+import { MathContextSettings, DEFAULT_SETTINGS, MathContextSettingsHelper } from 'settings';
+import { getCurrentMarkdown } from 'utils';
 import { MathCallout, insertMathCalloutCallback } from 'math_callouts';
 import { ContextSettingModal, ExcludedFileManageModal, LocalContextSettingsSuggestModal, MathCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
-import { DisplayMathRenderChild, buildEquationNumberPlugin, replaceMathTag } from 'equation_number';
-import { autoIndex, getBacklinks, resolveSettings, sortedEquations } from 'autoIndex';
+import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
+import { autoIndex, resolveSettings } from 'autoIndex';
 import { blockquoteMathPreviewPlugin2 } from 'callout_view';
 
 
@@ -58,14 +40,6 @@ export default class MathPlugin extends Plugin {
 		await this.loadSettings();
 
 		this.addCommand({
-			id: "dataview-test", 
-			name: "Dataview Test", 
-			callback: () => {
-				getBacklinks("Hello", this.app);
-			}
-		});
-
-		this.addCommand({
 			id: 'insert-inline-math',
 			name: 'Insert Inline Math',
 			editorCallback: insertInlineMath
@@ -85,17 +59,17 @@ export default class MathPlugin extends Plugin {
 					let modal = new MathCalloutModal(
 						this.app,
 						this,
-						context, 
+						context,
 						(config) => {
 							if (context.file) {
 								insertMathCalloutCallback(this.app, this, editor, config, context.file);
 							}
 						},
-						"Insert", 
+						"Insert",
 						"Insert a Math Callout",
 					);
 					modal.resolveDefaultSettings(getCurrentMarkdown(this.app));
-					modal.open();	
+					modal.open();
 				}
 			}
 		});
@@ -107,8 +81,8 @@ export default class MathPlugin extends Plugin {
 				let view = this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (view) {
 					let modal = new ContextSettingModal(
-						this.app, 
-						this, view.file.path, 
+						this.app,
+						this, view.file.path,
 						(settings) => {
 							// @ts-ignore
 							let cache = this.app.metadataCache.getCache(view.file.path);
@@ -123,12 +97,14 @@ export default class MathPlugin extends Plugin {
 		});
 
 		this.registerEvent(
-			this.app.metadataCache.on(
-				'changed',
-				(file, data, cache) => {
+			// @ts-ignore
+			this.app.metadataCache.on("dataview:metadata-change",
+				(type: string, file: TFile, oldPath?: string) => {
+					console.log("Dataview: metadata changed!");
 					let activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 					let editor = activeView?.editor;
-					if (activeView && editor && file == activeView.file) {
+					let cache = this.app.metadataCache.getFileCache(file);
+					if (type == 'update' && editor && activeView && file == activeView.file && cache) {
 						autoIndex(cache, editor, file, this);
 					}
 				}
@@ -150,7 +126,7 @@ export default class MathPlugin extends Plugin {
 				this.registerEditorExtension(buildEquationNumberPlugin(this.app, leaf.view.file.path, Boolean(settings.lineByLine)));
 			}
 		});
-					
+
 		this.registerEditorExtension(blockquoteMathPreviewPlugin2.extension);
 
 
