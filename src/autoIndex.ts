@@ -126,17 +126,10 @@ export function autoIndex(cache: CachedMetadata, editor: Editor, currentFile: TF
         }
     }
 
-    plugin.app.fileManager.processFrontMatter(
-        currentFile,
-        (frontmatter) => {
-            if (JSON.stringify(frontmatter["mathLink-blocks"]) != JSON.stringify(mathLinkCache)) {
-                if (Object.keys(mathLinkCache).length) {
-                    frontmatter["mathLink-blocks"] = mathLinkCache;
-                } else {
-                    delete frontmatter["mathLink-blocks"];
-                }
-            }
-        });
+    plugin.mathLinksAPI.update(
+        currentFile.path, 
+        { "mathLink-blocks": mathLinkCache }
+    );
 }
 
 

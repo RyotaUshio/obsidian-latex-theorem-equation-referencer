@@ -17,11 +17,18 @@ export const VAULT_ROOT = '/';
 export default class MathPlugin extends Plugin {
 	settings: Record<string, MathContextSettings>;
 	excludedFiles: string[];
-
+	mathLinksAPI: any;
 
 	async onload() {
 
 		await this.loadSettings();
+
+		this.app.workspace.onLayoutReady(() => {
+			this.assertDataview();
+			if (this.assertMathLinks()) {
+				this.getMathLinksAPI();
+			}
+		});
 
 		this.addCommand({
 			id: 'insert-inline-math',
@@ -80,22 +87,6 @@ export default class MathPlugin extends Plugin {
 			}
 		});
 
-		this.app.workspace.onLayoutReady(() => {
-			if (!isPluginEnabled(this.app)) {
-				new Notice(
-					`${PLUGIN_NAME}: Make sure Dataview is installed & enabled.`, 
-					100000
-				);
-			}
-			// @ts-ignore
-			if (!this.app.plugins.enabledPlugins.has("mathlinks")) {
-				new Notice(
-					`${PLUGIN_NAME}: Make sure MathLinks is installed & enabled.`, 
-					100000
-				);
-			}
-		});
-
 		this.registerEvent(
 			// @ts-ignore
 			this.app.metadataCache.on("dataview:metadata-change",
@@ -114,7 +105,7 @@ export default class MathPlugin extends Plugin {
 			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
 				if (leaf.view instanceof MarkdownView) {
 					let settings = resolveSettings(undefined, this, leaf.view.file);
-					this.registerEditorExtension(buildEquationNumberPlugin(this.app, leaf.view.file.path, Boolean(settings.lineByLine)));
+					this.registerEditorExtension(buildEquationNumberPlugin(this.app, this, leaf.view.file.path, Boolean(settings.lineByLine)));
 				}
 			});
 		});
@@ -122,7 +113,7 @@ export default class MathPlugin extends Plugin {
 		this.app.workspace.on("active-leaf-change", (leaf: WorkspaceLeaf) => {
 			if (leaf.view instanceof MarkdownView) {
 				let settings = resolveSettings(undefined, this, leaf.view.file);
-				this.registerEditorExtension(buildEquationNumberPlugin(this.app, leaf.view.file.path, Boolean(settings.lineByLine)));
+				this.registerEditorExtension(buildEquationNumberPlugin(this.app, this, leaf.view.file.path, Boolean(settings.lineByLine)));
 			}
 		});
 
@@ -176,7 +167,9 @@ export default class MathPlugin extends Plugin {
 	}
 
 	onunload() {
-
+		if (this.mathLinksAPI) {
+			this.mathLinksAPI.deleteUser();
+		}
 	}
 
 	async loadSettings() {
@@ -193,5 +186,38 @@ export default class MathPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData({ settings: this.settings, excludedFiles: this.excludedFiles });
+	}
+
+	assertDataview(): boolean {
+		if (!isPluginEnabled(this.app)) {
+			new Notice(
+				`${PLUGIN_NAME}: Make sure Dataview is installed & enabled.`,
+				100000
+			);
+			return false;
+		}
+		return true;
+	}
+
+	assertMathLinks() {
+		// @ts-ignore				
+		if (!this.app.plugins.enabledPlugins.has("mathlinks")) {
+			new Notice(
+				`${PLUGIN_NAME}: Make sure MathLinks is installed & enabled.`,
+				100000
+			);
+			return false;
+		}
+		return true;
+	}
+
+	getMathLinksAPI() {
+		try {
+			// @ts-ignore
+			this.mathLinksAPI = this.app.plugins.plugins.mathlinks.getAPI(PLUGIN_NAME, "");
+		} catch (err) {
+			new Notice(err);
+			throw err;
+		}
 	}
 }

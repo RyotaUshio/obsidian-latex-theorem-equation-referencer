@@ -1,9 +1,8 @@
 import MathPlugin from 'main';
-import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, SectionCache, MarkdownSectionInformation, TFile, } from "obsidian";
+import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, SectionCache, MarkdownSectionInformation } from "obsidian";
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
 import { getMathCache, getMathCacheFromPos, getMathTag, locToEditorPosition } from 'utils';
-import { MathContextSettings, MathSettings } from 'settings';
 import { resolveSettings } from 'autoIndex';
 
 
@@ -55,12 +54,11 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         if (cache && info) {
             let mathCache = getMathCache(cache, info.lineStart);
             if (mathCache) {
-                tag = getMathTag(cache, mathCache);
+                tag = getMathTag(this.plugin, this.context.sourcePath, mathCache);
             }
         }
         return tag;
     }
-
 
     setTextAndTag(editor: Editor) {
         this.setId();
@@ -73,7 +71,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
                 let from = locToEditorPosition(sectionCache.position.start);
                 let to = locToEditorPosition(sectionCache.position.end);
                 let text = editor.getRange(from, to);
-                let tag = cache.frontmatter["mathLink-blocks"][this.id];
+                let tag = this.plugin.mathLinksAPI.get(this.context.sourcePath, this.id);
                 this.text = text;
                 this.tag = tag;
             }
@@ -83,7 +81,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
 }
 
 
-export function buildEquationNumberPlugin<V extends PluginValue>(app: App, path: string, lineByLine: boolean): ViewPlugin<V> {
+export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugin: MathPlugin, path: string, lineByLine: boolean): ViewPlugin<V> {
 
     return ViewPlugin.fromClass(class implements PluginValue {
         constructor(public view: EditorView) {
@@ -108,7 +106,7 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, path:
                         let mathCache = getMathCacheFromPos(cache, pos);
                         if (tagAll === undefined && mathCache) {
                             try {
-                                tag = getMathTag(cache, mathCache);
+                                tag = getMathTag(plugin, path, mathCache);
                             } catch (err) {
                                 // retry later if it was too soons (= cache is not readly yet)
                             }

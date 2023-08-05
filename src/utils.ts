@@ -1,5 +1,6 @@
 import { EditorState } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
+import MathPlugin from 'main';
 
 // Generic utility functions handing files.
 
@@ -194,10 +195,10 @@ export function getMathCacheFromPos(cache: CachedMetadata, pos: number): Section
     }
 }
 
-export function getMathTag(cache: CachedMetadata, mathCache: SectionCache): string {
+export function getMathTag(plugin: MathPlugin, path: string, mathCache: SectionCache): string {
     let tag = '';
-    if (mathCache?.id && cache.frontmatter) {
-        tag = cache.frontmatter["mathLink-blocks"][mathCache.id] ?? '';
+    if (mathCache?.id) {
+        tag = plugin.mathLinksAPI.get(path, mathCache.id) ?? '';
     }
     return tag;
 }

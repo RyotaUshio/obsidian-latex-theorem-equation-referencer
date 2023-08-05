@@ -32,7 +32,6 @@ export interface MathCalloutSettings {
     number?: string;
     title?: string;
     label?: string;
-    mathLink?: string;
 }
 
 export interface MathCalloutPrivateFields {
@@ -60,7 +59,6 @@ export const MATH_ITEM_SETTINGS_KEYS = [
     "number",
     "title",
     "label",
-    "mathLink",
 ]
 
 export const MATH_ITEM_PRIVATE_FIELDS_KEYS = [
