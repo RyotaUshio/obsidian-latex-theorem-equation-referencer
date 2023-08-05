@@ -25,7 +25,7 @@ class MathPreviewWidget extends WidgetType {
 
 type MathInfo = { mathText: string, display: boolean, from: number, to: number };
 
-export const blockquoteMathPreviewPlugin2 = StateField.define<DecorationSet>({
+export const blockquoteMathPreviewPlugin = StateField.define<DecorationSet>({
     create(state: EditorState): DecorationSet {
         return Decoration.none;
     },
@@ -39,7 +39,6 @@ export const blockquoteMathPreviewPlugin2 = StateField.define<DecorationSet>({
         return EditorView.decorations.from(field);
     },
 });
-
 
 function impl(state: EditorState): DecorationSet {
     let builder = new RangeSetBuilder<Decoration>();
@@ -71,7 +70,6 @@ function impl(state: EditorState): DecorationSet {
     }
     return builder.finish();
 }
-
 
 function getMathInfos(state: EditorState): MathInfo[] {
     let tree = syntaxTree(state);

@@ -1,10 +1,10 @@
 import { MarkdownView, Plugin, TAbstractFile, TFile } from 'obsidian';
-import MathPlugin, { MathSettingTab, VAULT_ROOT } from 'main';
+import MathPlugin, { VAULT_ROOT } from 'main';
 import { App, Modal, Setting, TextComponent, prepareFuzzySearch, prepareSimpleSearch, SuggestModal, Notice, FuzzySuggestModal, TFolder } from 'obsidian';
 
 import { TheoremLikeEnv, getTheoremLikeEnv, ENVs } from 'env';
 import LanguageManager from 'language';
-import { MathSettings, MathContextSettings, MathItemSettings, MathItemSettingsHelper, MathContextSettingsHelper, MATH_CONTXT_SETTINGS_KEYS, CalloutSettings, findNearestAncestorContextSettings, DEFAULT_SETTINGS } from 'settings';
+import { MathSettings, MathContextSettings, MathItemSettings, MathItemSettingsHelper, MathContextSettingsHelper, MATH_CONTXT_SETTINGS_KEYS, CalloutSettings, findNearestAncestorContextSettings, DEFAULT_SETTINGS, MathSettingTab } from 'settings';
 import { getCurrentMarkdown, isEqualToOrChildOf } from 'utils';
 
 

@@ -1,10 +1,4 @@
-import {
-	MarkdownView,
-	Plugin,
-	TFile,
-	MarkdownRenderChild,
-	WorkspaceLeaf,
-} from 'obsidian';
+import { MarkdownView, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 
 import { MathContextSettings, DEFAULT_SETTINGS, MathSettingTab } from 'settings';
 import { getCurrentMarkdown } from 'utils';
@@ -13,17 +7,10 @@ import { ContextSettingModal, MathCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
 import { autoIndex, resolveSettings } from 'autoIndex';
-import { blockquoteMathPreviewPlugin2 } from 'callout_view';
+import { blockquoteMathPreviewPlugin } from 'math_live_preview_in_callouts';
+
 
 export const VAULT_ROOT = '/';
-
-
-class CMTest extends MarkdownRenderChild {
-	onload(): void {
-		this.containerEl.remove();
-	}
-}
-
 
 
 export default class MathPlugin extends Plugin {
@@ -122,8 +109,7 @@ export default class MathPlugin extends Plugin {
 			}
 		});
 
-		this.registerEditorExtension(blockquoteMathPreviewPlugin2.extension);
-
+		this.registerEditorExtension(blockquoteMathPreviewPlugin);
 
 		this.registerMarkdownPostProcessor(async (element, context) => {
 			const callouts = element.querySelectorAll<HTMLElement>(".callout");
@@ -160,7 +146,6 @@ export default class MathPlugin extends Plugin {
 				}
 			}
 		});
-
 
 		this.registerEvent(this.app.metadataCache.on("changed", (file, data, cache) => {
 			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
