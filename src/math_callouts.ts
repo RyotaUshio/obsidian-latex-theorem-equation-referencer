@@ -1,11 +1,10 @@
 import { MathCalloutModal } from 'modals';
-import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, TFile, Menu, setIcon } from "obsidian";
-import { MATH_SETTINGS_KEYS, MathSettings, findNearestAncestorContextSettings } from 'settings';
-import { ENVs_MAP, TheoremLikeEnv, getTheoremLikeEnv } from 'env';
-import LanguageManager from 'language';
-import { generateBlockID, getCurrentMarkdown, increaseQuoteLevel, renderTextWithMath } from 'utils';
-import MathPlugin, { VAULT_ROOT } from 'main';
-import { formatTitle, formatTitleWithoutSubtitle, matchMathCallout, overwriteMathCalloutMetadata, resolveSettings } from 'autoIndex';
+import { App, Editor, MarkdownRenderChild, MarkdownView, TFile } from "obsidian";
+import { MathSettings } from 'settings';
+import { TheoremLikeEnv, getTheoremLikeEnv } from 'env';
+import { generateBlockID, increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings } from 'utils';
+import MathPlugin from 'main';
+import { CurrentFileIndexer } from 'indexer';
 
 export class MathCallout extends MarkdownRenderChild {
     env: TheoremLikeEnv;
@@ -60,7 +59,8 @@ export class MathCallout extends MarkdownRenderChild {
                                 resolvedSettings["autoIndex"] = this.config.autoIndex;
                             }
                             let title = formatTitle(resolvedSettings);
-                            overwriteMathCalloutMetadata(editor, editor.getCursor().line, settings, title, true);
+                            let indexer = new CurrentFileIndexer(this.app, this.plugin, view);
+                            indexer.overwriteMathCalloutSettings(editor.getCursor().line, settings, title);
                         },
                         "Confirm", 
                         "Edit Math Callout Settings", 
@@ -99,15 +99,3 @@ export function insertMathCalloutCallback(app: App, plugin: MathPlugin, editor: 
     cursorPos.ch = 2;
     editor.setCursor(cursorPos);
 }
-
-
-// export function overwriteMathCalloutMetadata(editor: Editor, lineNumber: number, settings: MathSettings, title?: string) {
-//     const matchResult = matchMathCallout(editor.getLine(lineNumber));
-//     if (!matchResult) {
-//         throw Error(`Math callout not found at line ${lineNumber}, could not overwrite`);
-//     }
-//     editor.setLine(
-//         lineNumber,
-//         `> [!math|${JSON.stringify(settings)}] ${title ?? ""}`,
-//     );
-// }

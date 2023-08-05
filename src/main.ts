@@ -1,14 +1,14 @@
 import { MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 
 import { MathContextSettings, DEFAULT_SETTINGS, MathSettingTab, PLUGIN_NAME } from 'settings';
-import { getCurrentMarkdown } from 'utils';
+import { getCurrentMarkdown, resolveSettings } from 'utils';
 import { MathCallout, insertMathCalloutCallback } from 'math_callouts';
 import { ContextSettingModal, MathCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
-import { autoIndex, resolveSettings } from 'autoIndex';
 import { blockquoteMathPreviewPlugin } from 'math_live_preview_in_callouts';
 import { isPluginEnabled } from 'obsidian-dataview';
+import { CurrentFileIndexer } from 'indexer';
 
 
 export const VAULT_ROOT = '/';
@@ -91,11 +91,11 @@ export default class MathPlugin extends Plugin {
 			// @ts-ignore
 			this.app.metadataCache.on("dataview:metadata-change",
 				(type: string, file: TFile, oldPath?: string) => {
-					let activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-					let editor = activeView?.editor;
+					let view = this.app.workspace.getActiveViewOfType(MarkdownView);
 					let cache = this.app.metadataCache.getFileCache(file);
-					if (type == 'update' && editor && activeView && file == activeView.file && cache) {
-						autoIndex(cache, editor, file, this);
+					if (view && cache) {
+						let indexer = new CurrentFileIndexer(this.app, this, view);
+						indexer.run(cache);
 					}
 				}
 			)

@@ -4,8 +4,9 @@ import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from "env";
 import MathPlugin, { VAULT_ROOT } from "main";
 import { DEFAULT_LANG } from "default_lang";
 import LanguageManager from "language";
-import { autoIndex, resolveSettings } from "autoIndex";
+import { autoIndex } from "autoIndex";
 import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "modals";
+import { resolveSettings } from "utils";
 
 
 export const PLUGIN_NAME = "Obsidian Mathematics";

@@ -2,8 +2,7 @@ import MathPlugin from 'main';
 import { App, Editor, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, SectionCache, MarkdownSectionInformation } from "obsidian";
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
-import { getMathCache, getMathCacheFromPos, getMathTag, locToEditorPosition } from 'utils';
-import { resolveSettings } from 'autoIndex';
+import { getMathCache, getMathCacheFromPos, getMathTag, locToEditorPosition, resolveSettings } from 'utils';
 
 
 export class DisplayMathRenderChild extends MarkdownRenderChild {
