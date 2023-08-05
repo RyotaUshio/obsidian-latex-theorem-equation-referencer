@@ -1,14 +1,14 @@
 import { MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 
 import { MathContextSettings, DEFAULT_SETTINGS, MathSettingTab, PLUGIN_NAME } from 'settings';
-import { getCurrentMarkdown } from 'utils';
+import { getCurrentMarkdown, resolveSettings } from 'utils';
 import { MathCallout, insertMathCalloutCallback } from 'math_callouts';
 import { ContextSettingModal, MathCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
-import { autoIndex, resolveSettings } from 'autoIndex';
 import { blockquoteMathPreviewPlugin } from 'math_live_preview_in_callouts';
 import { isPluginEnabled } from 'obsidian-dataview';
+import { ActiveFileIndexer, NonActiveFileIndexer, VaultIndexer } from 'indexer';
 
 
 export const VAULT_ROOT = '/';
@@ -17,11 +17,21 @@ export const VAULT_ROOT = '/';
 export default class MathPlugin extends Plugin {
 	settings: Record<string, MathContextSettings>;
 	excludedFiles: string[];
-
+	mathLinksAPI: any;
 
 	async onload() {
 
 		await this.loadSettings();
+
+		this.app.workspace.onLayoutReady(() => {
+			this.assertDataview();
+			if (this.assertMathLinks()) {
+				this.getMathLinksAPI();
+
+				let indexer = new VaultIndexer(this.app, this);
+				indexer.run();
+			}
+		});
 
 		this.addCommand({
 			id: 'insert-inline-math',
@@ -70,8 +80,11 @@ export default class MathPlugin extends Plugin {
 						(settings) => {
 							// @ts-ignore
 							let cache = this.app.metadataCache.getCache(view.file.path);
-							// @ts-ignore
-							autoIndex(cache, view.editor, view.file, this);
+							if (cache) {
+								// @ts-ignore
+								let indexer = new ActiveFileIndexer(this.app, this, view);
+								indexer.run(cache);
+							}
 						}
 					);
 					modal.resolveDefaultSettings(view.file);
@@ -80,31 +93,20 @@ export default class MathPlugin extends Plugin {
 			}
 		});
 
-		this.app.workspace.onLayoutReady(() => {
-			if (!isPluginEnabled(this.app)) {
-				new Notice(
-					`${PLUGIN_NAME}: Make sure Dataview is installed & enabled.`, 
-					100000
-				);
-			}
-			// @ts-ignore
-			if (!this.app.plugins.enabledPlugins.has("mathlinks")) {
-				new Notice(
-					`${PLUGIN_NAME}: Make sure MathLinks is installed & enabled.`, 
-					100000
-				);
-			}
-		});
-
 		this.registerEvent(
 			// @ts-ignore
 			this.app.metadataCache.on("dataview:metadata-change",
 				(type: string, file: TFile, oldPath?: string) => {
-					let activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-					let editor = activeView?.editor;
+					let view = this.app.workspace.getActiveViewOfType(MarkdownView);
 					let cache = this.app.metadataCache.getFileCache(file);
-					if (type == 'update' && editor && activeView && file == activeView.file && cache) {
-						autoIndex(cache, editor, file, this);
+					if (view && cache) {
+						if (view.file == file) {
+							let indexer = new ActiveFileIndexer(this.app, this, view);
+							indexer.run(cache);
+						} else {
+							let indexer = new NonActiveFileIndexer(this.app, this, file);
+							indexer.run(cache);
+						}
 					}
 				}
 			)
@@ -114,7 +116,7 @@ export default class MathPlugin extends Plugin {
 			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
 				if (leaf.view instanceof MarkdownView) {
 					let settings = resolveSettings(undefined, this, leaf.view.file);
-					this.registerEditorExtension(buildEquationNumberPlugin(this.app, leaf.view.file.path, Boolean(settings.lineByLine)));
+					this.registerEditorExtension(buildEquationNumberPlugin(this.app, this, leaf.view.file.path, Boolean(settings.lineByLine)));
 				}
 			});
 		});
@@ -122,7 +124,7 @@ export default class MathPlugin extends Plugin {
 		this.app.workspace.on("active-leaf-change", (leaf: WorkspaceLeaf) => {
 			if (leaf.view instanceof MarkdownView) {
 				let settings = resolveSettings(undefined, this, leaf.view.file);
-				this.registerEditorExtension(buildEquationNumberPlugin(this.app, leaf.view.file.path, Boolean(settings.lineByLine)));
+				this.registerEditorExtension(buildEquationNumberPlugin(this.app, this, leaf.view.file.path, Boolean(settings.lineByLine)));
 			}
 		});
 
@@ -176,7 +178,9 @@ export default class MathPlugin extends Plugin {
 	}
 
 	onunload() {
-
+		if (this.mathLinksAPI) {
+			this.mathLinksAPI.deleteUser();
+		}
 	}
 
 	async loadSettings() {
@@ -193,5 +197,38 @@ export default class MathPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData({ settings: this.settings, excludedFiles: this.excludedFiles });
+	}
+
+	assertDataview(): boolean {
+		if (!isPluginEnabled(this.app)) {
+			new Notice(
+				`${PLUGIN_NAME}: Make sure Dataview is installed & enabled.`,
+				100000
+			);
+			return false;
+		}
+		return true;
+	}
+
+	assertMathLinks() {
+		// @ts-ignore				
+		if (!this.app.plugins.enabledPlugins.has("mathlinks")) {
+			new Notice(
+				`${PLUGIN_NAME}: Make sure MathLinks is installed & enabled.`,
+				100000
+			);
+			return false;
+		}
+		return true;
+	}
+
+	getMathLinksAPI() {
+		try {
+			// @ts-ignore
+			this.mathLinksAPI = this.app.plugins.plugins.mathlinks.getAPI(PLUGIN_NAME, "");
+		} catch (err) {
+			new Notice(err);
+			throw err;
+		}
 	}
 }

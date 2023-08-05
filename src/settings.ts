@@ -4,8 +4,9 @@ import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from "env";
 import MathPlugin, { VAULT_ROOT } from "main";
 import { DEFAULT_LANG } from "default_lang";
 import LanguageManager from "language";
-import { autoIndex, resolveSettings } from "autoIndex";
 import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "modals";
+import { resolveSettings } from "utils";
+import { ActiveFileIndexer } from "indexer";
 
 
 export const PLUGIN_NAME = "Obsidian Mathematics";
@@ -32,7 +33,6 @@ export interface MathCalloutSettings {
     number?: string;
     title?: string;
     label?: string;
-    mathLink?: string;
 }
 
 export interface MathCalloutPrivateFields {
@@ -60,7 +60,6 @@ export const MATH_ITEM_SETTINGS_KEYS = [
     "number",
     "title",
     "label",
-    "mathLink",
 ]
 
 export const MATH_ITEM_PRIVATE_FIELDS_KEYS = [
@@ -93,7 +92,7 @@ export class MathCalloutSettingsHelper {
         public contentEl: HTMLElement,
         public settings: MathCalloutSettings,
         public defaultSettings: Partial<MathSettings>,
-    ) {}
+    ) { }
 
     makeSettingPane() {
         const { contentEl } = this;
@@ -145,7 +144,7 @@ export class MathCalloutSettingsHelper {
 
 
                 let labelPane = new Setting(contentEl).setName("LaTeX Label");
-                let labelPrefixEl = labelPane.controlEl.createDiv({ 
+                let labelPrefixEl = labelPane.controlEl.createDiv({
                     text: this.env.prefix + ":" + (this.defaultSettings.label_prefix ?? "")
                 });
 
@@ -412,7 +411,8 @@ export class MathSettingTab extends PluginSettingTab {
         if (view) {
             let cache = this.app.metadataCache.getFileCache(view.file);
             if (cache) {
-                autoIndex(cache, view.editor, view.file, this.plugin);
+                let indexer = new ActiveFileIndexer(this.app, this.plugin, view);
+                indexer.run(cache);
             }
         }
     }

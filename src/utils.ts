@@ -1,11 +1,11 @@
+import { App, TFile, getLinkpath, LinkCache, MarkdownView, renderMath, finishRenderMath, TAbstractFile, TFolder, TextFileView, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice } from 'obsidian';
+import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
 
-// Generic utility functions handing files.
-
-import { App, TFile, getLinkpath, LinkCache, MarkdownView, renderMath, finishRenderMath, TAbstractFile, TFolder, TextFileView, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice } from 'obsidian';
-import { DataviewApi, getAPI } from 'obsidian-dataview';
-import { PLUGIN_NAME } from 'settings';
+import MathPlugin, { VAULT_ROOT } from 'main';
+import { ENVs_MAP } from 'env';
+import { DEFAULT_SETTINGS, MathSettings, NumberStyle, PLUGIN_NAME, findNearestAncestorContextSettings } from 'settings';
 
 
 export function validateLinktext(text: string): string {
@@ -26,7 +26,6 @@ export function linktext2TFile(app: App, linktext: string): TFile {
     }
     throw Error(`Could not resolve path: ${linkpath}`);
 }
-
 
 export function getLinksAndEmbedsInFile(app: App, file: TFile): { links: string[] | undefined, embeds: string[] | undefined } {
     let cache = app.metadataCache.getFileCache(file);
@@ -54,15 +53,11 @@ export function getCurrentMarkdown(app: App): TFile {
     throw Error(`file is not passed, and markdown view is not active`);
 }
 
-
-
 export function increaseQuoteLevel(content: string): string {
     let lines = content.split("\n");
     lines = lines.map((line) => "> " + line);
     return lines.join("\n");
 }
-
-
 
 export async function renderTextWithMath(source: string): Promise<(HTMLElement | string)[]> {
     // Obsidian API's renderMath only can render math itself, but not a text with math in it.
@@ -98,7 +93,6 @@ export async function renderTextWithMath(source: string): Promise<(HTMLElement |
     return elements;
 
 }
-
 
 export function isEqualToOrChildOf(file1: TAbstractFile, file2: TAbstractFile): boolean {
     if (file1 == file2) {
@@ -147,7 +141,6 @@ export function getActiveTextView(app: App): TextFileView | null {
     return view;
 }
 
-
 export function generateBlockID(app: App, length: number = 6): string {
     // https://stackoverflow.com/a/58326357/13613783
     let id = '';
@@ -194,10 +187,10 @@ export function getMathCacheFromPos(cache: CachedMetadata, pos: number): Section
     }
 }
 
-export function getMathTag(cache: CachedMetadata, mathCache: SectionCache): string {
+export function getMathTag(plugin: MathPlugin, path: string, mathCache: SectionCache): string {
     let tag = '';
-    if (mathCache?.id && cache.frontmatter) {
-        tag = cache.frontmatter["mathLink-blocks"][mathCache.id] ?? '';
+    if (mathCache?.id) {
+        tag = plugin.mathLinksAPI.get(path, mathCache.id) ?? '';
     }
     return tag;
 }
@@ -255,6 +248,92 @@ export function getBlockIdsWithBacklink(path: string, app: App): string[] {
         }
     }
     return ids;
+}
+
+export function splitIntoLines(text: string): string[] {
+    // https://stackoverflow.com/a/5035005/13613783
+    return text.split(/\r?\n/);
+}
+
+export function removeFrom<Type>(item: Type, array: Array<Type>) {
+    return array.splice(array.indexOf(item), 1);
+}
+
+export const MATH_CALLOUT_PATTERN = /\> *\[\! *math *\|(.*)\](.*)/;
+
+export function matchMathCallout(line: string): RegExpExecArray | null {
+    if (line) {
+        return MATH_CALLOUT_PATTERN.exec(line)
+    }
+    return null;
+}
+
+
+export function readMathCalloutSettingsAndTitle(line: string): { settings: MathSettings, title: string } | undefined {
+    const matchResult = matchMathCallout(line);
+    if (matchResult) {
+        let settings = JSON.parse(matchResult[1]) as MathSettings;
+        let title = matchResult[2].trim();
+        return { settings, title };
+    }
+}
+
+
+export function readMathCalloutSettings(line: string): MathSettings | undefined {    // const matchResult = matchMathCallout(editor, lineNumber);
+    let result = readMathCalloutSettingsAndTitle(line);
+    if (result) {
+        return result.settings;
+    }
+}
+
+
+export function readMathCalloutTitle(line: string): string | undefined {    // const matchResult = matchMathCallout(editor, lineNumber);
+    let result = readMathCalloutSettingsAndTitle(line);
+    if (result) {
+        return result.title;
+    }
+}
+
+export function resolveSettings(settings: MathSettings | undefined, plugin: MathPlugin, currentFile: TAbstractFile) {
+    // Resolves settings. Does not overwride, but returns a new settings object.
+    let contextSettings = findNearestAncestorContextSettings(plugin, currentFile);
+    return Object.assign({}, plugin.settings[VAULT_ROOT], contextSettings, settings);
+}
+
+export function formatTitleWithoutSubtitle(settings: MathSettings): string {
+    let env = ENVs_MAP[settings.type];
+
+    let title = '';
+    if (settings.rename && settings.rename[env.id]) {
+        title = settings.rename[env.id] as string;
+    } else {
+        title = env.printedNames[settings.lang as string];
+    }
+    if (settings.number) {
+        let numberString = '';
+        if (settings.number == 'auto') {
+            if (settings.autoIndex !== undefined) {
+                settings.number_init = settings.number_init ?? 1;
+                let num = +settings.autoIndex + +settings.number_init;
+                let style = settings.number_style ?? DEFAULT_SETTINGS.number_style as NumberStyle;
+                numberString = CONVERTER[style](num);
+            }
+        } else {
+            numberString = settings.number;
+        }
+        if (numberString) {
+            title += ` ${settings.number_prefix}${numberString}${settings.number_suffix}`;
+        }
+    }
+    return title;
+}
+
+export function formatTitle(settings: MathSettings): string {
+    let title = formatTitleWithoutSubtitle(settings);
+    if (settings.title) {
+        title += ` (${settings.title})`;
+    }
+    return title;
 }
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
