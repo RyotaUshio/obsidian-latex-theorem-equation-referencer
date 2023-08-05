@@ -1,10 +1,9 @@
 import { RangeSetBuilder } from '@codemirror/state';
 import { syntaxTree } from "@codemirror/language";
-import { Decoration, DecorationSet, EditorView, MatchDecorator, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view"
-import { MATH_CALLOUT_PATTERN, formatTitleWithoutSubtitle, matchMathCallout, readMathCalloutMetadata, readMathCalloutSettingsAndTitle } from "autoIndex"
+import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view"
 import MathPlugin from "main";
-import { App, Editor, MarkdownView, TFile } from "obsidian";
-import { nodeText } from 'utils';
+import { App, TFile } from "obsidian";
+import { nodeText, MATH_CALLOUT_PATTERN, matchMathCallout } from 'utils';
 
 
 export const MATH_CALLOUT_PATTERN_GLOBAL = new RegExp(MATH_CALLOUT_PATTERN.source, "g");
