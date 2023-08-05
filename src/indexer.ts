@@ -1,8 +1,8 @@
-import { App, CachedMetadata, Editor, MarkdownView, Pos, SectionCache, TFile } from 'obsidian';
+import { App, CachedMetadata, Editor, MarkdownView, Pos, SectionCache, TFile, WorkspaceLeaf } from 'obsidian';
 
 import MathPlugin from 'main';
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, findNearestAncestorContextSettings } from 'settings';
-import { getBlockIdsWithBacklink, locToEditorPosition, readMathCalloutSettings, getLinksAndEmbedsInFile, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines } from 'utils';
+import { getBlockIdsWithBacklink, locToEditorPosition, readMathCalloutSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines, removeFrom } from 'utils';
 
 
 type CalloutInfo = { cache: SectionCache, settings: MathSettings };
@@ -10,8 +10,7 @@ type EquationInfo = { cache: SectionCache, manualTag?: string };
 
 
 abstract class SinceFileIndexer {
-
-    constructor(public app: App, public plugin: MathPlugin, public file: TFile) { }
+    constructor(public app: App, public plugin: MathPlugin, public file: TFile) {}
 
     abstract setLine(lineNumber: number, text: string): Promise<void>;
     abstract getLine(lineNumber: number): Promise<string>;
@@ -199,5 +198,31 @@ export class NonActiveFileIndexer extends SinceFileIndexer {
 
     isSafe(lineNumber: number): boolean {
         return true;
+    }
+}
+
+export class VaultIndexer {
+    constructor(public app: App, public plugin: MathPlugin) {}
+
+    run() {
+        let files = this.app.vault.getMarkdownFiles();
+        this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
+            if (leaf.view instanceof MarkdownView) {
+                removeFrom(leaf.view.file, files);
+                let indexer = new ActiveFileIndexer(this.app, this.plugin, leaf.view);
+                let cache = this.app.metadataCache.getFileCache(leaf.view.file);
+                if (cache) {
+                    indexer.run(cache);
+                }
+            }
+        });
+
+        for (let file of files) {
+            let indexer = new NonActiveFileIndexer(this.app, this.plugin, file);
+            let cache = this.app.metadataCache.getFileCache(file);
+            if (cache) {
+                indexer.run(cache);
+            }
+        }
     }
 }

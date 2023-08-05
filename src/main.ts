@@ -8,7 +8,7 @@ import { insertDisplayMath, insertInlineMath } from 'key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
 import { blockquoteMathPreviewPlugin } from 'math_live_preview_in_callouts';
 import { isPluginEnabled } from 'obsidian-dataview';
-import { ActiveFileIndexer, NonActiveFileIndexer } from 'indexer';
+import { ActiveFileIndexer, NonActiveFileIndexer, VaultIndexer } from 'indexer';
 
 
 export const VAULT_ROOT = '/';
@@ -27,6 +27,9 @@ export default class MathPlugin extends Plugin {
 			this.assertDataview();
 			if (this.assertMathLinks()) {
 				this.getMathLinksAPI();
+
+				let indexer = new VaultIndexer(this.app, this);
+				indexer.run();
 			}
 		});
 
@@ -81,7 +84,7 @@ export default class MathPlugin extends Plugin {
 								// @ts-ignore
 								let indexer = new ActiveFileIndexer(this.app, this, view);
 								indexer.run(cache);
-							}			
+							}
 						}
 					);
 					modal.resolveDefaultSettings(view.file);
@@ -97,8 +100,13 @@ export default class MathPlugin extends Plugin {
 					let view = this.app.workspace.getActiveViewOfType(MarkdownView);
 					let cache = this.app.metadataCache.getFileCache(file);
 					if (view && cache) {
-						let indexer = new ActiveFileIndexer(this.app, this, view);
-						indexer.run(cache);
+						if (view.file == file) {
+							let indexer = new ActiveFileIndexer(this.app, this, view);
+							indexer.run(cache);
+						} else {
+							let indexer = new NonActiveFileIndexer(this.app, this, file);
+							indexer.run(cache);
+						}
 					}
 				}
 			)

@@ -1,12 +1,10 @@
+import { App, TFile, getLinkpath, LinkCache, MarkdownView, renderMath, finishRenderMath, TAbstractFile, TFolder, TextFileView, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice } from 'obsidian';
+import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
-import { ENVs_MAP } from 'env';
+
 import MathPlugin, { VAULT_ROOT } from 'main';
-
-// Generic utility functions handing files.
-
-import { App, TFile, getLinkpath, LinkCache, MarkdownView, renderMath, finishRenderMath, TAbstractFile, TFolder, TextFileView, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, Editor } from 'obsidian';
-import { DataviewApi, getAPI } from 'obsidian-dataview';
+import { ENVs_MAP } from 'env';
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, PLUGIN_NAME, findNearestAncestorContextSettings } from 'settings';
 
 
@@ -28,7 +26,6 @@ export function linktext2TFile(app: App, linktext: string): TFile {
     }
     throw Error(`Could not resolve path: ${linkpath}`);
 }
-
 
 export function getLinksAndEmbedsInFile(app: App, file: TFile): { links: string[] | undefined, embeds: string[] | undefined } {
     let cache = app.metadataCache.getFileCache(file);
@@ -56,15 +53,11 @@ export function getCurrentMarkdown(app: App): TFile {
     throw Error(`file is not passed, and markdown view is not active`);
 }
 
-
-
 export function increaseQuoteLevel(content: string): string {
     let lines = content.split("\n");
     lines = lines.map((line) => "> " + line);
     return lines.join("\n");
 }
-
-
 
 export async function renderTextWithMath(source: string): Promise<(HTMLElement | string)[]> {
     // Obsidian API's renderMath only can render math itself, but not a text with math in it.
@@ -100,7 +93,6 @@ export async function renderTextWithMath(source: string): Promise<(HTMLElement |
     return elements;
 
 }
-
 
 export function isEqualToOrChildOf(file1: TAbstractFile, file2: TAbstractFile): boolean {
     if (file1 == file2) {
@@ -148,7 +140,6 @@ export function getActiveTextView(app: App): TextFileView | null {
 
     return view;
 }
-
 
 export function generateBlockID(app: App, length: number = 6): string {
     // https://stackoverflow.com/a/58326357/13613783
@@ -262,6 +253,10 @@ export function getBlockIdsWithBacklink(path: string, app: App): string[] {
 export function splitIntoLines(text: string): string[] {
     // https://stackoverflow.com/a/5035005/13613783
     return text.split(/\r?\n/);
+}
+
+export function removeFrom<Type>(item: Type, array: Array<Type>) {
+    return array.splice(array.indexOf(item), 1);
 }
 
 export const MATH_CALLOUT_PATTERN = /\> *\[\! *math *\|(.*)\](.*)/;
