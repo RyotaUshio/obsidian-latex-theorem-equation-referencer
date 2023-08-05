@@ -12,13 +12,13 @@ This is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathema
 
 ## Installation
 
-This plugin is before an official submission. 
-You can choose between the following two methods for installation. 
+This plugin is before an official submission.
+You can choose between the following two methods for installation.
 
 ### Install via BRAT (recommended)
 
 1. Install the [BRAT](obsidian://show-plugin?id=obsidian42-brat) community plugin and enable it.
-2. Go to **Options**. In the **Beta Plugin List** section, click on the **Add Beta plugin** button. 
+2. Go to **Options**. In the **Beta Plugin List** section, click on the **Add Beta plugin** button.
 3. Copy and paste `https://github.com/RyotaUshio/obsidian-math` in the pop-up prompt and click on **Add Plugin**.
 5. (Optional) Turn on **Auto-update plugins at startup** at the top of the page.
 4. Go to **Community plugins > Installed plugins**. You will find "Obsidian Mathematics" in the list. Click on the toggle button to enable it.
