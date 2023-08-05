@@ -72,6 +72,7 @@ You can customize the appearance of math callouts to be specific to languages or
 The example above is styled with the following CSS snippet:
 
 ```css
+
 .callout[data-callout="math"] {
     --callout-color: 238, 15, 149;
     border-left: 5px solid rgb(var(--callout-color));
@@ -110,4 +111,5 @@ The example above is styled with the following CSS snippet:
 
 .callout[data-callout="math"].math-callout-en>.callout-content {
     font-style: italic;
-}```
+}
+```
