@@ -1,12 +1,8 @@
-import { MarkdownView, Plugin, TAbstractFile, TFile } from 'obsidian';
+import { MarkdownView, TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder } from 'obsidian';
+
 import MathPlugin, { VAULT_ROOT } from 'main';
-import { App, Modal, Setting, TextComponent, prepareFuzzySearch, prepareSimpleSearch, SuggestModal, Notice, FuzzySuggestModal, TFolder } from 'obsidian';
-
-import { TheoremLikeEnv, getTheoremLikeEnv, ENVs } from 'env';
-import LanguageManager from 'language';
-import { MathSettings, MathContextSettings, MathItemSettings, MathItemSettingsHelper, MathContextSettingsHelper, MATH_CONTXT_SETTINGS_KEYS, CalloutSettings, findNearestAncestorContextSettings, DEFAULT_SETTINGS, MathSettingTab } from 'settings';
-import { getCurrentMarkdown, isEqualToOrChildOf } from 'utils';
-
+import { MathSettings, MathContextSettings, MathCalloutSettingsHelper, MathContextSettingsHelper, CalloutSettings, findNearestAncestorContextSettings, MathSettingTab } from 'settings';
+import { isEqualToOrChildOf } from 'utils';
 
 
 abstract class MathSettingModal<SettingsType> extends Modal {
@@ -90,7 +86,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
             contentEl.createEl("h4", {text: this.headerText});
         }
 
-        const itemSettingsHelper = new MathItemSettingsHelper(contentEl, this.settings, this.defaultSettings);
+        const itemSettingsHelper = new MathCalloutSettingsHelper(contentEl, this.settings, this.defaultSettings);
         itemSettingsHelper.makeSettingPane();
 
         new Setting(contentEl)
