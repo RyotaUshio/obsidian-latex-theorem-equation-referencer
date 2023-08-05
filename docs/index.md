@@ -30,7 +30,7 @@ You can choose between the following two methods for installation.
 3. Go to Obsidian's **Settings > Community plugins > Installed plugins**. You will find "Obsidian Mathematics" in the list (if not, make sure the [restricted mode](https://help.obsidian.md/Extending+Obsidian/Plugin+security#Restricted+mode) is turned off). 
 4. Click on the toggle button to enable it.
 
-## Dependency
+## Dependencies
 
 The following community plugin is required to be installed and enabled.
 
