@@ -5,6 +5,9 @@ import MathPlugin, { VAULT_ROOT } from "main";
 import { DEFAULT_LANG } from "default_lang";
 import LanguageManager from "language";
 
+
+export const PLUGIN_NAME = "Obsidian Mathematics";
+
 export type NumberStyle = "arabic" | "alph" | "Alph" | "roman" | "Roman";
 
 export type RenameEnv = { [K in typeof ENV_IDs[number]]: string };

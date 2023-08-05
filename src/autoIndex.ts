@@ -1,8 +1,9 @@
+import { getAPI } from 'obsidian-dataview';
 import { ENVs_MAP } from "env";
 import MathPlugin, { VAULT_ROOT } from "main";
-import { CachedMetadata, Editor, Loc, MarkdownView, SectionCache, TAbstractFile, TFile } from "obsidian";
+import { App, CachedMetadata, Editor, Loc, MarkdownView, SectionCache, TAbstractFile, TFile, parseLinktext, resolveSubpath } from "obsidian";
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, findNearestAncestorContextSettings } from "settings";
-import { CONVERTER, locToEditorPosition } from "utils";
+import { CONVERTER, getBlockIdsWithBacklink, locToEditorPosition } from "utils";
 
 
 type CalloutInfo = { cache: SectionCache, settings: MathSettings };
@@ -48,12 +49,13 @@ export function sortedMathCallouts(editor: Editor, cache: CachedMetadata): Callo
     );
 }
 
-
-export function sortedEquations(editor: Editor, cache: CachedMetadata): EquationInfo[] {
+export function sortedEquations(editor: Editor, cache: CachedMetadata, path: string, app: App): EquationInfo[] {
+    // based on backlinks, not blockIDs.
+    let linkedBlockIds = getBlockIdsWithBacklink(path, app);
     return sortedBlocks<EquationInfo>(
         editor, cache, "math",
         (sections, sectionCache, editor) => {
-            if (sectionCache.id) {
+            if (sectionCache.id && linkedBlockIds.contains(sectionCache.id)) {
                 let from = locToEditorPosition(sectionCache.position.start);
                 let to = locToEditorPosition(sectionCache.position.end);
                 let text = editor.getRange(from, to);
@@ -68,10 +70,9 @@ export function sortedEquations(editor: Editor, cache: CachedMetadata): Equation
     );
 }
 
-
 export function autoIndex(cache: CachedMetadata, editor: Editor, currentFile: TFile, plugin: MathPlugin) {
     let callouts = sortedMathCallouts(editor, cache);
-    let equations = sortedEquations(editor, cache);
+    let equations = sortedEquations(editor, cache, currentFile.path, plugin.app);
 
     let mathLinkCache: Record<string, string> = {}; // {[id]: [mathLink], ...}
 
@@ -110,7 +111,7 @@ export function autoIndex(cache: CachedMetadata, editor: Editor, currentFile: TF
             if (equation.manualTag) {
                 mathLinkCache[id] = `(${equation.manualTag})`;
             } else {
-                mathLinkCache[id] =  "(" + CONVERTER[style](equationNumber) + ")";
+                mathLinkCache[id] = "(" + CONVERTER[style](equationNumber) + ")";
                 equationNumber++;
             }
         }
