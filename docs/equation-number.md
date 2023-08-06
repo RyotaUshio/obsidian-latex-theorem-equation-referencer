@@ -87,12 +87,15 @@ This is an inherent limitation of Obsidian rather than this plugin.[^1]
 
 ## The `align` Environment
 
-You can choose whether multi-line equations in an `align` environment are numbered _collectively as a group_ or _individually_.
-Go to the "Number line by line in align" section in the plugin preferences to change the current setting.
+You can choose whether multi-line equations in an `align` environment are numbered _collectively as a group_:
 
 ![Collectively](fig/equation_number_align_0.png)
 
-![Collectively](fig/equation_number_align_1.png)
+/// or _individually_.
+
+![Individually](fig/equation_number_align_1.png)
+
+Go to the "Number line by line in align" section in the plugin preferences to change the current setting.
 
 When "Number line by line in align" is turned on, you can exclude a line from numbering by inserting `\nonumber`, just like in LaTeX.
 
