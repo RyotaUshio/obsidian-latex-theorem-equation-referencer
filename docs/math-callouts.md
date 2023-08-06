@@ -50,7 +50,7 @@ If you want to change the title, click on the title bar of the math callout and 
 
 ![Edit settings](fig/math_callouts_6.png)
 
-## Style Your Theorems
+## Style your theorems
 
 You can customize the appearance of math callouts to be specific to languages or environments (theorem/definition/...). This can be done using CSS snippets (and Style Settings Plugin in the near future).
 
