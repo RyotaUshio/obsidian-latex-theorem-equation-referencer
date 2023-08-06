@@ -95,8 +95,8 @@ or _individually_.
 
 ![Individually](fig/equation_number_align_1.png)
 
-Go to the "Number line by line in align" section in the plugin preferences to change the current setting.
+Go to the **Number line by line in align** section in the plugin preferences to change the current setting.
 
-When "Number line by line in align" is turned on, you can exclude a line from numbering by inserting `\nonumber`, just like in LaTeX.
+When **Number line by line in align** is turned on, you can exclude a line from numbering by inserting `\nonumber`, just like in LaTeX.
 
 ![Collectively](fig/equation_number_align_2.png)
