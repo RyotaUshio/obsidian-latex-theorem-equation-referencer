@@ -66,7 +66,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
             let sectionCache = cache.sections.find(
                 (sectionCache) => sectionCache.id == this.id
             );
-            if (this.id && sectionCache && cache.frontmatter) {
+            if (this.id && sectionCache) {
                 let from = locToEditorPosition(sectionCache.position.start);
                 let to = locToEditorPosition(sectionCache.position.end);
                 let text = editor.getRange(from, to);
