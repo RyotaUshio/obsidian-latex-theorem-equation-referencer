@@ -24,17 +24,10 @@ export default class MathPlugin extends Plugin {
 
 		await this.loadSettings();
 
-		this.addCommand({
-			id: "test", 
-			name: "Test", 
-			callback: () => {
-				console.log("manifest =", this.manifest);
-			}
-		});
-
 		this.app.workspace.onLayoutReady(() => {
 			this.assertDataview();
 			if (this.assertMathLinks()) {
+				this.getMathLinksAPI();
 				let indexer = new VaultIndexer(this.app, this);
 				indexer.run();
 			}
