@@ -1,6 +1,6 @@
 import { MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 
-import { MathContextSettings, DEFAULT_SETTINGS, MathSettingTab, PLUGIN_NAME } from 'settings';
+import { MathContextSettings, DEFAULT_SETTINGS, MathSettingTab } from 'settings';
 import { getCurrentMarkdown, resolveSettings } from 'utils';
 import { MathCallout, insertMathCalloutCallback } from 'math_callouts';
 import { ContextSettingModal, MathCalloutModal } from 'modals';
@@ -22,6 +22,14 @@ export default class MathPlugin extends Plugin {
 	async onload() {
 
 		await this.loadSettings();
+
+		this.addCommand({
+			id: "test", 
+			name: "Test", 
+			callback: () => {
+				console.log("manifest =", this.manifest);
+			}
+		});
 
 		this.app.workspace.onLayoutReady(() => {
 			this.assertDataview();
@@ -202,7 +210,7 @@ export default class MathPlugin extends Plugin {
 	assertDataview(): boolean {
 		if (!isPluginEnabled(this.app)) {
 			new Notice(
-				`${PLUGIN_NAME}: Make sure Dataview is installed & enabled.`,
+				`${this.manifest.name}: Make sure Dataview is installed & enabled.`,
 				100000
 			);
 			return false;
@@ -214,7 +222,7 @@ export default class MathPlugin extends Plugin {
 		// @ts-ignore				
 		if (!this.app.plugins.enabledPlugins.has("mathlinks")) {
 			new Notice(
-				`${PLUGIN_NAME}: Make sure MathLinks is installed & enabled.`,
+				`${this.manifest.name}: Make sure MathLinks is installed & enabled.`,
 				100000
 			);
 			return false;
@@ -225,7 +233,7 @@ export default class MathPlugin extends Plugin {
 	getMathLinksAPI() {
 		try {
 			// @ts-ignore
-			this.mathLinksAPI = this.app.plugins.plugins.mathlinks.getAPI(PLUGIN_NAME, "");
+			this.mathLinksAPI = this.app.plugins.plugins.mathlinks.getAPI(this, "");
 		} catch (err) {
 			new Notice(err);
 			throw err;
