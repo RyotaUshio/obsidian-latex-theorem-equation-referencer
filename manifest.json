@@ -1,7 +1,7 @@
 {
-	"id": "obsidian-mathematics",
-	"name": "Obsidian Mathematics",
-	"version": "0.2.0",
+	"id": "obsidian-math-booster",
+	"name": "Obsidian Math Booster",
+	"version": "0.3.0",
 	"minAppVersion": "1.3.5",
 	"description": "Introduce LaTeX-like mathematic note taking features into Obsidian",
 	"author": "Ryota Ushio",
