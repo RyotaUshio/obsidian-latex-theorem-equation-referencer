@@ -16,7 +16,7 @@ See the [documentation](https://ryotaushio.github.io/obsidian-math-booster/) for
 
 ## Dependencies
 
-The following community plugin is required to be installed and enabled.
+The following community plugins are required to be installed and enabled.
 
 - [Dataview](obsidian://show-plugin?id=dataview) version >= 0.5.0
 - [MathLinks](obsidian://show-plugin?id=mathlinks) version >= 0.4.0
