@@ -7,6 +7,6 @@ Obsidian doesn't render MathJax equations in blockquotes or callouts _while edit
 
 ![Original](fig/math_preview_0.png)
 
-This plugin get this job done, and makes your math note taking much more seemless.
+This plugin gets this job done and makes your math note taking much more seamless.
 
 ![Job done](fig/math_preview_1.png)
