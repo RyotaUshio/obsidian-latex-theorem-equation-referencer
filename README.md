@@ -1,9 +1,9 @@
-# Obsidian Mathematics
+# Obsidian Math Booster
 
 This is a plugin for [Obsidian.md](https://obsidian.md), which enhances your mathematical note-taking experience by introducing $\LaTeX$-like features into Obsidian.
 
 Obsidian is excellent, but when it comes to mathematical notes, it lacks some of the essential features that $\LaTeX$ has.
-And this is where Obsidian Mathematics comes in!
+And this is where Obsidian Math Booster comes in!
 
 The core features of this plugin include:
 
