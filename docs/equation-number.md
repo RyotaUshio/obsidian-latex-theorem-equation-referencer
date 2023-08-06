@@ -91,7 +91,7 @@ You can choose whether multi-line equations in an `align` environment are number
 
 ![Collectively](fig/equation_number_align_0.png)
 
-/// or _individually_.
+or _individually_.
 
 ![Individually](fig/equation_number_align_1.png)
 
