@@ -1,5 +1,5 @@
 ---
-title: Clever Reference
+title: Clever reference
 layout: page
 ---
 

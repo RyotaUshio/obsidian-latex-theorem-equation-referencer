@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Equation Numbering
+title: Equation numbering
 ---
 
 When you insert a link to a math equation block (`[[#^block-ID]]` or `[[note-title#^block-ID]]`), this plugin automatically detects it and assigns an equation number to the equation.
