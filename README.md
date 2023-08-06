@@ -7,12 +7,12 @@ And this is where Obsidian Math Booster comes in!
 
 The core features of this plugin include:
 
-- [Special Callouts for Theorems/Definitions/Exercises/...](https://ryotaushio.github.io/obsidian-math/math-callouts)
-- [Automatic Equation Numbering](https://ryotaushio.github.io/obsidian-math/equation-number)
-- [Clever Reference to Theorems & Equations](https://ryotaushio.github.io/obsidian-math/cleveref)
-- [Math Preview in Callouts & Blockquotes](https://ryotaushio.github.io/obsidian-math/math-preview)
+- [Special Callouts for Theorems/Definitions/Exercises/...](https://ryotaushio.github.io/obsidian-math-booster/math-callouts.html)
+- [Automatic Equation Numbering](https://ryotaushio.github.io/obsidian-math-booster/equation-number.html)
+- [Clever Reference to Theorems & Equations](https://ryotaushio.github.io/obsidian-math-booster/cleveref)
+- [Math Preview in Callouts & Blockquotes](https://ryotaushio.github.io/obsidian-math-booster/math-preview.html)
 
-See the [documentation](https://ryotaushio.github.io/obsidian-math) for the details and installation instructions.
+See the [documentation](https://ryotaushio.github.io/obsidian-math-booster/) for the details and installation instructions.
 
 ## Dependencies
 
