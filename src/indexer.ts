@@ -135,7 +135,7 @@ abstract class SinceFileIndexer {
             }
         }
 
-        this.plugin.mathLinksAPI.update(
+        this.plugin.getMathLinksAPI()?.update(
             this.file.path,
             { "mathLink-blocks": mathLinkCache }
         );

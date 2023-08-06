@@ -190,7 +190,7 @@ export function getMathCacheFromPos(cache: CachedMetadata, pos: number): Section
 export function getMathTag(plugin: MathPlugin, path: string, mathCache: SectionCache): string {
     let tag = '';
     if (mathCache?.id) {
-        tag = plugin.mathLinksAPI.get(path, mathCache.id) ?? '';
+        tag = plugin.getMathLinksAPI()?.get(path, mathCache.id) ?? '';
     }
     return tag;
 }

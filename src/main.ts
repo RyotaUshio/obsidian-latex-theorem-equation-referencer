@@ -1,5 +1,7 @@
 import { MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 
+import { MathLinksAPIAccount } from 'mathLinksAPI';
+
 import { MathContextSettings, DEFAULT_SETTINGS, MathSettingTab } from 'settings';
 import { getCurrentMarkdown, resolveSettings } from 'utils';
 import { MathCallout, insertMathCalloutCallback } from 'math_callouts';
@@ -17,7 +19,6 @@ export const VAULT_ROOT = '/';
 export default class MathPlugin extends Plugin {
 	settings: Record<string, MathContextSettings>;
 	excludedFiles: string[];
-	mathLinksAPI: any;
 
 	async onload() {
 
@@ -34,8 +35,6 @@ export default class MathPlugin extends Plugin {
 		this.app.workspace.onLayoutReady(() => {
 			this.assertDataview();
 			if (this.assertMathLinks()) {
-				this.getMathLinksAPI();
-
 				let indexer = new VaultIndexer(this.app, this);
 				indexer.run();
 			}
@@ -186,9 +185,7 @@ export default class MathPlugin extends Plugin {
 	}
 
 	onunload() {
-		if (this.mathLinksAPI) {
-			this.mathLinksAPI.deleteUser();
-		}
+		this.getMathLinksAPI()?.deleteAccount();
 	}
 
 	async loadSettings() {
@@ -230,12 +227,11 @@ export default class MathPlugin extends Plugin {
 		return true;
 	}
 
-	getMathLinksAPI() {
+	getMathLinksAPI(): MathLinksAPIAccount | undefined {
 		try {
 			// @ts-ignore
-			this.mathLinksAPI = this.app.plugins.plugins.mathlinks.getAPI(this, "");
+			return this.app.plugins.plugins.mathlinks.getAPIAccount(this, "");
 		} catch (err) {
-			new Notice(err);
 			throw err;
 		}
 	}
