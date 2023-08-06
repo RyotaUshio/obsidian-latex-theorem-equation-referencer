@@ -5,7 +5,7 @@ import { SyntaxNodeRef } from '@lezer/common';
 
 import MathPlugin, { VAULT_ROOT } from 'main';
 import { ENVs_MAP } from 'env';
-import { DEFAULT_SETTINGS, MathSettings, NumberStyle, PLUGIN_NAME, findNearestAncestorContextSettings } from 'settings';
+import { DEFAULT_SETTINGS, MathSettings, NumberStyle, findNearestAncestorContextSettings } from 'settings';
 
 
 export function validateLinktext(text: string): string {
@@ -204,17 +204,17 @@ export function nodeText(node: SyntaxNodeRef, state: EditorState): string {
     return state.sliceDoc(node.from, node.to);
 }
 
-export function getDataviewAPI(app: App): DataviewApi | undefined {
-    const dv = getAPI(app); // Dataview API
+export function getDataviewAPI(plugin: MathPlugin): DataviewApi | undefined {
+    const dv = getAPI(plugin.app); // Dataview API
     if (dv) {
         return dv;
     }
-    new Notice(`${PLUGIN_NAME}: Cannot load Dataview API. Make sure that Dataview is installed & enabled.`);
+    new Notice(`${plugin.manifest.name}: Cannot load Dataview API. Make sure that Dataview is installed & enabled.`);
 }
 
-export function getBlockIdsWithBacklink(path: string, app: App): string[] {
-    const dv = getDataviewAPI(app);
-    let cache = app.metadataCache.getCache(path);
+export function getBlockIdsWithBacklink(path: string, plugin: MathPlugin): string[] {
+    const dv = getDataviewAPI(plugin);
+    let cache = plugin.app.metadataCache.getCache(path);
     let ids: string[] = [];
     if (dv && cache) {
         let page = dv.page(path); // Dataview page object
@@ -222,7 +222,7 @@ export function getBlockIdsWithBacklink(path: string, app: App): string[] {
             for (let inlink of page.file.inlinks) {
                 // cache of the source of this link (source --link--> target)
                 let sourcePath = inlink.path;
-                let sourceCache = app.metadataCache.getCache(sourcePath);
+                let sourceCache = plugin.app.metadataCache.getCache(sourcePath);
                 if (sourceCache) {
                     sourceCache.links?.forEach(
                         (item) => {
@@ -231,7 +231,7 @@ export function getBlockIdsWithBacklink(path: string, app: App): string[] {
                             let linkpath = parseResult.path;
                             let subpath = parseResult.subpath;
                             // @ts-ignore
-                            let targetFile = app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
+                            let targetFile = plugin.app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
                             if (targetFile && targetFile.path == path) {
                                 // @ts-ignore
                                 let subpathResult = resolveSubpath(cache, subpath);

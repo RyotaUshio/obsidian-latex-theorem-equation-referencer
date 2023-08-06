@@ -58,7 +58,7 @@ abstract class SinceFileIndexer {
 
     async sortedEquations(cache: CachedMetadata): Promise<EquationInfo[]> {
         // based on backlinks, not blockIDs.
-        let linkedBlockIds = getBlockIdsWithBacklink(this.file.path, this.app);
+        let linkedBlockIds = getBlockIdsWithBacklink(this.file.path, this.plugin);
         return this.sortedBlocks<EquationInfo>(
             cache, "math",
             async (sections, sectionCache) => {

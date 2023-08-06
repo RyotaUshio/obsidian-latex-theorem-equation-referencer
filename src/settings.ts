@@ -9,8 +9,6 @@ import { resolveSettings } from "utils";
 import { ActiveFileIndexer } from "indexer";
 
 
-export const PLUGIN_NAME = "Obsidian Mathematics";
-
 export type NumberStyle = "arabic" | "alph" | "Alph" | "roman" | "Roman";
 
 export type RenameEnv = { [K in typeof ENV_IDs[number]]: string };
