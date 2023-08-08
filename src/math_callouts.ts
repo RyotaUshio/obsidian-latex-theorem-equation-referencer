@@ -43,14 +43,14 @@ export class MathCallout extends MarkdownRenderChild {
         // click the title block (div.callout-title) to edit settings
         let title = this.containerEl.querySelector<HTMLElement>('.callout-title');
         if (title) {
-            title.onclick = async () => {
+            this.plugin.registerDomEvent(title, "click", async (event: MouseEvent) => {
                 const view = this.app.workspace.getActiveViewOfType(MarkdownView);
                 const editor = view?.editor;
                 if (editor) {
                     let modal = new MathCalloutModal(
                         this.app,
                         this.plugin,
-                        view, 
+                        view,
                         (settings) => {
                             // new title is set here, but it will soon be overwritten by this.registerEvent(this.app.metadataCache.on('changed', ...
                             // so the title here is only temporary
@@ -62,15 +62,14 @@ export class MathCallout extends MarkdownRenderChild {
                             let indexer = new ActiveNoteIndexer(this.app, this.plugin, view);
                             indexer.overwriteMathCalloutSettings(editor.getCursor().line, settings, title);
                         },
-                        "Confirm", 
-                        "Edit Math Callout Settings", 
+                        "Confirm",
+                        "Edit Math Callout Settings",
                         this.config,
                     );
                     modal.resolveDefaultSettings(view.file);
                     modal.open();
                 }
-
-            }
+            });
         }
     }
 }
