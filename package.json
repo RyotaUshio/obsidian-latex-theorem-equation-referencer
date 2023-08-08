@@ -18,13 +18,13 @@
 		"builtin-modules": "3.3.0",
 		"esbuild": "0.17.3",
 		"obsidian": "latest",
+		"obsidian-dataview": "latest",
+		"obsidian-mathlinks": "file:../../../../../../../../garbage/obsidian/obsidian-mathlinks",
 		"tslib": "2.4.0",
-		"typescript": "4.7.4", 
-		"obsidian-dataview": "latest"
+		"typescript": "4.7.4"
 	},
 	"dependencies": {
-		"@lezer/common": "^1.0.3",
 		"@codemirror/language": "^6.0.0",
-		"yaml": "^2.3.1"
+		"@lezer/common": "^1.0.3"
 	}
 }
