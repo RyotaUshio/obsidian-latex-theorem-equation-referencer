@@ -9,8 +9,8 @@ type CalloutInfo = { cache: SectionCache, settings: MathSettings };
 type EquationInfo = { cache: SectionCache, manualTag?: string };
 
 
-abstract class SinceFileIndexer {
-    constructor(public app: App, public plugin: MathPlugin, public file: TFile) {}
+abstract class SingleNoteIndexer {
+    constructor(public app: App, public plugin: MathPlugin, public file: TFile) { }
 
     abstract setLine(lineNumber: number, text: string): Promise<void>;
     abstract getLine(lineNumber: number): Promise<string>;
@@ -84,7 +84,7 @@ abstract class SinceFileIndexer {
             lineNumber,
             `> [!math|${JSON.stringify(settings)}] ${title ?? ""}`,
         );
-    }    
+    }
 
     async run(cache: CachedMetadata) {
         let callouts = await this.sortedMathCallouts(cache);
@@ -142,7 +142,7 @@ abstract class SinceFileIndexer {
     }
 }
 
-export class ActiveFileIndexer extends SinceFileIndexer {
+export class ActiveNoteIndexer extends SingleNoteIndexer {
     editor: Editor;
 
     constructor(public app: App, public plugin: MathPlugin, view: MarkdownView) {
@@ -175,7 +175,7 @@ export class ActiveFileIndexer extends SinceFileIndexer {
 }
 
 
-export class NonActiveFileIndexer extends SinceFileIndexer {
+export class NonActiveNoteIndexer extends SingleNoteIndexer {
 
     async setLine(lineNumber: number, text: string): Promise<void> {
         this.app.vault.process(this.file, (data: string): string => {
@@ -202,14 +202,14 @@ export class NonActiveFileIndexer extends SinceFileIndexer {
 }
 
 export class VaultIndexer {
-    constructor(public app: App, public plugin: MathPlugin) {}
+    constructor(public app: App, public plugin: MathPlugin) { }
 
     run() {
         let files = this.app.vault.getMarkdownFiles();
         this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
             if (leaf.view instanceof MarkdownView) {
                 removeFrom(leaf.view.file, files);
-                let indexer = new ActiveFileIndexer(this.app, this.plugin, leaf.view);
+                let indexer = new ActiveNoteIndexer(this.app, this.plugin, leaf.view);
                 let cache = this.app.metadataCache.getFileCache(leaf.view.file);
                 if (cache) {
                     indexer.run(cache);
@@ -218,7 +218,7 @@ export class VaultIndexer {
         });
 
         for (let file of files) {
-            let indexer = new NonActiveFileIndexer(this.app, this.plugin, file);
+            let indexer = new NonActiveNoteIndexer(this.app, this.plugin, file);
             let cache = this.app.metadataCache.getFileCache(file);
             if (cache) {
                 indexer.run(cache);

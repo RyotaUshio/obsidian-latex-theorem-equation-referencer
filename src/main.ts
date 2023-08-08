@@ -10,7 +10,7 @@ import { ContextSettingModal, MathCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
 import { blockquoteMathPreviewPlugin } from 'math_live_preview_in_callouts';
-import { ActiveFileIndexer, NonActiveFileIndexer, VaultIndexer } from 'indexer';
+import { ActiveNoteIndexer, NonActiveNoteIndexer, VaultIndexer } from 'indexer';
 
 
 export const VAULT_ROOT = '/';
@@ -26,12 +26,38 @@ export default class MathPlugin extends Plugin {
 
 		this.app.workspace.onLayoutReady(() => {
 			this.assertDataview();
-			if (this.assertMathLinks()) {
-				this.getMathLinksAPI();
-				let indexer = new VaultIndexer(this.app, this);
-				indexer.run();
-			}
+			this.assertMathLinks();
 		});
+
+		this.registerEvent(
+			this.app.metadataCache.on("dataview:index-ready",
+				() => {
+					let indexer = new VaultIndexer(this.app, this);
+					indexer.run();
+				}
+			)
+		);
+
+		this.registerEvent(
+			this.app.metadataCache.on("dataview:metadata-change",
+				(...args) => {
+					let file = args[1];
+					if (file instanceof TFile) {
+						let view = this.app.workspace.getActiveViewOfType(MarkdownView);
+						let cache = this.app.metadataCache.getFileCache(file);
+						if (view && cache) {
+							if (view.file == file) {
+								let indexer = new ActiveNoteIndexer(this.app, this, view);
+								indexer.run(cache);
+							} else {
+								let indexer = new NonActiveNoteIndexer(this.app, this, file);
+								indexer.run(cache);
+							}
+						}
+					}
+				}
+			)
+		);
 
 		this.addCommand({
 			id: 'insert-inline-math',
@@ -82,7 +108,7 @@ export default class MathPlugin extends Plugin {
 							let cache = this.app.metadataCache.getCache(view.file.path);
 							if (cache) {
 								// @ts-ignore
-								let indexer = new ActiveFileIndexer(this.app, this, view);
+								let indexer = new ActiveNoteIndexer(this.app, this, view);
 								indexer.run(cache);
 							}
 						}
@@ -92,27 +118,6 @@ export default class MathPlugin extends Plugin {
 				}
 			}
 		});
-
-		this.registerEvent(
-			this.app.metadataCache.on("dataview:metadata-change",
-				(...args) => {
-					let file = args[1];
-					if (file instanceof TFile) {
-						let view = this.app.workspace.getActiveViewOfType(MarkdownView);
-						let cache = this.app.metadataCache.getFileCache(file);
-						if (view && cache) {
-							if (view.file == file) {
-								let indexer = new ActiveFileIndexer(this.app, this, view);
-								indexer.run(cache);
-							} else {
-								let indexer = new NonActiveFileIndexer(this.app, this, file);
-								indexer.run(cache);
-							}
-						}							
-					}
-				}
-			)
-		);
 
 		this.app.workspace.onLayoutReady(() => {
 			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
@@ -168,13 +173,13 @@ export default class MathPlugin extends Plugin {
 			}
 		});
 
-		this.registerEvent(this.app.metadataCache.on("changed", (file, data, cache) => {
-			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
-				if (leaf.view instanceof MarkdownView && leaf.view.getMode() == 'preview') {
-					leaf.view.previewMode.rerender(true);
-				}
-			});
-		}));
+		// this.registerEvent(this.app.metadataCache.on("changed", (file, data, cache) => {
+		// 	this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
+		// 		if (leaf.view instanceof MarkdownView && leaf.view.getMode() == 'preview') {
+		// 			leaf.view.previewMode.rerender(true);
+		// 		}
+		// 	});
+		// }));
 
 		this.addSettingTab(new MathSettingTab(this.app, this));
 	}

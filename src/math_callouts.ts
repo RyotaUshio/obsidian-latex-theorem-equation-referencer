@@ -4,7 +4,7 @@ import { MathSettings } from 'settings';
 import { TheoremLikeEnv, getTheoremLikeEnv } from 'env';
 import { generateBlockID, increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings } from 'utils';
 import MathPlugin from 'main';
-import { ActiveFileIndexer } from 'indexer';
+import { ActiveNoteIndexer } from 'indexer';
 
 export class MathCallout extends MarkdownRenderChild {
     env: TheoremLikeEnv;
@@ -59,7 +59,7 @@ export class MathCallout extends MarkdownRenderChild {
                                 resolvedSettings["autoIndex"] = this.config.autoIndex;
                             }
                             let title = formatTitle(resolvedSettings);
-                            let indexer = new ActiveFileIndexer(this.app, this.plugin, view);
+                            let indexer = new ActiveNoteIndexer(this.app, this.plugin, view);
                             indexer.overwriteMathCalloutSettings(editor.getCursor().line, settings, title);
                         },
                         "Confirm", 
