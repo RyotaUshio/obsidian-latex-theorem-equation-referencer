@@ -4,32 +4,34 @@ import MathPlugin from 'main';
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, findNearestAncestorContextSettings } from 'settings';
 import { getBlockIdsWithBacklink, locToEditorPosition, readMathCalloutSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines, removeFrom } from 'utils';
 
+type MathLinkBlocks = Record<string, string>;
 
+type BlockType = "callout" | "math";
 type CalloutInfo = { cache: SectionCache, settings: MathSettings };
 type EquationInfo = { cache: SectionCache, manualTag?: string };
 
 
-abstract class SingleNoteIndexer {
-    constructor(public app: App, public plugin: MathPlugin, public file: TFile) { }
+abstract class BlockIndexer<BlockInfo extends { cache: SectionCache }> {
+    mathLinkBlocks: MathLinkBlocks;
 
-    abstract setLine(lineNumber: number, text: string): Promise<void>;
-    abstract getLine(lineNumber: number): Promise<string>;
-    abstract getRange(position: Pos): Promise<string>;
-    abstract isSafe(lineNumber: number): boolean;
+    constructor(public noteIndexer: SingleNoteIndexer) {
+        this.mathLinkBlocks = {};
+    }
 
-    async sortedBlocks<BlockInfo extends { cache: SectionCache }>(
-        cache: CachedMetadata,
-        type: "callout" | "math",
-        addSection: (sections: BlockInfo[], sectionCache: SectionCache) => Promise<void>,
-    ): Promise<BlockInfo[]> {
+    abstract readonly blockType: BlockType;
+
+    abstract addSection(sections: Readonly<BlockInfo>[], sectionCache: Readonly<SectionCache>): Promise<void>;
+    abstract setMathLinks(blocks: readonly Readonly<BlockInfo>[]): Promise<void>;
+
+    async sorted(cache: Readonly<CachedMetadata>): Promise<BlockInfo[]> {
 
         let sectionCaches = cache.sections?.filter(
-            (sectionCache) => sectionCache.type == type
+            (sectionCache) => sectionCache.type == this.blockType
         );
         let sections: BlockInfo[] = [];
         if (sectionCaches) {
             for (let sectionCache of sectionCaches) {
-                await addSection(sections, sectionCache);
+                await this.addSection(sections, sectionCache);
             }
             sections.sort(
                 (section1, section2) => {
@@ -40,86 +42,94 @@ abstract class SingleNoteIndexer {
         return sections;
     }
 
-    async sortedMathCallouts(cache: CachedMetadata): Promise<CalloutInfo[]> {
-        return await this.sortedBlocks<CalloutInfo>(
-            cache, "callout",
-            async (sections, sectionCache) => {
-                let settings = readMathCalloutSettings(
-                    await this.getLine(sectionCache.position.start.line)
-                );
-                if (settings) {
-                    sections.push(
-                        { cache: sectionCache, settings: settings }
-                    );
-                }
-            }
+    async run(cache: Readonly<CachedMetadata>): Promise<void> {
+        const blocks = await this.sorted(cache);
+        await this.setMathLinks(blocks);
+    }
+}
+
+class MathCalloutIndexer extends BlockIndexer<CalloutInfo> {
+    blockType = "callout" as BlockType;
+
+    async addSection(sections: Readonly<CalloutInfo>[], sectionCache: Readonly<SectionCache>): Promise<void> {
+        let settings = readMathCalloutSettings(
+            await this.noteIndexer.getLine(sectionCache.position.start.line)
         );
+        if (settings) {
+            sections.push(
+                { cache: sectionCache, settings: settings }
+            );
+        }
     }
 
-    async sortedEquations(cache: CachedMetadata): Promise<EquationInfo[]> {
-        // based on backlinks, not blockIDs.
-        let linkedBlockIds = getBlockIdsWithBacklink(this.file.path, this.plugin);
-        return this.sortedBlocks<EquationInfo>(
-            cache, "math",
-            async (sections, sectionCache) => {
-                if (sectionCache.id && linkedBlockIds.contains(sectionCache.id)) {
-                    let text = await this.getRange(sectionCache.position);
-                    let tagMatch = text.match(/\\tag\{(.*)\}/);
-                    if (tagMatch) {
-                        sections.push({ cache: sectionCache, manualTag: tagMatch[1] });
-                    } else {
-                        sections.push({ cache: sectionCache });
-                    }
+    async setMathLinks(callouts: readonly Readonly<CalloutInfo>[]): Promise<void> {
+        let index = 0;
+        for (let callout of callouts) {
+            let autoNumber = callout.settings.number == 'auto';
+            if (autoNumber) {
+                callout.settings._index = index++;
+            }
+            let resolvedSettings = resolveSettings(
+                callout.settings, 
+                this.noteIndexer.plugin, 
+                this.noteIndexer.file
+            );
+            let newTitle = formatTitle(resolvedSettings);
+            let oldSettingsAndTitle = readMathCalloutSettingsAndTitle(
+                await this.noteIndexer.getLine(callout.cache.position.start.line)
+            );
+            if (oldSettingsAndTitle) {
+                let { settings, title } = oldSettingsAndTitle;
+                let lineNumber = callout.cache.position.start.line;
+                let newSettings = this.removeDeprecated(callout.settings);
+                if (this.noteIndexer.isSafe(lineNumber) && JSON.stringify(settings) != JSON.stringify(newSettings) || title != newTitle) {
+                    await this.overwriteSettings(
+                        lineNumber, newSettings, newTitle
+                    )
+                }
+                let id = callout.cache.id;
+                if (id) {
+                    this.mathLinkBlocks[id] = newTitle;
                 }
             }
-        );
+        }
     }
 
-    async overwriteMathCalloutSettings(lineNumber: number, settings: MathSettings, title?: string) {
-        const matchResult = matchMathCallout(await this.getLine(lineNumber));
+    async overwriteSettings(lineNumber: number, settings: MathSettings, title?: string) {
+        const matchResult = matchMathCallout(await this.noteIndexer.getLine(lineNumber));
         if (!matchResult) {
             throw Error(`Math callout not found at line ${lineNumber}, could not overwrite`);
         }
-        this.setLine(
+        this.noteIndexer.setLine(
             lineNumber,
             `> [!math|${JSON.stringify(settings)}] ${title ?? ""}`,
         );
     }
 
-    async run(cache: CachedMetadata) {
-        let callouts = await this.sortedMathCallouts(cache);
-        let equations = await this.sortedEquations(cache);
+    private removeDeprecated(settings: MathSettings & {autoIndex?: string}): MathSettings {
+        // remove the deprecated "autoIndex" key (now it's called "_index") from settings
+        let {autoIndex, ...rest} = settings;
+        return rest;
+    }
+}
 
-        let mathLinkCache: Record<string, string> = {}; // {[id]: [mathLink], ...}
+class EquationIndexer extends BlockIndexer<EquationInfo> {
+    blockType = "math" as BlockType;
 
-        let index = 0;
-        for (let callout of callouts) {
-            if (callout.settings.number == 'auto') {
-                callout.settings.autoIndex = index++;
-            }
-            let resolvedSettings = resolveSettings(callout.settings, this.plugin, this.file);
-            let newTitle = formatTitle(resolvedSettings);
-            let oldSettingsAndTitle = readMathCalloutSettingsAndTitle(
-                await this.getLine(callout.cache.position.start.line)
-            );
-            if (oldSettingsAndTitle) {
-                let { settings, title } = oldSettingsAndTitle;
-                let lineNumber = callout.cache.position.start.line;
-                if (this.isSafe(lineNumber) && JSON.stringify(settings) != JSON.stringify(callout.settings) || title != newTitle) {
-                    await this.overwriteMathCalloutSettings(
-                        lineNumber,
-                        callout.settings,
-                        newTitle,
-                    )
-                }
-                let id = callout.cache.id;
-                if (id) {
-                    mathLinkCache[id] = newTitle;
-                }
+    async addSection(sections: Readonly<EquationInfo>[], sectionCache: Readonly<SectionCache>): Promise<void> {
+        if (sectionCache.id && this.noteIndexer.linkedBlockIds.contains(sectionCache.id)) {
+            let text = await this.noteIndexer.getRange(sectionCache.position);
+            let tagMatch = text.match(/\\tag\{(.*)\}/);
+            if (tagMatch) {
+                sections.push({ cache: sectionCache, manualTag: tagMatch[1] });
+            } else {
+                sections.push({ cache: sectionCache });
             }
         }
+    }
 
-        let contextSettings = findNearestAncestorContextSettings(this.plugin, this.file);
+    async setMathLinks(equations: readonly Readonly<EquationInfo>[]): Promise<void> {
+        let contextSettings = findNearestAncestorContextSettings(this.noteIndexer.plugin, this.noteIndexer.file);
         let style = contextSettings?.eq_number_style ?? DEFAULT_SETTINGS.eq_number_style as NumberStyle;
         let equationNumber = 1;
         for (let i = 0; i < equations.length; i++) {
@@ -127,17 +137,46 @@ abstract class SingleNoteIndexer {
             let id = equation.cache.id;
             if (id) {
                 if (equation.manualTag) {
-                    mathLinkCache[id] = `(${equation.manualTag})`;
+                    this.mathLinkBlocks[id] = `(${equation.manualTag})`;
                 } else {
-                    mathLinkCache[id] = "(" + CONVERTER[style](equationNumber) + ")";
+                    this.mathLinkBlocks[id] = "(" + CONVERTER[style](equationNumber) + ")";
                     equationNumber++;
                 }
             }
         }
+    }
+}
 
+abstract class SingleNoteIndexer {
+    linkedBlockIds: string[];
+    calloutIndexer: MathCalloutIndexer;
+    equationIndexer: EquationIndexer;
+
+    constructor(public app: App, public plugin: MathPlugin, public file: TFile) {
+        this.linkedBlockIds = getBlockIdsWithBacklink(this.file.path, this.plugin);
+        this.calloutIndexer = new MathCalloutIndexer(this);
+        this.equationIndexer = new EquationIndexer(this);
+    }
+
+    abstract setLine(lineNumber: number, text: string): Promise<void>;
+    abstract getLine(lineNumber: number): Promise<string>;
+    abstract getRange(position: Pos): Promise<string>;
+    abstract isSafe(lineNumber: number): boolean;
+
+    async run(cache?: CachedMetadata) {
+        cache = cache ?? this.app.metadataCache.getFileCache(this.file) ?? undefined;
+        if (!cache) return;
+
+        await this.calloutIndexer.run(cache);
+        await this.equationIndexer.run(cache);
+        let mathLinkBlocks: MathLinkBlocks = Object.assign(
+            {}, 
+            this.calloutIndexer.mathLinkBlocks,
+            this.equationIndexer.mathLinkBlocks,
+        );
         this.plugin.getMathLinksAPI()?.update(
             this.file.path,
-            { "mathLink-blocks": mathLinkCache }
+            { "mathLink-blocks": mathLinkBlocks }
         );
     }
 }

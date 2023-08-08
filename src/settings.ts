@@ -34,7 +34,7 @@ export interface MathCalloutSettings {
 }
 
 export interface MathCalloutPrivateFields {
-    autoIndex?: number;
+    _index?: number;
 }
 
 export type MathSettings = MathContextSettings & MathCalloutSettings & MathCalloutPrivateFields;
@@ -61,7 +61,7 @@ export const MATH_ITEM_SETTINGS_KEYS = [
 ]
 
 export const MATH_ITEM_PRIVATE_FIELDS_KEYS = [
-    "autoIndex",
+    "_index",
 ]
 
 export const MATH_SETTINGS_KEYS = [

@@ -312,9 +312,9 @@ export function formatTitleWithoutSubtitle(settings: MathSettings): string {
     if (settings.number) {
         let numberString = '';
         if (settings.number == 'auto') {
-            if (settings.autoIndex !== undefined) {
+            if (settings._index !== undefined) {
                 settings.number_init = settings.number_init ?? 1;
-                let num = +settings.autoIndex + +settings.number_init;
+                let num = +settings._index + +settings.number_init;
                 let style = settings.number_style ?? DEFAULT_SETTINGS.number_style as NumberStyle;
                 numberString = CONVERTER[style](num);
             }

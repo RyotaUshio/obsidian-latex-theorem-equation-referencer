@@ -52,15 +52,11 @@ export class MathCallout extends MarkdownRenderChild {
                         this.plugin,
                         view,
                         (settings) => {
-                            // new title is set here, but it will soon be overwritten by this.registerEvent(this.app.metadataCache.on('changed', ...
-                            // so the title here is only temporary
                             let resolvedSettings = resolveSettings(settings, this.plugin, this.currentFile);
-                            if (settings.number == 'auto') {
-                                resolvedSettings["autoIndex"] = this.config.autoIndex;
-                            }
                             let title = formatTitle(resolvedSettings);
                             let indexer = new ActiveNoteIndexer(this.app, this.plugin, view);
-                            indexer.overwriteMathCalloutSettings(editor.getCursor().line, settings, title);
+                            indexer.calloutIndexer.overwriteSettings(editor.getCursor().line, settings, title);
+
                         },
                         "Confirm",
                         "Edit Math Callout Settings",
