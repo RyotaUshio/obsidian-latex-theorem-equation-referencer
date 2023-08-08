@@ -1,4 +1,4 @@
-import { MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
+import { MarkdownView, Notice, Plugin, TAbstractFile, TFile, WorkspaceLeaf } from 'obsidian';
 
 import * as MathLinks from 'obsidian-mathlinks'
 import * as Dataview from 'obsidian-dataview';
@@ -94,19 +94,21 @@ export default class MathPlugin extends Plugin {
 		});
 
 		this.registerEvent(
-			// @ts-ignore
 			this.app.metadataCache.on("dataview:metadata-change",
-				(type: string, file: TFile, oldPath?: string) => {
-					let view = this.app.workspace.getActiveViewOfType(MarkdownView);
-					let cache = this.app.metadataCache.getFileCache(file);
-					if (view && cache) {
-						if (view.file == file) {
-							let indexer = new ActiveFileIndexer(this.app, this, view);
-							indexer.run(cache);
-						} else {
-							let indexer = new NonActiveFileIndexer(this.app, this, file);
-							indexer.run(cache);
-						}
+				(...args) => {
+					let file = args[1];
+					if (file instanceof TFile) {
+						let view = this.app.workspace.getActiveViewOfType(MarkdownView);
+						let cache = this.app.metadataCache.getFileCache(file);
+						if (view && cache) {
+							if (view.file == file) {
+								let indexer = new ActiveFileIndexer(this.app, this, view);
+								indexer.run(cache);
+							} else {
+								let indexer = new NonActiveFileIndexer(this.app, this, file);
+								indexer.run(cache);
+							}
+						}							
 					}
 				}
 			)
