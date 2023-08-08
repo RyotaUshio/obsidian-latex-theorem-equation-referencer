@@ -4,7 +4,7 @@ import { MathSettings } from 'settings';
 import { TheoremLikeEnv, getTheoremLikeEnv } from 'env';
 import { generateBlockID, increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings } from 'utils';
 import MathPlugin from 'main';
-import { ActiveFileIndexer } from 'indexer';
+import { ActiveNoteIndexer } from 'indexer';
 
 export class MathCallout extends MarkdownRenderChild {
     env: TheoremLikeEnv;
@@ -43,34 +43,29 @@ export class MathCallout extends MarkdownRenderChild {
         // click the title block (div.callout-title) to edit settings
         let title = this.containerEl.querySelector<HTMLElement>('.callout-title');
         if (title) {
-            title.onclick = async () => {
+            this.plugin.registerDomEvent(title, "click", async (event: MouseEvent) => {
                 const view = this.app.workspace.getActiveViewOfType(MarkdownView);
                 const editor = view?.editor;
                 if (editor) {
                     let modal = new MathCalloutModal(
                         this.app,
                         this.plugin,
-                        view, 
+                        view,
                         (settings) => {
-                            // new title is set here, but it will soon be overwritten by this.registerEvent(this.app.metadataCache.on('changed', ...
-                            // so the title here is only temporary
                             let resolvedSettings = resolveSettings(settings, this.plugin, this.currentFile);
-                            if (settings.number == 'auto') {
-                                resolvedSettings["autoIndex"] = this.config.autoIndex;
-                            }
                             let title = formatTitle(resolvedSettings);
-                            let indexer = new ActiveFileIndexer(this.app, this.plugin, view);
-                            indexer.overwriteMathCalloutSettings(editor.getCursor().line, settings, title);
+                            let indexer = new ActiveNoteIndexer(this.app, this.plugin, view);
+                            indexer.calloutIndexer.overwriteSettings(editor.getCursor().line, settings, title);
+
                         },
-                        "Confirm", 
-                        "Edit Math Callout Settings", 
+                        "Confirm",
+                        "Edit Math Callout Settings",
                         this.config,
                     );
                     modal.resolveDefaultSettings(view.file);
                     modal.open();
                 }
-
-            }
+            });
         }
     }
 }

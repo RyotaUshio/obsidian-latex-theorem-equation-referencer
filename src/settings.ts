@@ -6,7 +6,7 @@ import { DEFAULT_LANG } from "default_lang";
 import LanguageManager from "language";
 import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "modals";
 import { resolveSettings } from "utils";
-import { ActiveFileIndexer } from "indexer";
+import { ActiveNoteIndexer } from "indexer";
 
 
 export type NumberStyle = "arabic" | "alph" | "Alph" | "roman" | "Roman";
@@ -34,7 +34,7 @@ export interface MathCalloutSettings {
 }
 
 export interface MathCalloutPrivateFields {
-    autoIndex?: number;
+    _index?: number;
 }
 
 export type MathSettings = MathContextSettings & MathCalloutSettings & MathCalloutPrivateFields;
@@ -61,7 +61,7 @@ export const MATH_ITEM_SETTINGS_KEYS = [
 ]
 
 export const MATH_ITEM_PRIVATE_FIELDS_KEYS = [
-    "autoIndex",
+    "_index",
 ]
 
 export const MATH_SETTINGS_KEYS = [
@@ -409,7 +409,7 @@ export class MathSettingTab extends PluginSettingTab {
         if (view) {
             let cache = this.app.metadataCache.getFileCache(view.file);
             if (cache) {
-                let indexer = new ActiveFileIndexer(this.app, this.plugin, view);
+                let indexer = new ActiveNoteIndexer(this.app, this.plugin, view);
                 indexer.run(cache);
             }
         }
