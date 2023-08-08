@@ -70,8 +70,8 @@ class MathCalloutIndexer extends BlockIndexer<CalloutInfo> {
                 callout.settings._index = index++;
             }
             let resolvedSettings = resolveSettings(
-                callout.settings, 
-                this.noteIndexer.plugin, 
+                callout.settings,
+                this.noteIndexer.plugin,
                 this.noteIndexer.file
             );
             let newTitle = formatTitle(resolvedSettings);
@@ -106,9 +106,9 @@ class MathCalloutIndexer extends BlockIndexer<CalloutInfo> {
         );
     }
 
-    private removeDeprecated(settings: MathSettings & {autoIndex?: string}): MathSettings {
+    private removeDeprecated(settings: MathSettings & { autoIndex?: string }): MathSettings {
         // remove the deprecated "autoIndex" key (now it's called "_index") from settings
-        let {autoIndex, ...rest} = settings;
+        let { autoIndex, ...rest } = settings;
         return rest;
     }
 }
@@ -170,7 +170,7 @@ abstract class SingleNoteIndexer {
         await this.calloutIndexer.run(cache);
         await this.equationIndexer.run(cache);
         let mathLinkBlocks: MathLinkBlocks = Object.assign(
-            {}, 
+            {},
             this.calloutIndexer.mathLinkBlocks,
             this.equationIndexer.mathLinkBlocks,
         );
@@ -240,28 +240,79 @@ export class NonActiveNoteIndexer extends SingleNoteIndexer {
     }
 }
 
+export class AutoNoteIndexer {
+    constructor(public app: App, public plugin: MathPlugin, public file: TFile) { }
+
+    async run(activeMarkdownView?: MarkdownView | null) {
+        activeMarkdownView = activeMarkdownView ?? this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (activeMarkdownView?.file == this.file) {
+            await (new ActiveNoteIndexer(this.app, this.plugin, activeMarkdownView)).run();
+        } else {
+            await (new NonActiveNoteIndexer(this.app, this.plugin, this.file)).run();
+        }
+    }
+}
+
+export class LinkedNotesIndexer {
+    constructor(public app: App, public plugin: MathPlugin, public changedFile: TFile) { }
+
+    async run() {
+        let view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        await Promise.all([
+            (new AutoNoteIndexer(this.app, this.plugin, this.changedFile)).run(),
+            this.runForwardLinks(view),
+            this.runBackLinks(view), // not sure if this is really necessary
+        ]);
+    }
+
+    async runForwardLinks(activeMarkdownView: MarkdownView | null) {
+        await this.runImpl("map", activeMarkdownView);
+    }
+
+    async runBackLinks(activeMarkdownView: MarkdownView | null) {
+        await this.runImpl("invMap", activeMarkdownView);
+    }
+
+    private async runImpl(key: "map" | "invMap", activeMarkdownView: MarkdownView | null) {
+        let links = this.plugin.oldLinkMap?.[key].get(this.changedFile.path);
+        if (links) {
+            await Promise.all(
+                Array.from(links).map((link) => {
+                    if (activeMarkdownView?.file.path == link) {
+                        return (new ActiveNoteIndexer(this.app, this.plugin, activeMarkdownView)).run();
+                    } else {
+                        let file = this.app.vault.getAbstractFileByPath(link);
+                        if (file instanceof TFile) {
+                            return (new NonActiveNoteIndexer(this.app, this.plugin, file)).run();
+                        }
+                    }
+                })
+            );
+        }
+    }
+}
+
 export class VaultIndexer {
     constructor(public app: App, public plugin: MathPlugin) { }
 
-    run() {
+    async run() {
         let files = this.app.vault.getMarkdownFiles();
+        let promises: Promise<void>[] = []
         this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
             if (leaf.view instanceof MarkdownView) {
                 removeFrom(leaf.view.file, files);
-                let indexer = new ActiveNoteIndexer(this.app, this.plugin, leaf.view);
-                let cache = this.app.metadataCache.getFileCache(leaf.view.file);
-                if (cache) {
-                    indexer.run(cache);
-                }
+                promises.push(
+                    (new ActiveNoteIndexer(this.app, this.plugin, leaf.view)).run()
+                );
             }
         });
 
         for (let file of files) {
-            let indexer = new NonActiveNoteIndexer(this.app, this.plugin, file);
-            let cache = this.app.metadataCache.getFileCache(file);
-            if (cache) {
-                indexer.run(cache);
-            }
+            promises.push(
+                (new NonActiveNoteIndexer(this.app, this.plugin, file)).run()
+            );
         }
+
+        await Promise.all(promises);
     }
 }

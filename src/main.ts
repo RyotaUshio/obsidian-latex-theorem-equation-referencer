@@ -4,13 +4,13 @@ import * as MathLinks from 'obsidian-mathlinks'
 import * as Dataview from 'obsidian-dataview';
 
 import { MathContextSettings, DEFAULT_SETTINGS, MathSettingTab } from 'settings';
-import { getCurrentMarkdown, resolveSettings } from 'utils';
+import { getCurrentMarkdown, getDataviewAPI, resolveSettings } from 'utils';
 import { MathCallout, insertMathCalloutCallback } from 'math_callouts';
 import { ContextSettingModal, MathCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
 import { blockquoteMathPreviewPlugin } from 'math_live_preview_in_callouts';
-import { ActiveNoteIndexer, NonActiveNoteIndexer, VaultIndexer } from 'indexer';
+import { ActiveNoteIndexer, LinkedNotesIndexer, VaultIndexer } from 'indexer';
 
 
 export const VAULT_ROOT = '/';
@@ -19,6 +19,7 @@ export const VAULT_ROOT = '/';
 export default class MathPlugin extends Plugin {
 	settings: Record<string, MathContextSettings>;
 	excludedFiles: string[];
+	oldLinkMap: Dataview.IndexMap;
 
 	async onload() {
 
@@ -32,6 +33,7 @@ export default class MathPlugin extends Plugin {
 		this.registerEvent(
 			this.app.metadataCache.on("dataview:index-ready",
 				() => {
+					this.setOldLinkMap();
 					let indexer = new VaultIndexer(this.app, this);
 					indexer.run();
 				}
@@ -39,24 +41,15 @@ export default class MathPlugin extends Plugin {
 		);
 
 		this.registerEvent(
-			this.app.metadataCache.on("dataview:metadata-change",
-				(...args) => {
-					let file = args[1];
-					if (file instanceof TFile) {
-						let view = this.app.workspace.getActiveViewOfType(MarkdownView);
-						let cache = this.app.metadataCache.getFileCache(file);
-						if (view && cache) {
-							if (view.file == file) {
-								let indexer = new ActiveNoteIndexer(this.app, this, view);
-								indexer.run(cache);
-							} else {
-								let indexer = new NonActiveNoteIndexer(this.app, this, file);
-								indexer.run(cache);
-							}
-						}
-					}
+			this.app.metadataCache.on("dataview:metadata-change", async (...args) => {
+				let changedFile = args[1];
+				console.log("oldLinkMap (before): ", this.oldLinkMap);
+				if (changedFile instanceof TFile) {
+					await (new LinkedNotesIndexer(this.app, this, changedFile)).run();
 				}
-			)
+				this.setOldLinkMap();
+				console.log("oldLinkMap (after): ", this.oldLinkMap);
+			})
 		);
 
 		this.addCommand({
@@ -173,14 +166,6 @@ export default class MathPlugin extends Plugin {
 			}
 		});
 
-		// this.registerEvent(this.app.metadataCache.on("changed", (file, data, cache) => {
-		// 	this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
-		// 		if (leaf.view instanceof MarkdownView && leaf.view.getMode() == 'preview') {
-		// 			leaf.view.previewMode.rerender(true);
-		// 		}
-		// 	});
-		// }));
-
 		this.addSettingTab(new MathSettingTab(this.app, this));
 	}
 
@@ -232,6 +217,13 @@ export default class MathPlugin extends Plugin {
 			account.blockPrefix = "";
 			account.enableFileNameBlockLinks = false;
 			return account;
+		}
+	}
+
+	setOldLinkMap() {
+		let oldLinkMap = Dataview.getAPI()?.index.links;
+		if (oldLinkMap) {
+			this.oldLinkMap = structuredClone(oldLinkMap);
 		}
 	}
 }

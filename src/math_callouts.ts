@@ -2,7 +2,7 @@ import { MathCalloutModal } from 'modals';
 import { App, Editor, MarkdownRenderChild, MarkdownView, TFile } from "obsidian";
 import { MathSettings } from 'settings';
 import { TheoremLikeEnv, getTheoremLikeEnv } from 'env';
-import { generateBlockID, increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings } from 'utils';
+import { generateBlockID, increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines } from 'utils';
 import MathPlugin from 'main';
 import { ActiveNoteIndexer } from 'indexer';
 
@@ -79,18 +79,19 @@ export function insertMathCalloutCallback(app: App, plugin: MathPlugin, editor: 
     let title = formatTitle(resolvedSettings);
 
     if (selection) {
+        let nLines = splitIntoLines(selection).length;
         editor.replaceSelection(
             `> [!math|${JSON.stringify(config)}] ${title}\n`
             + increaseQuoteLevel(selection)
-            + `\n^${id}`
         );
+        cursorPos.line += nLines;
     } else {
         editor.replaceRange(
-            `> [!math|${JSON.stringify(config)}] ${title}\n> \n^${id}`,
+            `> [!math|${JSON.stringify(config)}] ${title}\n> `,
             cursorPos
         )
+        cursorPos.line += 1;
     }
-    cursorPos.line += 1;
     cursorPos.ch = 2;
     editor.setCursor(cursorPos);
 }
