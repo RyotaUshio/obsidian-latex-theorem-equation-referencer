@@ -1,6 +1,7 @@
 import { MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 
-import { MathLinksAPIAccount } from 'mathLinksAPI';
+import * as MathLinks from 'obsidian-mathlinks'
+import * as Dataview from 'obsidian-dataview';
 
 import { MathContextSettings, DEFAULT_SETTINGS, MathSettingTab } from 'settings';
 import { getCurrentMarkdown, resolveSettings } from 'utils';
@@ -9,7 +10,6 @@ import { ContextSettingModal, MathCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
 import { blockquoteMathPreviewPlugin } from 'math_live_preview_in_callouts';
-import { isPluginEnabled } from 'obsidian-dataview';
 import { ActiveFileIndexer, NonActiveFileIndexer, VaultIndexer } from 'indexer';
 
 
@@ -198,7 +198,7 @@ export default class MathPlugin extends Plugin {
 	}
 
 	assertDataview(): boolean {
-		if (!isPluginEnabled(this.app)) {
+		if (!Dataview.isPluginEnabled(this.app)) {
 			new Notice(
 				`${this.manifest.name}: Make sure Dataview is installed & enabled.`,
 				100000
@@ -208,9 +208,8 @@ export default class MathPlugin extends Plugin {
 		return true;
 	}
 
-	assertMathLinks() {
-		// @ts-ignore				
-		if (!this.app.plugins.enabledPlugins.has("mathlinks")) {
+	assertMathLinks(): boolean {
+		if (!MathLinks.isPluginEnabled(this.app)) {
 			new Notice(
 				`${this.manifest.name}: Make sure MathLinks is installed & enabled.`,
 				100000
@@ -220,12 +219,12 @@ export default class MathPlugin extends Plugin {
 		return true;
 	}
 
-	getMathLinksAPI(): MathLinksAPIAccount | undefined {
-		try {
-			// @ts-ignore
-			return this.app.plugins.plugins.mathlinks.getAPIAccount(this, "");
-		} catch (err) {
-			throw err;
+	getMathLinksAPI(): MathLinks.MathLinksAPIAccount | undefined {
+		let account = MathLinks.getAPIAccount(this);
+		if (account) {
+			account.blockPrefix = "";
+			account.enableFileNameBlockLinks = false;
+			return account;
 		}
 	}
 }
