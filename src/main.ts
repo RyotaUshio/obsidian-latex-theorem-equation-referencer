@@ -1,4 +1,4 @@
-import { MarkdownView, Notice, Plugin, TAbstractFile, TFile, WorkspaceLeaf } from 'obsidian';
+import { MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 
 import * as MathLinks from 'obsidian-mathlinks'
 import * as Dataview from 'obsidian-dataview';
@@ -23,19 +23,27 @@ export default class MathPlugin extends Plugin {
 
 	async onload() {
 
+		/** Settings */
+
 		await this.loadSettings();
+		this.addSettingTab(new MathSettingTab(this.app, this));
+
+
+		/** Dependencies check */
 
 		this.app.workspace.onLayoutReady(() => {
 			this.assertDataview();
 			this.assertMathLinks();
 		});
 
+
+		/** Indexing */
+
 		this.registerEvent(
 			this.app.metadataCache.on("dataview:index-ready",
 				() => {
 					this.setOldLinkMap();
-					let indexer = new VaultIndexer(this.app, this);
-					indexer.run();
+					(new VaultIndexer(this.app, this)).run();
 				}
 			)
 		);
@@ -51,6 +59,9 @@ export default class MathPlugin extends Plugin {
 				console.log("oldLinkMap (after): ", this.oldLinkMap);
 			})
 		);
+		
+
+		/** Commands */
 
 		this.addCommand({
 			id: 'insert-inline-math',
@@ -112,6 +123,9 @@ export default class MathPlugin extends Plugin {
 			}
 		});
 
+
+		/** Editor Extensions */
+
 		this.app.workspace.onLayoutReady(() => {
 			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
 				if (leaf.view instanceof MarkdownView) {
@@ -129,6 +143,9 @@ export default class MathPlugin extends Plugin {
 		});
 
 		this.registerEditorExtension(blockquoteMathPreviewPlugin);
+
+
+		/** Markdown post processors */
 
 		this.registerMarkdownPostProcessor(async (element, context) => {
 			const callouts = element.querySelectorAll<HTMLElement>(".callout");
@@ -165,8 +182,6 @@ export default class MathPlugin extends Plugin {
 				}
 			}
 		});
-
-		this.addSettingTab(new MathSettingTab(this.app, this));
 	}
 
 	onunload() {
