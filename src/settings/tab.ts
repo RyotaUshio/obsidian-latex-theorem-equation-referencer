@@ -44,10 +44,10 @@ export class MathSettingTab extends PluginSettingTab {
         let { containerEl } = this;
         containerEl.empty();
 
-        containerEl.createEl("h3", { text: "Global settings" });
+        containerEl.createEl("h4", { text: "Global" });
         this.displayUnit(VAULT_ROOT);
 
-        containerEl.createEl("h3", { text: "Local settings" });
+        containerEl.createEl("h4", { text: "Local" });
         new Setting(containerEl).setName("Local settings")
             .setDesc("You can set up file-specific or folder-specific configurations, which have more precedence than the global settings.")
             .addButton((btn) => {
