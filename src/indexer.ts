@@ -1,8 +1,9 @@
-import { App, CachedMetadata, Editor, MarkdownView, Pos, SectionCache, TFile, WorkspaceLeaf } from 'obsidian';
+import { App, CachedMetadata, MarkdownView, SectionCache, TFile, WorkspaceLeaf } from 'obsidian';
 
 import MathBooster from './main';
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle } from './settings/settings';
-import { getBlockIdsWithBacklink, locToEditorPosition, readMathCalloutSettings, findNearestAncestorContextSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines, removeFrom } from './utils';
+import { getBlockIdsWithBacklink, readMathCalloutSettings, findNearestAncestorContextSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines, removeFrom } from './utils';
+import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 
 type MathLinkBlocks = Record<string, string>;
 
@@ -11,10 +12,10 @@ type CalloutInfo = { cache: SectionCache, settings: MathSettings };
 type EquationInfo = { cache: SectionCache, manualTag?: string };
 
 
-abstract class BlockIndexer<BlockInfo extends { cache: SectionCache }> {
+abstract class BlockIndexer<IOType extends FileIO, BlockInfo extends { cache: SectionCache }> {
     mathLinkBlocks: MathLinkBlocks;
 
-    constructor(public noteIndexer: SingleNoteIndexer) {
+    constructor(public noteIndexer: NoteIndexer<IOType>) {
         this.mathLinkBlocks = {};
     }
 
@@ -48,12 +49,12 @@ abstract class BlockIndexer<BlockInfo extends { cache: SectionCache }> {
     }
 }
 
-class MathCalloutIndexer extends BlockIndexer<CalloutInfo> {
+class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, CalloutInfo> {
     blockType = "callout" as BlockType;
 
     async addSection(sections: Readonly<CalloutInfo>[], sectionCache: Readonly<SectionCache>): Promise<void> {
         let settings = readMathCalloutSettings(
-            await this.noteIndexer.getLine(sectionCache.position.start.line)
+            await this.noteIndexer.io.getLine(sectionCache.position.start.line)
         );
         if (settings) {
             sections.push(
@@ -76,13 +77,13 @@ class MathCalloutIndexer extends BlockIndexer<CalloutInfo> {
             );
             let newTitle = formatTitle(resolvedSettings);
             let oldSettingsAndTitle = readMathCalloutSettingsAndTitle(
-                await this.noteIndexer.getLine(callout.cache.position.start.line)
+                await this.noteIndexer.io.getLine(callout.cache.position.start.line)
             );
             if (oldSettingsAndTitle) {
                 let { settings, title } = oldSettingsAndTitle;
                 let lineNumber = callout.cache.position.start.line;
                 let newSettings = this.removeDeprecated(callout.settings);
-                if (this.noteIndexer.isSafe(lineNumber) && JSON.stringify(settings) != JSON.stringify(newSettings) || title != newTitle) {
+                if (this.noteIndexer.io.isSafe(lineNumber) && JSON.stringify(settings) != JSON.stringify(newSettings) || title != newTitle) {
                     await this.overwriteSettings(
                         lineNumber, newSettings, newTitle
                     )
@@ -96,11 +97,11 @@ class MathCalloutIndexer extends BlockIndexer<CalloutInfo> {
     }
 
     async overwriteSettings(lineNumber: number, settings: MathSettings, title?: string) {
-        const matchResult = matchMathCallout(await this.noteIndexer.getLine(lineNumber));
+        const matchResult = matchMathCallout(await this.noteIndexer.io.getLine(lineNumber));
         if (!matchResult) {
             throw Error(`Math callout not found at line ${lineNumber}, could not overwrite`);
         }
-        this.noteIndexer.setLine(
+        this.noteIndexer.io.setLine(
             lineNumber,
             `> [!math|${JSON.stringify(settings)}] ${title ?? ""}`,
         );
@@ -113,12 +114,12 @@ class MathCalloutIndexer extends BlockIndexer<CalloutInfo> {
     }
 }
 
-class EquationIndexer extends BlockIndexer<EquationInfo> {
+class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, EquationInfo> {
     blockType = "math" as BlockType;
 
     async addSection(sections: Readonly<EquationInfo>[], sectionCache: Readonly<SectionCache>): Promise<void> {
         if (sectionCache.id && this.noteIndexer.linkedBlockIds.contains(sectionCache.id)) {
-            let text = await this.noteIndexer.getRange(sectionCache.position);
+            let text = await this.noteIndexer.io.getRange(sectionCache.position);
             let tagMatch = text.match(/\\tag\{(.*)\}/);
             if (tagMatch) {
                 sections.push({ cache: sectionCache, manualTag: tagMatch[1] });
@@ -147,22 +148,17 @@ class EquationIndexer extends BlockIndexer<EquationInfo> {
     }
 }
 
-abstract class SingleNoteIndexer {
+class NoteIndexer<IOType extends FileIO> {
     linkedBlockIds: string[];
-    calloutIndexer: MathCalloutIndexer;
-    equationIndexer: EquationIndexer;
+    calloutIndexer: MathCalloutIndexer<IOType>;
+    equationIndexer: EquationIndexer<IOType>;
     mathLinkBlocks: MathLinkBlocks;
 
-    constructor(public app: App, public plugin: MathBooster, public file: TFile) {
+    constructor(public app: App, public plugin: MathBooster, public file: TFile, public io: IOType) {
         this.linkedBlockIds = getBlockIdsWithBacklink(this.file.path, this.plugin);
         this.calloutIndexer = new MathCalloutIndexer(this);
         this.equationIndexer = new EquationIndexer(this);
     }
-
-    abstract setLine(lineNumber: number, text: string): Promise<void>;
-    abstract getLine(lineNumber: number): Promise<string>;
-    abstract getRange(position: Pos): Promise<string>;
-    abstract isSafe(lineNumber: number): boolean;
 
     async run(cache?: CachedMetadata) {
         cache = cache ?? this.app.metadataCache.getFileCache(this.file) ?? undefined;
@@ -193,70 +189,26 @@ abstract class SingleNoteIndexer {
             );
             let position = sectionCache?.position;
             if (position) {
-                return await this.getRange(position);
+                return await this.io.getRange(position);
             }
         }
     }
 }
 
-export class ActiveNoteIndexer extends SingleNoteIndexer {
-    editor: Editor;
 
+export class ActiveNoteIndexer extends NoteIndexer<ActiveNoteIO> {
     constructor(public app: App, public plugin: MathBooster, view: MarkdownView) {
-        super(app, plugin, view.file);
-        this.editor = view.editor;
-    }
-
-    async setLine(lineNumber: number, text: string): Promise<void> {
-        this.editor.setLine(lineNumber, text);
-    }
-
-    async getLine(lineNumber: number): Promise<string> {
-        return this.editor.getLine(lineNumber);
-    }
-
-    async getRange(position: Pos): Promise<string> {
-        let from = locToEditorPosition(position.start);
-        let to = locToEditorPosition(position.end);
-        let text = this.editor.getRange(from, to);
-        return text;
-    }
-
-    isSafe(lineNumber: number): boolean {
-        let cursorPos = this.editor.getCursor();
-        if (cursorPos.line == lineNumber) {
-            return false;
-        }
-        return true;
+        super(app, plugin, view.file, new ActiveNoteIO(view.editor));
     }
 }
 
 
-export class NonActiveNoteIndexer extends SingleNoteIndexer {
-
-    async setLine(lineNumber: number, text: string): Promise<void> {
-        this.app.vault.process(this.file, (data: string): string => {
-            let lines = splitIntoLines(data);
-            lines[lineNumber] = text;
-            return lines.join('\n');
-        })
-    }
-
-    async getLine(lineNumber: number): Promise<string> {
-        let data = await this.app.vault.cachedRead(this.file);
-        let lines = splitIntoLines(data);
-        return lines[lineNumber];
-    }
-
-    async getRange(position: Pos): Promise<string> {
-        let content = await this.app.vault.cachedRead(this.file);
-        return content.slice(position.start.offset, position.end.offset);
-    }
-
-    isSafe(lineNumber: number): boolean {
-        return true;
+export class NonActiveNoteIndexer extends NoteIndexer<NonActiveNoteIO> {
+    constructor(app: App, plugin: MathBooster, file: TFile) {
+        super(app, plugin, file, new NonActiveNoteIO(app, file));
     }
 }
+
 
 export class AutoNoteIndexer {
     constructor(public app: App, public plugin: MathBooster, public file: TFile) { }
