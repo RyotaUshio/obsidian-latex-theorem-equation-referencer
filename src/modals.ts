@@ -1,10 +1,10 @@
 import { MarkdownView, TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder } from 'obsidian';
 
 import MathBooster, { VAULT_ROOT } from './main';
-import { MathSettings, MathContextSettings, CalloutSettings, findNearestAncestorContextSettings } from './settings/settings';
+import { MathSettings, MathContextSettings, CalloutSettings } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
 import { MathCalloutSettingsHelper, MathContextSettingsHelper } from "./settings/helper";
-import { isEqualToOrChildOf } from './utils';
+import { isEqualToOrChildOf, findNearestAncestorContextSettings } from './utils';
 
 
 abstract class MathSettingModal<SettingsType> extends Modal {
@@ -56,8 +56,7 @@ abstract class MathSettingModal<SettingsType> extends Modal {
             settingTextboxes.forEach((textbox) => {
                 textbox.addEventListener("keypress", (event) => {
                     if (event.key === "Enter") {
-                        // @ts-ignore
-                        button.click();
+                        (button as HTMLElement).click();
                     }
                 });
             });
