@@ -39,15 +39,18 @@ export default class MathPlugin extends Plugin {
 
 		/** Indexing */
 
+		// triggered if this plugin is enabled after launching the app
+		this.app.workspace.onLayoutReady(() => {
+			if (Dataview.getAPI(this.app)?.index.initialized) {
+				this.initializeIndex()
+			}
+		})
+
+		// triggered if this plugin is already enabled when launching the app
 		this.registerEvent(
-			this.app.metadataCache.on("dataview:index-ready",
-				() => {
-					let indexStart = Date.now();
-					this.setOldLinkMap();
-					(new VaultIndexer(this.app, this)).run();
-					let indexEnd = Date.now();
-					console.log(`${this.manifest.name}: All the math callouts & equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s`);
-				}
+			this.app.metadataCache.on(
+				"dataview:index-ready", 
+				this.initializeIndex.bind(this)
 			)
 		);
 
@@ -242,6 +245,14 @@ export default class MathPlugin extends Plugin {
 			account.enableFileNameBlockLinks = false;
 			return account;
 		}
+	}
+
+	initializeIndex() {
+		let indexStart = Date.now();
+		this.setOldLinkMap();
+		(new VaultIndexer(this.app, this)).run();
+		let indexEnd = Date.now();
+		console.log(`${this.manifest.name}: All the math callouts & equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s`);	
 	}
 
 	getNewLinkMap(): Dataview.IndexMap | undefined {
