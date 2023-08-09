@@ -8,11 +8,12 @@ export const NON_THEOREM_LIKE_ENV_IDs = [
 
 
 export const THEOREM_LIKE_ENV_IDs = [
+    "axiom", 
+    "definition",
     "lemma", 
     "proposition", 
     "theorem",
     "corollary",
-    "definition",
     "claim", 
     "assumption",
     "example",
@@ -80,6 +81,17 @@ export class TheoremLikeEnv extends Env {
 
 
 export const ENVs = [
+    // Note axiom is not supported by Bookdownw
+    new TheoremLikeEnv(
+        "axiom",
+        { ja: "公理", en: "Axiom" },
+        "axm",
+    ),
+    new TheoremLikeEnv(
+        "definition",
+        { ja: "定義", en: "Definition" },
+        "def",
+    ),
     new TheoremLikeEnv(
         "lemma",
         { ja: "補題", en: "Lemma" },
@@ -104,19 +116,14 @@ export const ENVs = [
         "cor",
         PROOF,
     ),
-    new TheoremLikeEnv(
-        "definition",
-        { ja: "定義", en: "Definition" },
-        "def",
-    ),
-    // Note prefix=that cl id=aim is not supported by Bookdownw
+    // Note claim is not supported by Bookdownw
     new TheoremLikeEnv(
         "claim",
         { ja: "主張", en: "Claim" },
         "clm",
         PROOF,
     ),
-    // Note prefix=that as id=sumption is not supported by Bookdownw
+    // Note that assumption is not supported by Bookdownw
     new TheoremLikeEnv(
         "assumption",
         { ja: "仮定", en: "Assumption" },

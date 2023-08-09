@@ -4,7 +4,7 @@ import MathBooster from './main';
 import { MathCalloutModal } from './modals';
 import { MathSettings } from './settings/settings';
 import { TheoremLikeEnv, getTheoremLikeEnv } from './env';
-import { generateBlockID, increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines } from './utils';
+import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines } from './utils';
 import { ActiveNoteIndexer } from './indexer';
 
 export class MathCallout extends MarkdownRenderChild {
@@ -71,10 +71,9 @@ export class MathCallout extends MarkdownRenderChild {
 }
 
 
-export function insertMathCalloutCallback(app: App, plugin: MathBooster, editor: Editor, config: MathSettings, currentFile: TFile) {
+export function insertMathCalloutCallback(plugin: MathBooster, editor: Editor, config: MathSettings, currentFile: TFile) {
     let selection = editor.getSelection();
     let cursorPos = editor.getCursor();
-    let id = generateBlockID(app);
     let resolvedSettings = resolveSettings(config, plugin, currentFile);
     let title = formatTitle(resolvedSettings);
 

@@ -1,6 +1,3 @@
-import { TAbstractFile } from "obsidian";
-
-import MathBooster from "../main";
 import { ENV_IDs } from "../env";
 import { DEFAULT_LANG } from "../default_lang";
 
@@ -77,27 +74,4 @@ export const DEFAULT_SETTINGS = {
     rename: {} as RenameEnv,
     preamblePath: "",
     lineByLine: true,
-}
-
-
-export function findNearestAncestorContextSettings(plugin: MathBooster, file: TAbstractFile): MathContextSettings | undefined {
-    if (file.path in plugin.settings) {
-        return plugin.settings[file.path];
-    }
-    let folder = file.parent;
-    if (folder) {
-        while (true) {
-            if (folder.isRoot()) {
-                return undefined;
-            }
-            if (folder.path in plugin.settings) {
-                return plugin.settings[folder.path];
-            }
-            if (folder.parent) {
-                folder = folder.parent;
-            } else {
-                throw Error(`Cannot find the parent of ${folder.path}`);
-            }
-        }
-    }
 }

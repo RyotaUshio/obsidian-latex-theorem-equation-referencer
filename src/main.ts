@@ -5,7 +5,7 @@ import * as Dataview from 'obsidian-dataview';
 
 import { MathContextSettings, DEFAULT_SETTINGS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
-import { getCurrentMarkdown, resolveSettings } from './utils';
+import { resolveSettings } from './utils';
 import { MathCallout, insertMathCalloutCallback } from './math_callouts';
 import { ContextSettingModal, MathCalloutModal } from './modals';
 import { insertDisplayMath, insertInlineMath } from './key';
@@ -77,7 +77,7 @@ export default class MathBooster extends Plugin {
 		this.addCommand({
 			id: 'insert-display-math',
 			name: 'Insert Display Math',
-			editorCallback: (editor) => insertDisplayMath(editor, false, this.app)
+			editorCallback: (editor) => insertDisplayMath(editor, this.app)
 		});
 
 		this.addCommand({
@@ -91,13 +91,13 @@ export default class MathBooster extends Plugin {
 						context,
 						(config) => {
 							if (context.file) {
-								insertMathCalloutCallback(this.app, this, editor, config, context.file);
+								insertMathCalloutCallback(this, editor, config, context.file);
 							}
 						},
 						"Insert",
 						"Insert a Math Callout",
 					);
-					modal.resolveDefaultSettings(getCurrentMarkdown(this.app));
+					modal.resolveDefaultSettings(context.file);
 					modal.open();
 				}
 			}
@@ -113,11 +113,9 @@ export default class MathBooster extends Plugin {
 						this.app,
 						this, view.file.path,
 						(settings) => {
-							// @ts-ignore
-							let cache = this.app.metadataCache.getCache(view.file.path);
+							let cache = this.app.metadataCache.getCache((view as MarkdownView).file.path);
 							if (cache) {
-								// @ts-ignore
-								let indexer = new ActiveNoteIndexer(this.app, this, view);
+								let indexer = new ActiveNoteIndexer(this.app, this, view as MarkdownView);
 								indexer.run(cache);
 							}
 						}
