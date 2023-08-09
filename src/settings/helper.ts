@@ -57,7 +57,6 @@ export class MathCalloutSettingsHelper {
                     });
                 })
 
-                let titleComp: TextComponent;
                 let titlePane = new Setting(contentEl)
                     .setName("Title")
                     .setDesc("You may use inline math");
@@ -140,7 +139,8 @@ export class MathContextSettingsHelper {
         }
         setting.addText((text) => {
             text
-                .setValue(String(this.defaultSettings[name]))
+                .setPlaceholder(String(this.defaultSettings[name]))
+                .setValue(String(this.settings[name] ?? ""))
                 .onChange(callback)
         });
         return setting;

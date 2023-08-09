@@ -1,12 +1,8 @@
-import { App, MarkdownView, PluginSettingTab, Setting, TAbstractFile } from "obsidian";
+import { TAbstractFile } from "obsidian";
 
+import MathBooster from "../main";
 import { ENV_IDs } from "../env";
-import MathBooster, { VAULT_ROOT } from "../main";
 import { DEFAULT_LANG } from "../default_lang";
-import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "../modals";
-import { resolveSettings } from "../utils";
-import { ActiveNoteIndexer } from "../indexer";
-import { MathContextSettingsHelper } from "./helper";
 
 
 export type NumberStyle = "arabic" | "alph" | "Alph" | "roman" | "Roman";

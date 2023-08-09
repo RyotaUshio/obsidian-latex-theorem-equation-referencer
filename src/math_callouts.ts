@@ -57,7 +57,6 @@ export class MathCallout extends MarkdownRenderChild {
                             let title = formatTitle(resolvedSettings);
                             let indexer = new ActiveNoteIndexer(this.app, this.plugin, view);
                             indexer.calloutIndexer.overwriteSettings(editor.getCursor().line, settings, title);
-
                         },
                         "Confirm",
                         "Edit Math Callout Settings",
