@@ -1,7 +1,7 @@
 import { RangeSetBuilder } from '@codemirror/state';
 import { syntaxTree } from "@codemirror/language";
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view"
-import MathPlugin from "main";
+import MathBooster from "main";
 import { App, TFile } from "obsidian";
 import { nodeText, MATH_CALLOUT_PATTERN, matchMathCallout } from 'utils';
 
@@ -22,7 +22,7 @@ class MathCalloutTitleHiderWidget extends WidgetType {
 }
 
 
-export function buildMathCalloutPlulgin(app: App, plugin: MathPlugin, currentFile: TFile) {
+export function buildMathCalloutPlulgin(app: App, plugin: MathBooster, currentFile: TFile) {
     return ViewPlugin.fromClass(
         class implements PluginValue {
             decorations: DecorationSet;

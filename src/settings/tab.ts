@@ -1,6 +1,6 @@
 import { App, MarkdownView, PluginSettingTab, Setting } from "obsidian";
 
-import MathPlugin, { VAULT_ROOT } from "../main";
+import MathBooster, { VAULT_ROOT } from "../main";
 import { DEFAULT_SETTINGS, MathContextSettings } from "./settings";
 import { MathContextSettingsHelper } from "./helper";
 import { resolveSettings } from "../utils";
@@ -9,7 +9,7 @@ import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "modal
 
 
 export class MathSettingTab extends PluginSettingTab {
-    constructor(app: App, public plugin: MathPlugin) {
+    constructor(app: App, public plugin: MathBooster) {
         super(app, plugin);
     }
 

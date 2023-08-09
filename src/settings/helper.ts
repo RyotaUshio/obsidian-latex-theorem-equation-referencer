@@ -1,6 +1,6 @@
 import { Setting, TextComponent } from 'obsidian';
 
-import MathPlugin from '../main';
+import MathBooster from '../main';
 import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from '../env';
 import { DEFAULT_SETTINGS, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, RenameEnv } from './settings';
 import LanguageManager from '../language';
@@ -115,7 +115,7 @@ export class MathContextSettingsHelper {
         public contentEl: HTMLElement,
         public settings: MathContextSettings,
         public defaultSettings: MathContextSettings,
-        public plugin?: MathPlugin, // passed if called from the plugin's setting tab
+        public plugin?: MathBooster, // passed if called from the plugin's setting tab
     ) { }
 
     getCallback<Type>(name: keyof MathSettings): (value: Type) => void | Promise<void> {

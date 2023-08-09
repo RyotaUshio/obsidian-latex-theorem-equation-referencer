@@ -17,7 +17,7 @@ import { ActiveNoteIndexer, LinkedNotesIndexer, VaultIndexer } from './indexer';
 export const VAULT_ROOT = '/';
 
 
-export default class MathPlugin extends Plugin {
+export default class MathBooster extends Plugin {
 	settings: Record<string, MathContextSettings>;
 	excludedFiles: string[];
 	oldLinkMap: Dataview.IndexMap;

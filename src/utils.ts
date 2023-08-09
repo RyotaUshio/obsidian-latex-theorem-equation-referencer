@@ -3,7 +3,7 @@ import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
 
-import MathPlugin, { VAULT_ROOT } from './main';
+import MathBooster, { VAULT_ROOT } from './main';
 import { ENVs_MAP } from './env';
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, findNearestAncestorContextSettings } from './settings/settings';
 
@@ -187,7 +187,7 @@ export function getMathCacheFromPos(cache: CachedMetadata, pos: number): Section
     }
 }
 
-// export function getMathTag(plugin: MathPlugin, path: string, mathCache: SectionCache): string {
+// export function getMathTag(plugin: MathBooster, path: string, mathCache: SectionCache): string {
 //     let tag = '';
 //     if (mathCache?.id) {
 //         tag = plugin.getMathLinksAPI()?.get(path, mathCache.id) ?? '';
@@ -204,7 +204,7 @@ export function nodeText(node: SyntaxNodeRef, state: EditorState): string {
     return state.sliceDoc(node.from, node.to);
 }
 
-export function getDataviewAPI(plugin: MathPlugin): DataviewApi | undefined {
+export function getDataviewAPI(plugin: MathBooster): DataviewApi | undefined {
     const dv = getAPI(plugin.app); // Dataview API
     if (dv) {
         return dv;
@@ -212,7 +212,7 @@ export function getDataviewAPI(plugin: MathPlugin): DataviewApi | undefined {
     new Notice(`${plugin.manifest.name}: Cannot load Dataview API. Make sure that Dataview is installed & enabled.`);
 }
 
-export function getBlockIdsWithBacklink(path: string, plugin: MathPlugin): string[] {
+export function getBlockIdsWithBacklink(path: string, plugin: MathBooster): string[] {
     const dv = getDataviewAPI(plugin);
     let cache = plugin.app.metadataCache.getCache(path);
     let ids: string[] = [];
@@ -294,7 +294,7 @@ export function readMathCalloutTitle(line: string): string | undefined {    // c
     }
 }
 
-export function resolveSettings(settings: MathSettings | undefined, plugin: MathPlugin, currentFile: TAbstractFile) {
+export function resolveSettings(settings: MathSettings | undefined, plugin: MathBooster, currentFile: TAbstractFile) {
     // Resolves settings. Does not overwride, but returns a new settings object.
     let contextSettings = findNearestAncestorContextSettings(plugin, currentFile);
     return Object.assign({}, plugin.settings[VAULT_ROOT], contextSettings, settings);

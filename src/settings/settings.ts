@@ -1,7 +1,7 @@
 import { App, MarkdownView, PluginSettingTab, Setting, TAbstractFile } from "obsidian";
 
 import { ENV_IDs } from "../env";
-import MathPlugin, { VAULT_ROOT } from "../main";
+import MathBooster, { VAULT_ROOT } from "../main";
 import { DEFAULT_LANG } from "../default_lang";
 import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "../modals";
 import { resolveSettings } from "../utils";
@@ -84,7 +84,7 @@ export const DEFAULT_SETTINGS = {
 }
 
 
-export function findNearestAncestorContextSettings(plugin: MathPlugin, file: TAbstractFile): MathContextSettings | undefined {
+export function findNearestAncestorContextSettings(plugin: MathBooster, file: TAbstractFile): MathContextSettings | undefined {
     if (file.path in plugin.settings) {
         return plugin.settings[file.path];
     }

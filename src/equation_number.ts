@@ -1,7 +1,7 @@
 import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, SectionCache, MarkdownSectionInformation, TFile } from "obsidian";
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
-import MathPlugin from './main';
+import MathBooster from './main';
 import { getMathCache, getMathCacheFromPos, resolveSettings } from './utils';
 import { ActiveNoteIndexer, NonActiveNoteIndexer } from './indexer';
 
@@ -10,7 +10,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
     file: TFile;
     id: string | undefined;
 
-    constructor(containerEl: HTMLElement, public app: App, public plugin: MathPlugin, public context: MarkdownPostProcessorContext) {
+    constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, public context: MarkdownPostProcessorContext) {
         // containerEl, currentEL are mjx-container.MathJax elements
         super(containerEl);
         let file = this.app.vault.getAbstractFileByPath(context.sourcePath);
@@ -68,7 +68,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
 }
 
 
-export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugin: MathPlugin, markdownView: MarkdownView, lineByLine: boolean): ViewPlugin<V> {
+export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugin: MathBooster, markdownView: MarkdownView, lineByLine: boolean): ViewPlugin<V> {
 
     return ViewPlugin.fromClass(class implements PluginValue {
         constructor(public view: EditorView) {

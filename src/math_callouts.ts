@@ -1,6 +1,6 @@
 import { App, Editor, MarkdownRenderChild, MarkdownView, TFile } from "obsidian";
 
-import MathPlugin from './main';
+import MathBooster from './main';
 import { MathCalloutModal } from './modals';
 import { MathSettings } from './settings/settings';
 import { TheoremLikeEnv, getTheoremLikeEnv } from './env';
@@ -11,7 +11,7 @@ export class MathCallout extends MarkdownRenderChild {
     env: TheoremLikeEnv;
     renderedTitleElements: (HTMLElement | string)[];
 
-    constructor(containerEl: HTMLElement, public app: App, public plugin: MathPlugin, public config: MathSettings, public currentFile: TFile) {
+    constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, public config: MathSettings, public currentFile: TFile) {
         super(containerEl);
         this.env = getTheoremLikeEnv(this.config.type);
         this.config = resolveSettings(this.config, this.plugin, this.currentFile);
@@ -72,7 +72,7 @@ export class MathCallout extends MarkdownRenderChild {
 }
 
 
-export function insertMathCalloutCallback(app: App, plugin: MathPlugin, editor: Editor, config: MathSettings, currentFile: TFile) {
+export function insertMathCalloutCallback(app: App, plugin: MathBooster, editor: Editor, config: MathSettings, currentFile: TFile) {
     let selection = editor.getSelection();
     let cursorPos = editor.getCursor();
     let id = generateBlockID(app);

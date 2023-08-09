@@ -1,6 +1,6 @@
 import { App, CachedMetadata, Editor, MarkdownView, Pos, SectionCache, TFile, WorkspaceLeaf } from 'obsidian';
 
-import MathPlugin from './main';
+import MathBooster from './main';
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, findNearestAncestorContextSettings } from './settings/settings';
 import { getBlockIdsWithBacklink, locToEditorPosition, readMathCalloutSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines, removeFrom } from './utils';
 
@@ -153,7 +153,7 @@ abstract class SingleNoteIndexer {
     equationIndexer: EquationIndexer;
     mathLinkBlocks: MathLinkBlocks;
 
-    constructor(public app: App, public plugin: MathPlugin, public file: TFile) {
+    constructor(public app: App, public plugin: MathBooster, public file: TFile) {
         this.linkedBlockIds = getBlockIdsWithBacklink(this.file.path, this.plugin);
         this.calloutIndexer = new MathCalloutIndexer(this);
         this.equationIndexer = new EquationIndexer(this);
@@ -202,7 +202,7 @@ abstract class SingleNoteIndexer {
 export class ActiveNoteIndexer extends SingleNoteIndexer {
     editor: Editor;
 
-    constructor(public app: App, public plugin: MathPlugin, view: MarkdownView) {
+    constructor(public app: App, public plugin: MathBooster, view: MarkdownView) {
         super(app, plugin, view.file);
         this.editor = view.editor;
     }
@@ -259,7 +259,7 @@ export class NonActiveNoteIndexer extends SingleNoteIndexer {
 }
 
 export class AutoNoteIndexer {
-    constructor(public app: App, public plugin: MathPlugin, public file: TFile) { }
+    constructor(public app: App, public plugin: MathBooster, public file: TFile) { }
 
     getIndexer(activeMarkdownView?: MarkdownView | null): ActiveNoteIndexer | NonActiveNoteIndexer {
         activeMarkdownView = activeMarkdownView ?? this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -276,7 +276,7 @@ export class AutoNoteIndexer {
 }
 
 export class LinkedNotesIndexer {
-    constructor(public app: App, public plugin: MathPlugin, public changedFile: TFile) { }
+    constructor(public app: App, public plugin: MathBooster, public changedFile: TFile) { }
 
     async run() {
         let view = this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -315,7 +315,7 @@ export class LinkedNotesIndexer {
 }
 
 export class VaultIndexer {
-    constructor(public app: App, public plugin: MathPlugin) { }
+    constructor(public app: App, public plugin: MathBooster) { }
 
     async run() {
         let files = this.app.vault.getMarkdownFiles();
