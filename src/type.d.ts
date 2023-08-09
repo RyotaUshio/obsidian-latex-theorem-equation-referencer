@@ -1,6 +1,6 @@
-import { ActiveNoteIndexer, NonActiveNoteIndexer } from "indexer";
 import "obsidian";
 import { DataviewApi } from "obsidian-dataview";
+import { ActiveNoteIndexer, NonActiveNoteIndexer } from "./indexer";
 
 declare module "obsidian" {
     interface App {

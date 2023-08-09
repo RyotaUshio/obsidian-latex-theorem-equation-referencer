@@ -1,8 +1,10 @@
 import { MarkdownView, TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder } from 'obsidian';
 
-import MathPlugin, { VAULT_ROOT } from 'main';
-import { MathSettings, MathContextSettings, MathCalloutSettingsHelper, MathContextSettingsHelper, CalloutSettings, findNearestAncestorContextSettings, MathSettingTab } from 'settings';
-import { isEqualToOrChildOf } from 'utils';
+import MathBooster, { VAULT_ROOT } from './main';
+import { MathSettings, MathContextSettings, CalloutSettings, findNearestAncestorContextSettings } from './settings/settings';
+import { MathSettingTab } from "./settings/tab";
+import { MathCalloutSettingsHelper, MathContextSettingsHelper } from "./settings/helper";
+import { isEqualToOrChildOf } from './utils';
 
 
 abstract class MathSettingModal<SettingsType> extends Modal {
@@ -12,7 +14,7 @@ abstract class MathSettingModal<SettingsType> extends Modal {
 
     constructor(
         app: App,
-        public plugin: MathPlugin,
+        public plugin: MathBooster,
         public callback?: (settings: SettingsType) => void,
         public currentCalloutSettings?: CalloutSettings,
     ) {
@@ -67,7 +69,7 @@ abstract class MathSettingModal<SettingsType> extends Modal {
 export class MathCalloutModal extends MathSettingModal<MathSettings> {
     constructor(
         app: App,
-        plugin: MathPlugin,
+        plugin: MathBooster,
         public view: MarkdownView,
         callback: (settings: MathSettings) => void,
         public buttonText: string,
@@ -117,7 +119,7 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
 
     constructor(
         app: App, 
-        plugin: MathPlugin, 
+        plugin: MathBooster, 
         public path: string, 
         callback?: (settings: MathContextSettings) => void, 
         public displayRename: boolean = true, 
@@ -149,7 +151,7 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
 
 abstract class FileSuggestModal extends FuzzySuggestModal<TAbstractFile> {
 
-    constructor(app: App, public plugin: MathPlugin) {
+    constructor(app: App, public plugin: MathBooster) {
         super(app);
     }
 
@@ -185,7 +187,7 @@ abstract class FileSuggestModal extends FuzzySuggestModal<TAbstractFile> {
 
 
 export class LocalContextSettingsSuggestModal extends FileSuggestModal {
-    constructor(app: App, plugin: MathPlugin, public settingTab: MathSettingTab) {
+    constructor(app: App, plugin: MathBooster, public settingTab: MathSettingTab) {
         super(app, plugin);
     }
 
@@ -199,7 +201,7 @@ export class LocalContextSettingsSuggestModal extends FileSuggestModal {
 
 
 export class FileExcludeSuggestModal extends FileSuggestModal {
-    constructor(app: App, plugin: MathPlugin, public manageModal: ExcludedFileManageModal) {
+    constructor(app: App, plugin: MathBooster, public manageModal: ExcludedFileManageModal) {
         super(app, plugin);
     }
 
@@ -220,7 +222,7 @@ export class FileExcludeSuggestModal extends FileSuggestModal {
 
 
 export class ExcludedFileManageModal extends Modal {
-    constructor(app: App, public plugin: MathPlugin) {
+    constructor(app: App, public plugin: MathBooster) {
         super(app);
     }
 
