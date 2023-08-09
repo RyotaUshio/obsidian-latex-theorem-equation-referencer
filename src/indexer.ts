@@ -1,8 +1,8 @@
 import { App, CachedMetadata, Editor, MarkdownView, Pos, SectionCache, TFile, WorkspaceLeaf } from 'obsidian';
 
-import MathPlugin from 'main';
-import { DEFAULT_SETTINGS, MathSettings, NumberStyle, findNearestAncestorContextSettings } from 'settings';
-import { getBlockIdsWithBacklink, locToEditorPosition, readMathCalloutSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines, removeFrom } from 'utils';
+import MathPlugin from './main';
+import { DEFAULT_SETTINGS, MathSettings, NumberStyle, findNearestAncestorContextSettings } from './settings/settings';
+import { getBlockIdsWithBacklink, locToEditorPosition, readMathCalloutSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines, removeFrom } from './utils';
 
 type MathLinkBlocks = Record<string, string>;
 

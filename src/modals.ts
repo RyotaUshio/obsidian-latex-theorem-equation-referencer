@@ -1,8 +1,10 @@
 import { MarkdownView, TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder } from 'obsidian';
 
-import MathPlugin, { VAULT_ROOT } from 'main';
-import { MathSettings, MathContextSettings, MathCalloutSettingsHelper, MathContextSettingsHelper, CalloutSettings, findNearestAncestorContextSettings, MathSettingTab } from 'settings';
-import { isEqualToOrChildOf } from 'utils';
+import MathPlugin, { VAULT_ROOT } from './main';
+import { MathSettings, MathContextSettings, CalloutSettings, findNearestAncestorContextSettings } from './settings/settings';
+import { MathSettingTab } from "./settings/tab";
+import { MathCalloutSettingsHelper, MathContextSettingsHelper } from "./settings/helper";
+import { isEqualToOrChildOf } from './utils';
 
 
 abstract class MathSettingModal<SettingsType> extends Modal {

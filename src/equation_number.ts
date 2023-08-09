@@ -1,9 +1,9 @@
 import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, SectionCache, MarkdownSectionInformation, TFile } from "obsidian";
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
-import MathPlugin from 'main';
-import { getMathCache, getMathCacheFromPos, resolveSettings } from 'utils';
-import { ActiveNoteIndexer, AutoNoteIndexer, NonActiveNoteIndexer } from 'indexer';
+import MathPlugin from './main';
+import { getMathCache, getMathCacheFromPos, resolveSettings } from './utils';
+import { ActiveNoteIndexer, NonActiveNoteIndexer } from './indexer';
 
 
 export class DisplayMathRenderChild extends MarkdownRenderChild {

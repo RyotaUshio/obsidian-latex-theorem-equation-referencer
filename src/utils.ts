@@ -3,9 +3,9 @@ import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
 
-import MathPlugin, { VAULT_ROOT } from 'main';
-import { ENVs_MAP } from 'env';
-import { DEFAULT_SETTINGS, MathSettings, NumberStyle, findNearestAncestorContextSettings } from 'settings';
+import MathPlugin, { VAULT_ROOT } from './main';
+import { ENVs_MAP } from './env';
+import { DEFAULT_SETTINGS, MathSettings, NumberStyle, findNearestAncestorContextSettings } from './settings/settings';
 
 
 export function validateLinktext(text: string): string {

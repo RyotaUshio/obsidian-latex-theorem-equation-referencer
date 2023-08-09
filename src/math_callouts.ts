@@ -1,10 +1,11 @@
-import { MathCalloutModal } from 'modals';
 import { App, Editor, MarkdownRenderChild, MarkdownView, TFile } from "obsidian";
-import { MathSettings } from 'settings';
-import { TheoremLikeEnv, getTheoremLikeEnv } from 'env';
-import { generateBlockID, increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines } from 'utils';
-import MathPlugin from 'main';
-import { ActiveNoteIndexer } from 'indexer';
+
+import MathPlugin from './main';
+import { MathCalloutModal } from './modals';
+import { MathSettings } from './settings/settings';
+import { TheoremLikeEnv, getTheoremLikeEnv } from './env';
+import { generateBlockID, increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines } from './utils';
+import { ActiveNoteIndexer } from './indexer';
 
 export class MathCallout extends MarkdownRenderChild {
     env: TheoremLikeEnv;

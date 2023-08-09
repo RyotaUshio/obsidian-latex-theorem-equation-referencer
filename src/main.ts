@@ -3,14 +3,15 @@ import { MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 import * as MathLinks from 'obsidian-mathlinks'
 import * as Dataview from 'obsidian-dataview';
 
-import { MathContextSettings, DEFAULT_SETTINGS, MathSettingTab } from 'settings';
-import { getCurrentMarkdown, resolveSettings } from 'utils';
-import { MathCallout, insertMathCalloutCallback } from 'math_callouts';
-import { ContextSettingModal, MathCalloutModal } from 'modals';
-import { insertDisplayMath, insertInlineMath } from 'key';
-import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
-import { blockquoteMathPreviewPlugin } from 'math_live_preview_in_callouts';
-import { ActiveNoteIndexer, LinkedNotesIndexer, VaultIndexer } from 'indexer';
+import { MathContextSettings, DEFAULT_SETTINGS } from './settings/settings';
+import { MathSettingTab } from "./settings/tab";
+import { getCurrentMarkdown, resolveSettings } from './utils';
+import { MathCallout, insertMathCalloutCallback } from './math_callouts';
+import { ContextSettingModal, MathCalloutModal } from './modals';
+import { insertDisplayMath, insertInlineMath } from './key';
+import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
+import { blockquoteMathPreviewPlugin } from './math_live_preview_in_callouts';
+import { ActiveNoteIndexer, LinkedNotesIndexer, VaultIndexer } from './indexer';
 
 
 export const VAULT_ROOT = '/';
