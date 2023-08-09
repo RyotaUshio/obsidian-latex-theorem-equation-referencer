@@ -151,6 +151,7 @@ abstract class SingleNoteIndexer {
     linkedBlockIds: string[];
     calloutIndexer: MathCalloutIndexer;
     equationIndexer: EquationIndexer;
+    mathLinkBlocks: MathLinkBlocks;
 
     constructor(public app: App, public plugin: MathPlugin, public file: TFile) {
         this.linkedBlockIds = getBlockIdsWithBacklink(this.file.path, this.plugin);
@@ -169,15 +170,32 @@ abstract class SingleNoteIndexer {
 
         await this.calloutIndexer.run(cache);
         await this.equationIndexer.run(cache);
-        let mathLinkBlocks: MathLinkBlocks = Object.assign(
+        this.mathLinkBlocks = Object.assign(
             {},
             this.calloutIndexer.mathLinkBlocks,
             this.equationIndexer.mathLinkBlocks,
         );
         this.plugin.getMathLinksAPI()?.update(
             this.file.path,
-            { "mathLink-blocks": mathLinkBlocks }
+            { "mathLink-blocks": this.mathLinkBlocks }
         );
+        this.app.metadataCache.trigger(
+            "obsidian-math-booster:index-updated", 
+            this
+        );
+    }
+
+    async getBlockText(blockID: string, cache?: CachedMetadata): Promise<string | undefined> {
+        cache = cache ?? this.app.metadataCache.getFileCache(this.file) ?? undefined;
+        if (cache) {
+            let sectionCache = cache.sections?.find(
+                (sectionCache) => sectionCache.id == blockID
+            );
+            let position = sectionCache?.position;
+            if (position) {
+                return await this.getRange(position);
+            }
+        }
     }
 }
 
@@ -243,13 +261,17 @@ export class NonActiveNoteIndexer extends SingleNoteIndexer {
 export class AutoNoteIndexer {
     constructor(public app: App, public plugin: MathPlugin, public file: TFile) { }
 
-    async run(activeMarkdownView?: MarkdownView | null) {
+    getIndexer(activeMarkdownView?: MarkdownView | null): ActiveNoteIndexer | NonActiveNoteIndexer {
         activeMarkdownView = activeMarkdownView ?? this.app.workspace.getActiveViewOfType(MarkdownView);
         if (activeMarkdownView?.file == this.file) {
-            await (new ActiveNoteIndexer(this.app, this.plugin, activeMarkdownView)).run();
+            return new ActiveNoteIndexer(this.app, this.plugin, activeMarkdownView);
         } else {
-            await (new NonActiveNoteIndexer(this.app, this.plugin, this.file)).run();
+            return new NonActiveNoteIndexer(this.app, this.plugin, this.file);
         }
+    }
+
+    async run(activeMarkdownView?: MarkdownView | null) {
+        await this.getIndexer(activeMarkdownView).run();
     }
 }
 
@@ -272,7 +294,7 @@ export class LinkedNotesIndexer {
     async runBackLinks(activeMarkdownView: MarkdownView | null) {
         await this.runImpl("invMap", activeMarkdownView);
     }
-
+    
     private async runImpl(key: "map" | "invMap", activeMarkdownView: MarkdownView | null) {
         let links = this.plugin.oldLinkMap?.[key].get(this.changedFile.path);
         if (links) {

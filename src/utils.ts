@@ -187,13 +187,13 @@ export function getMathCacheFromPos(cache: CachedMetadata, pos: number): Section
     }
 }
 
-export function getMathTag(plugin: MathPlugin, path: string, mathCache: SectionCache): string {
-    let tag = '';
-    if (mathCache?.id) {
-        tag = plugin.getMathLinksAPI()?.get(path, mathCache.id) ?? '';
-    }
-    return tag;
-}
+// export function getMathTag(plugin: MathPlugin, path: string, mathCache: SectionCache): string {
+//     let tag = '';
+//     if (mathCache?.id) {
+//         tag = plugin.getMathLinksAPI()?.get(path, mathCache.id) ?? '';
+//     }
+//     return tag;
+// }
 
 export function insertAfter(referenceNode: HTMLElement, newNode: HTMLElement) {
     // https://stackoverflow.com/a/4793630/13613783
