@@ -180,7 +180,7 @@ abstract class SingleNoteIndexer {
             { "mathLink-blocks": this.mathLinkBlocks }
         );
         this.app.metadataCache.trigger(
-            "obsidian-math-booster:index-updated", 
+            "math-booster:index-updated", 
             this
         );
     }

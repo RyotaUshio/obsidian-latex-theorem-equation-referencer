@@ -1,6 +1,6 @@
 {
-	"id": "obsidian-math-booster",
-	"name": "Obsidian Math Booster",
+	"id": "math-booster",
+	"name": "Math Booster",
 	"version": "0.2.1",
 	"minAppVersion": "1.3.5",
 	"description": "Introduce LaTeX-like mathematic note taking features into Obsidian",

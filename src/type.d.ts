@@ -17,7 +17,7 @@ declare module "obsidian" {
     interface MetadataCache {
         // Custom Events
         on(
-            name: "obsidian-math-booster:index-updated", 
+            name: "math-booster:index-updated", 
             callback: (indexer: ActiveNoteIndexer | NonActiveNoteIndexer) => any
         ): EventRef;
 

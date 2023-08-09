@@ -1,12 +1,8 @@
-import MathPlugin from 'main';
 import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, SectionCache, MarkdownSectionInformation, TFile } from "obsidian";
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
-import {
-    getMathCache, getMathCacheFromPos,
-    // getMathTag, 
-    locToEditorPosition, resolveSettings
-} from 'utils';
+import MathPlugin from 'main';
+import { getMathCache, getMathCacheFromPos, resolveSettings } from 'utils';
 import { ActiveNoteIndexer, AutoNoteIndexer, NonActiveNoteIndexer } from 'indexer';
 
 
@@ -47,7 +43,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
     onload(): void {
         this.plugin.registerEvent(
             this.app.metadataCache.on(
-                "obsidian-math-booster:index-updated",
+                "math-booster:index-updated",
                 (indexer) => this.impl(indexer)
             )
         );
@@ -78,7 +74,7 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugi
         constructor(public view: EditorView) {
             // plugin.registerEvent(
             //     app.metadataCache.on(
-            //         "obsidian-math-booster:index-updated",
+            //         "math-booster:index-updated",
             //         (indexer) => {
             //             if (indexer instanceof ActiveNoteIndexer) {
             //                 this.callback(view, indexer);
