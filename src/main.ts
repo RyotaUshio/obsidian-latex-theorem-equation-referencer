@@ -4,7 +4,7 @@ import * as MathLinks from 'obsidian-mathlinks'
 import * as Dataview from 'obsidian-dataview';
 
 import { MathContextSettings, DEFAULT_SETTINGS, MathSettingTab } from 'settings';
-import { getCurrentMarkdown, getDataviewAPI, resolveSettings } from 'utils';
+import { getCurrentMarkdown, resolveSettings } from 'utils';
 import { MathCallout, insertMathCalloutCallback } from 'math_callouts';
 import { ContextSettingModal, MathCalloutModal } from 'modals';
 import { insertDisplayMath, insertInlineMath } from 'key';
@@ -42,8 +42,11 @@ export default class MathPlugin extends Plugin {
 		this.registerEvent(
 			this.app.metadataCache.on("dataview:index-ready",
 				() => {
+					let indexStart = Date.now();
 					this.setOldLinkMap();
 					(new VaultIndexer(this.app, this)).run();
+					let indexEnd = Date.now();
+					console.log(`${this.manifest.name}: All the math callouts & equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s`);
 				}
 			)
 		);
@@ -51,15 +54,13 @@ export default class MathPlugin extends Plugin {
 		this.registerEvent(
 			this.app.metadataCache.on("dataview:metadata-change", async (...args) => {
 				let changedFile = args[1];
-				console.log("oldLinkMap (before): ", this.oldLinkMap);
 				if (changedFile instanceof TFile) {
 					await (new LinkedNotesIndexer(this.app, this, changedFile)).run();
 				}
 				this.setOldLinkMap();
-				console.log("oldLinkMap (after): ", this.oldLinkMap);
 			})
 		);
-		
+
 
 		/** Commands */
 
@@ -130,7 +131,7 @@ export default class MathPlugin extends Plugin {
 			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
 				if (leaf.view instanceof MarkdownView) {
 					let settings = resolveSettings(undefined, this, leaf.view.file);
-					this.registerEditorExtension(buildEquationNumberPlugin(this.app, this, leaf.view.file.path, Boolean(settings.lineByLine)));
+					this.registerEditorExtension(buildEquationNumberPlugin(this.app, this, leaf.view, Boolean(settings.lineByLine)));
 				}
 			});
 		});
@@ -138,7 +139,7 @@ export default class MathPlugin extends Plugin {
 		this.app.workspace.on("active-leaf-change", (leaf: WorkspaceLeaf) => {
 			if (leaf.view instanceof MarkdownView) {
 				let settings = resolveSettings(undefined, this, leaf.view.file);
-				this.registerEditorExtension(buildEquationNumberPlugin(this.app, this, leaf.view.file.path, Boolean(settings.lineByLine)));
+				this.registerEditorExtension(buildEquationNumberPlugin(this.app, this, leaf.view, Boolean(settings.lineByLine)));
 			}
 		});
 
@@ -173,12 +174,20 @@ export default class MathPlugin extends Plugin {
 		});
 
 		this.registerMarkdownPostProcessor((element, context) => {
-			let mjxElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax mjx-math[display="true"]');
+			let mjxElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax > mjx-math[display="true"]');
 			if (mjxElements) {
 				for (let i = 0; i < mjxElements.length; i++) {
-					let mjxEl = mjxElements[i];
-					let renderChild = new DisplayMathRenderChild(mjxEl, this.app, this, context);
-					context.addChild(renderChild);
+					let mjxContainerEl = mjxElements[i].parentElement;
+					if (mjxContainerEl) {
+						context.addChild(
+							new DisplayMathRenderChild(
+								mjxContainerEl,
+								this.app,
+								this,
+								context
+							)
+						);
+					}
 				}
 			}
 		});
@@ -235,8 +244,12 @@ export default class MathPlugin extends Plugin {
 		}
 	}
 
+	getNewLinkMap(): Dataview.IndexMap | undefined {
+		return Dataview.getAPI(this.app)?.index.links;
+	}
+
 	setOldLinkMap() {
-		let oldLinkMap = Dataview.getAPI()?.index.links;
+		let oldLinkMap = this.getNewLinkMap();
 		if (oldLinkMap) {
 			this.oldLinkMap = structuredClone(oldLinkMap);
 		}

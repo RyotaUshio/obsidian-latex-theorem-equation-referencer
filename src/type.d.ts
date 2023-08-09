@@ -1,3 +1,4 @@
+import { ActiveNoteIndexer, NonActiveNoteIndexer } from "indexer";
 import "obsidian";
 import { DataviewApi } from "obsidian-dataview";
 
@@ -14,6 +15,13 @@ declare module "obsidian" {
         };
     }
     interface MetadataCache {
+        // Custom Events
+        on(
+            name: "obsidian-math-booster:index-updated", 
+            callback: (indexer: ActiveNoteIndexer | NonActiveNoteIndexer) => any
+        ): EventRef;
+
+        // Dataview Events
         on(
             name: "dataview:index-ready",
             callback: () => any,
