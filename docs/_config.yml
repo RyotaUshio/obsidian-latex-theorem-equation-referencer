@@ -1,14 +1,11 @@
 title: Obsidian Math Booster
 
-markdown: kramdown
-kramdown:
-  parse_block_html: true
-
 theme: minima
 
 header_pages:
   - math-callouts.md
   - equation-number.md
   - math-preview.md
+  - style-your-theorems.md
 
 github_username: RyotaUshio

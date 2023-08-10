@@ -3,23 +3,23 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>Math Callouts | Obsidian Mathematics</title>
+<title>Math callouts | Obsidian Math Booster</title>
 <meta name="generator" content="Jekyll v4.3.2" />
-<meta property="og:title" content="Math Callouts" />
+<meta property="og:title" content="Math callouts" />
 <meta property="og:locale" content="en_US" />
 <link rel="canonical" href="http://localhost:4000/math-callouts.html" />
 <meta property="og:url" content="http://localhost:4000/math-callouts.html" />
-<meta property="og:site_name" content="Obsidian Mathematics" />
+<meta property="og:site_name" content="Obsidian Math Booster" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Math Callouts" />
+<meta property="twitter:title" content="Math callouts" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","headline":"Math Callouts","url":"http://localhost:4000/math-callouts.html"}</script>
+{"@context":"https://schema.org","@type":"WebPage","headline":"Math callouts","url":"http://localhost:4000/math-callouts.html"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Obsidian Mathematics" /></head>
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Obsidian Math Booster" /></head>
 <body><header class="site-header" role="banner">
 
-  <div class="wrapper"><a class="site-title" rel="author" href="/">Obsidian Mathematics</a><nav class="site-nav">
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Obsidian Math Booster</a><nav class="site-nav">
         <input type="checkbox" id="nav-trigger" class="nav-trigger" />
         <label for="nav-trigger">
           <span class="menu-icon">
@@ -29,7 +29,7 @@
           </span>
         </label>
 
-        <div class="trigger"><a class="page-link" href="/math-callouts.html">Math Callouts</a><a class="page-link" href="/equation-number.html">Equation Numbering</a><a class="page-link" href="/math-preview.html">Math Preview in Callouts &amp; Blockquotes</a></div>
+        <div class="trigger"><a class="page-link" href="/math-callouts.html">Math callouts</a><a class="page-link" href="/equation-number.html">Equation numbering</a><a class="page-link" href="/math-preview.html">Math preview in callouts &amp; quotes</a><a class="page-link" href="/style-your-theorems.html">Style your theorems</a></div>
       </nav></div>
 </header>
 <main class="page-content" aria-label="Content">
@@ -37,30 +37,28 @@
         <article class="post">
 
   <header class="post-header">
-    <h1 class="post-title">Math Callouts</h1>
+    <h1 class="post-title">Math callouts</h1>
   </header>
 
   <div class="post-content">
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <p>You can insert <strong>math callouts</strong> specifically designed for mathematical theorems, lemmas, propositions, definitions, and so on, just like the <code class="language-plaintext highlighter-rouge">amsthm</code> package in LaTeX.</p>
 
-<script id="MathJax-script" async="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<ul>
+  <li>They can be numbered <strong>automatically/dynamically</strong> or <strong>manually/statically</strong>, depending on your preference.</li>
+  <li>The links to them are displayed with a prettily formatted title. For example, see the link “Definition 1 (σ-algebra)” in the example below.</li>
+  <li>You also have a <a href="style-your-theorems.md">fine-grained control</a> on their appearance via <a href="https://help.obsidian.md/Extending+Obsidian/CSS+snippets">CSS snippets</a>.</li>
+</ul>
 
-<p>You can insert <strong>math callouts</strong> specifically designed for mathematical theorems, lemmas, propositions, definitions, and so on, just like the <code class="language-plaintext highlighter-rouge">amsthm</code> package in $\LaTeX$.</p>
-
-<p>They can be numbered <strong>automatically/dynamically</strong> or <strong>manually/statically</strong>, depending on your preference.
-You also have a fine-grained control on their appearance via CSS snippets.</p>
-
-<p>[demo]</p>
-
-<p>See <a href="#examples">below</a> for more examples.</p>
+<p><img src="fig/math_callouts_1.png" alt="Example Result" /></p>
 
 <h2 id="how-to-use">How to use</h2>
 
 <p>Open the command palette by <kbd>Ctrl</kbd> + <kbd>P</kbd> and run the command <code class="language-plaintext highlighter-rouge">Insert Math Callout</code>.
-A pop-up will appear, where you can configure the information of the theorem.
-It has two parts: <em>item-specific settings</em> and <em>override context settings</em>.</p>
+A pop-up will appear, where you can configure the information of the theorem.</p>
 
-<h4 id="item-specific-settings">Item-specific Settings</h4>
+<p>For example, the definition callout above was generated by the following setting:</p>
+
+<p><img src="fig/math_callouts_2.png" alt="Example Settings" /></p>
 
 <ul>
   <li><strong>Type</strong>: Select from
@@ -80,56 +78,25 @@ It has two parts: <em>item-specific settings</em> and <em>override context setti
       <li>otherwise: Manually numbered. The input will be used as is.</li>
     </ul>
   </li>
-  <li><strong>Title</strong> (optional): If given, the result will be, e.g., “Theorem x.x (<code class="language-plaintext highlighter-rouge">[Title]</code>).” It can contain inline equations (<code class="language-plaintext highlighter-rouge">$...$</code>).</li>
-  <li><strong>LaTeX Label</strong> (optional): Used when later converting <a href="https://github.com/lierdakil/pandoc-crossref">pandoc-crossref</a>-friendly formats</li>
+  <li><strong>Title</strong> (optional): If given, the result will be, e.g., “Theorem x.x ([Title]).” It can contain inline equations (<code class="language-plaintext highlighter-rouge">$...$</code>).</li>
+  <li><strong>LaTeX Label</strong> (optional): Later used when converting the notes into a <a href="https://github.com/lierdakil/pandoc-crossref">pandoc-crossref</a>-friendly format. You need to care about this only if you convert your notes to LaTeX or other formats in the future.</li>
+  <li><strong>Override Context Settings</strong></li>
 </ul>
-
-<h4 id="override-context-settings">Override Context Settings</h4>
-
-<p>see …</p>
 
 <h3 id="modify-settings-afterward">Modify settings afterward</h3>
 
-<p>Click the title of an existing math callout to modify its settings.</p>
+<p>Click the title bar of an existing math callout to modify its settings.</p>
 
-<p>[image]</p>
+<p><img src="fig/math_callouts_3.png" alt="Edit settings" /></p>
 
-<p>Alternatively, you can directly edit the JSON metadata.</p>
+<p>Alternatively, you can directly edit the JSON metadata, although I don’t recommend it since it will be error-prone.</p>
 
-<p>[image]</p>
+<p><img src="fig/math_callouts_5.png" alt="Edit settings" /></p>
 
-<h2 id="examples">Examples</h2>
+<p>Also note that, if you make any changes directly to the selected area in the image below, they will be canceled.
+If you want to change the title, click on the title bar of the math callout and edit the <strong>Title</strong> section in the pop-up setting window (or edit the JSON).</p>
 
-<h2 id="style-your-theorems">Style Your Theorems</h2>
-
-<p>You can customize the appearance of math callouts to be specific to languages or environments (theorem/definition/…). This can be done using CSS snippets (and Style Settings Plugin in the near future).</p>
-
-<h3 id="css-classes-defined-by-this-plugin">CSS classes defined by this plugin</h3>
-
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">.math-callout-{type}</code>: Indicates the environment type. For example, a math callout whose type is “theorem” will be given the <code class="language-plaintext highlighter-rouge">.math-callout-theorem</code> class.</li>
-  <li><code class="language-plaintext highlighter-rouge">.math-callout-{language code}</code>: Indicates the language used for the math callout. Currently only <code class="language-plaintext highlighter-rouge">en</code> and <code class="language-plaintext highlighter-rouge">ja</code> are available.</li>
-</ul>
-
-<h3 id="obsidian-built-in-css-classes">Obsidian built-in CSS classes</h3>
-
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">.callout[data-callout="math"]</code>
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">.callout[data-callout="math"] &gt; .callout-title</code>
-        <ul>
-          <li><code class="language-plaintext highlighter-rouge">.callout[data-callout="math"] &gt; .callout-title &gt; .callout-icon</code></li>
-          <li><code class="language-plaintext highlighter-rouge">.callout[data-callout="math"] &gt; .callout-title &gt; .callout-title-inner</code></li>
-        </ul>
-      </li>
-      <li><code class="language-plaintext highlighter-rouge">.callout[data-callout="math"] &gt; .callout-content</code></li>
-    </ul>
-  </li>
-</ul>
-
-<h3 id="style-examples">Style examples</h3>
-
-<p>[image]</p>
+<p><img src="fig/math_callouts_6.png" alt="Edit settings" /></p>
 
   </div>
 
@@ -141,12 +108,12 @@ It has two parts: <em>item-specific settings</em> and <em>override context setti
 
   <div class="wrapper">
 
-    <h2 class="footer-heading">Obsidian Mathematics</h2>
+    <h2 class="footer-heading">Obsidian Math Booster</h2>
 
     <div class="footer-col-wrapper">
       <div class="footer-col footer-col-1">
         <ul class="contact-list">
-          <li class="p-name">Obsidian Mathematics</li></ul>
+          <li class="p-name">Obsidian Math Booster</li></ul>
       </div>
 
       <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/RyotaUshio"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">RyotaUshio</span></a></li></ul>

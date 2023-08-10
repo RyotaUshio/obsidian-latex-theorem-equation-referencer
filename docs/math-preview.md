@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Math live preview in callouts & blockquotes
+title: Math preview in callouts & quotes
 ---
 
 Obsidian doesn't render MathJax equations in blockquotes or callouts _while editing them_, as shown below:

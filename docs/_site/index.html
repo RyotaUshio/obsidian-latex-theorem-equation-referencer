@@ -3,23 +3,23 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>Obsidian Mathematics</title>
+<title>Overview | Obsidian Math Booster</title>
 <meta name="generator" content="Jekyll v4.3.2" />
-<meta property="og:title" content="Obsidian Mathematics" />
+<meta property="og:title" content="Overview" />
 <meta property="og:locale" content="en_US" />
 <link rel="canonical" href="http://localhost:4000/" />
 <meta property="og:url" content="http://localhost:4000/" />
-<meta property="og:site_name" content="Obsidian Mathematics" />
+<meta property="og:site_name" content="Obsidian Math Booster" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Obsidian Mathematics" />
+<meta property="twitter:title" content="Overview" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebSite","headline":"Obsidian Mathematics","name":"Obsidian Mathematics","url":"http://localhost:4000/"}</script>
+{"@context":"https://schema.org","@type":"WebSite","headline":"Overview","name":"Obsidian Math Booster","url":"http://localhost:4000/"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Obsidian Mathematics" /></head>
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Obsidian Math Booster" /></head>
 <body><header class="site-header" role="banner">
 
-  <div class="wrapper"><a class="site-title" rel="author" href="/">Obsidian Mathematics</a><nav class="site-nav">
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Obsidian Math Booster</a><nav class="site-nav">
         <input type="checkbox" id="nav-trigger" class="nav-trigger" />
         <label for="nav-trigger">
           <span class="menu-icon">
@@ -29,18 +29,63 @@
           </span>
         </label>
 
-        <div class="trigger"><a class="page-link" href="/math-callouts.html">Math Callouts</a><a class="page-link" href="/equation-number.html">Equation Numbering</a><a class="page-link" href="/math-preview.html">Math Preview in Callouts &amp; Blockquotes</a></div>
+        <div class="trigger"><a class="page-link" href="/math-callouts.html">Math callouts</a><a class="page-link" href="/equation-number.html">Equation numbering</a><a class="page-link" href="/math-preview.html">Math preview in callouts &amp; quotes</a><a class="page-link" href="/style-your-theorems.html">Style your theorems</a></div>
       </nav></div>
 </header>
 <main class="page-content" aria-label="Content">
       <div class="wrapper">
-        <div class="home"><h1 class="page-heading">Obsidian Mathematics</h1><p>This is an <a href="https://obsidian.md/">Obsidian.md</a> plugin that enhances your mathematical note taking experience by several powerful features, including:</p>
+        <div class="home"><h1 class="page-heading">Overview</h1><p><img src="fig/screenshot.png" alt="Screenshot" /></p>
+
+<p><strong>Math Booster</strong> is an <a href="https://obsidian.md/">Obsidian.md</a> plugin that enhances your mathematical note-taking experience with several powerful features, including:</p>
 
 <ul>
-  <li><a href="math-callouts">Math Callouts for Theorems/Definitions/Exercises/…</a></li>
-  <li><a href="equation-number">Automatic Equation Numbering</a></li>
-  <li><a href="math-preview">Math Preview in Callouts &amp; Blockquotes</a></li>
+  <li><a href="math-callouts">Special “math callouts” for theorems/definitions/exercises/…</a></li>
+  <li><a href="equation-number">Automatic equation numbering</a></li>
+  <li><a href="math-preview">Math live preview in callouts &amp; blockquotes</a></li>
 </ul>
+
+<p>Math callouts &amp; equations can be <a href="cleveref">referenced with their title or number</a> similarly to the <code class="language-plaintext highlighter-rouge">cleveref</code> package in LaTeX.</p>
+
+<p>You can also customize the appearance of math callous using CSS snippets. See the <a href="style-your-theorems#styles-gallery">styles gallery</a> for examples.</p>
+
+<h2 id="installation">Installation</h2>
+
+<p>This plugin is before an official submission.
+You can choose between the following two methods for installation.</p>
+
+<p><strong>WARNING: The following instruction is for installing ver. 0.2.1, which is older than the unreleased latest version of this plugin that this documentation is written for.</strong></p>
+
+<h3 id="install-via-brat-recommended">Install via BRAT (recommended)</h3>
+
+<ol>
+  <li>Install the <a href="obsidian://show-plugin?id=obsidian42-brat">BRAT</a> community plugin and enable it.</li>
+  <li>Go to <strong>Options</strong>. In the <strong>Beta Plugin List</strong> section, click on the <strong>Add Beta plugin</strong> button.</li>
+  <li>Copy and paste <code class="language-plaintext highlighter-rouge">https://github.com/RyotaUshio/obsidian-math-booster</code> in the pop-up prompt and click on <strong>Add Plugin</strong>.</li>
+  <li>(Optional) Turn on <strong>Auto-update plugins at startup</strong> at the top of the page.</li>
+  <li>Go to <strong>Community plugins &gt; Installed plugins</strong>. You will find “Math Booster” in the list. Click on the toggle button to enable it.</li>
+</ol>
+
+<h3 id="manual-installation">Manual installation</h3>
+
+<ol>
+  <li>Make a folder <code class="language-plaintext highlighter-rouge">&lt;root of your vault&gt;/.obsidian/plugins/obsidian-math-booster</code>.</li>
+  <li>Visit the <a href="https://github.com/RyotaUshio/obsidian-math-booster/releases">release page</a> of the GitHub repository, and download <code class="language-plaintext highlighter-rouge">main.js</code>, <code class="language-plaintext highlighter-rouge">manifest.json</code> and <code class="language-plaintext highlighter-rouge">style.css</code> in the “Assets” section of the latest release. Put these files in the folder you made in the previous step.</li>
+  <li>Go to Obsidian’s <strong>Settings &gt; Community plugins &gt; Installed plugins</strong>. You will find “Math Booster” in the list (if not, make sure the <a href="https://help.obsidian.md/Extending+Obsidian/Plugin+security#Restricted+mode">restricted mode</a> is turned off).</li>
+  <li>Click on the toggle button to enable it.</li>
+</ol>
+
+<h2 id="dependencies">Dependencies</h2>
+
+<p>The following community plugins are required to be installed and enabled.</p>
+
+<ul>
+  <li><a href="obsidian://show-plugin?id=dataview">Dataview</a> version &gt;= 0.5.56</li>
+  <li><a href="obsidian://show-plugin?id=mathlinks">MathLinks</a> version &gt;= 0.4.1</li>
+</ul>
+
+<p>Make sure <strong>Enable MathLinks API</strong> is turned on in the MathLinks plugin settings.</p>
+
+<p><img src="fig/mathlinks.png" alt="MathLinks settings" /></p>
 </div>
 
       </div>
@@ -49,12 +94,12 @@
 
   <div class="wrapper">
 
-    <h2 class="footer-heading">Obsidian Mathematics</h2>
+    <h2 class="footer-heading">Obsidian Math Booster</h2>
 
     <div class="footer-col-wrapper">
       <div class="footer-col footer-col-1">
         <ul class="contact-list">
-          <li class="p-name">Obsidian Mathematics</li></ul>
+          <li class="p-name">Obsidian Math Booster</li></ul>
       </div>
 
       <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/RyotaUshio"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">RyotaUshio</span></a></li></ul>
