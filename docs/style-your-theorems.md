@@ -34,21 +34,18 @@ Note that **Title suffix** is set to "." in the settings.
 
 ![Plain](fig/plain.png)
 
-{::options parse_block_html="true" /}
 <details><summary markdown="span">View CSS snippet</summary>
 <script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fdocs%2Fstyles%2Fplain.css&style=atom-one-dark-reasonable&type=code&showLineNumbers=on&showFullPath=on&showCopy=on"></script>
 </details>
-{::options parse_block_html="false" /}
 
 ### Framed
 
 ![Framed](fig/framed.png)
 
-{::options parse_block_html="true" /}
+
 <details><summary markdown="span">View CSS snippet</summary>
 <script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fdocs%2Fstyles%2Fframed.css&style=atom-one-dark-reasonable&type=code&showLineNumbers=on&showFullPath=on&showCopy=on"></script>
 </details>
-{::options parse_block_html="false" /}
 
 ### MathWiki style
 
@@ -57,21 +54,15 @@ This beautiful style is taken from [MathWiki](https://github.com/zhaoshenzhai/Ma
 
 ![MathWiki style](fig/mathwiki.png)
 
-{::options parse_block_html="true" /}
 <details><summary markdown="span">View CSS snippet</summary>
 <script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fdocs%2Fstyles%2Fmathwiki.css&style=atom-one-dark-reasonable&type=code&showLineNumbers=on&showFullPath=on&showCopy=on"></script>
 </details>
-{::options parse_block_html="false" /}
 
 ### Vivid
 
 ![Vivid light](fig/vivid-light.png)
 ![Vivid dark](fig/vivid-dark.png)
 
-{::options parse_block_html="true" /}
 <details><summary markdown="span">View CSS snippet</summary>
 <script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fdocs%2Fstyles%2Fvivid.css&style=atom-one-dark-reasonable&type=code&showLineNumbers=on&showFullPath=on&showCopy=on"></script>
-</details>
-{::options parse_block_html="false" /}
-
 </details>
