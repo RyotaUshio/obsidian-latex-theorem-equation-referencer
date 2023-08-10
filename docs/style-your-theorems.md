@@ -36,18 +36,9 @@ Note that **Title suffix** is set to "." in the settings.
 
 {::options parse_block_html="true" /}
 <details><summary markdown="span">View CSS snippet</summary>
-<script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fpackage.json&style=default&type=code&showBorder=on&showLineNumbers=on&showFileMeta=on&showFullPath=on&showCopy=on"></script>
+<script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fdocs%2Fstyles%2Fplain.css&style=atom-one-dark-reasonable&type=code&showLineNumbers=on&showFullPath=on&showCopy=on"></script>
 </details>
 {::options parse_block_html="false" /}
-
-
-{::options parse_block_html="true" /}
-<details><summary markdown="span">View CSS snippet</summary>
-
-</details>
-{::options parse_block_html="false" /}
-
-</details>
 
 ### Framed
 
@@ -55,7 +46,7 @@ Note that **Title suffix** is set to "." in the settings.
 
 {::options parse_block_html="true" /}
 <details><summary markdown="span">View CSS snippet</summary>
-<script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fpackage.json&style=default&type=code&showBorder=on&showLineNumbers=on&showFileMeta=on&showFullPath=on&showCopy=on"></script>
+<script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fdocs%2Fstyles%2Fframed.css&style=atom-one-dark-reasonable&type=code&showLineNumbers=on&showFullPath=on&showCopy=on"></script>
 </details>
 {::options parse_block_html="false" /}
 
@@ -68,7 +59,7 @@ This beautiful style is taken from [MathWiki](https://github.com/zhaoshenzhai/Ma
 
 {::options parse_block_html="true" /}
 <details><summary markdown="span">View CSS snippet</summary>
-<script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fpackage.json&style=default&type=code&showBorder=on&showLineNumbers=on&showFileMeta=on&showFullPath=on&showCopy=on"></script>
+<script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fdocs%2Fstyles%2Fmathwiki.css&style=atom-one-dark-reasonable&type=code&showLineNumbers=on&showFullPath=on&showCopy=on"></script>
 </details>
 {::options parse_block_html="false" /}
 
@@ -79,7 +70,7 @@ This beautiful style is taken from [MathWiki](https://github.com/zhaoshenzhai/Ma
 
 {::options parse_block_html="true" /}
 <details><summary markdown="span">View CSS snippet</summary>
-<script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fpackage.json&style=default&type=code&showBorder=on&showLineNumbers=on&showFileMeta=on&showFullPath=on&showCopy=on"></script>
+<script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fdocs%2Fstyles%2Fvivid.css&style=atom-one-dark-reasonable&type=code&showLineNumbers=on&showFullPath=on&showCopy=on"></script>
 </details>
 {::options parse_block_html="false" /}
 
