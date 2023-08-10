@@ -5,7 +5,7 @@ title: Style your theorems
 
 You can customize the appearance of math callouts using [CSS snippets](https://help.obsidian.md/Extending+Obsidian/CSS+snippets).
 
-Math Booster defines several [custom CSS classes](#css-classes-defined-by-math-booster), allowing you to change the styles depending on specific languages or environments (theorem/definition/...).
+Math Booster defines several [custom CSS classes](#math-boosters-custom-classes), allowing you to change the styles depending on specific languages or environments (theorem/definition/...).
 
 ## CSS classes
 
@@ -32,13 +32,15 @@ Example theorem cited from: [Tao, Terence, ed. An introduction to measure theory
 
 Note that **Title suffix** is set to "." in the settings.
 
-![Plain](fig/plain.png)
+![Plain light](fig/plain.png)
+![Plain dark](fig/plain-dark.png)
 
 [View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/plain.css)
 
 ### Framed
 
 ![Framed](fig/framed.png)
+![Framed dark](fig/framed-dark.png)
 
 [View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/framed.css)
 

@@ -1,5 +1,5 @@
 .math-callout {
-    --callout-color: 0, 0, 0;
+    --callout-color: var(--text-normal);
     font-family: Times;
     background-color: rgb(0, 0, 0, 0);
     border: solid;
