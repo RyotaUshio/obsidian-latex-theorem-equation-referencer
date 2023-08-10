@@ -4,7 +4,10 @@ import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/vie
 import MathBooster from './main';
 import { getMathCache, getMathCacheFromPos, resolveSettings } from './utils';
 import { ActiveNoteIndexer, NonActiveNoteIndexer } from './indexer';
+import { MathContextSettings } from "settings/settings";
 
+
+/** For reading mode */
 
 export class DisplayMathRenderChild extends MarkdownRenderChild {
     file: TFile;
@@ -68,7 +71,9 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
 }
 
 
-export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugin: MathBooster, markdownView: MarkdownView, lineByLine: boolean): ViewPlugin<V> {
+/** For live preview */
+
+export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugin: MathBooster, markdownView: MarkdownView): ViewPlugin<V> {
 
     return ViewPlugin.fromClass(class implements PluginValue {
         constructor(public view: EditorView) {
@@ -109,7 +114,8 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugi
                                 let mathLink = plugin.getMathLinksAPI()?.get(path, id);
                                 let text = await indexer.getBlockText(id);
                                 if (text) {
-                                    replaceMathTag(mjxContainerEl, text, mathLink, lineByLine);
+                                    const settings = resolveSettings(undefined, plugin, markdownView.file);	
+                                    replaceMathTag(mjxContainerEl, text, mathLink, Boolean(settings.lineByLine));
                                 }
                             }
                         } catch (err) {

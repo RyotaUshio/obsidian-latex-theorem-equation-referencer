@@ -1,15 +1,17 @@
-import { RangeSetBuilder } from '@codemirror/state';
+import { App, MarkdownView } from "obsidian";
+import { RangeSetBuilder, RangeSet, RangeValue } from '@codemirror/state';
 import { syntaxTree } from "@codemirror/language";
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view"
-import MathBooster from "main";
-import { App, TFile } from "obsidian";
-import { nodeText, MATH_CALLOUT_PATTERN, matchMathCallout } from 'utils';
+
+import MathBooster from "./main";
+import { nodeText, MATH_CALLOUT_PATTERN, matchMathCallout } from './utils';
 
 
 export const MATH_CALLOUT_PATTERN_GLOBAL = new RegExp(MATH_CALLOUT_PATTERN.source, "g");
 
-const CALLOUT = "HyperMD-callout_HyperMD-quote_HyperMD-quote-1";
-const CALLOUT_BEFORE_TITLE = "formatting_formatting-quote_formatting-quote-1_hmd-callout_quote_quote-1";
+const CALLOUT = /HyperMD-callout_HyperMD-quote_HyperMD-quote-([1-9][0-9]*)/;
+const CALLOUT_PRE_TITLE = (level: number) => new RegExp(`formatting_formatting-quote_formatting-quote-${level}_hmd-callout_quote_quote-${level}`);
+
 
 class MathCalloutTitleHiderWidget extends WidgetType {
     constructor(public title: string) {
@@ -22,10 +24,14 @@ class MathCalloutTitleHiderWidget extends WidgetType {
 }
 
 
-export function buildMathCalloutPlulgin(app: App, plugin: MathBooster, currentFile: TFile) {
+class DummyRangeValue extends RangeValue {}
+
+
+export function buildMathCalloutHiderPlulgin(app: App, plugin: MathBooster, markdownView: MarkdownView) {
     return ViewPlugin.fromClass(
         class implements PluginValue {
             decorations: DecorationSet;
+            atomicRanges: RangeSet<DummyRangeValue>;
 
             constructor(view: EditorView) {
                 this.impl(view);
@@ -36,7 +42,8 @@ export function buildMathCalloutPlulgin(app: App, plugin: MathBooster, currentFi
                 }
             }
             impl(view: EditorView) {
-                let builder = new RangeSetBuilder<Decoration>();
+                let decorationBuilder = new RangeSetBuilder<Decoration>();
+                let atomicRangeBuilder = new RangeSetBuilder<DummyRangeValue>();
                 let tree = syntaxTree(view.state);
 
                 for (let {from, to} of view.visibleRanges) {
@@ -47,22 +54,30 @@ export function buildMathCalloutPlulgin(app: App, plugin: MathBooster, currentFi
                             console.log(
                                 `${node.from}-${node.to}: "${view.state.sliceDoc(node.from, node.to)}" (${node.name})`
                             );
-                            if (node.name.match(CALLOUT)) {
-                                let calloutBeforeTitle = node.node.firstChild;
-                                if (calloutBeforeTitle?.name.match(CALLOUT_BEFORE_TITLE)) {
-                                    let text = nodeText(calloutBeforeTitle, view.state);
+                            const match = node.name.match(CALLOUT);
+                            if (match) {
+                                const level = +match[1];
+                                let calloutPreTitleNode = node.node.firstChild;
+                                if (calloutPreTitleNode?.name.match(CALLOUT_PRE_TITLE(level))) {
+                                    let text = nodeText(calloutPreTitleNode, view.state);
                                     if (matchMathCallout(text)) {
-                                        console.log(view.domAtPos(calloutBeforeTitle.to));
-                                        builder.add(
-                                            calloutBeforeTitle.to - 1, 
+                                        console.log(view.domAtPos(calloutPreTitleNode.to));
+                                        decorationBuilder.add(
+                                            calloutPreTitleNode.from + 2, 
+                                            calloutPreTitleNode.to, 
+                                            Decoration.replace({})
+                                            // Decoration.replace({
+                                            //     widget: new MathCalloutTitleHiderWidget(
+                                            //         view.state.sliceDoc(
+                                            //             calloutBeforeTitle.to, node.to
+                                            //         )
+                                            //     )
+                                            // })
+                                        );
+                                        atomicRangeBuilder.add(
+                                            calloutPreTitleNode.from + 2,
                                             node.to, 
-                                            Decoration.replace({
-                                                widget: new MathCalloutTitleHiderWidget(
-                                                    view.state.sliceDoc(
-                                                        calloutBeforeTitle.to, node.to
-                                                    )
-                                                )
-                                            })
+                                            new DummyRangeValue()
                                         );
                                     }
                                 }
@@ -70,13 +85,14 @@ export function buildMathCalloutPlulgin(app: App, plugin: MathBooster, currentFi
                         }
                     })
                 }
-                this.decorations = builder.finish();
+                this.decorations = decorationBuilder.finish();
+                this.atomicRanges = atomicRangeBuilder.finish();
             }
             
         }, {
         decorations: instance => instance.decorations,
         provide: plugin => EditorView.atomicRanges.of(view => {
-            return view.plugin(plugin)?.decorations || Decoration.none
+            return view.plugin(plugin)?.atomicRanges ?? Decoration.none
         })
     });
 }

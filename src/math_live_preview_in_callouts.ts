@@ -43,6 +43,7 @@ export const blockquoteMathPreviewPlugin = StateField.define<DecorationSet>({
 function impl(state: EditorState): DecorationSet {
     let builder = new RangeSetBuilder<Decoration>();
     let maths = getMathInfos(state);
+
     for (let math of maths) {
         let range = state.selection.ranges[0];
 

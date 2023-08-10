@@ -1,4 +1,4 @@
-import { MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
+import { App, MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 
 import * as MathLinks from 'obsidian-mathlinks'
 import * as Dataview from 'obsidian-dataview';
@@ -12,6 +12,8 @@ import { insertDisplayMath, insertInlineMath } from './key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
 import { blockquoteMathPreviewPlugin } from './math_live_preview_in_callouts';
 import { ActiveNoteIndexer, LinkedNotesIndexer, VaultIndexer } from './indexer';
+import { Extension } from '@codemirror/state';
+import { buildMathCalloutHiderPlulgin } from 'math_callout_title_hider';
 
 
 export const VAULT_ROOT = '/';
@@ -57,7 +59,7 @@ export default class MathBooster extends Plugin {
 
 		this.registerEvent(
 			this.app.metadataCache.on("dataview:metadata-change", async (...args) => {
-				let changedFile = args[1];
+				const changedFile = args[1];
 				if (changedFile instanceof TFile) {
 					await (new LinkedNotesIndexer(this.app, this, changedFile)).run();
 				}
@@ -107,7 +109,7 @@ export default class MathBooster extends Plugin {
 			id: 'open-local-settings-for-current-note',
 			name: 'Open Local Settings for the Current Note',
 			callback: () => {
-				let view = this.app.workspace.getActiveViewOfType(MarkdownView);
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (view) {
 					let modal = new ContextSettingModal(
 						this.app,
@@ -129,24 +131,9 @@ export default class MathBooster extends Plugin {
 
 		/** Editor Extensions */
 
-		this.app.workspace.onLayoutReady(() => {
-			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
-				if (leaf.view instanceof MarkdownView) {
-					let settings = resolveSettings(undefined, this, leaf.view.file);
-					this.registerEditorExtension(buildEquationNumberPlugin(this.app, this, leaf.view, Boolean(settings.lineByLine)));
-				}
-			});
-		});
-
-		this.app.workspace.on("active-leaf-change", (leaf: WorkspaceLeaf) => {
-			if (leaf.view instanceof MarkdownView) {
-				let settings = resolveSettings(undefined, this, leaf.view.file);
-				this.registerEditorExtension(buildEquationNumberPlugin(this.app, this, leaf.view, Boolean(settings.lineByLine)));
-			}
-		});
-
 		this.registerEditorExtension(blockquoteMathPreviewPlugin);
-
+		this.registerEditorExtensionFactory(buildEquationNumberPlugin);
+		this.registerEditorExtensionFactory(buildMathCalloutHiderPlulgin);
 
 		/** Markdown post processors */
 
@@ -263,5 +250,23 @@ export default class MathBooster extends Plugin {
 		if (oldLinkMap) {
 			this.oldLinkMap = structuredClone(oldLinkMap);
 		}
+	}
+
+	registerEditorExtensionFactory(
+		factory: (app: App, plugin: MathBooster, view: MarkdownView) => Extension, 
+	) {
+		this.app.workspace.onLayoutReady(() => {
+			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
+				if (leaf.view instanceof MarkdownView) {
+					this.registerEditorExtension(factory(this.app, this, leaf.view));
+				}
+			});
+		});
+
+		this.app.workspace.on("active-leaf-change", (leaf: WorkspaceLeaf) => {
+			if (leaf.view instanceof MarkdownView) {
+				this.registerEditorExtension(factory(this.app, this, leaf.view));
+			}
+		});
 	}
 }
