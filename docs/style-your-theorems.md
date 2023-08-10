@@ -26,11 +26,11 @@ Math Booster defines several [custom CSS classes](#math-boosters-custom-classes)
 
 ## Styles gallery
 
+Note that **Title suffix** is set to "." in the examples below.
+
 Example theorem cited from: [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf)
 
 ### Plain
-
-Note that **Title suffix** is set to "." in the settings.
 
 ![Plain light](fig/plain.png)
 ![Plain dark](fig/plain-dark.png)
