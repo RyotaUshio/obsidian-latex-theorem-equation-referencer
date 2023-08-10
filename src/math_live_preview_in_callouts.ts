@@ -3,7 +3,7 @@ import { Extension, Transaction, StateField, RangeSetBuilder, EditorState } from
 import { Decoration, DecorationSet, EditorView, WidgetType } from "@codemirror/view";
 import { syntaxTree } from '@codemirror/language';
 
-import { nodeText } from 'utils';
+import { nodeText, nodeTextQuoteSymbolTrimmed } from 'utils';
 
 
 const DISPLAY_MATH_BEGIN = "formatting_formatting-math_formatting-math-begin_keyword_math_math-block";
@@ -43,6 +43,7 @@ export const blockquoteMathPreviewPlugin = StateField.define<DecorationSet>({
 function impl(state: EditorState): DecorationSet {
     let builder = new RangeSetBuilder<Decoration>();
     let maths = getMathInfos(state);
+
     for (let math of maths) {
         let range = state.selection.ranges[0];
 
@@ -103,11 +104,12 @@ function getMathInfos(state: EditorState): MathInfo[] {
                         let quoteLevel = Number(match[1]);
                         if (node.node.firstChild) {
                             quoteContentStart = node.node.firstChild.to;
-                            let quoteSymbolPattern = new RegExp(`((>\\s*){${quoteLevel}})(.*)`);
-                            let quoteSymbolMatch = nodeText(node.node.firstChild, state).match(quoteSymbolPattern);
-                            if (quoteSymbolMatch) {
-                                mathText += quoteSymbolMatch.slice(-1)[0];
-                            }
+                            mathText += nodeTextQuoteSymbolTrimmed(node.node.firstChild, state, quoteLevel) ?? "";
+                            // let quoteSymbolPattern = new RegExp(`((>\\s*){${quoteLevel}})(.*)`);
+                            // let quoteSymbolMatch = nodeText(node.node.firstChild, state).match(quoteSymbolPattern);
+                            // if (quoteSymbolMatch) {
+                            //     mathText += quoteSymbolMatch.slice(-1)[0];
+                            // }
                         }
                     } else {
                         if (node.name.contains("math")) {

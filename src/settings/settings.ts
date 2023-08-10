@@ -8,12 +8,14 @@ export type RenameEnv = { [K in typeof ENV_IDs[number]]: string };
 
 export interface MathContextSettings {
     lang?: string;
-    number_prefix?: string;
-    number_suffix?: string;
-    number_init?: number;
-    number_style?: NumberStyle;
-    eq_number_style?: NumberStyle;
-    label_prefix?: string;
+    typeSuffix?: string;
+    numberPrefix?: string;
+    numberSuffix?: string;
+    numberInit?: number;
+    numberStyle?: NumberStyle;
+    numberDefault?: string;
+    eqNumberStyle?: NumberStyle;
+    labelPrefix?: string;
     rename?: RenameEnv;
     preamblePath?: string;
     lineByLine?: boolean;
@@ -35,12 +37,14 @@ export type CalloutSettings = MathSettings;
 
 export const MATH_CONTXT_SETTINGS_KEYS = [
     "lang",
-    "number_prefix",
-    "number_suffix",
-    "number_init",
-    "number_style",
-    "eq_number_style",
-    "label_prefix",
+    "typeSuffix",
+    "numberPrefix",
+    "numberSuffix",
+    "numberInit",
+    "numberStyle",
+    "numberDefault",
+    "eqNumberStyle",
+    "labelPrefix",
     "rename",
     "preamblePath",
     "lineByLine",
@@ -65,12 +69,14 @@ export const MATH_SETTINGS_KEYS = [
 
 export const DEFAULT_SETTINGS = {
     lang: DEFAULT_LANG,
-    number_prefix: "",
-    number_suffix: "",
-    number_init: 1,
-    number_style: "arabic",
-    eq_number_style: "arabic",
-    label_prefix: "",
+    typeSuffix: "",
+    numberPrefix: "",
+    numberSuffix: "",
+    numberInit: 1,
+    numberStyle: "arabic",
+    numberDefault: "auto", 
+    eqNumberStyle: "arabic",
+    labelPrefix: "",
     rename: {} as RenameEnv,
     preamblePath: "",
     lineByLine: true,

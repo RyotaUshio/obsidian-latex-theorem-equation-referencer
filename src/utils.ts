@@ -24,7 +24,7 @@ export function toRomanUpper(num: number): string {
     return Array(+digits.join("") + 1).join("M") + roman;
 }
 
-export function toRomanLower(num: number): string{
+export function toRomanLower(num: number): string {
     return toRomanUpper(num).toLowerCase();
 }
 
@@ -39,10 +39,10 @@ export function toAlphLower(num: number): string {
 }
 
 export const CONVERTER = {
-    "arabic": String, 
-    "alph": toAlphLower, 
-    "Alph": toAlphUpper, 
-    "roman": toRomanLower, 
+    "arabic": String,
+    "alph": toAlphLower,
+    "Alph": toAlphUpper,
+    "roman": toRomanLower,
     "Roman": toRomanUpper,
 }
 
@@ -135,6 +135,20 @@ export function getMathCacheFromPos(cache: CachedMetadata, pos: number): Section
 
 export function nodeText(node: SyntaxNodeRef, state: EditorState): string {
     return state.sliceDoc(node.from, node.to);
+}
+
+export function printNode(node: SyntaxNodeRef, state: EditorState) {
+    console.log(
+        `${node.from}-${node.to}: "${nodeText(node, state)}" (${node.name})`
+    );
+}
+
+export function nodeTextQuoteSymbolTrimmed(node: SyntaxNodeRef, state: EditorState, quoteLevel: number): string | undefined {
+    let quoteSymbolPattern = new RegExp(`((>\\s*){${quoteLevel}})(.*)`);
+    let quoteSymbolMatch = nodeText(node, state).match(quoteSymbolPattern);
+    if (quoteSymbolMatch) {
+        return quoteSymbolMatch.slice(-1)[0];
+    }
 }
 
 export function getDataviewAPI(plugin: MathBooster): DataviewApi | undefined {
@@ -259,20 +273,23 @@ export function formatTitleWithoutSubtitle(settings: MathSettings): string {
     } else {
         title = env.printedNames[settings.lang as string];
     }
+    if (settings.typeSuffix) {
+        title += settings.typeSuffix;
+    }
     if (settings.number) {
         let numberString = '';
         if (settings.number == 'auto') {
             if (settings._index !== undefined) {
-                settings.number_init = settings.number_init ?? 1;
-                let num = +settings._index + +settings.number_init;
-                let style = settings.number_style ?? DEFAULT_SETTINGS.number_style as NumberStyle;
+                settings.numberInit = settings.numberInit ?? 1;
+                let num = +settings._index + +settings.numberInit;
+                let style = settings.numberStyle ?? DEFAULT_SETTINGS.numberStyle as NumberStyle;
                 numberString = CONVERTER[style](num);
             }
         } else {
             numberString = settings.number;
         }
         if (numberString) {
-            title += ` ${settings.number_prefix}${numberString}${settings.number_suffix}`;
+            title += ` ${settings.numberPrefix}${numberString}${settings.numberSuffix}`;
         }
     }
     return title;
