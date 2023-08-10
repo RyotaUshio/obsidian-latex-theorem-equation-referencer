@@ -1,5 +1,9 @@
 title: Obsidian Math Booster
 
+markdown: kramdown
+kramdown:
+  parse_block_html: true
+
 theme: minima
 
 header_pages:

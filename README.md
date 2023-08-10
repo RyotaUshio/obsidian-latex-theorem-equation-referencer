@@ -2,7 +2,7 @@
 
 This is a plugin for [Obsidian.md](https://obsidian.md), which enhances your mathematical note-taking experience by introducing $\LaTeX$-like features into Obsidian.
 
-![](docs/fig/plain.png)
+![Math Booster](docs/fig/screenshot.png)
 
 (Theorem cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
 
@@ -27,6 +27,3 @@ The following community plugins are required to be installed and enabled.
 
 - [Dataview](obsidian://show-plugin?id=dataview) version >= 0.5.56
 - [MathLinks](obsidian://show-plugin?id=mathlinks) version >= 0.4.1
-
-## Demos
-

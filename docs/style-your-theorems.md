@@ -3,7 +3,7 @@ layout: page
 title: Style your theorems
 ---
 
-You can customize the appearance of math callouts using CSS snippets.
+You can customize the appearance of math callouts using [CSS snippets](https://help.obsidian.md/Extending+Obsidian/CSS+snippets).
 
 Math Booster defines several [custom CSS classes](#css-classes-defined-by-math-booster), allowing you to change the styles depending on specific languages or environments (theorem/definition/...).
 
@@ -44,6 +44,7 @@ View CSS snippet
     --callout-color: 0, 0, 0;
     font-family: CMU Serif;
     background-color: rgb(0, 0, 0, 0);
+    padding: 0;
 }
 
 .math-callout .callout-icon {
@@ -64,6 +65,7 @@ View CSS snippet
 }
 
 ```
+
 </details>
 
 ### MathWiki style
