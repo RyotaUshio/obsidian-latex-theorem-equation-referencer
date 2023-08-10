@@ -53,18 +53,21 @@
 It is the context settings for the vault root folder, which means it applies all the files in the vault unless overwritten by another <strong>local</strong> folder/file context.</p>
 
 <p>You can make use of this cascaded structure for customizing the settings specific to each textbook or paper, for example:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;Folder structure&gt;                  &lt;Context settings&gt;
+
+<pre style="font-family: Consolas, Menlo, Monaco;">
+Folder structure                    Context settings
+───────────────────────────────────────────────────────────────
 vault root
 ├── Textbook written in Japanese    &lt;--- Language = "ja"
 │   ├── Chapter 1
 │   │   ├── 1-1.md                  &lt;--- Number prefix = "1.1."
-│   |   ├── 1-2.md                  &lt;--- Number prefix = "1.2."
+│   │   ├── 1-2.md                  &lt;--- Number prefix = "1.2."
 │   ├── Chapter 2
 │   │   ├── 2-1.md                  &lt;--- Number prefix = "2.1."
-│   |   ├── 2-2.md                  &lt;--- Number prefix = "2.2."
+│   │   ├── 2-2.md                  &lt;--- Number prefix = "2.2."
 ├── Paper written in English.md     &lt;--- Language = "en"
 ├── ...
-</code></pre></div></div>
+</pre>
 
 <h2 id="how-to-set-up-context-settings">How to set up context settings</h2>
 
