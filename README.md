@@ -2,9 +2,12 @@
 
 This is a plugin for [Obsidian.md](https://obsidian.md), which enhances your mathematical note-taking experience by introducing $\LaTeX$-like features into Obsidian.
 
-![Math Booster](docs/fig/screenshot.png)
-
-(Theorem cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
+<figure>
+  <img src="docs/fig/screenshot.png" alt="Screenshot">
+  <figcaption>
+	  Content cited from <a href="https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf">Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.</a>
+  </figcaption>
+</figure>
 
 Obsidian is excellent, but when it comes to mathematical notes, it lacks some of the essential features that $\LaTeX$ has.
 And this is where **Math Booster** comes in!
