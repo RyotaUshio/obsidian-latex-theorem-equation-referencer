@@ -161,7 +161,7 @@ export class MathContextSettingsHelper {
                     await this.plugin?.saveSettings();
                 });
             });
-        this.addTextSetting("typeSuffix", "Type suffix", "ex) \".\" > Definition. \"\" (default) > Definition");
+        this.addTextSetting("titleSuffix", "Title suffix", "ex) \"\" (default) > Definition 2 (Group) / \".\" > Definition 2 (Group).");
         this.addTextSetting("numberPrefix", "Number prefix", "ex) \"A.\" > Definition A.1 / Lemma A.2 / Theorem A.3 / ...");
         this.addTextSetting("numberSuffix", "Number suffix", "ex) \".\" > Definition 1. / Lemma 2. / Theorem 3. / ...");
         this.addTextSetting("numberInit", "Initial count", 'ex) "5" > Definition 5 / Lemma 6 / Theorem 7 / ...');

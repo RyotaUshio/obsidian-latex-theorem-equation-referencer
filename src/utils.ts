@@ -273,9 +273,6 @@ export function formatTitleWithoutSubtitle(settings: MathSettings): string {
     } else {
         title = env.printedNames[settings.lang as string];
     }
-    if (settings.typeSuffix) {
-        title += settings.typeSuffix;
-    }
     if (settings.number) {
         let numberString = '';
         if (settings.number == 'auto') {
@@ -299,6 +296,9 @@ export function formatTitle(settings: MathSettings): string {
     let title = formatTitleWithoutSubtitle(settings);
     if (settings.title) {
         title += ` (${settings.title})`;
+    }
+    if (settings.titleSuffix) {
+        title += settings.titleSuffix;
     }
     return title;
 }
