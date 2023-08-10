@@ -34,18 +34,13 @@ Note that **Title suffix** is set to "." in the settings.
 
 ![Plain](fig/plain.png)
 
-<details><summary markdown="span">View CSS snippet</summary>
-<script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fdocs%2Fstyles%2Fplain.css&style=atom-one-dark-reasonable&type=code&showLineNumbers=on&showFullPath=on&showCopy=on"></script>
-</details>
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/plain.css)
 
 ### Framed
 
 ![Framed](fig/framed.png)
 
-
-<details><summary markdown="span">View CSS snippet</summary>
-<script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fdocs%2Fstyles%2Fframed.css&style=atom-one-dark-reasonable&type=code&showLineNumbers=on&showFullPath=on&showCopy=on"></script>
-</details>
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/framed.css)
 
 ### MathWiki style
 
@@ -54,15 +49,11 @@ This beautiful style is taken from [MathWiki](https://github.com/zhaoshenzhai/Ma
 
 ![MathWiki style](fig/mathwiki.png)
 
-<details><summary markdown="span">View CSS snippet</summary>
-<script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fdocs%2Fstyles%2Fmathwiki.css&style=atom-one-dark-reasonable&type=code&showLineNumbers=on&showFullPath=on&showCopy=on"></script>
-</details>
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/mathwiki.css)
 
 ### Vivid
 
 ![Vivid light](fig/vivid-light.png)
 ![Vivid dark](fig/vivid-dark.png)
 
-<details><summary markdown="span">View CSS snippet</summary>
-<script src="https://emgithub.com/embed-v2.js?target=https%3A%2F%2Fgithub.com%2FRyotaUshio%2Fobsidian-math-booster%2Fblob%2Fmaster%2Fdocs%2Fstyles%2Fvivid.css&style=atom-one-dark-reasonable&type=code&showLineNumbers=on&showFullPath=on&showCopy=on"></script>
-</details>
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/vivid.css)
