@@ -4,6 +4,8 @@ This is a plugin for [Obsidian.md](https://obsidian.md), which enhances your mat
 
 ![](docs/fig/plain.png)
 
+(Theorem cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
+
 Obsidian is excellent, but when it comes to mathematical notes, it lacks some of the essential features that $\LaTeX$ has.
 And this is where **Math Booster** comes in!
 
