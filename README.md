@@ -49,7 +49,7 @@ Note that **Title suffix** is set to "." in the examples below.
 
 ### MathWiki style
 
-This beautiful style is taken from [MathWiki](https://github.com/zhaoshenzhai/MathWiki). A big thank you to [Zhaoshen Zhai](https://github.com/zhaoshenzhai), the owner of MathWiki and the [MathLinks](obsidian://show-plugin?id=mathlinks) plugin, for readily consenting to including it in this documentation.
+This beautiful style is taken from [MathWiki](https://github.com/zhaoshenzhai/MathWiki). A big thank you to [Zhaoshen Zhai](https://github.com/zhaoshenzhai), the owner of MathWiki and the [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) plugin, for readily consenting to including it in this documentation.
 
 
 ![MathWiki style](docs/fig/mathwiki.png)
