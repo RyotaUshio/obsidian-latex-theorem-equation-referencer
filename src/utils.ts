@@ -24,7 +24,7 @@ export function toRomanUpper(num: number): string {
     return Array(+digits.join("") + 1).join("M") + roman;
 }
 
-export function toRomanLower(num: number): string{
+export function toRomanLower(num: number): string {
     return toRomanUpper(num).toLowerCase();
 }
 
@@ -39,10 +39,10 @@ export function toAlphLower(num: number): string {
 }
 
 export const CONVERTER = {
-    "arabic": String, 
-    "alph": toAlphLower, 
-    "Alph": toAlphUpper, 
-    "roman": toRomanLower, 
+    "arabic": String,
+    "alph": toAlphLower,
+    "Alph": toAlphUpper,
+    "roman": toRomanLower,
     "Roman": toRomanUpper,
 }
 
@@ -136,6 +136,13 @@ export function getMathCacheFromPos(cache: CachedMetadata, pos: number): Section
 export function nodeText(node: SyntaxNodeRef, state: EditorState): string {
     return state.sliceDoc(node.from, node.to);
 }
+
+export function printNode(node: SyntaxNodeRef, state: EditorState) {
+    console.log(
+        `${node.from}-${node.to}: "${nodeText(node, state)}" (${node.name})`
+    );
+}
+
 
 export function getDataviewAPI(plugin: MathBooster): DataviewApi | undefined {
     const dv = getAPI(plugin.app); // Dataview API

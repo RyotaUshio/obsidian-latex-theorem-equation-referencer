@@ -13,7 +13,7 @@ import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_nu
 import { blockquoteMathPreviewPlugin } from './math_live_preview_in_callouts';
 import { ActiveNoteIndexer, LinkedNotesIndexer, VaultIndexer } from './indexer';
 import { Extension } from '@codemirror/state';
-import { buildMathCalloutHiderPlulgin } from 'math_callout_title_hider';
+import { mathCalloutMetadataHiderPlulgin } from 'math_callout_metadata_hider';
 
 
 export const VAULT_ROOT = '/';
@@ -132,8 +132,8 @@ export default class MathBooster extends Plugin {
 		/** Editor Extensions */
 
 		this.registerEditorExtension(blockquoteMathPreviewPlugin);
+		this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
 		this.registerEditorExtensionFactory(buildEquationNumberPlugin);
-		this.registerEditorExtensionFactory(buildMathCalloutHiderPlulgin);
 
 		/** Markdown post processors */
 
