@@ -143,6 +143,13 @@ export function printNode(node: SyntaxNodeRef, state: EditorState) {
     );
 }
 
+export function nodeTextQuoteSymbolTrimmed(node: SyntaxNodeRef, state: EditorState, quoteLevel: number): string | undefined {
+    let quoteSymbolPattern = new RegExp(`((>\\s*){${quoteLevel}})(.*)`);
+    let quoteSymbolMatch = nodeText(node, state).match(quoteSymbolPattern);
+    if (quoteSymbolMatch) {
+        return quoteSymbolMatch.slice(-1)[0];
+    }
+}
 
 export function getDataviewAPI(plugin: MathBooster): DataviewApi | undefined {
     const dv = getAPI(plugin.app); // Dataview API

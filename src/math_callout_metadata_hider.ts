@@ -1,14 +1,16 @@
-import { RangeSetBuilder, RangeSet, RangeValue } from '@codemirror/state';
+import { App, MarkdownView, Plugin } from 'obsidian';
+import { RangeSetBuilder, RangeSet, RangeValue, EditorState } from '@codemirror/state';
 import { syntaxTree } from "@codemirror/language";
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view"
 
-import { nodeText, MATH_CALLOUT_PATTERN, matchMathCallout } from './utils';
+import { nodeText, MATH_CALLOUT_PATTERN, matchMathCallout, printNode, nodeTextQuoteSymbolTrimmed } from './utils';
 
 
 export const MATH_CALLOUT_PATTERN_GLOBAL = new RegExp(MATH_CALLOUT_PATTERN.source, "g");
 
-const CALLOUT = /HyperMD-callout_HyperMD-quote_HyperMD-quote-([1-9][0-9]*)/;
+export const CALLOUT = /HyperMD-callout_HyperMD-quote_HyperMD-quote-([1-9][0-9]*)/;
 const CALLOUT_PRE_TITLE = (level: number) => new RegExp(`formatting_formatting-quote_formatting-quote-${level}_hmd-callout_quote_quote-${level}`);
+export const BLOCKQUOTE = (level: number) => `HyperMD-quote_HyperMD-quote-${level}`
 
 
 class DummyRangeValue extends RangeValue { } // only for creating atomic ranges, so don't care the actual value
