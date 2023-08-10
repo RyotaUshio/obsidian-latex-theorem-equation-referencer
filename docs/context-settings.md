@@ -21,10 +21,10 @@ vault root
 ├── Textbook written in Japanese    <--- Language = "ja"
 │   ├── Chapter 1
 │   │   ├── 1-1.md                  <--- Number prefix = "1.1."
-│   │   ├── 1-2.md                  <--- Number prefix = "1.2."
+│   │   └── 1-2.md                  <--- Number prefix = "1.2."
 │   ├── Chapter 2
 │   │   ├── 2-1.md                  <--- Number prefix = "2.1."
-│   │   ├── 2-2.md                  <--- Number prefix = "2.2."
+│   │   └── 2-2.md                  <--- Number prefix = "2.2."
 ├── Paper written in English.md     <--- Language = "en"
 ├── ...
 </pre>
