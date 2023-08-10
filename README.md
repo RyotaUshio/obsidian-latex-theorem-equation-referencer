@@ -2,9 +2,8 @@
 
 This is a plugin for [Obsidian.md](https://obsidian.md), which enhances your mathematical note-taking experience by introducing $\LaTeX$-like features into Obsidian.
 
-![Math Booster](docs/fig/screenshot.png)
 
-(Theorem cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
+![Screenshot](docs/fig/screenshot.png)
 
 Obsidian is excellent, but when it comes to mathematical notes, it lacks some of the essential features that $\LaTeX$ has.
 And this is where **Math Booster** comes in!
@@ -20,6 +19,8 @@ Math callouts & equations can be [referenced with their title or number](https:/
 You can also customize the appearance of math callous using CSS snippets. See the [styles gallery](https://ryotaushio.github.io/obsidian-math-booster//style-your-theorems#styles-gallery) for examples.
 
 See the [documentation](https://ryotaushio.github.io/obsidian-math-booster/) for the details and installation instructions.
+
+(The theorem in the screenshot is cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
 
 ## Dependencies
 

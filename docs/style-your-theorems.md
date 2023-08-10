@@ -35,8 +35,7 @@ Note that **Title suffix** is set to "." in the settings.
 ![Plain](fig/plain.png)
 
 <details>
-<summary>
-View CSS snippet
+<summary>View CSS snippet
 </summary>
 
 ```css
@@ -75,7 +74,8 @@ This beautiful style is taken from [MathWiki](https://github.com/zhaoshenzhai/Ma
 ![MathWiki style](fig/Pasted%20image%2020230810180422.png)
 
 <details>
-<summary>View CSS snippet</summary>
+<summary>View CSS snippet
+</summary>
 
 ```css
 .math-callout {
@@ -124,7 +124,8 @@ This beautiful style is taken from [MathWiki](https://github.com/zhaoshenzhai/Ma
 ![My style](fig/Pasted%20image%2020230810180218.png)
 
 <details>
-<summary>View CSS snippet</summary>
+<summary>View CSS snippet
+</summary>
 
 ```css
 .math-callout {
