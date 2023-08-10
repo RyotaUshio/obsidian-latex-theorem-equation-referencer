@@ -16,7 +16,7 @@ The core features of this plugin include:
 
 Math callouts & equations can be [referenced with their title or number](https://ryotaushio.github.io/obsidian-math-booster//cleveref) similarly to the `cleveref` package in LaTeX.
 
-You can also customize the appearance of math callous using CSS snippets. See the [styles gallery](https://ryotaushio.github.io/obsidian-math-booster//style-your-theorems#styles-gallery) for examples.
+You can also customize the appearance of math callous using CSS snippets. See the [styles gallery](#styles-gallery) for examples.
 
 See the [documentation](https://ryotaushio.github.io/obsidian-math-booster/) for the details and installation instructions.
 
@@ -28,3 +28,38 @@ The following community plugins are required to be installed and enabled.
 
 - [Dataview](obsidian://show-plugin?id=dataview) version >= 0.5.56
 - [MathLinks](obsidian://show-plugin?id=mathlinks) version >= 0.4.1
+
+## Styles gallery
+
+Note that **Title suffix** is set to "." in the examples below.
+
+### Plain
+
+![Plain light](docs/fig/plain.png)
+![Plain dark](docs/fig/plain-dark.png)
+
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/plain.css)
+
+### Framed
+
+![Framed](docs/fig/framed.png)
+![Framed dark](docs/fig/framed-dark.png)
+
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/framed.css)
+
+### MathWiki style
+
+This beautiful style is taken from [MathWiki](https://github.com/zhaoshenzhai/MathWiki). A big thank you to [Zhaoshen Zhai](https://github.com/zhaoshenzhai), the owner of MathWiki and the [MathLinks](obsidian://show-plugin?id=mathlinks) plugin, for readily consenting to including it in this documentation.
+
+
+![MathWiki style](docs/fig/mathwiki.png)
+
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/mathwiki.css)
+
+### Vivid
+
+![Vivid light](docs/fig/vivid-light.png)
+![Vivid dark](docs/fig/vivid-dark.png)
+
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/vivid.css)
+
