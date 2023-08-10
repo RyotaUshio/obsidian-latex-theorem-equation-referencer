@@ -11,18 +11,18 @@ Math Booster defines several [custom CSS classes](#css-classes-defined-by-math-b
 
 ### Obsidian built-in classes
 
-- `.callout[data-callout="math"]`
-  - `.callout[data-callout="math"] > .callout-title`
-    - `.callout[data-callout="math"] > .callout-title > .callout-icon`
-    - `.callout[data-callout="math"] > .callout-title > .callout-title-inner`
-  - `.callout[data-callout="math"] > .callout-content`
+- `.callout`
+  - `.callout > .callout-title`
+    - `.callout > .callout-title > .callout-icon`
+    - `.callout > .callout-title > .callout-title-inner`
+  - `.callout > .callout-content`
 
 ### Math Booster's custom classes
 
-- `.math-callout`: Assigned to all math callouts.
+- `.math-callout`: Assigned to all math callouts. You can use it as an alternative to `.callout[data-callout="math"]`.
 - `.math-callout-{type}`: Indicates the environment type. For example, a math callout whose type is "theorem" will be given the `.math-callout-theorem` class.
 - `.math-callout-{language code}`: Indicates the language used for the math callout. Currently only `en` and `ja` are available.
-- `.math-callout-subtitle`: Corresponds to the **title** field in the math callout settings. ex) Theorem 1.1 (here is `.math-callout-subtitle`)
+- `.math-callout-subtitle`: Corresponds to the **title** field in the math callout settings. Lives inside `.callout-title-inner`. Ex) Theorem 1.1 (here is `.math-callout-subtitle`)
 
 ## Styles gallery
 
@@ -32,7 +32,7 @@ Example theorem cited from: [Van Handel, Ramon. "Probability in high dimension."
 
 Note that **Title suffix** is set to "." in the settings.
 
-![Alt text](fig/plain.png)
+![Plain](fig/plain.png)
 
 <details>
 <summary>
