@@ -196,7 +196,7 @@ export default class MathBooster extends Plugin {
 	}
 
 	onunload() {
-		this.getMathLinksAPI()?.deleteAccount();
+		MathLinks.deleteAPIAccount(this);
 	}
 
 	async loadSettings() {

@@ -131,7 +131,7 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
 
     async setMathLinks(equations: readonly Readonly<EquationInfo>[]): Promise<void> {
         let contextSettings = findNearestAncestorContextSettings(this.noteIndexer.plugin, this.noteIndexer.file);
-        let style = contextSettings?.eq_number_style ?? DEFAULT_SETTINGS.eq_number_style as NumberStyle;
+        let style = contextSettings?.eqNumberStyle ?? DEFAULT_SETTINGS.eqNumberStyle as NumberStyle;
         let equationNumber = 1;
         for (let i = 0; i < equations.length; i++) {
             let equation = equations[i];

@@ -259,20 +259,23 @@ export function formatTitleWithoutSubtitle(settings: MathSettings): string {
     } else {
         title = env.printedNames[settings.lang as string];
     }
+    if (settings.typeSuffix) {
+        title += settings.typeSuffix;
+    }
     if (settings.number) {
         let numberString = '';
         if (settings.number == 'auto') {
             if (settings._index !== undefined) {
-                settings.number_init = settings.number_init ?? 1;
-                let num = +settings._index + +settings.number_init;
-                let style = settings.number_style ?? DEFAULT_SETTINGS.number_style as NumberStyle;
+                settings.numberInit = settings.numberInit ?? 1;
+                let num = +settings._index + +settings.numberInit;
+                let style = settings.numberStyle ?? DEFAULT_SETTINGS.numberStyle as NumberStyle;
                 numberString = CONVERTER[style](num);
             }
         } else {
             numberString = settings.number;
         }
         if (numberString) {
-            title += ` ${settings.number_prefix}${numberString}${settings.number_suffix}`;
+            title += ` ${settings.numberPrefix}${numberString}${settings.numberSuffix}`;
         }
     }
     return title;

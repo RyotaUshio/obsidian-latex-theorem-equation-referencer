@@ -49,7 +49,7 @@ export class MathCalloutSettingsHelper {
 
                 numberSetting.addText((text) => {
                     text.setValue(
-                        this.defaultSettings.number ?? "auto"
+                        this.defaultSettings.number ?? this.defaultSettings.numberDefault ?? DEFAULT_SETTINGS.numberDefault
                     );
                     this.settings.number = text.getValue();
                     text.onChange((value) => {
@@ -64,7 +64,7 @@ export class MathCalloutSettingsHelper {
 
                 let labelPane = new Setting(contentEl).setName("LaTeX Label");
                 let labelPrefixEl = labelPane.controlEl.createDiv({
-                    text: this.env.prefix + ":" + (this.defaultSettings.label_prefix ?? "")
+                    text: this.env.prefix + ":" + (this.defaultSettings.labelPrefix ?? "")
                 });
 
                 titlePane.addText((text) => {
@@ -100,8 +100,8 @@ export class MathCalloutSettingsHelper {
                     this.settings.type = value;
                     this.env = getTheoremLikeEnv(value);
                     labelPrefixEl.textContent = this.env.prefix + ":";
-                    if (this.defaultSettings.label_prefix) {
-                        labelPrefixEl.textContent += this.defaultSettings.label_prefix;
+                    if (this.defaultSettings.labelPrefix) {
+                        labelPrefixEl.textContent += this.defaultSettings.labelPrefix;
                     }
                 });
             });
@@ -139,7 +139,7 @@ export class MathContextSettingsHelper {
         }
         setting.addText((text) => {
             text
-                .setPlaceholder(String(this.defaultSettings[name]))
+                .setPlaceholder(String(this.defaultSettings[name] ?? ""))
                 .setValue(String(this.settings[name] ?? ""))
                 .onChange(callback)
         });
@@ -161,14 +161,16 @@ export class MathContextSettingsHelper {
                     await this.plugin?.saveSettings();
                 });
             });
-        this.addTextSetting("number_prefix", "Number prefix", "ex) \"A.\" -> Definition A.1 / Lemma A.2 / Theorem A.3 / ...");
-        this.addTextSetting("number_suffix", "Number suffix", "ex) \".\" -> Definition 1. / Lemma 2. / Theorem 3. / ...");
-        this.addTextSetting("number_init", "Initial count", 'ex) "5" -> Definition 5 / Lemma 6 / Theorem 7 / ...');
-        this.addNumberStyleSetting("number_style", "Math callouts numbering style");
+        this.addTextSetting("typeSuffix", "Type suffix", "ex) \".\" > Definition. \"\" (default) > Definition");
+        this.addTextSetting("numberPrefix", "Number prefix", "ex) \"A.\" > Definition A.1 / Lemma A.2 / Theorem A.3 / ...");
+        this.addTextSetting("numberSuffix", "Number suffix", "ex) \".\" > Definition 1. / Lemma 2. / Theorem 3. / ...");
+        this.addTextSetting("numberInit", "Initial count", 'ex) "5" > Definition 5 / Lemma 6 / Theorem 7 / ...');
+        this.addNumberStyleSetting("numberStyle", "Math callouts numbering style");
+        this.addTextSetting("numberDefault", "Default value for the \"Number\" field");
         if (displayEqNumberStyle) {
-            this.addNumberStyleSetting("eq_number_style", "Equation numbering style");
+            this.addNumberStyleSetting("eqNumberStyle", "Equation numbering style");
         }
-        this.addTextSetting("label_prefix", "LaTeX label prefix", 'ex) if "geometry:", a theorem with label="pythhagorean-theorem" will be given a LaTeX label "thm:geometry:pythhagorean-theorem"');
+        this.addTextSetting("labelPrefix", "LaTeX label prefix", 'ex) "geometry:" > a theorem with label="pythhagorean-theorem" will be given a LaTeX label "thm:geometry:pythhagorean-theorem"');
 
         if (displayRename) {
             this.addRenameSetting();
@@ -219,7 +221,7 @@ export class MathContextSettingsHelper {
         return setting;
     }
 
-    addNumberStyleSetting(name: "number_style" | "eq_number_style", prettyName?: string, description?: string) {
+    addNumberStyleSetting(name: "numberStyle" | "eqNumberStyle", prettyName?: string, description?: string) {
         let setting = new Setting(this.contentEl);
         if (prettyName) {
             setting.setName(prettyName);
