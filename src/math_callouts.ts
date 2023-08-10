@@ -30,6 +30,9 @@ export class MathCallout extends MarkdownRenderChild {
             subtitleEl.replaceChildren(...subtitle)
             this.renderedTitleElements.push(" ", subtitleEl);
         }
+        if (this.config.titleSuffix) {
+            this.renderedTitleElements.push(this.config.titleSuffix);
+        }
     }
 
     onload() {

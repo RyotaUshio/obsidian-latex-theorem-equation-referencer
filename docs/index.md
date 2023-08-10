@@ -5,10 +5,13 @@ title: Overview
 
 **Math Booster** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note taking experience with several powerful features, including:
 
-- [Special callouts for theorems/definitions/exercises/...](math-callouts)
+- [Special "math callouts" for theorems/definitions/exercises/...](math-callouts)
 - [Automatic equation numbering](equation-number)
-- [Clever reference to Theorems & equations](cleveref)
 - [Math live preview in callouts & blockquotes](math-preview)
+
+Math callouts & equations can be [referenced with their title or number](cleveref) similarly to the `clevered` package in LaTeX.
+
+You can also customize the appearance of math callous using CSS snippets. See the [styles gallery](style-your-theorems#styles-gallery) for examples.
 
 ## Installation
 

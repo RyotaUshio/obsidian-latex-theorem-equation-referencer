@@ -8,7 +8,7 @@ export type RenameEnv = { [K in typeof ENV_IDs[number]]: string };
 
 export interface MathContextSettings {
     lang?: string;
-    typeSuffix?: string;
+    titleSuffix?: string;
     numberPrefix?: string;
     numberSuffix?: string;
     numberInit?: number;
@@ -37,7 +37,7 @@ export type CalloutSettings = MathSettings;
 
 export const MATH_CONTXT_SETTINGS_KEYS = [
     "lang",
-    "typeSuffix",
+    "titleSuffix",
     "numberPrefix",
     "numberSuffix",
     "numberInit",
@@ -69,7 +69,7 @@ export const MATH_SETTINGS_KEYS = [
 
 export const DEFAULT_SETTINGS = {
     lang: DEFAULT_LANG,
-    typeSuffix: "",
+    titleSuffix: ".",
     numberPrefix: "",
     numberSuffix: "",
     numberInit: 1,
