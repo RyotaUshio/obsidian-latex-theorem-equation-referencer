@@ -38,6 +38,7 @@ export class MathCallout extends MarkdownRenderChild {
         titleInner?.replaceChildren(...this.renderedTitleElements);
 
         // add classes for CSS snippets
+        this.containerEl.classList.add("math-callout");
         this.containerEl.classList.add("math-callout-" + this.config.lang);
         this.containerEl.classList.add("math-callout-" + this.config.type);
 
