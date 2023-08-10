@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Context settings | Obsidian Math Booster</title>
+<meta name="generator" content="Jekyll v4.3.2" />
+<meta property="og:title" content="Context settings" />
+<meta property="og:locale" content="en_US" />
+<link rel="canonical" href="http://localhost:4000/context-settings.html" />
+<meta property="og:url" content="http://localhost:4000/context-settings.html" />
+<meta property="og:site_name" content="Obsidian Math Booster" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Context settings" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","headline":"Context settings","url":"http://localhost:4000/context-settings.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Obsidian Math Booster" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Obsidian Math Booster</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/math-callouts.html">Math callouts</a><a class="page-link" href="/equation-number.html">Equation numbering</a><a class="page-link" href="/math-preview.html">Math preview in callouts &amp; quotes</a><a class="page-link" href="/style-your-theorems.html">Style your theorems</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Context settings</h1>
+  </header>
+
+  <div class="post-content">
+    <p>Roughly speaking, Math Booster has two types of settings:</p>
+<ul>
+  <li>Settings specific to each math callout (<strong>Type</strong>, <strong>Number</strong>, <strong>Title</strong>, …)</li>
+  <li>Settings applying to a file or a folder as a whole</li>
+</ul>
+
+<p>The latter type is called <strong>context settings</strong>.</p>
+
+<p>In the plugin setting tab, there is the <strong>Global</strong> section at the top.
+It is the context settings for the vault root folder, which means it applies all the files in the vault unless overwritten by another <strong>local</strong> folder/file context.</p>
+
+<p>You can make use of this cascaded structure for customizing the settings specific to each textbook or paper, for example:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;Folder structure&gt;                  &lt;Context settings&gt;
+vault root
+├── Textbook written in Japanese    &lt;--- Language = "ja"
+│   ├── Chapter 1
+│   │   ├── 1-1.md                  &lt;--- Number prefix = "1.1."
+│   |   ├── 1-2.md                  &lt;--- Number prefix = "1.2."
+│   ├── Chapter 2
+│   │   ├── 2-1.md                  &lt;--- Number prefix = "2.1."
+│   |   ├── 2-2.md                  &lt;--- Number prefix = "2.2."
+├── Paper written in English.md     &lt;--- Language = "en"
+├── ...
+</code></pre></div></div>
+
+<h2 id="how-to-set-up-context-settings">How to set up context settings</h2>
+
+<p>There are several ways to set up the context settings.</p>
+
+<ul>
+  <li>Plugin setting tab</li>
+  <li>“Open Local Settings for the Current Note” command</li>
+  <li>“Override context settings” button in math callout settings</li>
+</ul>
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Obsidian Math Booster</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Obsidian Math Booster</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/RyotaUshio"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">RyotaUshio</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

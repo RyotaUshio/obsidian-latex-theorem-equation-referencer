@@ -3,9 +3,13 @@ layout: home
 title: Overview
 ---
 
-![Screenshot](fig/screenshot.png)
+<figure style="padding-bottom:2em;">
+<img src="fig/screenshot.png" alt="Screenshot">
+<figcaption style="text-align:center; font-size: 67%; padding-top: 0; padding-left: 6em; padding-right: 6em;">Example theorem cited from:<br><a href="https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf">Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.</a>
+</figcaption>
+</figure>
 
-**Math Booster** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience with several powerful features, including:
+**[Math Booster](https://github.com/RyotaUshio/obsidian-math-booster)** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience with several powerful features, including:
 
 - [Special "math callouts" for theorems/definitions/exercises/...](math-callouts)
 - [Automatic equation numbering](equation-number)
