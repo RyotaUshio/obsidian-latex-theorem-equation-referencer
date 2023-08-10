@@ -3,6 +3,7 @@
     border-left: 5px solid rgb(var(--callout-color));
     border-radius: 0px;
     padding: 0px;
+    font-family: CMU Serif;
 }
 
 .math-callout .callout-title {
@@ -15,19 +16,16 @@
 }
 
 .math-callout .callout-title-inner {
-    font-style: bold;
+    font-family: Inter;
+    font-weight: 400;
     color: rgb(var(--callout-color));
 }
 
 .math-callout-subtitle {
-    font-weight: 400;
+    font-weight: 200;
 }
 
 .math-callout .callout-content {
     background-color: var(--background-primary);
     padding: 1px 20px 2px 20px;
-}
-
-.math-callout-en .callout-content {
-    font-style: italic;
 }
