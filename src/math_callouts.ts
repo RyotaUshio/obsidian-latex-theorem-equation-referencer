@@ -8,13 +8,14 @@ import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithout
 import { ActiveNoteIndexer } from './indexer';
 
 export class MathCallout extends MarkdownRenderChild {
+    config: Required<MathSettings>;
     env: TheoremLikeEnv;
     renderedTitleElements: (HTMLElement | string)[];
 
-    constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, public config: MathSettings, public currentFile: TFile) {
+    constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, config: MathSettings, public currentFile: TFile) {
         super(containerEl);
-        this.env = getTheoremLikeEnv(this.config.type);
-        this.config = resolveSettings(this.config, this.plugin, this.currentFile);
+        this.env = getTheoremLikeEnv(config.type);
+        this.config = resolveSettings(config, this.plugin, this.currentFile) as Required<MathSettings>;
     }
 
     async setRenderedTitleElements() {
@@ -44,6 +45,8 @@ export class MathCallout extends MarkdownRenderChild {
         this.containerEl.classList.add("math-callout");
         this.containerEl.classList.add("math-callout-" + this.config.lang);
         this.containerEl.classList.add("math-callout-" + this.config.type);
+        this.containerEl.toggleClass(`math-callout-${this.config.mathCalloutStyle}`, this.config.mathCalloutStyle != "custom");
+        this.containerEl.toggleClass("font-family-inherit", this.config.mathCalloutStyle != "custom" && this.config.mathCalloutFontInherit);
 
         // click the title block (div.callout-title) to edit settings
         let title = this.containerEl.querySelector<HTMLElement>('.callout-title');

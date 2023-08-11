@@ -2,9 +2,25 @@ import { ENV_IDs } from "../env";
 import { DEFAULT_LANG } from "../default_lang";
 
 
-export type NumberStyle = "arabic" | "alph" | "Alph" | "roman" | "Roman";
+export const NUMBER_STYLES = [
+    "arabic",
+    "alph",
+    "Alph",
+    "roman",
+    "Roman"
+] as const;
+export type NumberStyle = typeof NUMBER_STYLES[number];
 
 export type RenameEnv = { [K in typeof ENV_IDs[number]]: string };
+
+export const MATH_CALLOUT_STYLES = [
+    "custom", 
+    "plain",
+    "framed",
+    "mathwiki",
+    "vivid",
+] as const;
+export type MathCalloutStyle = typeof MATH_CALLOUT_STYLES[number];
 
 export interface MathContextSettings {
     lang?: string;
@@ -14,11 +30,15 @@ export interface MathContextSettings {
     numberInit?: number;
     numberStyle?: NumberStyle;
     numberDefault?: string;
+    eqNumberPrefix?: string;
+    eqNumberSuffix?: string;
+    eqNumberInit?: number;
     eqNumberStyle?: NumberStyle;
     labelPrefix?: string;
     rename?: RenameEnv;
-    preamblePath?: string;
     lineByLine?: boolean;
+    mathCalloutStyle?: MathCalloutStyle;
+    mathCalloutFontInherit?: boolean;
 }
 
 export interface MathCalloutSettings {
@@ -33,41 +53,8 @@ export interface MathCalloutPrivateFields {
 }
 
 export type MathSettings = MathContextSettings & MathCalloutSettings & MathCalloutPrivateFields;
-export type CalloutSettings = MathSettings;
 
-export const MATH_CONTXT_SETTINGS_KEYS = [
-    "lang",
-    "titleSuffix",
-    "numberPrefix",
-    "numberSuffix",
-    "numberInit",
-    "numberStyle",
-    "numberDefault",
-    "eqNumberStyle",
-    "labelPrefix",
-    "rename",
-    "preamblePath",
-    "lineByLine",
-]
-
-export const MATH_ITEM_SETTINGS_KEYS = [
-    "type",
-    "number",
-    "title",
-    "label",
-]
-
-export const MATH_ITEM_PRIVATE_FIELDS_KEYS = [
-    "_index",
-]
-
-export const MATH_SETTINGS_KEYS = [
-    ...MATH_CONTXT_SETTINGS_KEYS,
-    ...MATH_ITEM_SETTINGS_KEYS,
-    ...MATH_ITEM_PRIVATE_FIELDS_KEYS
-]
-
-export const DEFAULT_SETTINGS = {
+export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     lang: DEFAULT_LANG,
     titleSuffix: ".",
     numberPrefix: "",
@@ -75,9 +62,13 @@ export const DEFAULT_SETTINGS = {
     numberInit: 1,
     numberStyle: "arabic",
     numberDefault: "auto", 
+    eqNumberPrefix: "",
+    eqNumberSuffix: "",
+    eqNumberInit: 1,
     eqNumberStyle: "arabic",
     labelPrefix: "",
     rename: {} as RenameEnv,
-    preamblePath: "",
     lineByLine: true,
+    mathCalloutStyle: "framed",
+    mathCalloutFontInherit: false,
 }

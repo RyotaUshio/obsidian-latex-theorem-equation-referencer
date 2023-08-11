@@ -1,5 +1,5 @@
 ---
-title: Context settings
+title: Local settings
 layout: page
 ---
 
@@ -7,15 +7,15 @@ Roughly speaking, Math Booster has two types of settings:
 - Settings specific to each math callout (**Type**, **Number**, **Title**, ...)
 - Settings applying to a file or a folder as a whole
 
-The latter type is called **context settings**. 
+The latter type is called **local settings**. 
 
-In the plugin setting tab, there is the **Global** section at the top.
-It is the context settings for the vault root folder, which means it applies all the files in the vault unless overwritten by another **local** folder/file context.
+In the plugin setting tab, you can set up the **Global** settings. In other words, they are local settings for the vault root.
+They apply all the files in the vault unless overwritten by another **local** settings for a lower-level folder/file.
 
 You can make use of this cascaded structure for customizing the settings specific to each textbook or paper, for example:
 
 <pre style="font-family: Consolas, Menlo, Monaco;">
-Folder structure                    Context settings
+Folder structure                    Local settings
 ───────────────────────────────────────────────────────────────
 vault root
 ├── Textbook written in Japanese    <--- Language = "ja"
@@ -29,10 +29,10 @@ vault root
 ├── ...
 </pre>
 
-## How to set up context settings
+## How to set up local settings
 
-There are several ways to set up the context settings.
+There are several ways to set up the local settings.
 
 - Plugin setting tab
 - "Open Local Settings for the Current Note" command
-- "Override context settings" button in math callout settings
+- "Override local settings" button in math callout settings

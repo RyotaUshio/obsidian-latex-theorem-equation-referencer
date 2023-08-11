@@ -2,7 +2,7 @@ import { Setting, TextComponent } from 'obsidian';
 
 import MathBooster from '../main';
 import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from '../env';
-import { DEFAULT_SETTINGS, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, RenameEnv } from './settings';
+import { DEFAULT_SETTINGS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, RenameEnv } from './settings';
 import LanguageManager from '../language';
 
 
@@ -114,24 +114,64 @@ export class MathContextSettingsHelper {
         public contentEl: HTMLElement,
         public settings: MathContextSettings,
         public defaultSettings: MathContextSettings,
-        public plugin?: MathBooster, // passed if called from the plugin's setting tab
+        public plugin: MathBooster
     ) { }
 
-    getCallback<Type>(name: keyof MathSettings): (value: Type) => void | Promise<void> {
-        let callback = (value: Type): void => {
+    getCallback<Type>(name: keyof MathSettings): (value: Type) => Promise<void> {
+        return async (value: Type): Promise<void> => {
             Object.assign(this.settings, { [name]: value });
-        };
-        if (this.plugin) {
-            callback = async (value: Type): Promise<void> => {
-                Object.assign(this.settings, { [name]: value });
-                await this.plugin?.saveSettings();
-            };
+            await this.plugin?.saveSettings();
         }
-        return callback;
     }
 
-    addTextSetting(name: keyof MathContextSettings, prettyName?: string, description?: string): Setting {
-        prettyName = prettyName ?? name as string;
+    makeSettingPane() {
+        const { contentEl } = this;
+
+        contentEl.createEl("h3", { text: "Math callouts" });
+        this.addDropdownSetting("lang", LanguageManager.supported, "Language");
+        let styleSetting = this.addDropdownSetting("mathCalloutStyle", MATH_CALLOUT_STYLES, "Style");
+        styleSetting.descEl.replaceChildren(
+            "Choose between your custom style and pre-defined sample styles. You will need to reload the note to see the changes. See the ",
+            createEl("a", {text: "documentation", attr: {href: "https://ryotaushio.github.io/obsidian-math-booster/style-your-theorems.html"}}), 
+            " for how to customize the appearance of math callouts.",
+        );
+        this.addToggleSetting("mathCalloutFontInherit", "Don't override the app's font setting when using sample styles", "You will need to reload the note to see the changes.");
+        this.addTextSetting("titleSuffix", "Title suffix", "ex) \"\" > Definition 2 (Group) / \".\" > Definition 2 (Group).");
+        this.addTextSetting("labelPrefix", "LaTeX label prefix", 'ex) "geometry:" > a theorem with label="pythhagorean-theorem" will be given a LaTeX label "thm:geometry:pythhagorean-theorem"');
+        this.addRenameSetting();
+        contentEl.createEl("h6", { text: "Numbering" });
+        this.addTextSetting("numberPrefix", "Prefix");
+        this.addTextSetting("numberSuffix", "Suffix");
+        this.addTextSetting("numberInit", "Initial count");
+        this.addNumberStyleSetting("numberStyle", "Numbering style");
+        this.addTextSetting("numberDefault", "Default value for the \"Number\" field");
+
+        contentEl.createEl("h3", { text: "Equations" });
+        contentEl.createEl("h6", { text: "Numbering" });
+        this.addTextSetting("eqNumberPrefix", "Prefix");
+        this.addTextSetting("eqNumberSuffix", "Suffix");
+        this.addTextSetting("eqNumberInit", "Initial count");
+        this.addNumberStyleSetting("eqNumberStyle", "Equation numbering style");
+        this.addToggleSetting("lineByLine", "Number line by line in align");
+    }
+
+    addDropdownSetting(name: keyof MathContextSettings, options: readonly string[], prettyName: string, description?: string) {
+        let callback = this.getCallback<string>(name);
+        let setting = new Setting(this.contentEl).setName(prettyName);
+        if (description) {
+            setting.setDesc(description);
+        }
+        setting.addDropdown((dropdown) => {
+            for (let option of options) {
+                dropdown.addOption(option, option);
+            }
+            dropdown.setValue(this.defaultSettings[name] as string)
+                .onChange(callback);
+        });
+        return setting;
+    }
+
+    addTextSetting(name: keyof MathContextSettings, prettyName: string, description?: string): Setting {
         let callback = this.getCallback<string>(name);
         let setting = new Setting(this.contentEl).setName(prettyName);
         if (description) {
@@ -146,55 +186,18 @@ export class MathContextSettingsHelper {
         return setting;
     }
 
-    makeSettingPane(displayRename: boolean, displayLineByLine: boolean, displayEqNumberStyle: boolean) {
-        const { contentEl } = this;
-
-        new Setting(contentEl)
-            .setName("Language")
-            .addDropdown((dropdown) => {
-                for (let lang of LanguageManager.supported) {
-                    dropdown.addOption(lang, lang);
-                }
-                dropdown.setValue(this.defaultSettings.lang as string);
-                dropdown.onChange(async (value) => {
-                    this.settings.lang = value;
-                    await this.plugin?.saveSettings();
-                });
-            });
-        this.addTextSetting("titleSuffix", "Title suffix", "ex) \"\" (default) > Definition 2 (Group) / \".\" > Definition 2 (Group).");
-        this.addTextSetting("numberPrefix", "Number prefix", "ex) \"A.\" > Definition A.1 / Lemma A.2 / Theorem A.3 / ...");
-        this.addTextSetting("numberSuffix", "Number suffix", "ex) \".\" > Definition 1. / Lemma 2. / Theorem 3. / ...");
-        this.addTextSetting("numberInit", "Initial count", 'ex) "5" > Definition 5 / Lemma 6 / Theorem 7 / ...');
-        this.addNumberStyleSetting("numberStyle", "Math callouts numbering style");
-        this.addTextSetting("numberDefault", "Default value for the \"Number\" field");
-        if (displayEqNumberStyle) {
-            this.addNumberStyleSetting("eqNumberStyle", "Equation numbering style");
-        }
-        this.addTextSetting("labelPrefix", "LaTeX label prefix", 'ex) "geometry:" > a theorem with label="pythhagorean-theorem" will be given a LaTeX label "thm:geometry:pythhagorean-theorem"');
-
-        if (displayRename) {
-            this.addRenameSetting();
-        }
-
-        this.addTextSetting("preamblePath", "Preamble path");
-
-        if (displayLineByLine) {
-            this.addLineByLineSetting();
-        }
-    }
-
     addRenameSetting() {
         let { contentEl } = this;
-        let renamePane = new Setting(contentEl)
+        let setting = new Setting(contentEl)
             .setName("Rename environments")
             .setDesc("ex) print \"exercise\" as \"Problem,\" not \"Exercise\"");
 
-        renamePane.addDropdown((dropdown) => {
+        setting.addDropdown((dropdown) => {
             for (let envId of ENV_IDs) {
                 dropdown.addOption(envId, envId);
             }
             dropdown.onChange((selectedEnvId) => {
-                let renamePaneTextBox = new Setting(renamePane.controlEl).addText((text) => {
+                let renamePaneTextBox = new Setting(setting.controlEl).addText((text) => {
                     text.onChange((newName) => {
                         if (this.settings.rename === undefined) {
                             this.settings.rename = {} as RenameEnv;
@@ -208,14 +211,18 @@ export class MathContextSettingsHelper {
                 }
             });
         });
+        return setting;
     }
 
-    addLineByLineSetting() {
-        let setting = new Setting(this.contentEl).setName("Number line by line in align");
-        let callback = this.getCallback<boolean>("lineByLine");
+    addToggleSetting(name: "lineByLine" | "mathCalloutFontInherit", prettyName: string, descriptin?: string) {
+        let setting = new Setting(this.contentEl).setName(prettyName);
+        if (descriptin) {
+            setting.setDesc(descriptin);
+        }
+        let callback = this.getCallback<boolean>(name);
         setting.addToggle((toggle) => {
             toggle
-                .setValue(this.defaultSettings.lineByLine ?? DEFAULT_SETTINGS.lineByLine)
+                .setValue(this.defaultSettings[name] ?? DEFAULT_SETTINGS[name])
                 .onChange(callback)
         });
         return setting;

@@ -130,9 +130,11 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
     }
 
     async setMathLinks(equations: readonly Readonly<EquationInfo>[]): Promise<void> {
-        let contextSettings = findNearestAncestorContextSettings(this.noteIndexer.plugin, this.noteIndexer.file);
-        let style = contextSettings?.eqNumberStyle ?? DEFAULT_SETTINGS.eqNumberStyle as NumberStyle;
-        let equationNumber = 1;
+        const contextSettings = findNearestAncestorContextSettings(this.noteIndexer.plugin, this.noteIndexer.file);
+        const style = contextSettings?.eqNumberStyle ?? DEFAULT_SETTINGS.eqNumberStyle as NumberStyle;
+        let equationNumber = +(contextSettings?.eqNumberInit ?? DEFAULT_SETTINGS.eqNumberInit);
+        const prefix = contextSettings?.eqNumberPrefix ?? DEFAULT_SETTINGS.eqNumberPrefix;
+        const suffix = contextSettings?.eqNumberSuffix ?? DEFAULT_SETTINGS.eqNumberSuffix;
         for (let i = 0; i < equations.length; i++) {
             let equation = equations[i];
             let id = equation.cache.id;
@@ -140,7 +142,7 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
                 if (equation.manualTag) {
                     this.mathLinkBlocks[id] = `(${equation.manualTag})`;
                 } else {
-                    this.mathLinkBlocks[id] = "(" + CONVERTER[style](equationNumber) + ")";
+                    this.mathLinkBlocks[id] = "(" + prefix + CONVERTER[style](equationNumber) + suffix + ")";
                     equationNumber++;
                 }
             }
