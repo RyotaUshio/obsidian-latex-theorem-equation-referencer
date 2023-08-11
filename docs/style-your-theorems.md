@@ -26,8 +26,6 @@ Math Booster defines several [custom CSS classes](#math-boosters-custom-classes)
 
 ## Styles gallery
 
-Note that **Title suffix** is set to "." in the examples below.
-
 Example theorem cited from: [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf)
 
 ### Plain
@@ -35,14 +33,14 @@ Example theorem cited from: [Tao, Terence, ed. An introduction to measure theory
 ![Plain light](fig/plain.png)
 ![Plain dark](fig/plain-dark.png)
 
-[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/plain.css)
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/styles/plain.css)
 
 ### Framed
 
 ![Framed](fig/framed.png)
 ![Framed dark](fig/framed-dark.png)
 
-[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/framed.css)
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/styles/framed.css)
 
 ### MathWiki style
 
@@ -51,11 +49,11 @@ This beautiful style is taken from [MathWiki](https://github.com/zhaoshenzhai/Ma
 
 ![MathWiki style](fig/mathwiki.png)
 
-[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/mathwiki.css)
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/styles/mathwiki.css)
 
 ### Vivid
 
 ![Vivid light](fig/vivid-light.png)
 ![Vivid dark](fig/vivid-dark.png)
 
-[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/vivid.css)
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/styles/vivid.css)

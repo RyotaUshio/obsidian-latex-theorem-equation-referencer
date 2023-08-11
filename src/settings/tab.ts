@@ -36,7 +36,7 @@ export class MathSettingTab extends PluginSettingTab {
             this.plugin.settings[key],
             defaultSettings,
             this.plugin,
-        )).makeSettingPane(true, true, true);
+        )).makeSettingPane();
         this.addRestoreDefaultsBottun(key);
     }
 
@@ -44,10 +44,10 @@ export class MathSettingTab extends PluginSettingTab {
         let { containerEl } = this;
         containerEl.empty();
 
-        containerEl.createEl("h4", { text: "Global" });
+        // containerEl.createEl("h3", { text: "Global" });
         this.displayUnit(VAULT_ROOT);
 
-        containerEl.createEl("h4", { text: "Local" });
+        containerEl.createEl("h3", { text: "Local settings" });
         new Setting(containerEl).setName("Local settings")
             .setDesc("You can set up file-specific or folder-specific configurations, which have more precedence than the global settings.")
             .addButton((btn) => {

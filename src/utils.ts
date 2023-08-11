@@ -3,7 +3,7 @@ import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
 
-import MathBooster, { VAULT_ROOT } from './main';
+import MathBooster from './main';
 import { ENVs_MAP } from './env';
 import { DEFAULT_SETTINGS, MathContextSettings, MathSettings, NumberStyle } from './settings/settings';
 
@@ -243,9 +243,6 @@ export function findNearestAncestorContextSettings(plugin: MathBooster, file: TA
     let folder = file.parent;
     if (folder) {
         while (true) {
-            if (folder.isRoot()) {
-                return undefined;
-            }
             if (folder.path in plugin.settings) {
                 return plugin.settings[folder.path];
             }
@@ -261,7 +258,7 @@ export function findNearestAncestorContextSettings(plugin: MathBooster, file: TA
 export function resolveSettings(settings: MathSettings | undefined, plugin: MathBooster, currentFile: TAbstractFile) {
     // Resolves settings. Does not overwride, but returns a new settings object.
     let contextSettings = findNearestAncestorContextSettings(plugin, currentFile);
-    return Object.assign({}, plugin.settings[VAULT_ROOT], contextSettings, settings);
+    return Object.assign({}, contextSettings, settings);
 }
 
 export function formatTitleWithoutSubtitle(settings: MathSettings): string {

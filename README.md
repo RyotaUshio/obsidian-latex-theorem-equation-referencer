@@ -31,21 +31,19 @@ The following community plugins are required to be installed and enabled.
 
 ## Styles gallery
 
-Note that **Title suffix** is set to "." in the examples below.
-
 ### Plain
 
 ![Plain light](docs/fig/plain.png)
 ![Plain dark](docs/fig/plain-dark.png)
 
-[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/plain.css)
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/styles/plain.css)
 
 ### Framed
 
 ![Framed](docs/fig/framed.png)
 ![Framed dark](docs/fig/framed-dark.png)
 
-[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/framed.css)
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/styles/framed.css)
 
 ### MathWiki style
 
@@ -54,12 +52,12 @@ This beautiful style is taken from [MathWiki](https://github.com/zhaoshenzhai/Ma
 
 ![MathWiki style](docs/fig/mathwiki.png)
 
-[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/mathwiki.css)
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/styles/mathwiki.css)
 
 ### Vivid
 
 ![Vivid light](docs/fig/vivid-light.png)
 ![Vivid dark](docs/fig/vivid-dark.png)
 
-[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/docs/styles/vivid.css)
+[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/styles/vivid.css)
 

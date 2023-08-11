@@ -1,7 +1,7 @@
 import { MarkdownView, TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder } from 'obsidian';
 
-import MathBooster, { VAULT_ROOT } from './main';
-import { MathSettings, MathContextSettings, CalloutSettings } from './settings/settings';
+import MathBooster from './main';
+import { MathSettings, MathContextSettings } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
 import { MathCalloutSettingsHelper, MathContextSettingsHelper } from "./settings/helper";
 import { isEqualToOrChildOf, findNearestAncestorContextSettings } from './utils';
@@ -16,7 +16,7 @@ abstract class MathSettingModal<SettingsType> extends Modal {
         app: App,
         public plugin: MathBooster,
         public callback?: (settings: SettingsType) => void,
-        public currentCalloutSettings?: CalloutSettings,
+        public currentCalloutSettings?: MathSettings,
     ) {
         super(app);
         this.defaultSettings = {} as Partial<MathSettings>;
@@ -28,7 +28,7 @@ abstract class MathSettingModal<SettingsType> extends Modal {
 
     resolveDefaultSettings(currentFile: TAbstractFile) {
         let contextSettings = findNearestAncestorContextSettings(this.plugin, currentFile)
-        Object.assign(this.defaultSettings, this.plugin.settings[VAULT_ROOT], contextSettings);
+        Object.assign(this.defaultSettings, contextSettings);
         if (this.currentCalloutSettings) {
             Object.assign(this.defaultSettings, this.currentCalloutSettings);
         }
@@ -73,7 +73,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
         callback: (settings: MathSettings) => void,
         public buttonText: string,
         public headerText: string, 
-        currentCalloutSettings?: CalloutSettings,
+        currentCalloutSettings?: MathSettings,
     ) {
         super(app, plugin, callback, currentCalloutSettings);
     }
@@ -91,7 +91,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
         itemSettingsHelper.makeSettingPane();
 
         new Setting(contentEl)
-            .setName('Override context settings')
+            .setName('Override local settings')
             .addButton((button) => {
                 button.setButtonText("Open")
                     .onClick((event) => {
@@ -100,9 +100,6 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
                             this.plugin, 
                             this.view.file.path, 
                             undefined, 
-                            false, 
-                            false, 
-                            false,
                         );
                         modal.resolveDefaultSettings(this.view.file);
                         modal.open();
@@ -121,9 +118,6 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
         plugin: MathBooster, 
         public path: string, 
         callback?: (settings: MathContextSettings) => void, 
-        public displayRename: boolean = true, 
-        public displayLineByLine: boolean = true, 
-        public displayEqNumberStyle: boolean = true, 
     ) {
         super(app, plugin, callback);
     }
@@ -132,17 +126,13 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
         const { contentEl } = this;
 
         contentEl
-            .createEl('h3', { text: 'Local context settings for ' + this.path });
+            .createEl('h3', { text: 'Local settings for ' + this.path });
 
         if (this.plugin.settings[this.path] === undefined) {
             this.plugin.settings[this.path] = {} as MathContextSettings;
         }
         const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.path], this.defaultSettings, this.plugin);
-        contextSettingsHelper.makeSettingPane(
-            this.displayRename, 
-            this.displayLineByLine, 
-            this.displayEqNumberStyle
-        );
+        contextSettingsHelper.makeSettingPane();
         this.addButton('Save');
     }
 }
