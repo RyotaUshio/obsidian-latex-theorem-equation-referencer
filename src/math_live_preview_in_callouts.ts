@@ -13,8 +13,7 @@ const BLOCKQUOTE = /HyperMD-quote_HyperMD-quote-([1-9][0-9]*)/;
 
 
 class MathPreviewWidget extends WidgetType {
-    // It is critical to pass PRE-RENDERED MATHJAX ELEMENT to 
-    // decrease the number of the expensive renderMath() calls
+    // It is critical to pass PRE-RENDERED MathJax element for decreasing the number of the expensive renderMath() calls
     constructor(public mathEl: HTMLElement) {
         super();
     }
@@ -122,6 +121,8 @@ export type MathPreviewInfo = {
     mathInfoSet: MathInfoSet;
     isInCalloutsOrQuotes: boolean;
     hasOverlappingMath: boolean;
+    hasOverlappingDisplayMath: boolean;
+    rerendered: boolean;
 }
 
 export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
@@ -130,6 +131,8 @@ export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
             mathInfoSet: RangeSet.empty,
             isInCalloutsOrQuotes: false,
             hasOverlappingMath: false,
+            hasOverlappingDisplayMath: false,
+            rerendered: false,
         }
     },
 
@@ -140,12 +143,20 @@ export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
         const range = transaction.state.selection.main;
         let cursor = prev.mathInfoSet.iter();
         let hasOverlappingMath = false;
+        let hasOverlappingDisplayMath = false;
         while (cursor.value) {
-            hasOverlappingMath = hasOverlappingMath || (range.from <= cursor.to && cursor.from <= range.to);
+            if (range.from <= cursor.to && cursor.from <= range.to) {
+                hasOverlappingMath = true;
+                if (cursor.value.display) {
+                    hasOverlappingDisplayMath = true;
+                }
+                break;
+            }
             cursor.next();
         }
-        // set mathInfoSet
+        // set mathInfoSet & rerendered
         let mathInfoSet: MathInfoSet;
+        let rerendered = false;
         if (isInCalloutsOrQuotes) {
             if (
                 !prev.isInCalloutsOrQuotes // If newly entered inside a callout or quote
@@ -153,15 +164,21 @@ export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
             ) {
                 // rebuild all math info, including rendered MathJax (this should be done more efficiently in the near future)
                 mathInfoSet = buildMathInfoSet(transaction.state);
+                rerendered = true;
             } else if (transaction.docChanged) {
-                mathInfoSet = prev.mathInfoSet.map(transaction.changes.desc);
+                if (dollarInserted(transaction) || hasOverlappingDisplayMath) {
+                    mathInfoSet = buildMathInfoSet(transaction.state);
+                    rerendered = true;    
+                } else {
+                    mathInfoSet = prev.mathInfoSet.map(transaction.changes.desc);
+                }
             } else {
                 mathInfoSet = prev.mathInfoSet;
             }
         } else {
             mathInfoSet = prev.mathInfoSet;
         }
-        return { mathInfoSet, isInCalloutsOrQuotes, hasOverlappingMath };
+        return { mathInfoSet, isInCalloutsOrQuotes, hasOverlappingMath, hasOverlappingDisplayMath, rerendered };
     },
 
 });
@@ -216,23 +233,30 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
 
     update(value: DecorationSet, transaction: Transaction): DecorationSet {
         if (transaction.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
-            let builder = new RangeSetBuilder<Decoration>();
-            const range = transaction.state.selection.main;
+            if ((
+                !transaction.startState.field(MathPreviewInfoField).hasOverlappingMath
+                && transaction.state.field(MathPreviewInfoField).hasOverlappingMath
+            ) || transaction.state.field(MathPreviewInfoField).rerendered) {
+                let builder = new RangeSetBuilder<Decoration>();
+                const range = transaction.state.selection.main;
 
-            transaction.state.field(MathPreviewInfoField).mathInfoSet.between(
-                0,
-                transaction.state.doc.length,
-                (from, to, value) => {
-                    if (value.display) {
-                        if (to < range.from || from > range.to) {
-                            builder.add(from, to, value.toDecoration("replace"));
-                        } else {
-                            builder.add(to + 1, to + 1, value.toDecoration("insert"));
+                transaction.state.field(MathPreviewInfoField).mathInfoSet.between(
+                    0,
+                    transaction.state.doc.length,
+                    (from, to, value) => {
+                        if (value.display) {
+                            if (to < range.from || from > range.to) {
+                                builder.add(from, to, value.toDecoration("replace"));
+                            } else {
+                                builder.add(to + 1, to + 1, value.toDecoration("insert"));
+                            }
                         }
                     }
-                }
-            );
-            return builder.finish();
+                );
+                return builder.finish();
+            } else {
+                return value;
+            }
         }
         return Decoration.none;
     },
@@ -259,4 +283,14 @@ function isInBlockquoteOrCallout(state: EditorState): boolean {
         }
     });
     return foundQuote;
+}
+
+function dollarInserted(transaction: Transaction): boolean {
+    let ret = false;
+    transaction.changes.iterChanges(
+        (fromA, toA, fromB, toB, inserted) => {
+            ret = ret || inserted.toString().contains("$");
+        }
+    )
+    return ret;
 }

@@ -13,3 +13,5 @@ See [Obsidian help](https://help.obsidian.md/Linking+notes+and+files/Internal+li
 Example:
 
 ![Clevered example](fig/screenshot.png)
+
+You can configure the format of link texts in **Math callouts > Referencing > Format** in the plugins's settings.
