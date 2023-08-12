@@ -5,7 +5,7 @@ title: Style your theorems
 
 You can customize the appearance of math callouts either by **your own custom [CSS snippets](https://help.obsidian.md/Extending+Obsidian/CSS+snippets)** or by **[preset sample styles](#styles-gallery)**.
 
-In the plugin settings, set **Math Callouts > Style** to be ***custom** if you want to use your custom CSS snippets. 
+In the plugin settings, set **Math Callouts > Style** to be **custom** if you want to use your custom CSS snippets. 
 Math Booster defines several [custom CSS classes](#math-boosters-custom-classes), allowing you to change the styles depending on specific languages or environments (theorem/definition/...).
 
 Otherwise, the selected preset style will be applied. You need to reopen the note to see the style change.
