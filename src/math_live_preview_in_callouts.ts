@@ -1,5 +1,5 @@
 import { finishRenderMath, renderMath } from "obsidian";
-import { Extension, Transaction, StateField, RangeSetBuilder, EditorState, RangeValue, RangeSet, SelectionRange } from '@codemirror/state';
+import { Extension, Transaction, StateField, RangeSetBuilder, EditorState, RangeValue, RangeSet } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { syntaxTree } from '@codemirror/language';
 
@@ -20,213 +20,14 @@ class MathPreviewWidget extends WidgetType {
     toDOM(view: EditorView): HTMLElement {
         return this.mathEl;
     }
-}
 
-
-type MathInfo = { mathText: string, display: boolean, from: number, to: number };
-
-export const blockquoteMathPreviewPlugin = StateField.define<DecorationSet>({
-    create(state: EditorState): DecorationSet {
-        return Decoration.none;
-    },
-    update(value: DecorationSet, transaction: Transaction): DecorationSet {
-        console.log(transaction.changes.desc);
-        if (isInBlockquoteOrCallout(transaction.startState)) {
-            console.log("called");
-            return impl(transaction.state);
-        }
-        return Decoration.none;
-    },
-    provide(field: StateField<DecorationSet>): Extension {
-        return EditorView.decorations.from(field);
-    },
-});
-
-function impl(state: EditorState): DecorationSet {
-    let builder = new RangeSetBuilder<Decoration>();
-    let maths = getMathInfos(state);
-
-    for (let math of maths) {
-        let range = state.selection.main;
-
-        let mathEl = renderMath(math.mathText, math.display);
-        finishRenderMath();
-
-        if (math.to < range.from || math.from > range.to) {
-            builder.add(
-                math.from,
-                math.to,
-                Decoration.replace({
-                    widget: new MathPreviewWidget(mathEl),
-                })
-            );
-        } else if (math.display) {
-            builder.add(
-                math.to + 1,
-                math.to + 1,
-                Decoration.widget({
-                    widget: new MathPreviewWidget(mathEl),
-                    block: true,
-                })
-            );
-        }
+    ignoreEvent(event: Event): boolean {
+        // the rendered MathJax won't respond to clicks without this definition
+        return false;
     }
-    return builder.finish();
 }
 
-function getMathInfos(state: EditorState): MathInfo[] {
-    let tree = syntaxTree(state);
-
-    let mathInfos: MathInfo[] = [];
-    let from: number;
-    let to: number;
-    let mathText: string;
-    let insideMath = false;
-    let display: boolean | undefined;
-    let quoteContentStart = 0;
-
-    tree.iterate({
-        enter(node) {
-            if (node.from < quoteContentStart) {
-                return;
-            }
-            if (insideMath) {
-                if (node.name == MATH_END) {
-                    mathInfos.push({
-                        mathText: mathText,
-                        display: display as boolean,
-                        from: from,
-                        to: node.to,
-                    });
-                    insideMath = false;
-                    display = undefined;
-                } else {
-                    let match = node.name.match(BLOCKQUOTE);
-                    if (match) {
-                        let quoteLevel = Number(match[1]);
-                        if (node.node.firstChild) {
-                            quoteContentStart = node.node.firstChild.to;
-                            mathText += nodeTextQuoteSymbolTrimmed(node.node.firstChild, state, quoteLevel) ?? "";
-                        }
-                    } else {
-                        if (node.name.contains("math")) {
-                            mathText += nodeText(node, state);
-                        }
-                    }
-                }
-            } else {
-                if (node.name == DISPLAY_MATH_BEGIN) {
-                    insideMath = true;
-                    display = true;
-                    from = node.from;
-                    mathText = "";
-                } else if (node.name == INLINE_MATH_BEGIN) {
-                    insideMath = true;
-                    display = false;
-                    from = node.from;
-                    mathText = "";
-                }
-            }
-        }
-    });
-
-    return mathInfos;
-}
-
-function isInBlockquoteOrCallout(state: EditorState): boolean {
-    let cursor = state.selection.ranges[0].head;
-    let tree = syntaxTree(state);
-    let foundQuote = false;
-    tree.iterate({
-        enter(node) {
-            let match = node.name.match(BLOCKQUOTE);
-            if (match) {
-                if (node.from <= cursor && cursor <= node.to) {
-                    foundQuote = true;
-                    return false;
-                }
-            }
-        }
-    });
-    return foundQuote;
-}
-
-
-export const blockquoteMathPreviewViewPlugin = ViewPlugin.fromClass(
-    class implements PluginValue {
-        decorations: DecorationSet;
-        mathInfoSet: MathInfoSet;
-        wasInCalloutsOrQuotes: boolean;
-        hadOverlappingMath: boolean;
-
-        constructor(view: EditorView) {
-            this.mathInfoSet = buildMathInfoSet(view.state);
-            this.buildDecorations(view);
-            this.wasInCalloutsOrQuotes = isInBlockquoteOrCallout(view.state);
-            this.hadOverlappingMath = this.hasOverlappingMath(view);
-        }
-        update(update: ViewUpdate) {
-            const isInCalloutsOrQuotes = isInBlockquoteOrCallout(update.view.state);
-            const hasOverlappingMath = this.hasOverlappingMath(update.view);
-            if (isInCalloutsOrQuotes) {
-                if (!this.wasInCalloutsOrQuotes) {
-                    this.mathInfoSet = buildMathInfoSet(update.view.state);
-                }
-                if (update.docChanged) {
-                    const changes = update.changes;
-                    this.mathInfoSet = this.mathInfoSet.map(changes.desc)
-                } else {
-                    if (this.hadOverlappingMath && !hasOverlappingMath) {
-                        this.mathInfoSet = buildMathInfoSet(update.view.state);
-                    }                    
-                }
-                this.buildDecorations(update.view);
-            }
-            this.wasInCalloutsOrQuotes = isInCalloutsOrQuotes;
-            this.hadOverlappingMath = hasOverlappingMath;
-        }
-
-        buildDecorations(view: EditorView) {
-            let range = view.state.selection.main;
-            let builder = new RangeSetBuilder<Decoration>();
-
-            for (const { from, to } of view.visibleRanges) {
-                let cursor = this.mathInfoSet.between(
-                    from,
-                    to,
-                    (from, to, value) => {
-                        if (!value.display && (to < range.from || from > range.to)) {
-                            builder.add(
-                                from,
-                                to,
-                                value.toDecoration("replace")
-                            );
-                        }
-                    }
-                );
-            }
-            this.decorations = builder.finish();
-        }
-
-        hasOverlappingMath(view: EditorView): boolean {
-            const range = view.state.selection.main;
-            let ret = false;
-            this.mathInfoSet.between(
-                view.viewport.from,
-                view.viewport.to,
-                (mathFrom, mathTo) => {
-                    ret = ret || (range.from <= mathTo && mathFrom <= range.to);
-                }
-            )
-            return ret;
-        }
-    },
-    { decorations: instance => instance.decorations }
-);
-
-
-
-class MathInfo2 extends RangeValue {
+class MathInfo extends RangeValue {
     mathEl: HTMLElement;
 
     constructor(public mathText: string, public display: boolean) {
@@ -234,9 +35,9 @@ class MathInfo2 extends RangeValue {
         this.render()
     }
 
-    render() {
+    async render() {
         this.mathEl = renderMath(this.mathText, this.display);
-        finishRenderMath();
+        await finishRenderMath();
     }
 
     toWidget(): MathPreviewWidget {
@@ -255,11 +56,11 @@ class MathInfo2 extends RangeValue {
     }
 }
 
-type MathInfoSet = RangeSet<MathInfo2>;
+type MathInfoSet = RangeSet<MathInfo>;
 
 function buildMathInfoSet(state: EditorState): MathInfoSet {
     let tree = syntaxTree(state);
-    let builder = new RangeSetBuilder<MathInfo2>();
+    let builder = new RangeSetBuilder<MathInfo>();
 
     let from: number;
     let mathText: string;
@@ -277,14 +78,14 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
                     builder.add(
                         from,
                         node.to,
-                        new MathInfo2(mathText, display as boolean)
+                        new MathInfo(mathText, display as boolean)
                     );
                     insideMath = false;
                     display = undefined;
                 } else {
                     let match = node.name.match(BLOCKQUOTE);
                     if (match) {
-                        let quoteLevel = Number(match[1]);
+                        let quoteLevel = +match[1];
                         if (node.node.firstChild) {
                             quoteContentStart = node.node.firstChild.to;
                             mathText += nodeTextQuoteSymbolTrimmed(node.node.firstChild, state, quoteLevel) ?? "";
@@ -312,4 +113,147 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
     });
 
     return builder.finish();
+}
+
+export type MathPreviewInfo = {
+    mathInfoSet: MathInfoSet;
+    isInCalloutsOrQuotes: boolean;
+    hasOverlappingMath: boolean;
+}
+
+export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
+    create(state: EditorState): MathPreviewInfo {
+        return {
+            mathInfoSet: RangeSet.empty,
+            isInCalloutsOrQuotes: false,
+            hasOverlappingMath: false,
+        }
+    },
+
+    update(prev: MathPreviewInfo, transaction: Transaction): MathPreviewInfo {
+        // set isInCalloutsOrQuotes
+        let isInCalloutsOrQuotes = isInBlockquoteOrCallout(transaction.state);
+        // set hasOverlappingMath
+        const range = transaction.state.selection.main;
+        let cursor = prev.mathInfoSet.iter();
+        let hasOverlappingMath = false;
+        while (cursor.value) {
+            hasOverlappingMath = hasOverlappingMath || (range.from <= cursor.to && cursor.from <= range.to);
+            cursor.next();
+        }
+        // set mathInfoSet
+        let mathInfoSet: MathInfoSet;
+        if (isInCalloutsOrQuotes) {
+            if (
+                !prev.isInCalloutsOrQuotes // If newly entered inside a callout or quote
+                || (prev.hasOverlappingMath && !hasOverlappingMath) // or just got out of math
+            ) {
+                // rebuild all math info, including rendered MathJax (this should be done more efficiently in the near future)
+                mathInfoSet = buildMathInfoSet(transaction.state);
+            } else if (transaction.docChanged) {
+                mathInfoSet = this.mathInfoSet.map(transaction.changes.desc);
+            } else {
+                mathInfoSet = prev.mathInfoSet;
+            }
+        } else {
+            mathInfoSet = prev.mathInfoSet;
+        }
+        return { mathInfoSet, isInCalloutsOrQuotes, hasOverlappingMath };
+    },
+
+});
+
+
+export const inlineMathPreviewView = ViewPlugin.fromClass(
+    class implements PluginValue {
+        decorations: DecorationSet;
+
+        constructor(view: EditorView) {
+            this.buildDecorations(view);
+        }
+
+        update(update: ViewUpdate) {
+            if (update.view.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
+                this.buildDecorations(update.view);
+            } else {
+                this.decorations = Decoration.none;
+            }
+        }
+
+        buildDecorations(view: EditorView) {
+            let range = view.state.selection.main;
+            let builder = new RangeSetBuilder<Decoration>();
+
+            for (const { from, to } of view.visibleRanges) {
+                view.state.field(MathPreviewInfoField).mathInfoSet.between(
+                    from,
+                    to,
+                    (from, to, value) => {
+                        if (!value.display && (to < range.from || from > range.to)) {
+                            builder.add(
+                                from,
+                                to,
+                                value.toDecoration("replace")
+                            );
+                        }
+                    }
+                );
+            }
+            this.decorations = builder.finish();
+        }
+    },
+    { decorations: instance => instance.decorations }
+);
+
+
+export const displayMathPreviewView = StateField.define<DecorationSet>({
+    create(state: EditorState): DecorationSet {
+        return Decoration.none;
+    },
+
+    update(value: DecorationSet, transaction: Transaction): DecorationSet {
+        if (transaction.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
+            let builder = new RangeSetBuilder<Decoration>();
+            const range = transaction.state.selection.main;
+
+            transaction.state.field(MathPreviewInfoField).mathInfoSet.between(
+                0,
+                transaction.state.doc.length,
+                (from, to, value) => {
+                    if (value.display) {
+                        if (to < range.from || from > range.to) {
+                            builder.add(from, to, value.toDecoration("replace"));
+                        } else {
+                            builder.add(to + 1, to + 1, value.toDecoration("insert"));
+                        }
+                    }
+                }
+            );
+            return builder.finish();
+        }
+        return Decoration.none;
+    },
+
+    provide(field: StateField<DecorationSet>): Extension {
+        return EditorView.decorations.from(field);
+    },
+});
+
+
+function isInBlockquoteOrCallout(state: EditorState): boolean {
+    let cursor = state.selection.ranges[0].head;
+    let tree = syntaxTree(state);
+    let foundQuote = false;
+    tree.iterate({
+        enter(node) {
+            let match = node.name.match(BLOCKQUOTE);
+            if (match) {
+                if (node.from <= cursor && cursor <= node.to) {
+                    foundQuote = true;
+                    return false;
+                }
+            }
+        }
+    });
+    return foundQuote;
 }
