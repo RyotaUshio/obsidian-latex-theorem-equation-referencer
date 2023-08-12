@@ -1,4 +1,4 @@
-import { App, CachedMetadata, MarkdownView, SectionCache, TFile, WorkspaceLeaf } from 'obsidian';
+import { App, CachedMetadata, MarkdownPostProcessorContext, MarkdownView, SectionCache, TFile, WorkspaceLeaf } from 'obsidian';
 
 import MathBooster from './main';
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, MathCalloutRefFormat } from './settings/settings';
@@ -190,7 +190,7 @@ class NoteIndexer<IOType extends FileIO> {
             { "mathLink-blocks": this.mathLinkBlocks }
         );
         this.app.metadataCache.trigger(
-            "math-booster:index-updated", 
+            "math-booster:index-updated",
             this
         );
     }
@@ -229,7 +229,7 @@ export class AutoNoteIndexer {
 
     getIndexer(activeMarkdownView?: MarkdownView | null): ActiveNoteIndexer | NonActiveNoteIndexer {
         activeMarkdownView = activeMarkdownView ?? this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (activeMarkdownView?.file == this.file) {
+        if (activeMarkdownView?.file == this.file && activeMarkdownView.getMode() == "source") {
             return new ActiveNoteIndexer(this.app, this.plugin, activeMarkdownView);
         } else {
             return new NonActiveNoteIndexer(this.app, this.plugin, this.file);
@@ -260,7 +260,7 @@ export class LinkedNotesIndexer {
     async runBackLinks(activeMarkdownView: MarkdownView | null) {
         await this.runImpl("invMap", activeMarkdownView);
     }
-    
+
     private async runImpl(key: "map" | "invMap", activeMarkdownView: MarkdownView | null) {
         let links = this.plugin.oldLinkMap?.[key].get(this.changedFile.path);
         if (links) {
@@ -284,22 +284,25 @@ export class VaultIndexer {
     constructor(public app: App, public plugin: MathBooster) { }
 
     async run() {
-        let files = this.app.vault.getMarkdownFiles();
-        let promises: Promise<void>[] = []
-        this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
-            if (leaf.view instanceof MarkdownView) {
-                removeFrom(leaf.view.file, files);
-                promises.push(
-                    (new ActiveNoteIndexer(this.app, this.plugin, leaf.view)).run()
-                );
-            }
-        });
+        const notes = this.app.vault.getMarkdownFiles();
+        const activeMarkdownview = this.app.workspace.getActiveViewOfType(MarkdownView);
+        let promises = notes.map((note) => 
+            (new AutoNoteIndexer(this.app, this.plugin, note)).run(activeMarkdownview)
+        );
+        // this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
+        //     if (leaf.view instanceof MarkdownView) {
+        //         removeFrom(leaf.view.file, files);
+        //         promises.push(
+        //             (new ActiveNoteIndexer(this.app, this.plugin, leaf.view)).run()
+        //         );
+        //     }
+        // });
 
-        for (let file of files) {
-            promises.push(
-                (new NonActiveNoteIndexer(this.app, this.plugin, file)).run()
-            );
-        }
+        // for (let file of files) {
+        //     promises.push(
+        //         (new NonActiveNoteIndexer(this.app, this.plugin, file)).run()
+        //     );
+        // }
 
         await Promise.all(promises);
     }
