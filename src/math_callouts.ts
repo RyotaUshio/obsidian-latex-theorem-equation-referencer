@@ -70,7 +70,7 @@ export class MathCallout extends MarkdownRenderChild {
                             indexer.calloutIndexer.overwriteSettings(lineNumber, settings, title);
                         },
                         "Confirm",
-                        "Edit Math Callout Settings",
+                        "Edit math callout settings",
                         this.config,
                     );
                     modal.resolveDefaultSettings(view.file);

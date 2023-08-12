@@ -35,4 +35,4 @@ There are several ways to set up the local settings.
 
 - Plugin setting tab
 - "Open Local Settings for the Current Note" command
-- "Override local settings" button in math callout settings
+- "Open local settings for the current note" button in math callout settings

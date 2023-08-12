@@ -91,7 +91,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
         itemSettingsHelper.makeSettingPane();
 
         new Setting(contentEl)
-            .setName('Override local settings')
+            .setName('Open local settings for the current note')
             .addButton((button) => {
                 button.setButtonText("Open")
                     .onClick((event) => {
