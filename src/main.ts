@@ -10,7 +10,7 @@ import { MathCallout, insertMathCalloutCallback } from './math_callouts';
 import { ContextSettingModal, MathCalloutModal } from './modals';
 import { insertDisplayMath, insertInlineMath } from './key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
-import { blockquoteMathPreviewPlugin } from './math_live_preview_in_callouts';
+import { blockquoteMathPreviewPlugin, blockquoteMathPreviewViewPlugin } from './math_live_preview_in_callouts';
 import { ActiveNoteIndexer, LinkedNotesIndexer, VaultIndexer } from './indexer';
 import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
 
@@ -130,7 +130,7 @@ export default class MathBooster extends Plugin {
 
 		/** Editor Extensions */
 
-		this.registerEditorExtension(blockquoteMathPreviewPlugin);
+		this.registerEditorExtension(blockquoteMathPreviewViewPlugin);
 		this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
 		this.registerEditorExtensionFactory(buildEquationNumberPlugin);
 
