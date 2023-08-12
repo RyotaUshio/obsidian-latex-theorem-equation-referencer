@@ -1,8 +1,8 @@
 import { App, CachedMetadata, MarkdownView, SectionCache, TFile, WorkspaceLeaf } from 'obsidian';
 
 import MathBooster from './main';
-import { DEFAULT_SETTINGS, MathSettings, NumberStyle } from './settings/settings';
-import { getBlockIdsWithBacklink, readMathCalloutSettings, findNearestAncestorContextSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines, removeFrom } from './utils';
+import { DEFAULT_SETTINGS, MathSettings, NumberStyle, MathCalloutRefFormat } from './settings/settings';
+import { getBlockIdsWithBacklink, readMathCalloutSettings, findNearestAncestorContextSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines, removeFrom, formatTitleWithoutSubtitle } from './utils';
 import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 
 type MathLinkBlocks = Record<string, string>;
@@ -90,10 +90,22 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
                 }
                 let id = callout.cache.id;
                 if (id) {
-                    this.mathLinkBlocks[id] = newTitle;
+                    this.mathLinkBlocks[id] = this.formatMathLink(resolvedSettings);
                 }
             }
         }
+    }
+
+    formatMathLink(resolvedSettings: MathSettings): string {
+        let refFormat: MathCalloutRefFormat = resolvedSettings.refFormat ?? DEFAULT_SETTINGS.refFormat;
+        if (refFormat == "Type + number (+ title)") {
+            return formatTitle(resolvedSettings);
+        }
+        if (refFormat == "Type + number") {
+            return formatTitleWithoutSubtitle(resolvedSettings);
+        }
+        // if (refFormat == "Only title if exists, type + number otherwise"))
+        return resolvedSettings.title ? resolvedSettings.title : formatTitleWithoutSubtitle(resolvedSettings);
     }
 
     async overwriteSettings(lineNumber: number, settings: MathSettings, title?: string) {

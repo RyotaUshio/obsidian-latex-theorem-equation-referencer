@@ -2,7 +2,7 @@ import { Setting, TextComponent } from 'obsidian';
 
 import MathBooster from '../main';
 import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from '../env';
-import { DEFAULT_SETTINGS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, RenameEnv } from './settings';
+import { DEFAULT_SETTINGS, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, RenameEnv } from './settings';
 import LanguageManager from '../language';
 
 
@@ -145,6 +145,8 @@ export class MathContextSettingsHelper {
         this.addTextSetting("numberInit", "Initial count");
         this.addNumberStyleSetting("numberStyle", "Numbering style");
         this.addTextSetting("numberDefault", "Default value for the \"Number\" field");
+        contentEl.createEl("h6", { text: "Referencing" });
+        this.addDropdownSetting("refFormat", MATH_CALLOUT_REF_FORMATS, "Format");
 
         contentEl.createEl("h3", { text: "Equations" });
         contentEl.createEl("h6", { text: "Numbering" });

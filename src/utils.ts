@@ -294,9 +294,9 @@ export function formatTitle(settings: MathSettings): string {
     if (settings.title) {
         title += ` (${settings.title})`;
     }
-    // if (settings.titleSuffix) {
-    //     title += settings.titleSuffix;
-    // }
+    if (settings.titleSuffix) {
+        title += settings.titleSuffix;
+    }
     return title;
 }
 

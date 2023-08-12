@@ -1,3 +1,5 @@
+/* This file is auto-generated from styles/*.css. Do not edit. */
+
 .math-callout-mathwiki.math-callout {
     --callout-color: 248, 248, 255;
     font-family: CMU Serif;
@@ -112,6 +114,7 @@
 .math-callout-framed.math-callout-en .callout-content {
     font-style: italic;
 }
+
 .font-family-inherit {
     font-family: inherit !important;
 }

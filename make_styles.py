@@ -7,7 +7,7 @@ if __name__ == "__main__":
     target = Path("./styles.css")
 
     lines = []
-    for source_style in source.iterdir():
+    for source_style in source.glob("*.css"):
         with open(source_style) as f:
             for line in f:
                 if line.lstrip().startswith('.math-callout'):
@@ -18,4 +18,8 @@ if __name__ == "__main__":
                 lines.append(line)
 
     with open(target, 'w') as f:
-        f.writelines(lines + [".font-family-inherit {\n    font-family: inherit !important;\n}\n"])
+        f.writelines(
+            ["/* This file is auto-generated from styles/*.css. Do not edit. */\n\n"]
+            + lines 
+            + ["\n.font-family-inherit {\n    font-family: inherit !important;\n}\n"]
+        )
