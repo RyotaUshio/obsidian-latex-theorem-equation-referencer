@@ -151,7 +151,7 @@ export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
                 // rebuild all math info, including rendered MathJax (this should be done more efficiently in the near future)
                 mathInfoSet = buildMathInfoSet(transaction.state);
             } else if (transaction.docChanged) {
-                mathInfoSet = this.mathInfoSet.map(transaction.changes.desc);
+                mathInfoSet = prev.mathInfoSet.map(transaction.changes.desc);
             } else {
                 mathInfoSet = prev.mathInfoSet;
             }
