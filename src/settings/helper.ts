@@ -40,7 +40,7 @@ export class MathCalloutSettingsHelper {
                 );
                 numberSettingDescList.createEl(
                     "li",
-                    { text: "(blank) - unnumbered" }
+                    { text: "blank - unnumbered" }
                 );
                 numberSettingDescList.createEl(
                     "li",
