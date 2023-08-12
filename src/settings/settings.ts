@@ -22,6 +22,13 @@ export const MATH_CALLOUT_STYLES = [
 ] as const;
 export type MathCalloutStyle = typeof MATH_CALLOUT_STYLES[number];
 
+export const MATH_CALLOUT_REF_FORMATS = [
+    "Type + number (+ title)", 
+    "Type + number", 
+    "Only title if exists, type + number otherwise"
+] as const;
+export type MathCalloutRefFormat = typeof MATH_CALLOUT_REF_FORMATS[number];
+
 export interface MathContextSettings {
     lang?: string;
     titleSuffix?: string;
@@ -30,6 +37,7 @@ export interface MathContextSettings {
     numberInit?: number;
     numberStyle?: NumberStyle;
     numberDefault?: string;
+    refFormat?: MathCalloutRefFormat;
     eqNumberPrefix?: string;
     eqNumberSuffix?: string;
     eqNumberInit?: number;
@@ -62,6 +70,7 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     numberInit: 1,
     numberStyle: "arabic",
     numberDefault: "auto", 
+    refFormat: "Type + number (+ title)",
     eqNumberPrefix: "",
     eqNumberSuffix: "",
     eqNumberInit: 1,
