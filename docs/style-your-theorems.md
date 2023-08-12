@@ -11,7 +11,7 @@ Math Booster defines several [custom CSS classes](#math-boosters-custom-classes)
 Otherwise, the selected preset style will be applied. You need to reopen the note to see the style change.
 When **Don't override the app's font setting when using sample styles**, the preset style will not change the default font family defined in the app's **Settings > Appearance > Font > Text font**.
 
-![Style setting](style_setting.png)
+![Style setting](fig/style_setting.png)
 
 
 ## CSS classes
