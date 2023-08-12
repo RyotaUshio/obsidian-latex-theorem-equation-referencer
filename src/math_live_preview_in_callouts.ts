@@ -13,11 +13,14 @@ const BLOCKQUOTE = /HyperMD-quote_HyperMD-quote-([1-9][0-9]*)/;
 
 
 class MathPreviewWidget extends WidgetType {
+    // It is critical to pass PRE-RENDERED MATHJAX ELEMENT to 
+    // decrease the number of the expensive renderMath() calls
     constructor(public mathEl: HTMLElement) {
         super();
     }
 
     toDOM(view: EditorView): HTMLElement {
+        this.mathEl.classList.add("math-booster-preview");
         return this.mathEl;
     }
 
