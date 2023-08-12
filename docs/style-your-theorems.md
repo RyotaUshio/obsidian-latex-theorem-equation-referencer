@@ -3,9 +3,16 @@ layout: page
 title: Style your theorems
 ---
 
-You can customize the appearance of math callouts using [CSS snippets](https://help.obsidian.md/Extending+Obsidian/CSS+snippets).
+You can customize the appearance of math callouts either by **your own custom [CSS snippets](https://help.obsidian.md/Extending+Obsidian/CSS+snippets)** or by **[preset sample styles](#styles-gallery)**.
 
+In the plugin settings, set **Math Callouts > Style** to be ***custom** if you want to use your custom CSS snippets. 
 Math Booster defines several [custom CSS classes](#math-boosters-custom-classes), allowing you to change the styles depending on specific languages or environments (theorem/definition/...).
+
+Otherwise, the selected preset style will be applied. You need to reopen the note to see the style change.
+When **Don't override the app's font setting when using sample styles**, the preset style will not change the default font family defined in the app's **Settings > Appearance > Font > Text font**.
+
+![Style setting](style_setting.png)
+
 
 ## CSS classes
 
@@ -25,6 +32,8 @@ Math Booster defines several [custom CSS classes](#math-boosters-custom-classes)
 - `.math-callout-subtitle`: Corresponds to the **title** field in the math callout settings. Lives inside `.callout-title-inner`. Ex) Theorem 1.1 (here is `.math-callout-subtitle`)
 
 ## Styles gallery
+
+Here are the list of preset sample styles. You can also view the CSS snippet generating each style.
 
 Example theorem cited from: [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf)
 
