@@ -1,4 +1,27 @@
-/* This file is auto-generated from styles/*.css. Do not edit. */
+
+/* This file is auto-generated. Do not edit it. */
+
+.math-booster-preview {
+    cursor: text;
+}
+
+.math-callout {
+    position: relative;
+}
+
+.math-callout-setting-button {
+    padding-bottom: var(--size-2-2);
+    padding-right: var(--size-2-3);
+    position: absolute;
+    right: var(--size-2-2);
+    bottom: var(--size-2-2);
+    opacity: 0;
+}
+
+.math-callout:hover .math-callout-setting-button {
+    transition: 0s;
+    opacity: 1
+}
 
 .math-callout-mathwiki.math-callout {
     --callout-color: 248, 248, 255;

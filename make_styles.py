@@ -1,6 +1,7 @@
 # Generate styles.css containing sample styles in the documentation's styles gallery
 
 from pathlib import Path
+import textwrap
 
 if __name__ == "__main__":
     source = Path("./styles")
@@ -18,8 +19,38 @@ if __name__ == "__main__":
                 lines.append(line)
 
     with open(target, 'w') as f:
-        f.writelines(
-            ["/* This file is auto-generated from styles/*.css. Do not edit. */\n\n"]
-            + lines 
-            + ["\n.font-family-inherit {\n    font-family: inherit !important;\n}\n"]
+        f.write(
+            textwrap.dedent("""
+            /* This file is auto-generated. Do not edit it. */
+                            
+            .math-booster-preview {
+                cursor: text;
+            }
+                            
+            .math-callout {
+                position: relative;
+            }
+                            
+            .math-callout-setting-button {
+                padding-bottom: var(--size-2-2);
+                padding-right: var(--size-2-3);
+                position: absolute;
+                right: var(--size-2-2);
+                bottom: var(--size-2-2);
+                opacity: 0;
+            }
+            
+            .math-callout:hover .math-callout-setting-button {
+                transition: 0s;
+                opacity: 1
+            }
+
+            """)
+            + ''.join(lines)
+            + textwrap.dedent(
+            """
+            .font-family-inherit {
+                font-family: inherit !important;
+            }
+            """)
         )

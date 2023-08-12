@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, TFile } from "obsidian";
+import { App, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, TFile } from "obsidian";
 
 import MathBooster from './main';
 import { MathCalloutModal } from './modals';
@@ -49,9 +49,11 @@ export class MathCallout extends MarkdownRenderChild {
         this.containerEl.toggleClass("font-family-inherit", this.config.mathCalloutStyle != "custom" && this.config.mathCalloutFontInherit);
 
         // click the title block (div.callout-title) to edit settings
-        let title = this.containerEl.querySelector<HTMLElement>('.callout-title');
-        if (title) {
-            this.plugin.registerDomEvent(title, "click", async (event: MouseEvent) => {
+        let button = new ExtraButtonComponent(this.containerEl)
+            .setIcon("settings-2")
+            .setTooltip("Edit math callout settings");
+        button.extraSettingsEl.addEventListener("click", (ev) => {
+                ev.stopPropagation();
                 const view = this.app.workspace.getActiveViewOfType(MarkdownView);
                 const editor = view?.editor;
                 if (editor) {
@@ -75,7 +77,8 @@ export class MathCallout extends MarkdownRenderChild {
                     modal.open();
                 }
             });
-        }
+            button.extraSettingsEl.classList.add("math-callout-setting-button");
+          
     }
 }
 
