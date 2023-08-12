@@ -1,18 +1,18 @@
-import { App, Editor, MarkdownRenderChild, MarkdownView, TFile } from "obsidian";
+import { App, Editor, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, TFile } from "obsidian";
 
 import MathBooster from './main';
 import { MathCalloutModal } from './modals';
 import { MathSettings } from './settings/settings';
 import { TheoremLikeEnv, getTheoremLikeEnv } from './env';
 import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines } from './utils';
-import { ActiveNoteIndexer } from './indexer';
+import { AutoNoteIndexer } from './indexer';
 
 export class MathCallout extends MarkdownRenderChild {
     config: Required<MathSettings>;
     env: TheoremLikeEnv;
     renderedTitleElements: (HTMLElement | string)[];
 
-    constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, config: MathSettings, public currentFile: TFile) {
+    constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, config: MathSettings, public currentFile: TFile, public context: MarkdownPostProcessorContext) {
         super(containerEl);
         this.env = getTheoremLikeEnv(config.type);
         this.config = resolveSettings(config, this.plugin, this.currentFile) as Required<MathSettings>;
@@ -62,8 +62,10 @@ export class MathCallout extends MarkdownRenderChild {
                         (settings) => {
                             let resolvedSettings = resolveSettings(settings, this.plugin, this.currentFile);
                             let title = formatTitle(resolvedSettings);
-                            let indexer = new ActiveNoteIndexer(this.app, this.plugin, view);
-                            indexer.calloutIndexer.overwriteSettings(editor.getCursor().line, settings, title);
+                            let indexer = (new AutoNoteIndexer(this.app, this.plugin, view.file)).getIndexer();
+                            const info = this.context.getSectionInfo(this.containerEl);
+                            const lineNumber = info?.lineStart ?? editor.getCursor().line;
+                            indexer.calloutIndexer.overwriteSettings(lineNumber, settings, title);
                         },
                         "Confirm",
                         "Edit Math Callout Settings",

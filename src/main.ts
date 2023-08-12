@@ -152,7 +152,7 @@ export default class MathBooster extends Plugin {
 
 						let currentFile = this.app.vault.getAbstractFileByPath(context.sourcePath);
 						if (currentFile instanceof TFile) {
-							let smartCallout = new MathCallout(callout, this.app, this, settings, currentFile);
+							let smartCallout = new MathCallout(callout, this.app, this, settings, currentFile, context);
 							await smartCallout.setRenderedTitleElements();
 							context.addChild(smartCallout);
 						}
@@ -237,7 +237,7 @@ export default class MathBooster extends Plugin {
 		this.setOldLinkMap();
 		(new VaultIndexer(this.app, this)).run();
 		let indexEnd = Date.now();
-		console.log(`${this.manifest.name}: All the math callouts & equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s`);	
+		console.log(`${this.manifest.name}: All math callouts and equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s.`);	
 	}
 
 	getNewLinkMap(): Dataview.IndexMap | undefined {

@@ -80,7 +80,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
 
 
     onOpen(): void {
-        this.settings = {} as MathSettings;
+        this.settings = this.currentCalloutSettings ?? {} as MathSettings;
         const { contentEl } = this;
 
         if (this.headerText) {
