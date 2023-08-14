@@ -152,8 +152,6 @@ abstract class FileSuggestModal extends FuzzySuggestModal<TAbstractFile> {
         return this.app.vault
             .getAllLoadedFiles()
             .filter(this.filterCallback.bind(this));
-        // https://javascript.info/bind
-        // https://stackoverflow.com/a/59060545/13613783
     }
 
     getItemText(file: TAbstractFile): string {

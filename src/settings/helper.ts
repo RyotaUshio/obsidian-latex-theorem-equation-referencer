@@ -121,8 +121,8 @@ export class MathContextSettingsHelper {
     getCallback<Type>(name: keyof MathSettings): (value: Type) => Promise<void> {
         return async (value: Type): Promise<void> => {
             Object.assign(this.settings, { [name]: value });
-            await this.plugin?.saveSettings();
             this.plugin.app.metadataCache.trigger("math-booster:local-settings-updated", this.file);
+            await this.plugin?.saveSettings();
         }
     }
 
@@ -202,11 +202,13 @@ export class MathContextSettingsHelper {
             }
             dropdown.onChange((selectedEnvId) => {
                 let renamePaneTextBox = new Setting(setting.controlEl).addText((text) => {
-                    text.onChange((newName) => {
+                    text.onChange(async (newName) => {
                         if (this.settings.rename === undefined) {
                             this.settings.rename = {} as RenameEnv;
                         }
                         Object.assign(this.settings.rename, { [selectedEnvId]: newName });
+                        this.plugin.app.metadataCache.trigger("math-booster:local-settings-updated", this.file);            
+                        await this.plugin?.saveSettings();
                     })
                 });
                 let inputEl = renamePaneTextBox.settingEl.querySelector<HTMLElement>("input");

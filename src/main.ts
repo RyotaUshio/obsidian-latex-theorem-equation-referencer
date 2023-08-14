@@ -1,4 +1,4 @@
-import { App, MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
+import { App, MarkdownView, Notice, Plugin, TFile, TFolder, WorkspaceLeaf } from 'obsidian';
 import { Extension } from '@codemirror/state';
 
 import * as MathLinks from 'obsidian-mathlinks'
@@ -13,6 +13,7 @@ import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_nu
 import { MathPreviewInfoField, displayMathPreviewView, inlineMathPreviewView } from './math_live_preview_in_callouts';
 import { ActiveNoteIndexer, LinkedNotesIndexer, VaultIndexer } from './indexer';
 import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
+import { iterDescendantFiles } from 'utils';
 
 
 export const VAULT_ROOT = '/';
@@ -66,15 +67,33 @@ export default class MathBooster extends Plugin {
 			})
 		);
 
+		this.registerEvent(
+			this.app.metadataCache.on("math-booster:local-settings-updated", async (file) => {
+				let promises: Promise<void>[] = []
+				iterDescendantFiles(
+					file, 
+					(descendantFile) => {
+						promises.push((new LinkedNotesIndexer(this.app, this, descendantFile)).run());
+					}, 
+					"md"
+				);
+				await Promise.all(promises);
+			})
+		);
 
+		
 		/** Update settings when file renamed */
 
 		this.registerEvent(
 			this.app.vault.on("rename", (file, oldPath) => {
 				this.settings[file.path] = this.settings[oldPath];
 				delete this.settings[oldPath];
-				this.excludedFiles.remove(oldPath);
-				this.excludedFiles.push(file.path);
+
+				const index = this.excludedFiles.indexOf(oldPath);
+				if (index >= 0) {
+					this.excludedFiles.splice(index, 1);
+					this.excludedFiles.push(file.path);	
+				}
 			})
 		)
 
@@ -142,7 +161,7 @@ export default class MathBooster extends Plugin {
 
 		/** Editor Extensions */
 
-		this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
+		// this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
 		this.registerEditorExtensionFactory(buildEquationNumberPlugin);
 
 		this.registerEditorExtension(MathPreviewInfoField);

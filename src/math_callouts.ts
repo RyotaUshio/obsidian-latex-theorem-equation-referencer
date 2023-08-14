@@ -2,38 +2,40 @@ import { App, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, Markdo
 
 import MathBooster from './main';
 import { MathCalloutModal } from './modals';
-import { MathSettings } from './settings/settings';
+import { MathSettings, ResolvedMathSettings } from './settings/settings';
 import { TheoremLikeEnv, getTheoremLikeEnv } from './env';
 import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, getSectionCacheFromPos } from './utils';
 import { AutoNoteIndexer } from './indexer';
 
 
 export class MathCallout extends MarkdownRenderChild {
-    config: Required<MathSettings>;
+    settings: MathSettings;
+    resolvedSettings: ResolvedMathSettings;
     env: TheoremLikeEnv;
     renderedTitleElements: (HTMLElement | string)[];
 
-    constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, config: MathSettings, public currentFile: TFile, public context: MarkdownPostProcessorContext) {
+    constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, settings: MathSettings, public currentFile: TFile, public context: MarkdownPostProcessorContext) {
         super(containerEl);
-        this.env = getTheoremLikeEnv(config.type);
-        this.config = resolveSettings(config, this.plugin, this.currentFile) as Required<MathSettings>;
+        this.settings = settings;
+        this.env = getTheoremLikeEnv(this.settings.type);
+        this.resolvedSettings = resolveSettings(this.settings, this.plugin, this.currentFile);
     }
 
     async setRenderedTitleElements() {
         // ex) "Theorem 1.1", not "Theorem 1.1 (Cauchy-Schwarz)"
-        let titleWithoutSubtitle = await renderTextWithMath(formatTitleWithoutSubtitle(this.config));
+        let titleWithoutSubtitle = await renderTextWithMath(formatTitleWithoutSubtitle(this.resolvedSettings));
         this.renderedTitleElements = [
             ...titleWithoutSubtitle
         ];
-        if (this.config.title) {
+        if (this.resolvedSettings.title) {
             // ex) "(Cauchy-Schwarz)"
-            let subtitle = await renderTextWithMath(`(${this.config.title})`);
+            let subtitle = await renderTextWithMath(`(${this.resolvedSettings.title})`);
             let subtitleEl = createSpan({ cls: "math-callout-subtitle" });
             subtitleEl.replaceChildren(...subtitle)
             this.renderedTitleElements.push(" ", subtitleEl);
         }
-        if (this.config.titleSuffix) {
-            this.renderedTitleElements.push(this.config.titleSuffix);
+        if (this.resolvedSettings.titleSuffix) {
+            this.renderedTitleElements.push(this.resolvedSettings.titleSuffix);
         }
     }
 
@@ -44,10 +46,10 @@ export class MathCallout extends MarkdownRenderChild {
 
         // add classes for CSS snippets
         this.containerEl.classList.add("math-callout");
-        this.containerEl.classList.add("math-callout-" + this.config.lang);
-        this.containerEl.classList.add("math-callout-" + this.config.type);
-        this.containerEl.toggleClass(`math-callout-${this.config.mathCalloutStyle}`, this.config.mathCalloutStyle != "custom");
-        this.containerEl.toggleClass("font-family-inherit", this.config.mathCalloutStyle != "custom" && this.config.mathCalloutFontInherit);
+        this.containerEl.classList.add("math-callout-" + this.resolvedSettings.lang);
+        this.containerEl.classList.add("math-callout-" + this.resolvedSettings.type);
+        this.containerEl.toggleClass(`math-callout-${this.resolvedSettings.mathCalloutStyle}`, this.resolvedSettings.mathCalloutStyle != "custom");
+        this.containerEl.toggleClass("font-family-inherit", this.resolvedSettings.mathCalloutStyle != "custom" && this.resolvedSettings.mathCalloutFontInherit);
 
         // click the title block (div.callout-title) to edit settings
         let button = new ExtraButtonComponent(this.containerEl)
@@ -63,8 +65,9 @@ export class MathCallout extends MarkdownRenderChild {
                     this.plugin,
                     view,
                     (settings) => {
-                        let resolvedSettings = resolveSettings(settings, this.plugin, this.currentFile);
-                        let title = formatTitle(resolvedSettings);
+                        this.settings = settings;
+                        this.resolvedSettings = resolveSettings(this.settings, this.plugin, this.currentFile);
+                        let title = formatTitle(this.resolvedSettings);
                         let indexer = (new AutoNoteIndexer(this.app, this.plugin, view.file)).getIndexer();
                         const info = this.context.getSectionInfo(this.containerEl);
                         let lineNumber = info?.lineStart;
@@ -76,12 +79,12 @@ export class MathCallout extends MarkdownRenderChild {
                             }
                         }
                         if (lineNumber !== undefined) {
-                            indexer.calloutIndexer.overwriteSettings(lineNumber, settings, title);
+                            indexer.calloutIndexer.overwriteSettings(lineNumber, this.settings, title);
                         }
                     },
                     "Confirm",
                     "Edit math callout settings",
-                    this.config,
+                    this.settings,
                 );
                 modal.resolveDefaultSettings(view.file);
                 modal.open();

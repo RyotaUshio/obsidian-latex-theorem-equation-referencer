@@ -2,7 +2,7 @@ import { App, CachedMetadata, MarkdownPostProcessorContext, MarkdownView, Sectio
 
 import MathBooster from './main';
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, MathCalloutRefFormat, ResolvedMathSettings } from './settings/settings';
-import { getBlockIdsWithBacklink, readMathCalloutSettings, findNearestAncestorContextSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines, removeFrom, formatTitleWithoutSubtitle } from './utils';
+import { getBlockIdsWithBacklink, readMathCalloutSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines, removeFrom, formatTitleWithoutSubtitle } from './utils';
 import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 
 type MathLinkBlocks = Record<string, string>;
@@ -142,7 +142,7 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
     }
 
     async setMathLinks(equations: readonly Readonly<EquationInfo>[]): Promise<void> {
-        const contextSettings = findNearestAncestorContextSettings(this.noteIndexer.plugin, this.noteIndexer.file);
+        const contextSettings = resolveSettings(undefined, this.noteIndexer.plugin, this.noteIndexer.file);
         const style = contextSettings?.eqNumberStyle ?? DEFAULT_SETTINGS.eqNumberStyle as NumberStyle;
         let equationNumber = +(contextSettings?.eqNumberInit ?? DEFAULT_SETTINGS.eqNumberInit);
         const prefix = contextSettings?.eqNumberPrefix ?? DEFAULT_SETTINGS.eqNumberPrefix;

@@ -1,4 +1,4 @@
-import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice } from 'obsidian';
+import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile } from 'obsidian';
 import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
@@ -241,25 +241,29 @@ export function readMathCalloutTitle(line: string): string | undefined {    // c
     }
 }
 
-export function findNearestAncestorContextSettings(plugin: MathBooster, file: TAbstractFile): MathContextSettings | undefined {
-    if (file.path in plugin.settings) {
-        return plugin.settings[file.path];
-    }
-    let folder = file.parent;
-    if (folder) {
-        while (true) {
-            if (folder.path in plugin.settings) {
-                return plugin.settings[folder.path];
-            }
-            if (folder.parent) {
-                folder = folder.parent;
-            } else {
-                throw Error(`Cannot find the parent of ${folder.path}`);
-            }
+export function iterDescendantFiles(file: TAbstractFile, callback: (descendantFile: TFile) => any, extension?: string) {
+    if (file instanceof TFile && (extension === undefined ? true : file.extension == extension)) {
+        callback(file);
+    } else if (file instanceof TFolder) {
+        for (const child of file.children) {
+            iterDescendantFiles(child, callback, extension);
         }
     }
 }
 
+export function getAncestors(file: TAbstractFile): TAbstractFile[] {
+    let ancestors: TAbstractFile[] = [];
+    let ancestor: TAbstractFile | null = file;
+    while (ancestor) {
+        ancestors.push(ancestor);
+        if (file instanceof TFolder && file.isRoot()) {
+            break;
+        }
+        ancestor = ancestor.parent;
+    }
+    ancestors.reverse();
+    return ancestors;
+}
 
 export function resolveSettings(settings: MathSettings, plugin: MathBooster, currentFile: TAbstractFile): ResolvedMathSettings;
 export function resolveSettings(settings: undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings>;
@@ -269,16 +273,21 @@ export function resolveSettings(settings: MathSettings | undefined, plugin: Math
      * Returned settings can be either 
      * - ResolvedMathContextSettings or 
      * - Required<MathContextSettings> & Partial<MathCalloutSettings>.
-     * */  
-    let contextSettings = findNearestAncestorContextSettings(plugin, currentFile);
-    return Object.assign({}, DEFAULT_SETTINGS, contextSettings, settings);
+     * */
+    let resolvedSettings = Object.assign({}, DEFAULT_SETTINGS);
+    const ancestors = getAncestors(currentFile);
+    for (const ancestor of ancestors) {
+        Object.assign(resolvedSettings, plugin.settings[ancestor.path]);
+    }
+    Object.assign(resolvedSettings, settings);
+    return resolvedSettings;
 }
 
 export function formatTitleWithoutSubtitle(settings: ResolvedMathSettings): string {
     let env = ENVs_MAP[settings.type];
 
     let title = '';
-    if (settings.rename && settings.rename[env.id]) {
+    if (settings.rename[env.id]) {
         title = settings.rename[env.id] as string;
     } else {
         title = env.printedNames[settings.lang as string];

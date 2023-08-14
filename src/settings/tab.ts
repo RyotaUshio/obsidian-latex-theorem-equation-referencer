@@ -1,10 +1,9 @@
-import { App, MarkdownView, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting } from "obsidian";
 
 import MathBooster, { VAULT_ROOT } from "../main";
-import { DEFAULT_SETTINGS, MathContextSettings } from "./settings";
+import { DEFAULT_SETTINGS } from "./settings";
 import { MathContextSettingsHelper } from "./helper";
 import { resolveSettings } from "../utils";
-import { ActiveNoteIndexer } from "indexer";
 import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "modals";
 
 
@@ -66,19 +65,5 @@ export class MathSettingTab extends PluginSettingTab {
                         new ExcludedFileManageModal(this.app, this.plugin).open();
                     });
             });
-    }
-
-    hide(): any {
-        super.hide();
-
-        // run auto-reload so that the new settings comes into effect
-        let view = this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (view) {
-            let cache = this.app.metadataCache.getFileCache(view.file);
-            if (cache) {
-                let indexer = new ActiveNoteIndexer(this.app, this.plugin, view);
-                indexer.run(cache);
-            }
-        }
     }
 }
