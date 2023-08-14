@@ -26,18 +26,18 @@ export class MathSettingTab extends PluginSettingTab {
     }
 
     displayUnit(key: string) {
-        let defaultSettings: MathContextSettings = {};
-        let folder = this.app.vault.getAbstractFileByPath(key);
-        if (folder) {
-            defaultSettings = resolveSettings(undefined, this.plugin, folder);
+        let file = this.app.vault.getAbstractFileByPath(key);
+        if (file) {
+            const defaultSettings = resolveSettings(undefined, this.plugin, file);
+            (new MathContextSettingsHelper(
+                this.containerEl,
+                this.plugin.settings[key],
+                defaultSettings,
+                this.plugin,
+                file
+            )).makeSettingPane();
+            this.addRestoreDefaultsBottun(key);
         }
-        (new MathContextSettingsHelper(
-            this.containerEl,
-            this.plugin.settings[key],
-            defaultSettings,
-            this.plugin,
-        )).makeSettingPane();
-        this.addRestoreDefaultsBottun(key);
     }
 
     display() {

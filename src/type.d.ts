@@ -20,6 +20,10 @@ declare module "obsidian" {
             name: "math-booster:index-updated", 
             callback: (indexer: ActiveNoteIndexer | NonActiveNoteIndexer) => any
         ): EventRef;
+        on(
+            name: "math-booster:local-settings-updated", 
+            callback: (file: TAbstractFile) => any
+        ): EventRef;
 
         // Dataview Events
         on(

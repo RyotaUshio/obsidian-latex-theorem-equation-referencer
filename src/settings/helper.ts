@@ -1,4 +1,4 @@
-import { Setting, TextComponent } from 'obsidian';
+import { Setting, TAbstractFile, TextComponent } from 'obsidian';
 
 import MathBooster from '../main';
 import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from '../env';
@@ -11,7 +11,7 @@ export class MathCalloutSettingsHelper {
     constructor(
         public contentEl: HTMLElement,
         public settings: MathCalloutSettings,
-        public defaultSettings: Partial<MathSettings>,
+        public defaultSettings: Required<MathContextSettings> & Partial<MathCalloutSettings>,
     ) { }
 
     makeSettingPane() {
@@ -114,13 +114,15 @@ export class MathContextSettingsHelper {
         public contentEl: HTMLElement,
         public settings: MathContextSettings,
         public defaultSettings: MathContextSettings,
-        public plugin: MathBooster
+        public plugin: MathBooster,
+        public file: TAbstractFile,
     ) { }
 
     getCallback<Type>(name: keyof MathSettings): (value: Type) => Promise<void> {
         return async (value: Type): Promise<void> => {
             Object.assign(this.settings, { [name]: value });
             await this.plugin?.saveSettings();
+            this.plugin.app.metadataCache.trigger("math-booster:local-settings-updated", this.file);
         }
     }
 

@@ -20,6 +20,7 @@ export const THEOREM_LIKE_ENV_IDs = [
     "exercise",
     "conjecture",
     "hypothesis",
+    "remark",
 ] as const;
 
 export const ENV_IDs = [...THEOREM_LIKE_ENV_IDs, ...NON_THEOREM_LIKE_ENV_IDs, ] as const;
@@ -150,7 +151,12 @@ export const ENVs = [
         "hypothesis",
         { ja: "仮説", en: "Hypothesis" },
         "hyp",
-    )
+    ),
+    new TheoremLikeEnv(
+        "remark",
+        { ja: "注", en: "Remark" },
+        "rmk",
+    ),
 ]
 
 

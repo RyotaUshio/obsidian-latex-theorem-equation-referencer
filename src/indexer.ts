@@ -1,7 +1,7 @@
 import { App, CachedMetadata, MarkdownPostProcessorContext, MarkdownView, SectionCache, TFile, WorkspaceLeaf } from 'obsidian';
 
 import MathBooster from './main';
-import { DEFAULT_SETTINGS, MathSettings, NumberStyle, MathCalloutRefFormat } from './settings/settings';
+import { DEFAULT_SETTINGS, MathSettings, NumberStyle, MathCalloutRefFormat, ResolvedMathSettings } from './settings/settings';
 import { getBlockIdsWithBacklink, readMathCalloutSettings, findNearestAncestorContextSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines, removeFrom, formatTitleWithoutSubtitle } from './utils';
 import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 
@@ -96,10 +96,10 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
         }
     }
 
-    formatMathLink(resolvedSettings: MathSettings): string {
+    formatMathLink(resolvedSettings: ResolvedMathSettings): string {
         let refFormat: MathCalloutRefFormat = resolvedSettings.refFormat ?? DEFAULT_SETTINGS.refFormat;
         if (refFormat == "Type + number (+ title)") {
-            return formatTitle(resolvedSettings);
+            return formatTitle(resolvedSettings, true);
         }
         if (refFormat == "Type + number") {
             return formatTitleWithoutSubtitle(resolvedSettings);
@@ -289,21 +289,6 @@ export class VaultIndexer {
         let promises = notes.map((note) => 
             (new AutoNoteIndexer(this.app, this.plugin, note)).run(activeMarkdownview)
         );
-        // this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
-        //     if (leaf.view instanceof MarkdownView) {
-        //         removeFrom(leaf.view.file, files);
-        //         promises.push(
-        //             (new ActiveNoteIndexer(this.app, this.plugin, leaf.view)).run()
-        //         );
-        //     }
-        // });
-
-        // for (let file of files) {
-        //     promises.push(
-        //         (new NonActiveNoteIndexer(this.app, this.plugin, file)).run()
-        //     );
-        // }
-
         await Promise.all(promises);
     }
 }

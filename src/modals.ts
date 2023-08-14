@@ -4,12 +4,12 @@ import MathBooster from './main';
 import { MathSettings, MathContextSettings } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
 import { MathCalloutSettingsHelper, MathContextSettingsHelper } from "./settings/helper";
-import { isEqualToOrChildOf, findNearestAncestorContextSettings } from './utils';
+import { isEqualToOrChildOf, resolveSettings } from './utils';
 
 
 abstract class MathSettingModal<SettingsType> extends Modal {
     settings: SettingsType;
-    defaultSettings: Partial<MathSettings>; // this is different from DEFAULT_SETTINGS
+    defaultSettings: Required<MathContextSettings>; // this is different from DEFAULT_SETTINGS
     // this.default.Settings determines what is preset in the input elements in the modal
 
     constructor(
@@ -19,7 +19,7 @@ abstract class MathSettingModal<SettingsType> extends Modal {
         public currentCalloutSettings?: MathSettings,
     ) {
         super(app);
-        this.defaultSettings = {} as Partial<MathSettings>;
+        // this.defaultSettings = {} as Partial<MathSettings>;
     }
 
     onClose(): void {
@@ -27,10 +27,11 @@ abstract class MathSettingModal<SettingsType> extends Modal {
     }
 
     resolveDefaultSettings(currentFile: TAbstractFile) {
-        let contextSettings = findNearestAncestorContextSettings(this.plugin, currentFile)
-        Object.assign(this.defaultSettings, contextSettings);
-        if (this.currentCalloutSettings) {
-            Object.assign(this.defaultSettings, this.currentCalloutSettings);
+        // redundant, but probably necessary for the Typescript compiler to work
+        if (this.currentCalloutSettings === undefined) {
+            this.defaultSettings = resolveSettings(this.currentCalloutSettings, this.plugin, currentFile)
+        } else {
+            this.defaultSettings = resolveSettings(this.currentCalloutSettings, this.plugin, currentFile)
         }
     }
 
@@ -125,15 +126,18 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
     onOpen(): void {
         const { contentEl } = this;
 
-        contentEl
+        const file = this.app.vault.getAbstractFileByPath(this.path);
+        if (file) {
+            contentEl
             .createEl('h3', { text: 'Local settings for ' + this.path });
 
         if (this.plugin.settings[this.path] === undefined) {
             this.plugin.settings[this.path] = {} as MathContextSettings;
         }
-        const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.path], this.defaultSettings, this.plugin);
+        const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.path], this.defaultSettings, this.plugin, file);
         contextSettingsHelper.makeSettingPane();
         this.addButton('Save');
+        }
     }
 }
 

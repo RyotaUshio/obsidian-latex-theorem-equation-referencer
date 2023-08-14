@@ -5,7 +5,7 @@ import { SyntaxNodeRef } from '@lezer/common';
 
 import MathBooster from './main';
 import { ENVs_MAP } from './env';
-import { DEFAULT_SETTINGS, MathContextSettings, MathSettings, NumberStyle } from './settings/settings';
+import { DEFAULT_SETTINGS, MathContextSettings, MathSettings, NumberStyle, ResolvedMathSettings } from './settings/settings';
 
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
@@ -255,13 +255,21 @@ export function findNearestAncestorContextSettings(plugin: MathBooster, file: TA
     }
 }
 
-export function resolveSettings(settings: MathSettings | undefined, plugin: MathBooster, currentFile: TAbstractFile) {
-    // Resolves settings. Does not overwride, but returns a new settings object.
+
+export function resolveSettings(settings: MathSettings, plugin: MathBooster, currentFile: TAbstractFile): ResolvedMathSettings;
+export function resolveSettings(settings: undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings>;
+
+export function resolveSettings(settings: MathSettings | undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings> {
+    /** Resolves settings. Does not overwride, but returns a new settings object.
+     * Returned settings can be either 
+     * - ResolvedMathContextSettings or 
+     * - Required<MathContextSettings> & Partial<MathCalloutSettings>.
+     * */  
     let contextSettings = findNearestAncestorContextSettings(plugin, currentFile);
-    return Object.assign({}, contextSettings, settings);
+    return Object.assign({}, DEFAULT_SETTINGS, contextSettings, settings);
 }
 
-export function formatTitleWithoutSubtitle(settings: MathSettings): string {
+export function formatTitleWithoutSubtitle(settings: ResolvedMathSettings): string {
     let env = ENVs_MAP[settings.type];
 
     let title = '';
@@ -289,12 +297,12 @@ export function formatTitleWithoutSubtitle(settings: MathSettings): string {
     return title;
 }
 
-export function formatTitle(settings: MathSettings): string {
+export function formatTitle(settings: ResolvedMathSettings, noTitleSuffix: boolean = false): string {
     let title = formatTitleWithoutSubtitle(settings);
     if (settings.title) {
         title += ` (${settings.title})`;
     }
-    if (settings.titleSuffix) {
+    if (!noTitleSuffix && settings.titleSuffix) {
         title += settings.titleSuffix;
     }
     return title;

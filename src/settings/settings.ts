@@ -30,28 +30,28 @@ export const MATH_CALLOUT_REF_FORMATS = [
 export type MathCalloutRefFormat = typeof MATH_CALLOUT_REF_FORMATS[number];
 
 export interface MathContextSettings {
-    lang?: string;
-    titleSuffix?: string;
-    numberPrefix?: string;
-    numberSuffix?: string;
-    numberInit?: number;
-    numberStyle?: NumberStyle;
-    numberDefault?: string;
-    refFormat?: MathCalloutRefFormat;
-    eqNumberPrefix?: string;
-    eqNumberSuffix?: string;
-    eqNumberInit?: number;
-    eqNumberStyle?: NumberStyle;
-    labelPrefix?: string;
-    rename?: RenameEnv;
-    lineByLine?: boolean;
-    mathCalloutStyle?: MathCalloutStyle;
-    mathCalloutFontInherit?: boolean;
+    lang: string;
+    titleSuffix: string;
+    numberPrefix: string;
+    numberSuffix: string;
+    numberInit: number;
+    numberStyle: NumberStyle;
+    numberDefault: string;
+    refFormat: MathCalloutRefFormat;
+    eqNumberPrefix: string;
+    eqNumberSuffix: string;
+    eqNumberInit: number;
+    eqNumberStyle: NumberStyle;
+    labelPrefix: string;
+    rename: RenameEnv;
+    lineByLine: boolean;
+    mathCalloutStyle: MathCalloutStyle;
+    mathCalloutFontInherit: boolean;
 }
 
 export interface MathCalloutSettings {
     type: string;
-    number?: string;
+    number: string;
     title?: string;
     label?: string;
 }
@@ -60,7 +60,8 @@ export interface MathCalloutPrivateFields {
     _index?: number;
 }
 
-export type MathSettings = MathContextSettings & MathCalloutSettings & MathCalloutPrivateFields;
+export type MathSettings = Partial<MathContextSettings> & MathCalloutSettings & MathCalloutPrivateFields;
+export type ResolvedMathSettings = Required<MathContextSettings> & MathCalloutSettings & MathCalloutPrivateFields;
 
 export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     lang: DEFAULT_LANG,

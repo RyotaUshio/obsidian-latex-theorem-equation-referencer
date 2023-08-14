@@ -67,6 +67,18 @@ export default class MathBooster extends Plugin {
 		);
 
 
+		/** Update settings when file renamed */
+
+		this.registerEvent(
+			this.app.vault.on("rename", (file, oldPath) => {
+				this.settings[file.path] = this.settings[oldPath];
+				delete this.settings[oldPath];
+				this.excludedFiles.remove(oldPath);
+				this.excludedFiles.push(file.path);
+			})
+		)
+
+
 		/** Commands */
 
 		this.addCommand({
