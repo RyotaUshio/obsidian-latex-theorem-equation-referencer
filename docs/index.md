@@ -21,7 +21,7 @@ You can also customize the appearance of math callous using CSS snippets. See th
 
 ## Installation
 
-This plugin is before an official submission.
+Since this plugin is under review by the Obsidian team, you can't install it within the Obsidian app for now.
 You can choose between the following two methods for installation.
 
 ### Install via BRAT (recommended)
