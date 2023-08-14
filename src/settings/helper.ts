@@ -1,4 +1,4 @@
-import { Setting, TAbstractFile, TextComponent } from 'obsidian';
+import { Setting, TAbstractFile, TFolder, TextComponent } from 'obsidian';
 
 import MathBooster from '../main';
 import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from '../env';
@@ -49,7 +49,7 @@ export class MathCalloutSettingsHelper {
 
                 numberSetting.addText((text) => {
                     text.setValue(
-                        this.defaultSettings.number ?? this.defaultSettings.numberDefault ?? DEFAULT_SETTINGS.numberDefault
+                        this.defaultSettings.number ?? this.defaultSettings.numberDefault
                     );
                     this.settings.number = text.getValue();
                     text.onChange((value) => {
@@ -110,13 +110,17 @@ export class MathCalloutSettingsHelper {
 
 
 export class MathContextSettingsHelper {
+    allowUnset: boolean;
+
     constructor(
         public contentEl: HTMLElement,
         public settings: MathContextSettings,
         public defaultSettings: MathContextSettings,
         public plugin: MathBooster,
         public file: TAbstractFile,
-    ) { }
+    ) {
+        this.allowUnset = !(this.file instanceof TFolder && this.file.isRoot());
+    }
 
     getCallback<Type>(name: keyof MathSettings): (value: Type) => Promise<void> {
         return async (value: Type): Promise<void> => {
@@ -130,8 +134,8 @@ export class MathContextSettingsHelper {
         const { contentEl } = this;
 
         contentEl.createEl("h3", { text: "Math callouts" });
-        this.addDropdownSetting("lang", LanguageManager.supported, "Language");
-        let styleSetting = this.addDropdownSetting("mathCalloutStyle", MATH_CALLOUT_STYLES, "Style");
+        this.addDropdownSetting("lang", LanguageManager.supported, this.allowUnset, "Language");
+        let styleSetting = this.addDropdownSetting("mathCalloutStyle", MATH_CALLOUT_STYLES, this.allowUnset, "Style");
         styleSetting.descEl.replaceChildren(
             "Choose between your custom style and pre-defined sample styles. You will need to reload the note to see the changes. See the ",
             createEl("a", {text: "documentation", attr: {href: "https://ryotaushio.github.io/obsidian-math-booster/style-your-theorems.html"}}), 
@@ -148,7 +152,7 @@ export class MathContextSettingsHelper {
         this.addNumberStyleSetting("numberStyle", "Numbering style");
         this.addTextSetting("numberDefault", "Default value for the \"Number\" field");
         contentEl.createEl("h6", { text: "Referencing" });
-        this.addDropdownSetting("refFormat", MATH_CALLOUT_REF_FORMATS, "Format");
+        this.addDropdownSetting("refFormat", MATH_CALLOUT_REF_FORMATS, this.allowUnset, "Format");
 
         contentEl.createEl("h3", { text: "Equations" });
         contentEl.createEl("h6", { text: "Numbering" });
@@ -159,18 +163,24 @@ export class MathContextSettingsHelper {
         this.addToggleSetting("lineByLine", "Number line by line in align");
     }
 
-    addDropdownSetting(name: keyof MathContextSettings, options: readonly string[], prettyName: string, description?: string) {
+    addDropdownSetting(name: keyof MathContextSettings, options: readonly string[], allowUnset: boolean, prettyName: string, description?: string) {
         let callback = this.getCallback<string>(name);
         let setting = new Setting(this.contentEl).setName(prettyName);
         if (description) {
             setting.setDesc(description);
         }
         setting.addDropdown((dropdown) => {
+            if (allowUnset) {
+                dropdown.addOption("", "");
+            }
             for (let option of options) {
                 dropdown.addOption(option, option);
             }
-            dropdown.setValue(this.defaultSettings[name] as string)
-                .onChange(callback);
+            dropdown.setValue(
+                allowUnset
+                ? (this.settings[name] ? this.defaultSettings[name] as string : "")
+                : this.defaultSettings[name] as string
+            ).onChange(callback);
         });
         return setting;
     }
@@ -227,9 +237,8 @@ export class MathContextSettingsHelper {
         }
         let callback = this.getCallback<boolean>(name);
         setting.addToggle((toggle) => {
-            toggle
-                .setValue(this.defaultSettings[name] ?? DEFAULT_SETTINGS[name])
-                .onChange(callback)
+            toggle.setValue(this.defaultSettings[name])
+                  .onChange(callback);
         });
         return setting;
     }
