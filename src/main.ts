@@ -1,4 +1,4 @@
-import { App, MarkdownView, Notice, Plugin, TFile, TFolder, WorkspaceLeaf } from 'obsidian';
+import { App, MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 import { Extension } from '@codemirror/state';
 
 import * as MathLinks from 'obsidian-mathlinks'
@@ -161,7 +161,7 @@ export default class MathBooster extends Plugin {
 
 		/** Editor Extensions */
 
-		// this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
+		this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
 		this.registerEditorExtensionFactory(buildEquationNumberPlugin);
 
 		this.registerEditorExtension(MathPreviewInfoField);

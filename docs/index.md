@@ -24,8 +24,6 @@ You can also customize the appearance of math callous using CSS snippets. See th
 This plugin is before an official submission.
 You can choose between the following two methods for installation.
 
-**WARNING: The following instruction is for installing ver. 0.2.1, which is older than the unreleased latest version of this plugin that this documentation is written for.**
-
 ### Install via BRAT (recommended)
 
 1. Install the [BRAT](obsidian://show-plugin?id=obsidian42-brat) community plugin and enable it.
