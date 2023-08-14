@@ -1,5 +1,5 @@
 import { App, MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
-import { Extension } from '@codemirror/state';
+import { Extension, Prec } from '@codemirror/state';
 
 import * as MathLinks from 'obsidian-mathlinks'
 import * as Dataview from 'obsidian-dataview';
@@ -166,7 +166,8 @@ export default class MathBooster extends Plugin {
 
 		this.registerEditorExtension(MathPreviewInfoField);
 		this.registerEditorExtension(inlineMathPreviewView);
-		this.registerEditorExtension(displayMathPreviewView);
+		this.registerEditorExtension(Prec.highest(displayMathPreviewView));
+		// this.registerEditorExtension(hoge);
 
 		/** Markdown post processors */
 

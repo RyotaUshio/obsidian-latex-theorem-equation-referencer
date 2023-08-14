@@ -3,12 +3,13 @@ import { Extension, Transaction, StateField, RangeSetBuilder, EditorState, Range
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { syntaxTree } from '@codemirror/language';
 
-import { nodeText, nodeTextQuoteSymbolTrimmed } from 'utils';
+import { nodeText, nodeTextQuoteSymbolTrimmed, printMathInfoSet } from 'utils';
 
 
 const DISPLAY_MATH_BEGIN = "formatting_formatting-math_formatting-math-begin_keyword_math_math-block";
 const INLINE_MATH_BEGIN = "formatting_formatting-math_formatting-math-begin_keyword_math";
 const MATH_END = "formatting_formatting-math_formatting-math-end_keyword_math_math-";
+const ERROR_MATH = "error_math";
 const BLOCKQUOTE = /HyperMD-quote_HyperMD-quote-([1-9][0-9]*)/;
 
 
@@ -58,13 +59,14 @@ class MathInfo extends RangeValue {
     }
 }
 
-type MathInfoSet = RangeSet<MathInfo>;
+export type MathInfoSet = RangeSet<MathInfo>;
 
 function buildMathInfoSet(state: EditorState): MathInfoSet {
+
     let tree = syntaxTree(state);
     let builder = new RangeSetBuilder<MathInfo>();
 
-    let from: number;
+    let from: number = -1;
     let mathText: string;
     let insideMath = false;
     let display: boolean | undefined;
@@ -81,6 +83,21 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
                         from,
                         node.to,
                         new MathInfo(mathText, display as boolean)
+                    );
+                    insideMath = false;
+                    display = undefined;
+                } else if (display && node.name == ERROR_MATH && nodeText(node, state) == "$") {
+                    /** When inserting inline math at the top of "foo $x = 1$ bar",
+                     * the text becomes "$$ foo $x = 1$ bar".
+                     * This "$$" should be interpreted as INLINE_MATH_BEGIN + MATH_END, but 
+                     * CodeMirror misundertands it as a single DISPLAY_MATH_BEGIN.
+                     * To handle this exception, here I make use of the fact that 
+                     * two "$"s are labeled as ERROR_MATH in this case.
+                     */
+                    builder.add(
+                        from,
+                        from + 2, // 2 = "$$".length
+                        new MathInfo(mathText, false)
                     );
                     insideMath = false;
                     display = undefined;
@@ -114,6 +131,19 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
         }
     });
 
+    if (insideMath && display && from >= 0) {
+        /** When inserting inline math at the top of "foo $x = 1$ bar",
+         * the text becomes "$$ foo $x = 1$ bar".
+         * This "$$" should be interpreted as INLINE_MATH_BEGIN + MATH_END, but 
+         * CodeMirror misundertands it as a single DISPLAY_MATH_BEGIN.
+         */
+        builder.add(
+            from,
+            from + 2, // 2 = "$$".length
+            new MathInfo("", false)
+        );
+    }
+
     return builder.finish();
 }
 
@@ -128,7 +158,7 @@ export type MathPreviewInfo = {
 export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
     create(state: EditorState): MathPreviewInfo {
         return {
-            mathInfoSet: RangeSet.empty,
+            mathInfoSet: buildMathInfoSet(state), // RangeSet.empty,
             isInCalloutsOrQuotes: false,
             hasOverlappingMath: false,
             hasOverlappingDisplayMath: false,
@@ -166,9 +196,9 @@ export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
                 mathInfoSet = buildMathInfoSet(transaction.state);
                 rerendered = true;
             } else if (transaction.docChanged) {
-                if (dollarInserted(transaction) || hasOverlappingDisplayMath) {
+                if (involvesDollar(transaction) || hasOverlappingDisplayMath) {
                     mathInfoSet = buildMathInfoSet(transaction.state);
-                    rerendered = true;    
+                    rerendered = true;
                 } else {
                     mathInfoSet = prev.mathInfoSet.map(transaction.changes.desc);
                 }
@@ -178,9 +208,11 @@ export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
         } else {
             mathInfoSet = prev.mathInfoSet;
         }
+        // console.log({ mathInfoSet, isInCalloutsOrQuotes, hasOverlappingMath, hasOverlappingDisplayMath, rerendered });
+        // printMathInfoSet(mathInfoSet, transaction.state);
+
         return { mathInfoSet, isInCalloutsOrQuotes, hasOverlappingMath, hasOverlappingDisplayMath, rerendered };
     },
-
 });
 
 
@@ -232,33 +264,34 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
     },
 
     update(value: DecorationSet, transaction: Transaction): DecorationSet {
-        if (transaction.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
-            if ((
-                !transaction.startState.field(MathPreviewInfoField).hasOverlappingMath
-                && transaction.state.field(MathPreviewInfoField).hasOverlappingMath
-            ) || transaction.state.field(MathPreviewInfoField).rerendered) {
-                let builder = new RangeSetBuilder<Decoration>();
-                const range = transaction.state.selection.main;
+        // if (transaction.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
 
-                transaction.state.field(MathPreviewInfoField).mathInfoSet.between(
-                    0,
-                    transaction.state.doc.length,
-                    (from, to, value) => {
-                        if (value.display) {
-                            if (to < range.from || from > range.to) {
-                                builder.add(from, to, value.toDecoration("replace"));
-                            } else {
-                                builder.add(to + 1, to + 1, value.toDecoration("insert"));
-                            }
-                        }
+        //     if ((
+        //         !transaction.startState.field(MathPreviewInfoField).hasOverlappingMath
+        //         && transaction.state.field(MathPreviewInfoField).hasOverlappingMath
+        //     ) || transaction.state.field(MathPreviewInfoField).rerendered) {
+        let builder = new RangeSetBuilder<Decoration>();
+        const range = transaction.state.selection.main;
+
+        transaction.state.field(MathPreviewInfoField).mathInfoSet.between(
+            0,
+            transaction.state.doc.length,
+            (from, to, value) => {
+                if (value.display) {
+                    if (to < range.from || from > range.to) {
+                        builder.add(from, to, value.toDecoration("replace"));
+                    } else {
+                        builder.add(to + 1, to + 1, value.toDecoration("insert"));
                     }
-                );
-                return builder.finish();
-            } else {
-                return value;
+                }
             }
-        }
-        return Decoration.none;
+        );
+        return builder.finish();
+        //     } else {
+        //         return value;
+        //     }
+        // }
+        // return Decoration.none;
     },
 
     provide(field: StateField<DecorationSet>): Extension {
@@ -285,12 +318,52 @@ function isInBlockquoteOrCallout(state: EditorState): boolean {
     return foundQuote;
 }
 
-function dollarInserted(transaction: Transaction): boolean {
+function involvesDollar(transaction: Transaction): boolean {
     let ret = false;
     transaction.changes.iterChanges(
         (fromA, toA, fromB, toB, inserted) => {
-            ret = ret || inserted.toString().contains("$");
+            const textBefore = transaction.startState.sliceDoc(fromA, toA);
+            const dollarEdited = textBefore.contains("$");
+            const dollarInserted = inserted.toString().contains("$");
+            ret = ret || dollarEdited || dollarInserted;
         }
     )
     return ret;
 }
+
+// export const hoge = ViewPlugin.fromClass(
+//     class implements PluginValue {
+//         // decorations: DecorationSet;
+
+//         constructor(view: EditorView) {
+//             // this.decorations = this.impl(view);
+//             this.impl(view);
+//         }
+
+//         update(update: ViewUpdate) {
+//             // this.decorations = this.impl(update.view);
+//             this.impl(update.view)
+//         }
+
+//         impl(view: EditorView) {
+//             // let builder = new RangeSetBuilder<Decoration>();
+//             if (isInBlockquoteOrCallout(view.state)) {
+//                 const els = view.contentDOM.querySelectorAll<HTMLElement>(
+//                     '.cm-line .math.math-block.cm-embed-block:has(> mjx-container.MathJax:not(.math-booster-preview) > mjx-math[display="true"])'
+//                 );
+//                 if (els) {
+//                     for (let i = 0; i < els.length; i++) {
+//                         const el = els[i];
+//                         const pos = view.posAtDOM(el);
+//                         console.log(el, pos);
+//                         el.style.display = "none";
+//                         // builder.add(pos, pos, Decoration.replace({}));
+//                     }
+//                 }
+
+//             }
+//             // return builder.finish();
+//         }
+//     },
+//     // { decorations: instance => instance.decorations }
+// );

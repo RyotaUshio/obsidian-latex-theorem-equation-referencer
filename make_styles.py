@@ -1,4 +1,4 @@
-# Generate styles.css containing sample styles in the documentation's styles gallery
+# Generate styles.css
 
 from pathlib import Path
 import textwrap
@@ -25,6 +25,13 @@ if __name__ == "__main__":
                             
             .math-booster-preview {
                 cursor: text;
+            }
+                            
+            /* Unlike in callouts, Obsidian natively renders MathJax in blockquotes. But it is rather buggy 
+            (see https://forum.obsidian.md/t/live-preview-support-math-block-in-quotes/32564/2), 
+            so we need to replace it with this plugin's editor extension. */
+            .cm-line .math.math-block.cm-embed-block:has(> mjx-container.MathJax:not(.math-booster-preview) > mjx-math[display="true"]) {
+                display: none;
             }
                             
             .math-callout {

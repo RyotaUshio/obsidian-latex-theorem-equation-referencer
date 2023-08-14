@@ -1,11 +1,13 @@
+import { Transaction } from '@codemirror/state';
 import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile } from 'obsidian';
 import { DataviewApi, getAPI } from 'obsidian-dataview';
-import { EditorState } from '@codemirror/state';
+import { EditorState, ChangeSet } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
 
 import MathBooster from './main';
 import { ENVs_MAP } from './env';
 import { DEFAULT_SETTINGS, MathContextSettings, MathSettings, NumberStyle, ResolvedMathSettings } from './settings/settings';
+import { MathInfoSet } from 'math_live_preview_in_callouts';
 
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
@@ -143,9 +145,18 @@ export function nodeText(node: SyntaxNodeRef, state: EditorState): string {
 }
 
 export function printNode(node: SyntaxNodeRef, state: EditorState) {
+    // Debugging utility
     console.log(
         `${node.from}-${node.to}: "${nodeText(node, state)}" (${node.name})`
     );
+}
+
+export function printMathInfoSet(set: MathInfoSet, state: EditorState) {
+    // Debugging utility
+    console.log("MathInfoSet:");
+    set.between(0, state.doc.length, (from, to, value) => {
+        console.log(`  ${from}-${to}: ${value.mathText} ${value.display ? "(display)" : ""}`);
+    });
 }
 
 export function nodeTextQuoteSymbolTrimmed(node: SyntaxNodeRef, state: EditorState, quoteLevel: number): string | undefined {
@@ -154,6 +165,14 @@ export function nodeTextQuoteSymbolTrimmed(node: SyntaxNodeRef, state: EditorSta
     if (quoteSymbolMatch) {
         return quoteSymbolMatch.slice(-1)[0];
     }
+}
+
+export function printChangeSet(changes: ChangeSet) {
+    changes.iterChanges(
+        (fromA, toA, fromB, toB, inserted) => {
+            console.log(`${fromA}-${toA}: "${inserted.toString()}" inserted (${fromB}-${toB} in new state)`);
+        }
+    );
 }
 
 export function getDataviewAPI(plugin: MathBooster): DataviewApi | undefined {
