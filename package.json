@@ -4,8 +4,8 @@
 	"description": "Introduce LaTeX-like mathematic note-taking features into Obsidian",
 	"main": "main.js",
 	"scripts": {
-		"dev": "node esbuild.config.mjs",
-		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"dev": "node esbuild.config.mjs && python make_styles.py",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && python make_styles.py",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
 	"keywords": [],
