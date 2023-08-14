@@ -1,4 +1,5 @@
 import "obsidian";
+import { EditorView } from "@codemirror/view";
 import { DataviewApi } from "obsidian-dataview";
 import { ActiveNoteIndexer, NonActiveNoteIndexer } from "./indexer";
 
@@ -41,5 +42,8 @@ declare module "obsidian" {
             ) => any,
             ctx?: any
         ): EventRef;
+    }
+    interface Editor {
+        cm?: EditorView;
     }
 }

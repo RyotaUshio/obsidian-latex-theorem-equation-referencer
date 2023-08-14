@@ -4,8 +4,9 @@ import MathBooster from './main';
 import { MathCalloutModal } from './modals';
 import { MathSettings } from './settings/settings';
 import { TheoremLikeEnv, getTheoremLikeEnv } from './env';
-import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines } from './utils';
+import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, getSectionCacheFromPos } from './utils';
 import { AutoNoteIndexer } from './indexer';
+
 
 export class MathCallout extends MarkdownRenderChild {
     config: Required<MathSettings>;
@@ -53,32 +54,41 @@ export class MathCallout extends MarkdownRenderChild {
             .setIcon("settings-2")
             .setTooltip("Edit math callout settings");
         button.extraSettingsEl.addEventListener("click", (ev) => {
-                ev.stopPropagation();
-                const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-                const editor = view?.editor;
-                if (editor) {
-                    let modal = new MathCalloutModal(
-                        this.app,
-                        this.plugin,
-                        view,
-                        (settings) => {
-                            let resolvedSettings = resolveSettings(settings, this.plugin, this.currentFile);
-                            let title = formatTitle(resolvedSettings);
-                            let indexer = (new AutoNoteIndexer(this.app, this.plugin, view.file)).getIndexer();
-                            const info = this.context.getSectionInfo(this.containerEl);
-                            const lineNumber = info?.lineStart ?? editor.getCursor().line;
+            ev.stopPropagation();
+            const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+            const editor = view?.editor;
+            if (editor) {
+                let modal = new MathCalloutModal(
+                    this.app,
+                    this.plugin,
+                    view,
+                    (settings) => {
+                        let resolvedSettings = resolveSettings(settings, this.plugin, this.currentFile);
+                        let title = formatTitle(resolvedSettings);
+                        let indexer = (new AutoNoteIndexer(this.app, this.plugin, view.file)).getIndexer();
+                        const info = this.context.getSectionInfo(this.containerEl);
+                        let lineNumber = info?.lineStart;
+                        if (lineNumber === undefined && view.getMode() == "source") { // Live preview or source mode
+                            const pos = editor.cm?.posAtDOM(this.containerEl);
+                            const cache = this.app.metadataCache.getFileCache(this.currentFile);
+                            if (pos !== undefined && cache) {
+                                lineNumber = getSectionCacheFromPos(cache, pos, "callout")?.position.start.line;
+                            }
+                        }
+                        if (lineNumber !== undefined) {
                             indexer.calloutIndexer.overwriteSettings(lineNumber, settings, title);
-                        },
-                        "Confirm",
-                        "Edit math callout settings",
-                        this.config,
-                    );
-                    modal.resolveDefaultSettings(view.file);
-                    modal.open();
-                }
-            });
-            button.extraSettingsEl.classList.add("math-callout-setting-button");
-          
+                        }
+                    },
+                    "Confirm",
+                    "Edit math callout settings",
+                    this.config,
+                );
+                modal.resolveDefaultSettings(view.file);
+                modal.open();
+            }
+        });
+        button.extraSettingsEl.classList.add("math-callout-setting-button");
+
     }
 }
 

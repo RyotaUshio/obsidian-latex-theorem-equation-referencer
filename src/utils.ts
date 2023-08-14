@@ -122,16 +122,21 @@ export function getMathCache(cache: CachedMetadata, lineStart: number): SectionC
     }
 }
 
-export function getMathCacheFromPos(cache: CachedMetadata, pos: number): SectionCache | undefined {
+export function getSectionCacheFromPos(cache: CachedMetadata, pos: number, type: string): SectionCache | undefined {
     // pos: CodeMirror offset units
     if (cache.sections) {
         let sectionCache = Object.values(cache.sections).find((sectionCache) =>
-            sectionCache.type == 'math'
+            sectionCache.type == type
             && (sectionCache.position.start.offset == pos || sectionCache.position.end.offset == pos)
         );
         return sectionCache;
     }
 }
+
+export function getMathCacheFromPos(cache: CachedMetadata, pos: number): SectionCache | undefined {
+    return getSectionCacheFromPos(cache, pos, "math");
+}
+
 
 export function nodeText(node: SyntaxNodeRef, state: EditorState): string {
     return state.sliceDoc(node.from, node.to);
