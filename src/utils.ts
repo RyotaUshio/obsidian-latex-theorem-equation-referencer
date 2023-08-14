@@ -160,8 +160,8 @@ export function printMathInfoSet(set: MathInfoSet, state: EditorState) {
 }
 
 export function nodeTextQuoteSymbolTrimmed(node: SyntaxNodeRef, state: EditorState, quoteLevel: number): string | undefined {
-    let quoteSymbolPattern = new RegExp(`((>\\s*){${quoteLevel}})(.*)`);
-    let quoteSymbolMatch = nodeText(node, state).match(quoteSymbolPattern);
+    const quoteSymbolPattern = new RegExp(`((>\\s*){${quoteLevel}})(.*)`);
+    const quoteSymbolMatch = nodeText(node, state).match(quoteSymbolPattern);
     if (quoteSymbolMatch) {
         return quoteSymbolMatch.slice(-1)[0];
     }

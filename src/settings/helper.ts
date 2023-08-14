@@ -114,7 +114,7 @@ export class MathContextSettingsHelper {
 
     constructor(
         public contentEl: HTMLElement,
-        public settings: MathContextSettings,
+        public settings: Partial<MathContextSettings>,
         public defaultSettings: MathContextSettings,
         public plugin: MathBooster,
         public file: TAbstractFile,

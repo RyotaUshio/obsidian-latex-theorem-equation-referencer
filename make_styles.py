@@ -27,6 +27,25 @@ if __name__ == "__main__":
                 cursor: text;
             }
                             
+            .cm-embed-block {
+                position: relative;
+            }
+
+            .cm-embed-block .math-booster-preview-edit-button {
+                padding: var(--size-2-2) var(--size-2-3);
+                position: absolute;
+                right: var(--size-2-2);
+                top: var(--size-2-2);
+                opacity: 0;
+                display: flex;
+                border-radius: var(--radius-s);
+            }           
+                            
+            .cm-embed-block:hover .math-booster-preview-edit-button {
+                transition: 0s;
+                opacity: 1
+            }
+
             /* Unlike in callouts, Obsidian natively renders MathJax in blockquotes. But it is rather buggy 
             (see https://forum.obsidian.md/t/live-preview-support-math-block-in-quotes/32564/2), 
             so we need to replace it with this plugin's editor extension. */

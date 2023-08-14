@@ -20,7 +20,7 @@ export const VAULT_ROOT = '/';
 
 
 export default class MathBooster extends Plugin {
-	settings: Record<string, MathContextSettings>;
+	settings: Record<string, Partial<MathContextSettings>>;
 	excludedFiles: string[];
 	oldLinkMap: Dataview.IndexMap;
 
@@ -52,7 +52,7 @@ export default class MathBooster extends Plugin {
 		// triggered if this plugin is already enabled when launching the app
 		this.registerEvent(
 			this.app.metadataCache.on(
-				"dataview:index-ready", 
+				"dataview:index-ready",
 				this.initializeIndex.bind(this)
 			)
 		);
@@ -71,17 +71,17 @@ export default class MathBooster extends Plugin {
 			this.app.metadataCache.on("math-booster:local-settings-updated", async (file) => {
 				let promises: Promise<void>[] = []
 				iterDescendantFiles(
-					file, 
+					file,
 					(descendantFile) => {
 						promises.push((new LinkedNotesIndexer(this.app, this, descendantFile)).run());
-					}, 
+					},
 					"md"
 				);
 				await Promise.all(promises);
 			})
 		);
 
-		
+
 		/** Update settings when file renamed */
 
 		this.registerEvent(
@@ -92,7 +92,7 @@ export default class MathBooster extends Plugin {
 				const index = this.excludedFiles.indexOf(oldPath);
 				if (index >= 0) {
 					this.excludedFiles.splice(index, 1);
-					this.excludedFiles.push(file.path);	
+					this.excludedFiles.push(file.path);
 				}
 			})
 		)
@@ -272,7 +272,7 @@ export default class MathBooster extends Plugin {
 		this.setOldLinkMap();
 		(new VaultIndexer(this.app, this)).run();
 		let indexEnd = Date.now();
-		console.log(`${this.manifest.name}: All math callouts and equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s.`);	
+		console.log(`${this.manifest.name}: All math callouts and equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s.`);
 	}
 
 	getNewLinkMap(): Dataview.IndexMap | undefined {
@@ -287,7 +287,7 @@ export default class MathBooster extends Plugin {
 	}
 
 	registerEditorExtensionFactory(
-		factory: (app: App, plugin: MathBooster, view: MarkdownView) => Extension, 
+		factory: (app: App, plugin: MathBooster, view: MarkdownView) => Extension,
 	) {
 		this.app.workspace.onLayoutReady(() => {
 			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
@@ -297,10 +297,12 @@ export default class MathBooster extends Plugin {
 			});
 		});
 
-		this.app.workspace.on("active-leaf-change", (leaf: WorkspaceLeaf) => {
-			if (leaf.view instanceof MarkdownView) {
-				this.registerEditorExtension(factory(this.app, this, leaf.view));
-			}
-		});
+		this.registerEvent(
+			this.app.workspace.on("active-leaf-change", (leaf: WorkspaceLeaf) => {
+				if (leaf.view instanceof MarkdownView) {
+					this.registerEditorExtension(factory(this.app, this, leaf.view));
+				}
+			})
+		);
 	}
 }

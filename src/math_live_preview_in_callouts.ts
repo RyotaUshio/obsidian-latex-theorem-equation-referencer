@@ -1,9 +1,9 @@
-import { finishRenderMath, renderMath } from "obsidian";
+import { ExtraButtonComponent, finishRenderMath, renderMath } from "obsidian";
 import { Extension, Transaction, StateField, RangeSetBuilder, EditorState, RangeValue, RangeSet } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { syntaxTree } from '@codemirror/language';
 
-import { nodeText, nodeTextQuoteSymbolTrimmed, printMathInfoSet } from 'utils';
+import { nodeText, nodeTextQuoteSymbolTrimmed } from 'utils';
 
 
 const DISPLAY_MATH_BEGIN = "formatting_formatting-math_formatting-math-begin_keyword_math_math-block";
@@ -14,14 +14,33 @@ const BLOCKQUOTE = /HyperMD-quote_HyperMD-quote-([1-9][0-9]*)/;
 
 
 class MathPreviewWidget extends WidgetType {
-    // It is critical to pass PRE-RENDERED MathJax element for decreasing the number of the expensive renderMath() calls
-    constructor(public mathEl: HTMLElement) {
+    /** It is critical to pass a MathInfo object with a PRE-RENDERED MathJax element 
+     * for decreasing the number of the expensive renderMath() calls */
+    constructor(public info: MathInfo) {
         super();
     }
 
     toDOM(view: EditorView): HTMLElement {
-        this.mathEl.classList.add("math-booster-preview");
-        return this.mathEl;
+        this.info.mathEl.classList.add("math-booster-preview");
+        if (this.info.display) {
+            let containerEl = createDiv({
+                cls: ["math", "math-block", "cm-embed-block"], 
+                attr: {
+                    contenteditable: false,
+                }
+            });
+            containerEl.appendChild(this.info.mathEl);
+            let editButton = new ExtraButtonComponent(containerEl)
+                .setIcon("code-2")
+                .setTooltip("Edit this block");
+            editButton.extraSettingsEl.addEventListener("click", (ev: MouseEvent) => {
+                ev.stopPropagation();
+                view.dispatch({selection: {anchor: this.info.from + 2, head: this.info.to - 2}});
+            })
+            editButton.extraSettingsEl.classList.add("math-booster-preview-edit-button");
+            return containerEl;
+        }
+        return this.info.mathEl;
     }
 
     ignoreEvent(event: Event): boolean {
@@ -33,7 +52,7 @@ class MathPreviewWidget extends WidgetType {
 class MathInfo extends RangeValue {
     mathEl: HTMLElement;
 
-    constructor(public mathText: string, public display: boolean) {
+    constructor(public mathText: string, public display: boolean, public from: number, public to: number) {
         super();
         this.render()
     }
@@ -44,7 +63,7 @@ class MathInfo extends RangeValue {
     }
 
     toWidget(): MathPreviewWidget {
-        return new MathPreviewWidget(this.mathEl);
+        return new MathPreviewWidget(this);
     }
 
     toDecoration(which: "replace" | "insert"): Decoration {
@@ -82,7 +101,7 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
                     builder.add(
                         from,
                         node.to,
-                        new MathInfo(mathText, display as boolean)
+                        new MathInfo(mathText, display as boolean, from, node.to)
                     );
                     insideMath = false;
                     display = undefined;
@@ -97,7 +116,7 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
                     builder.add(
                         from,
                         from + 2, // 2 = "$$".length
-                        new MathInfo(mathText, false)
+                        new MathInfo(mathText, false, from, from + 2)
                     );
                     insideMath = false;
                     display = undefined;
@@ -116,16 +135,20 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
                     }
                 }
             } else {
-                if (node.name == DISPLAY_MATH_BEGIN) {
-                    insideMath = true;
-                    display = true;
-                    from = node.from;
-                    mathText = "";
-                } else if (node.name == INLINE_MATH_BEGIN) {
-                    insideMath = true;
-                    display = false;
-                    from = node.from;
-                    mathText = "";
+                /** collect mathInfo only inside callouts or blockquotes */
+                const match = node.node.parent?.name.match(BLOCKQUOTE);
+                if (match) {
+                    if (node.name == DISPLAY_MATH_BEGIN) {
+                        insideMath = true;
+                        display = true;
+                        from = node.from;
+                        mathText = "";
+                    } else if (node.name == INLINE_MATH_BEGIN) {
+                        insideMath = true;
+                        display = false;
+                        from = node.from;
+                        mathText = "";
+                    }    
                 }
             }
         }
@@ -140,7 +163,7 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
         builder.add(
             from,
             from + 2, // 2 = "$$".length
-            new MathInfo("", false)
+            new MathInfo("", false, from, from + 2)
         );
     }
 
@@ -208,9 +231,6 @@ export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
         } else {
             mathInfoSet = prev.mathInfoSet;
         }
-        // console.log({ mathInfoSet, isInCalloutsOrQuotes, hasOverlappingMath, hasOverlappingDisplayMath, rerendered });
-        // printMathInfoSet(mathInfoSet, transaction.state);
-
         return { mathInfoSet, isInCalloutsOrQuotes, hasOverlappingMath, hasOverlappingDisplayMath, rerendered };
     },
 });
@@ -301,14 +321,14 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
 
 
 function isInBlockquoteOrCallout(state: EditorState): boolean {
-    let cursor = state.selection.ranges[0].head;
+    let range = state.selection.main;
     let tree = syntaxTree(state);
     let foundQuote = false;
     tree.iterate({
         enter(node) {
             let match = node.name.match(BLOCKQUOTE);
             if (match) {
-                if (node.from <= cursor && cursor <= node.to) {
+                if (node.from <= range.to && range.from <= node.to) {
                     foundQuote = true;
                     return false;
                 }
@@ -330,40 +350,3 @@ function involvesDollar(transaction: Transaction): boolean {
     )
     return ret;
 }
-
-// export const hoge = ViewPlugin.fromClass(
-//     class implements PluginValue {
-//         // decorations: DecorationSet;
-
-//         constructor(view: EditorView) {
-//             // this.decorations = this.impl(view);
-//             this.impl(view);
-//         }
-
-//         update(update: ViewUpdate) {
-//             // this.decorations = this.impl(update.view);
-//             this.impl(update.view)
-//         }
-
-//         impl(view: EditorView) {
-//             // let builder = new RangeSetBuilder<Decoration>();
-//             if (isInBlockquoteOrCallout(view.state)) {
-//                 const els = view.contentDOM.querySelectorAll<HTMLElement>(
-//                     '.cm-line .math.math-block.cm-embed-block:has(> mjx-container.MathJax:not(.math-booster-preview) > mjx-math[display="true"])'
-//                 );
-//                 if (els) {
-//                     for (let i = 0; i < els.length; i++) {
-//                         const el = els[i];
-//                         const pos = view.posAtDOM(el);
-//                         console.log(el, pos);
-//                         el.style.display = "none";
-//                         // builder.add(pos, pos, Decoration.replace({}));
-//                     }
-//                 }
-
-//             }
-//             // return builder.finish();
-//         }
-//     },
-//     // { decorations: instance => instance.decorations }
-// );
