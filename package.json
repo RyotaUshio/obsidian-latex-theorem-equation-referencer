@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-math-booster",
-	"version": "0.2.1",
+	"version": "1.0.0",
 	"description": "Introduce LaTeX-like mathematic note taking features into Obsidian",
 	"main": "main.js",
 	"scripts": {
@@ -19,7 +19,7 @@
 		"esbuild": "0.17.3",
 		"obsidian": "latest",
 		"obsidian-dataview": "latest",
-		"obsidian-mathlinks": "file:../../../../../../../../garbage/obsidian/obsidian-mathlinks",
+		"obsidian-mathlinks": "^0.4.1",
 		"tslib": "2.4.0",
 		"typescript": "4.7.4"
 	},
