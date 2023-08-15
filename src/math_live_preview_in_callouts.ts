@@ -24,7 +24,7 @@ class MathPreviewWidget extends WidgetType {
         this.info.mathEl.classList.add("math-booster-preview");
         if (this.info.display) {
             let containerEl = createDiv({
-                cls: ["math", "math-block", "cm-embed-block"], 
+                cls: ["math", "math-block", "cm-embed-block"],
                 attr: {
                     contenteditable: false,
                 }
@@ -35,7 +35,7 @@ class MathPreviewWidget extends WidgetType {
                 .setTooltip("Edit this block");
             editButton.extraSettingsEl.addEventListener("click", (ev: MouseEvent) => {
                 ev.stopPropagation();
-                view.dispatch({selection: {anchor: this.info.from + 2, head: this.info.to - 2}});
+                view.dispatch({ selection: { anchor: this.info.from + 2, head: this.info.to - 2 } });
             })
             editButton.extraSettingsEl.classList.add("math-booster-preview-edit-button");
             return containerEl;
@@ -148,7 +148,7 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
                         display = false;
                         from = node.from;
                         mathText = "";
-                    }    
+                    }
                 }
             }
         }
@@ -286,30 +286,30 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
     update(value: DecorationSet, transaction: Transaction): DecorationSet {
         // if (transaction.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
 
-        //     if ((
-        //         !transaction.startState.field(MathPreviewInfoField).hasOverlappingMath
-        //         && transaction.state.field(MathPreviewInfoField).hasOverlappingMath
-        //     ) || transaction.state.field(MathPreviewInfoField).rerendered) {
-        let builder = new RangeSetBuilder<Decoration>();
-        const range = transaction.state.selection.main;
+        if (transaction.docChanged
+            || (!transaction.startState.field(MathPreviewInfoField).hasOverlappingMath
+                && transaction.state.field(MathPreviewInfoField).hasOverlappingMath) 
+            || transaction.state.field(MathPreviewInfoField).rerendered) {
+            let builder = new RangeSetBuilder<Decoration>();
+            const range = transaction.state.selection.main;
 
-        transaction.state.field(MathPreviewInfoField).mathInfoSet.between(
-            0,
-            transaction.state.doc.length,
-            (from, to, value) => {
-                if (value.display) {
-                    if (to < range.from || from > range.to) {
-                        builder.add(from, to, value.toDecoration("replace"));
-                    } else {
-                        builder.add(to + 1, to + 1, value.toDecoration("insert"));
+            transaction.state.field(MathPreviewInfoField).mathInfoSet.between(
+                0,
+                transaction.state.doc.length,
+                (from, to, value) => {
+                    if (value.display) {
+                        if (to < range.from || from > range.to) {
+                            builder.add(from, to, value.toDecoration("replace"));
+                        } else {
+                            builder.add(to + 1, to + 1, value.toDecoration("insert"));
+                        }
                     }
                 }
-            }
-        );
-        return builder.finish();
-        //     } else {
-        //         return value;
-        //     }
+            );
+            return builder.finish();
+        } else {
+            return value;
+        }
         // }
         // return Decoration.none;
     },
