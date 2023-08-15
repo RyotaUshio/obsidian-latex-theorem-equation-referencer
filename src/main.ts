@@ -183,7 +183,6 @@ export default class MathBooster extends Plugin {
 		this.registerEditorExtension(MathPreviewInfoField);
 		this.registerEditorExtension(inlineMathPreviewView);
 		this.registerEditorExtension(Prec.highest(displayMathPreviewView));
-		// this.registerEditorExtension(hoge);
 
 		/** Markdown post processors */
 
