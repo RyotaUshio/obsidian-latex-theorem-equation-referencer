@@ -82,7 +82,7 @@ export default class MathBooster extends Plugin {
 		);
 
 
-		/** Update settings when file renamed */
+		/** Update settings when file renamed/created */
 
 		this.registerEvent(
 			this.app.vault.on("rename", (file, oldPath) => {
@@ -93,6 +93,22 @@ export default class MathBooster extends Plugin {
 				if (index >= 0) {
 					this.excludedFiles.splice(index, 1);
 					this.excludedFiles.push(file.path);
+				}
+			})
+		)
+
+		this.registerEvent(
+			/**
+			 * Don't delete local settings right after the file deletion because the file might be recovered afterward.
+			 * If a new file with the same path is created, delete the old local settings to avoid conflicts.
+			 */
+			this.app.vault.on("create", (file) => {
+				if (file.path in this.settings) {
+					delete this.settings[file.path];
+				}
+				const index = this.excludedFiles.indexOf(file.path);
+				if (index >= 0) {
+					this.excludedFiles.splice(index, 1);
 				}
 			})
 		)

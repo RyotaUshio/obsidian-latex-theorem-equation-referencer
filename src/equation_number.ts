@@ -76,7 +76,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
 export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugin: MathBooster, markdownView: MarkdownView): ViewPlugin<V> {
 
     return ViewPlugin.fromClass(class implements PluginValue {
-        constructor(public view: EditorView) {
+        constructor(view: EditorView) {
             // plugin.registerEvent(
             //     app.metadataCache.on(
             //         "math-booster:index-updated",
@@ -87,7 +87,7 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugi
             //         }
             //     )
             // );
-            this.impl(this.view);
+            this.impl(view);
         }
 
         update(update: ViewUpdate) {
