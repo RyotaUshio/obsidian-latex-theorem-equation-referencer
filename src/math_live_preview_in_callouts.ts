@@ -3,7 +3,7 @@ import { Extension, Transaction, StateField, RangeSetBuilder, EditorState, Range
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { syntaxTree } from '@codemirror/language';
 
-import { nodeText, nodeTextQuoteSymbolTrimmed } from 'utils';
+import { isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed } from 'utils';
 
 
 const DISPLAY_MATH_BEGIN = "formatting_formatting-math_formatting-math-begin_keyword_math_math-block";
@@ -253,6 +253,11 @@ export const inlineMathPreviewView = ViewPlugin.fromClass(
         }
 
         buildDecorations(view: EditorView) {
+            if (isSourceMode(view.state)) {
+                this.decorations = Decoration.none;
+                return;
+            }
+
             let range = view.state.selection.main;
             let builder = new RangeSetBuilder<Decoration>();
 
@@ -262,6 +267,7 @@ export const inlineMathPreviewView = ViewPlugin.fromClass(
                     to,
                     (from, to, value) => {
                         if (!value.display && (to < range.from || from > range.to)) {
+                            console.log("add");
                             builder.add(
                                 from,
                                 to,
@@ -284,6 +290,10 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
     },
 
     update(value: DecorationSet, transaction: Transaction): DecorationSet {
+        if (isSourceMode(transaction.state)) {
+            return Decoration.none;
+        }
+
         // if (transaction.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
 
         //     if ((
