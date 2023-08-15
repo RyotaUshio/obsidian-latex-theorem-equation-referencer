@@ -169,6 +169,9 @@ class NoteIndexer<IOType extends FileIO> {
     mathLinkBlocks: MathLinkBlocks;
 
     constructor(public app: App, public plugin: MathBooster, public file: TFile, public io: IOType) {
+        if (file.extension != "md") {
+            throw Error(`${plugin.manifest.name}: Non-markdown file was passed: "${file.path}"`);
+        }
         this.linkedBlockIds = getBlockIdsWithBacklink(this.file.path, this.plugin);
         this.calloutIndexer = new MathCalloutIndexer(this);
         this.equationIndexer = new EquationIndexer(this);
@@ -270,7 +273,7 @@ export class LinkedNotesIndexer {
                         return (new ActiveNoteIndexer(this.app, this.plugin, activeMarkdownView)).run();
                     } else {
                         let file = this.app.vault.getAbstractFileByPath(link);
-                        if (file instanceof TFile) {
+                        if (file instanceof TFile && file.extension == "md") {
                             return (new NonActiveNoteIndexer(this.app, this.plugin, file)).run();
                         }
                     }
