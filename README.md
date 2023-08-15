@@ -27,7 +27,7 @@ See the [documentation](https://ryotaushio.github.io/obsidian-math-booster/) for
 The following community plugins are required to be installed and enabled.
 
 - [Dataview](https://github.com/blacksmithgu/obsidian-dataview) version >= 0.5.56
-- [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) version >= 0.4.1
+- [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) version >= 0.4.3
 
 ## Styles gallery
 
