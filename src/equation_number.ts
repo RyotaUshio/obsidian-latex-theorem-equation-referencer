@@ -3,8 +3,7 @@ import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/vie
 
 import MathBooster from './main';
 import { getMathCache, getMathCacheFromPos, resolveSettings } from './utils';
-import { ActiveNoteIndexer, NonActiveNoteIndexer } from './indexer';
-import { MathContextSettings } from "settings/settings";
+import { ActiveNoteIndexer, AutoNoteIndexer, NonActiveNoteIndexer } from './indexer';
 
 
 /** For reading mode */
@@ -50,6 +49,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
                 (indexer) => this.impl(indexer)
             )
         );
+        (new AutoNoteIndexer(this.app, this.plugin, this.file)).run();
     }
 
     async impl(indexer: ActiveNoteIndexer | NonActiveNoteIndexer) {
@@ -57,10 +57,11 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         if (this.id) {
             let mathLink = indexer.mathLinkBlocks[this.id];
             let text = await indexer.getBlockText(this.id);
+            console.log(`text = "${text}", mathLink = "${mathLink}"`);
             if (text) {
                 let settings = resolveSettings(undefined, this.plugin, this.file);
                 if (this.containerEl) {
-                    let el = replaceMathTag(this.containerEl, text, mathLink, Boolean(settings.lineByLine));
+                    let el = replaceMathTag(this.containerEl, text, mathLink, settings.lineByLine);
                     if (el) {
                         this.containerEl = el;
                     }
@@ -115,7 +116,7 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugi
                                 let text = await indexer.getBlockText(id);
                                 if (text) {
                                     const settings = resolveSettings(undefined, plugin, markdownView.file);	
-                                    replaceMathTag(mjxContainerEl, text, mathLink, Boolean(settings.lineByLine));
+                                    replaceMathTag(mjxContainerEl, text, mathLink, settings.lineByLine);
                                 }
                             }
                         } catch (err) {
