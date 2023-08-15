@@ -1,5 +1,5 @@
 import { Transaction } from '@codemirror/state';
-import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile } from 'obsidian';
+import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView } from 'obsidian';
 import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState, ChangeSet } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
@@ -139,6 +139,24 @@ export function getMathCacheFromPos(cache: CachedMetadata, pos: number): Section
     return getSectionCacheFromPos(cache, pos, "math");
 }
 
+export function isLivePreview(state: EditorState) {
+    return state.field(editorLivePreviewField);
+}
+
+export function isSourceMode(state: EditorState) {
+    return !isLivePreview(state);
+}
+
+export function isReadingView(markdownView: MarkdownView) {
+    return markdownView.getMode() == "preview";
+}
+
+export function isEditingView(markdownView: MarkdownView) {
+    return markdownView.getMode() == "source";
+}
+
+
+/** CodeMirror/Lezer utilities */
 
 export function nodeText(node: SyntaxNodeRef, state: EditorState): string {
     return state.sliceDoc(node.from, node.to);
