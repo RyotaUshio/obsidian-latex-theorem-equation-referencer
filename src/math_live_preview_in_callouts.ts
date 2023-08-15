@@ -267,7 +267,6 @@ export const inlineMathPreviewView = ViewPlugin.fromClass(
                     to,
                     (from, to, value) => {
                         if (!value.display && (to < range.from || from > range.to)) {
-                            console.log("add");
                             builder.add(
                                 from,
                                 to,

@@ -57,7 +57,6 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         if (this.id) {
             let mathLink = indexer.mathLinkBlocks[this.id];
             let text = await indexer.getBlockText(this.id);
-            console.log(`text = "${text}", mathLink = "${mathLink}"`);
             if (text) {
                 let settings = resolveSettings(undefined, this.plugin, this.file);
                 if (this.containerEl) {
