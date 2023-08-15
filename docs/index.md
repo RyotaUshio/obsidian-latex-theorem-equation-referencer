@@ -43,8 +43,8 @@ You can choose between the following two methods for installation.
 
 The following community plugins are required to be installed and enabled.
 
+- [MathLinks](obsidian://show-plugin?id=mathlinks) version >= 0.4.3
 - [Dataview](obsidian://show-plugin?id=dataview) version >= 0.5.56
-- [MathLinks](obsidian://show-plugin?id=mathlinks) version >= 0.4.1
 
 Make sure **Enable MathLinks API** is turned on in the MathLinks plugin settings.
 
