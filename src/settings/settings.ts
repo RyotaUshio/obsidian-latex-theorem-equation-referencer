@@ -62,6 +62,10 @@ export interface MathCalloutPrivateFields {
     _index?: number;
 }
 
+export interface ExtraSettings {
+    noteTitleInLink: boolean;
+}
+
 export type MathSettings = Partial<MathContextSettings> & MathCalloutSettings & MathCalloutPrivateFields;
 export type ResolvedMathSettings = Required<MathContextSettings> & MathCalloutSettings & MathCalloutPrivateFields;
 
@@ -86,3 +90,7 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     mathCalloutStyle: "framed",
     mathCalloutFontInherit: false,
 }
+
+export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
+    noteTitleInLink: true,
+};

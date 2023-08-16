@@ -25,6 +25,10 @@ declare module "obsidian" {
             name: "math-booster:local-settings-updated", 
             callback: (file: TAbstractFile) => any
         ): EventRef;
+        on(
+            name: "math-booster:extra-settings-updated", 
+            callback: () => any
+        ): EventRef;
 
         // Dataview Events
         on(

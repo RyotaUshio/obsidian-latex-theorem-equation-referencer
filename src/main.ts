@@ -4,7 +4,7 @@ import { Extension, Prec } from '@codemirror/state';
 import * as MathLinks from 'obsidian-mathlinks'
 import * as Dataview from 'obsidian-dataview';
 
-import { MathContextSettings, DEFAULT_SETTINGS } from './settings/settings';
+import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
 import { MathCallout, insertMathCalloutCallback } from './math_callouts';
 import { ContextSettingModal, MathCalloutModal } from './modals';
@@ -21,6 +21,7 @@ export const VAULT_ROOT = '/';
 
 export default class MathBooster extends Plugin {
 	settings: Record<string, Partial<MathContextSettings>>;
+	extraSettings: ExtraSettings;
 	excludedFiles: string[];
 	oldLinkMap: Dataview.IndexMap;
 
@@ -81,6 +82,11 @@ export default class MathBooster extends Plugin {
 			})
 		);
 
+		this.registerEvent(
+			this.app.metadataCache.on("math-booster:extra-settings-updated", async () => {
+				await (new VaultIndexer(this.app, this)).run();
+			})
+		);
 
 		/** Update settings when file renamed/created */
 
@@ -248,11 +254,13 @@ export default class MathBooster extends Plugin {
 	async loadSettings() {
 		const loadedData = await this.loadData();
 		if (loadedData) {
-			const { settings, excludedFiles } = loadedData;
+			const { settings, extraSettings, excludedFiles } = loadedData;
 			this.settings = Object.assign({}, { [VAULT_ROOT]: DEFAULT_SETTINGS }, settings);
+			this.extraSettings = Object.assign({}, DEFAULT_EXTRA_SETTINGS, extraSettings);
 			this.excludedFiles = excludedFiles;
 		} else {
-			this.settings = Object.assign({}, { [VAULT_ROOT]: DEFAULT_SETTINGS });
+			this.settings = { [VAULT_ROOT]: DEFAULT_SETTINGS };
+			this.extraSettings = DEFAULT_EXTRA_SETTINGS;
 			this.excludedFiles = [];
 		}
 	}
@@ -261,6 +269,7 @@ export default class MathBooster extends Plugin {
 		await this.saveData({
 			version: this.manifest.version,
 			settings: this.settings,
+			extraSettings: this.extraSettings,
 			excludedFiles: this.excludedFiles,
 		});
 	}
@@ -291,7 +300,7 @@ export default class MathBooster extends Plugin {
 		const account = MathLinks.getAPIAccount(this);
 		if (account) {
 			account.blockPrefix = "";
-			account.enableFileNameBlockLinks = true;
+			account.enableFileNameBlockLinks = this.extraSettings.noteTitleInLink;
 			return account;
 		}
 	}

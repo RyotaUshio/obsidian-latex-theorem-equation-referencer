@@ -2,8 +2,9 @@ import { Setting, TAbstractFile, TFolder, TextComponent } from 'obsidian';
 
 import MathBooster from '../main';
 import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from '../env';
-import { DEFAULT_SETTINGS, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, RenameEnv } from './settings';
+import { DEFAULT_SETTINGS, ExtraSettings, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, RenameEnv } from './settings';
 import LanguageManager from '../language';
+import { BooleanKeys } from 'utils';
 
 
 export class MathCalloutSettingsHelper {
@@ -109,33 +110,101 @@ export class MathCalloutSettingsHelper {
 }
 
 
-export class MathContextSettingsHelper {
-    allowUnset: boolean;
+export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraSettings> {
+    abstract readonly eventName: string;
+    abstract readonly eventArgs: any[];
 
     constructor(
         public contentEl: HTMLElement,
-        public settings: Partial<MathContextSettings>,
-        public defaultSettings: MathContextSettings,
+        public settings: Partial<SettingsType>,
+        public defaultSettings: Required<SettingsType>,
         public plugin: MathBooster,
-        public file: TAbstractFile,
-    ) {
-        this.allowUnset = !(this.file instanceof TFolder && this.file.isRoot());
-    }
+        public allowUnset: boolean,
+    ) {}
 
-    getCallback<Type>(name: keyof MathSettings): (value: Type) => Promise<void> {
+    getCallback<Type>(name: keyof SettingsType): (value: Type) => Promise<void> {
         return async (value: Type): Promise<void> => {
             Object.assign(this.settings, { [name]: value });
-            this.plugin.app.metadataCache.trigger("math-booster:local-settings-updated", this.file);
-            await this.plugin?.saveSettings();
+            await this.plugin.saveSettings();
+            this.plugin.app.metadataCache.trigger(this.eventName, ...this.eventArgs);
         }
+    }
+
+    abstract makeSettingPane(): void;
+
+    addDropdownSetting(name: keyof SettingsType, options: readonly string[], prettyName: string, description?: string) {
+        const callback = this.getCallback<string>(name);
+        const setting = new Setting(this.contentEl).setName(prettyName);
+        if (description) {
+            setting.setDesc(description);
+        }
+        setting.addDropdown((dropdown) => {
+            if (this.allowUnset) {
+                dropdown.addOption("", "");
+            }
+            for (const option of options) {
+                dropdown.addOption(option, option);
+            }
+            dropdown.setValue(
+                this.allowUnset
+                ? (this.settings[name] ? this.defaultSettings[name] as unknown as string : "")
+                : this.defaultSettings[name] as unknown as string
+            ).onChange(callback);
+        });
+        return setting;
+    }
+
+    addTextSetting(name: keyof SettingsType, prettyName: string, description?: string): Setting {
+        const callback = this.getCallback<string>(name);
+        const setting = new Setting(this.contentEl).setName(prettyName);
+        if (description) {
+            setting.setDesc(description);
+        }
+        setting.addText((text) => {
+            text
+                .setPlaceholder(String(this.defaultSettings[name] ?? ""))
+                .setValue(String(this.settings[name] ?? ""))
+                .onChange(callback)
+        });
+        return setting;
+    }
+
+    addToggleSetting(name: BooleanKeys<SettingsType>, prettyName: string, description?: string) {
+        const setting = new Setting(this.contentEl).setName(prettyName);
+        if (description) {
+            setting.setDesc(description);
+        }
+        const callback = this.getCallback<boolean>(name);
+        setting.addToggle((toggle) => {
+            toggle.setValue(this.defaultSettings[name] as unknown as boolean)
+                  .onChange(callback);
+        });
+        return setting;
+    }
+}
+
+
+export class MathContextSettingsHelper extends SettingsHelper<MathContextSettings> {
+    eventName: string = "math-booster:local-settings-updated";
+    eventArgs: TAbstractFile[];
+
+    constructor(
+        contentEl: HTMLElement,
+        settings: Partial<MathContextSettings>,
+        defaultSettings: MathContextSettings,
+        plugin: MathBooster,
+        public file: TAbstractFile,
+    ) {
+        super(contentEl, settings, defaultSettings, plugin, !(file instanceof TFolder && file.isRoot()))
+        this.eventArgs = [this.file];
     }
 
     makeSettingPane() {
         const { contentEl } = this;
 
-        contentEl.createEl("h3", { text: "Math callouts" });
-        this.addDropdownSetting("lang", LanguageManager.supported, this.allowUnset, "Language");
-        const styleSetting = this.addDropdownSetting("mathCalloutStyle", MATH_CALLOUT_STYLES, this.allowUnset, "Style");
+        contentEl.createEl("h4", { text: "Math callouts" });
+        this.addDropdownSetting("lang", LanguageManager.supported, "Language");
+        const styleSetting = this.addDropdownSetting("mathCalloutStyle", MATH_CALLOUT_STYLES, "Style");
         styleSetting.descEl.replaceChildren(
             "Choose between your custom style and pre-defined sample styles. You will need to reload the note to see the changes. See the ",
             createEl("a", {text: "documentation", attr: {href: "https://ryotaushio.github.io/obsidian-math-booster/style-your-theorems.html"}}), 
@@ -149,58 +218,21 @@ export class MathContextSettingsHelper {
         this.addTextSetting("numberPrefix", "Prefix");
         this.addTextSetting("numberSuffix", "Suffix");
         this.addTextSetting("numberInit", "Initial count");
-        this.addNumberStyleSetting("numberStyle", "Numbering style");
+        this.addNumberStyleSetting("numberStyle", "Style");
         this.addTextSetting("numberDefault", "Default value for the \"Number\" field");
         contentEl.createEl("h6", { text: "Referencing" });
-        this.addDropdownSetting("refFormat", MATH_CALLOUT_REF_FORMATS, this.allowUnset, "Format");
+        this.addDropdownSetting("refFormat", MATH_CALLOUT_REF_FORMATS, "Format");
 
-        contentEl.createEl("h3", { text: "Equations" });
+        contentEl.createEl("h4", { text: "Equations" });
         contentEl.createEl("h6", { text: "Numbering" });
         this.addTextSetting("eqNumberPrefix", "Prefix");
         this.addTextSetting("eqNumberSuffix", "Suffix");
         this.addTextSetting("eqNumberInit", "Initial count");
-        this.addNumberStyleSetting("eqNumberStyle", "Equation numbering style");
+        this.addNumberStyleSetting("eqNumberStyle", "Style");
         this.addToggleSetting("lineByLine", "Number line by line in align");
         contentEl.createEl("h6", { text: "Referencing" });
         this.addTextSetting("eqRefPrefix", "Prefix");
         this.addTextSetting("eqRefSuffix", "Suffix");
-    }
-
-    addDropdownSetting(name: keyof MathContextSettings, options: readonly string[], allowUnset: boolean, prettyName: string, description?: string) {
-        const callback = this.getCallback<string>(name);
-        const setting = new Setting(this.contentEl).setName(prettyName);
-        if (description) {
-            setting.setDesc(description);
-        }
-        setting.addDropdown((dropdown) => {
-            if (allowUnset) {
-                dropdown.addOption("", "");
-            }
-            for (const option of options) {
-                dropdown.addOption(option, option);
-            }
-            dropdown.setValue(
-                allowUnset
-                ? (this.settings[name] ? this.defaultSettings[name] as string : "")
-                : this.defaultSettings[name] as string
-            ).onChange(callback);
-        });
-        return setting;
-    }
-
-    addTextSetting(name: keyof MathContextSettings, prettyName: string, description?: string): Setting {
-        const callback = this.getCallback<string>(name);
-        const setting = new Setting(this.contentEl).setName(prettyName);
-        if (description) {
-            setting.setDesc(description);
-        }
-        setting.addText((text) => {
-            text
-                .setPlaceholder(String(this.defaultSettings[name] ?? ""))
-                .setValue(String(this.settings[name] ?? ""))
-                .onChange(callback)
-        });
-        return setting;
     }
 
     addRenameSetting() {
@@ -233,19 +265,6 @@ export class MathContextSettingsHelper {
         return setting;
     }
 
-    addToggleSetting(name: "lineByLine" | "mathCalloutFontInherit", prettyName: string, descriptin?: string) {
-        const setting = new Setting(this.contentEl).setName(prettyName);
-        if (descriptin) {
-            setting.setDesc(descriptin);
-        }
-        const callback = this.getCallback<boolean>(name);
-        setting.addToggle((toggle) => {
-            toggle.setValue(this.defaultSettings[name])
-                  .onChange(callback);
-        });
-        return setting;
-    }
-
     addNumberStyleSetting(name: "numberStyle" | "eqNumberStyle", prettyName?: string, description?: string) {
         const setting = new Setting(this.contentEl);
         if (prettyName) {
@@ -264,5 +283,15 @@ export class MathContextSettingsHelper {
                 .onChange(callback)
         });
         return setting;
+    }
+}
+
+
+export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
+    eventName: string = "math-booster:extra-settings-updated";
+    eventArgs: never[] = [];
+    
+    makeSettingPane(): void {
+        this.addToggleSetting("noteTitleInLink", "Show note title at link's head", "If turned on, a link to \"Theorem 1\" will look like \"Note title > Theorem 1.\" The same applies to equations.")
     }
 }

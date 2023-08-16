@@ -357,6 +357,9 @@ export function formatTitle(settings: ResolvedMathSettings, noTitleSuffix: boole
     return title;
 }
 
+// https://stackoverflow.com/a/50851710/13613783
+export type BooleanKeys<T> = { [k in keyof T]: T[k] extends boolean ? k : never }[keyof T];
+
 
 /** unused legacy utility functions */
 

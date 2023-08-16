@@ -1,8 +1,8 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 
 import MathBooster, { VAULT_ROOT } from "../main";
-import { DEFAULT_SETTINGS } from "./settings";
-import { MathContextSettingsHelper } from "./helper";
+import { DEFAULT_EXTRA_SETTINGS, DEFAULT_SETTINGS } from "./settings";
+import { ExtraSettingsHelper, MathContextSettingsHelper } from "./helper";
 import { resolveSettings } from "../utils";
 import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "modals";
 
@@ -12,13 +12,16 @@ export class MathSettingTab extends PluginSettingTab {
         super(app, plugin);
     }
 
-    addRestoreDefaultsBottun(key: string) {
+    addRestoreDefaultsButton() {
         new Setting(this.containerEl)
             .addButton((btn) => {
                 btn.setButtonText("Restore defaults");
                 btn.onClick(async (event) => {
-                    Object.assign(this.plugin.settings[key], DEFAULT_SETTINGS);
+                    Object.assign(this.plugin.settings[VAULT_ROOT], DEFAULT_SETTINGS);
+                    Object.assign(this.plugin.extraSettings, DEFAULT_EXTRA_SETTINGS);
                     await this.plugin.saveSettings();
+                    this.plugin.app.metadataCache.trigger("math-booster:local-settings-updated", this.app.vault.getRoot());
+                    this.plugin.app.metadataCache.trigger("math-booster:extra-settings-updated");
                     this.display();
                 })
             });
@@ -35,7 +38,6 @@ export class MathSettingTab extends PluginSettingTab {
                 this.plugin,
                 file
             )).makeSettingPane();
-            this.addRestoreDefaultsBottun(key);
         }
     }
 
@@ -43,10 +45,20 @@ export class MathSettingTab extends PluginSettingTab {
         const { containerEl } = this;
         containerEl.empty();
 
-        // containerEl.createEl("h3", { text: "Global" });
+        containerEl.createEl("h3", { text: "Global" });
         this.displayUnit(VAULT_ROOT);
 
-        containerEl.createEl("h3", { text: "Local settings" });
+        (new ExtraSettingsHelper(
+            this.containerEl,
+            this.plugin.extraSettings,
+            this.plugin.extraSettings,
+            this.plugin,
+            false
+        )).makeSettingPane();
+
+        this.addRestoreDefaultsButton();
+
+        containerEl.createEl("h3", { text: "Local" });
         new Setting(containerEl).setName("Local settings")
             .setDesc("You can set up file-specific or folder-specific configurations, which have more precedence than the global settings.")
             .addButton((btn) => {
