@@ -69,7 +69,7 @@ export class MathCalloutSettingsHelper {
                 });
 
                 titlePane.addText((text) => {
-                    text.inputEl.setAttribute('style', 'width: 300px;')
+                    text.inputEl.classList.add("math-booster-title-form");
                     if (this.defaultSettings.title) {
                         text.setValue(this.defaultSettings.title);
                     }
@@ -77,7 +77,7 @@ export class MathCalloutSettingsHelper {
                     let labelTextComp: TextComponent;
                     labelPane.addText((text) => {
                         labelTextComp = text;
-                        text.inputEl.setAttribute('style', 'width: 300px;')
+                        text.inputEl.classList.add("math-booster-label-form");
                         if (this.defaultSettings.label) {
                             text.setValue(this.defaultSettings.label);
                         }

@@ -167,3 +167,8 @@ so we need to replace it with this plugin's editor extension. */
 .font-family-inherit {
     font-family: inherit !important;
 }
+
+.math-booster-title-form 
+.math-booster-label-form {
+    width: 300px;
+}

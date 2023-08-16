@@ -78,5 +78,10 @@ if __name__ == "__main__":
             .font-family-inherit {
                 font-family: inherit !important;
             }
+
+            .math-booster-title-form 
+            .math-booster-label-form {
+                width: 300px;
+            }
             """)
         )
