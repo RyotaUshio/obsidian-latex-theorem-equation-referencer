@@ -11,7 +11,7 @@ import { ContextSettingModal, MathCalloutModal } from './modals';
 import { insertDisplayMath, insertInlineMath } from './key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
 import { MathPreviewInfoField, displayMathPreviewView, inlineMathPreviewView } from './math_live_preview_in_callouts';
-import { ActiveNoteIndexer, LinkedNotesIndexer, VaultIndexer } from './indexer';
+import { LinkedNotesIndexer, VaultIndexer } from './indexer';
 import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
 import { iterDescendantFiles } from 'utils';
 
@@ -163,17 +163,7 @@ export default class MathBooster extends Plugin {
 			name: 'Open local settings for the current note',
 			editorCallback: (editor, context) => {
 				if (context instanceof MarkdownView) {
-					const modal = new ContextSettingModal(
-						this.app,
-						this, context.file.path,
-						(settings) => {
-							const cache = this.app.metadataCache.getCache(context.file.path);
-							if (cache) {
-								const indexer = new ActiveNoteIndexer(this.app, this, context);
-								indexer.run(cache);
-							}
-						}
-					);
+					const modal = new ContextSettingModal(this.app, this, context.file.path);
 					modal.resolveDefaultSettings(context.file);
 					modal.open();
 				}
