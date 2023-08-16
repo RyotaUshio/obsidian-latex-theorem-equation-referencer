@@ -3,7 +3,7 @@ import { Extension, Transaction, StateField, RangeSetBuilder, EditorState, Range
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { syntaxTree } from '@codemirror/language';
 
-import { isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed, printMathInfoSet, printNode } from 'utils';
+import { isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed } from 'utils';
 import { CALLOUT } from "math_callout_metadata_hider";
 
 
@@ -102,7 +102,6 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
     tree.iterate({
         enter(node) {
             if (node.node.parent?.name == "Document") {
-                // printNode(node, state);
                 if (insideCallout) {
                     if (node.from == lastCalloutPos + 1 && node.name.match(BLOCKQUOTE)) {
                         lastCalloutPos = node.to;
@@ -114,7 +113,6 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
                     insideCallout = true;
                     lastCalloutPos = node.to;
                 }
-                console.log("insideCallout:", insideCallout);
             }
 
             if (node.from < quoteContentStart) {
@@ -214,14 +212,6 @@ export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
     },
 
     update(prev: MathPreviewInfo, transaction: Transaction): MathPreviewInfo {
-        console.log(transaction.startState.field(editorInfoField).file?.path);
-        const oldPath = transaction.startState.field(editorInfoField).file?.path;
-        const newPath = transaction.state.field(editorInfoField).file?.path;
-        if (oldPath != newPath) {
-            console.log("--------------------- File changed -------------------");
-        }
-        console.log(prev);
-        printMathInfoSet(prev.mathInfoSet, transaction.startState);
         // set isInCalloutsOrQuotes
         const isInCalloutsOrQuotes = isInBlockquoteOrCallout(transaction.state);
         // set hasOverlappingMath
@@ -344,14 +334,11 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
             transaction.state.doc.length,
             (from, to, value) => {
                 if (value.display) {
-                    console.log("mathInfo:", value);
                     if (to < range.from || from > range.to) {
                         if (!value.insideCallout || transaction.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
-                            console.log(`replace: ${from}-${to}`);
                             builder.add(from, to, value.toDecoration("replace"));
                         }
                     } else {
-                        console.log("widget");
                         builder.add(to, to, value.toDecoration("widget"));
                     }
                 }
