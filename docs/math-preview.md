@@ -17,4 +17,18 @@ This plugin gets this job done and makes your math note taking much more seamles
 
 Obsidian natively supports math rendering inside blockquotes, but it breaks when you use line breaks inside a math (as reported in the [forum](https://forum.obsidian.md/t/live-preview-support-math-block-in-quotes/32564)).
 
-With this plugin, you will no longer have to care about it!
+With Math Booster, you will no longer have this nightmare!
+
+For example, suppose you have the following equation:
+
+![Source mode](fig/math-preview-source.png)
+
+Without Math Booster, it is rendered like this. Totally collapsed.
+
+![Live preview, without this plugin](fig/math-preview-live-preview-no-booster.png)
+
+Now, turn on Math Booster:
+
+![Live preview, with this plugin](fig/math-preview-live-preview.png)
+
+Cool!
