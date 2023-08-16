@@ -70,7 +70,7 @@ export default class MathBooster extends Plugin {
 
 		this.registerEvent(
 			this.app.metadataCache.on("math-booster:local-settings-updated", async (file) => {
-				const promises: Promise<void>[] = []
+				const promises: Promise<void>[] = [];
 				iterDescendantFiles(
 					file,
 					(descendantFile) => {
@@ -87,6 +87,7 @@ export default class MathBooster extends Plugin {
 				await (new VaultIndexer(this.app, this)).run();
 			})
 		);
+
 
 		/** Update settings when file renamed/created */
 
@@ -160,21 +161,20 @@ export default class MathBooster extends Plugin {
 		this.addCommand({
 			id: 'open-local-settings-for-current-note',
 			name: 'Open local settings for the current note',
-			callback: () => {
-				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (view) {
+			editorCallback: (editor, context) => {
+				if (context instanceof MarkdownView) {
 					const modal = new ContextSettingModal(
 						this.app,
-						this, view.file.path,
+						this, context.file.path,
 						(settings) => {
-							const cache = this.app.metadataCache.getCache((view as MarkdownView).file.path);
+							const cache = this.app.metadataCache.getCache(context.file.path);
 							if (cache) {
-								const indexer = new ActiveNoteIndexer(this.app, this, view as MarkdownView);
+								const indexer = new ActiveNoteIndexer(this.app, this, context);
 								indexer.run(cache);
 							}
 						}
 					);
-					modal.resolveDefaultSettings(view.file);
+					modal.resolveDefaultSettings(context.file);
 					modal.open();
 				}
 			}
