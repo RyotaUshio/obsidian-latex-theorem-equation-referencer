@@ -284,7 +284,7 @@ export default class MathBooster extends Plugin {
 		const account = MathLinks.getAPIAccount(this);
 		if (account) {
 			account.blockPrefix = "";
-			account.enableFileNameBlockLinks = false;
+			account.enableFileNameBlockLinks = true;
 			return account;
 		}
 	}
