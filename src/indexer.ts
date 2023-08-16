@@ -14,7 +14,7 @@ type EquationInfo = { cache: SectionCache, manualTag?: string };
 
 
 /**
- * Indexers for math callouts and equations
+ * Indexers for math callouts and equations in a note
  */
 
 abstract class BlockIndexer<IOType extends FileIO, BlockInfo extends { cache: SectionCache }> {
