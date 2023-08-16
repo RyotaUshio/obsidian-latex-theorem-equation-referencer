@@ -27,11 +27,11 @@ class MathPreviewWidget extends WidgetType {
             // <img class="cm-widgetBuffer" aria-hidden="true">
             const containerEl = createDiv({
                 cls: ["HyperMD-quote", "HyperMD-quote-1", "HyperMD-quote-lazy", "cm-line"],
-                attr: {style: "text-indent:-15px;padding-inline-start:19px;"}
+                attr: { style: "text-indent:-15px;padding-inline-start:19px;" }
             });
             containerEl.createEl("img", {
-                cls: "cm-widgetBuffer", 
-                attr: {"aria-hidden": "true"}
+                cls: "cm-widgetBuffer",
+                attr: { "aria-hidden": "true" }
             });
             const cmEmbedBlockEl = containerEl.createDiv({
                 cls: ["math", "math-block", "cm-embed-block"],
@@ -76,16 +76,11 @@ class MathInfo extends RangeValue {
         return new MathPreviewWidget(this);
     }
 
-    toDecoration(which: "replace" | "insert"): Decoration {
-        return which == "replace"
-            ? Decoration.replace({
-                widget: this.toWidget(), 
-                block: this.display,
-            })
-            : Decoration.widget({
-                widget: this.toWidget(),
-                block: this.display,
-            });
+    toDecoration(which: "replace" | "widget"): Decoration {
+        return Decoration[which]({
+            widget: this.toWidget(),
+            block: this.display,
+        })
     }
 }
 
@@ -353,11 +348,11 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
                     if (to < range.from || from > range.to) {
                         if (!value.insideCallout || transaction.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
                             console.log(`replace: ${from}-${to}`);
-                            builder.add(from, to, value.toDecoration("replace"));    
+                            builder.add(from, to, value.toDecoration("replace"));
                         }
                     } else {
-                        console.log("insert");
-                        builder.add(to + 1, to + 1, value.toDecoration("insert"));
+                        console.log("widget");
+                        builder.add(to, to, value.toDecoration("widget"));
                     }
                 }
             }
