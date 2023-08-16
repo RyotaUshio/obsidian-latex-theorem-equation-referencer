@@ -4,7 +4,7 @@ import MathBooster from '../main';
 import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from '../env';
 import { DEFAULT_SETTINGS, ExtraSettings, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, RenameEnv } from './settings';
 import LanguageManager from '../language';
-import { BooleanKeys } from 'utils';
+import { BooleanKeys } from '../utils';
 
 
 export class MathCalloutSettingsHelper {
@@ -63,7 +63,7 @@ export class MathCalloutSettingsHelper {
                     .setDesc("You may use inline math");
 
 
-                const labelPane = new Setting(contentEl).setName("LaTeX Label");
+                const labelPane = new Setting(contentEl).setName("LaTeX label");
                 const labelPrefixEl = labelPane.controlEl.createDiv({
                     text: this.env.prefix + ":" + (this.defaultSettings.labelPrefix ?? "")
                 });
