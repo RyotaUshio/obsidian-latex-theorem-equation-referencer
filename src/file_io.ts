@@ -7,11 +7,21 @@ export abstract class FileIO {
     abstract setLine(lineNumber: number, text: string): Promise<void>;
     abstract getLine(lineNumber: number): Promise<string>;
     abstract getRange(position: Pos): Promise<string>;
+    /**
+     * Check if the line at `lineNumber` can be safely overwritten.
+     * @param lineNumber 
+     */
     abstract isSafe(lineNumber: number): boolean;
 }
 
 
 export class ActiveNoteIO extends FileIO {
+    /**
+     * File IO for the currently active markdown view. 
+     * Uses the Editor interface instead of Vault.
+     * (See https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Prefer+the+Editor+API+instead+of+%60Vault.modify%60)
+     * @param editor 
+     */
     constructor(public editor: Editor) {
         super();
     }
@@ -42,6 +52,12 @@ export class ActiveNoteIO extends FileIO {
 
 
 export class NonActiveNoteIO extends FileIO {
+    /**
+     * File IO for non-active (= currently not opened / currently opened but not focused) notes.
+     * Uses the Vault interface instead of Editor.
+     * @param app 
+     * @param file 
+     */
     constructor(public app: App, public file: TFile) {
         super();
     }

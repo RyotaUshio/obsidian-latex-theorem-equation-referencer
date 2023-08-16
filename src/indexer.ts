@@ -5,12 +5,17 @@ import { DEFAULT_SETTINGS, MathSettings, NumberStyle, MathCalloutRefFormat, Reso
 import { getBlockIdsWithBacklink, readMathCalloutSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, formatTitleWithoutSubtitle } from './utils';
 import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 
+
 type MathLinkBlocks = Record<string, string>;
 
 type BlockType = "callout" | "math";
 type CalloutInfo = { cache: SectionCache, settings: MathSettings };
 type EquationInfo = { cache: SectionCache, manualTag?: string };
 
+
+/**
+ * Indexers for math callouts and equations
+ */
 
 abstract class BlockIndexer<IOType extends FileIO, BlockInfo extends { cache: SectionCache }> {
     mathLinkBlocks: MathLinkBlocks;
@@ -48,6 +53,7 @@ abstract class BlockIndexer<IOType extends FileIO, BlockInfo extends { cache: Se
         await this.setMathLinks(blocks);
     }
 }
+
 
 class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, CalloutInfo> {
     blockType = "callout" as BlockType;
@@ -124,6 +130,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
     }
 }
 
+
 class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, EquationInfo> {
     blockType = "math" as BlockType;
 
@@ -160,7 +167,12 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
     }
 }
 
-class NoteIndexer<IOType extends FileIO> {
+
+/**
+ * Indexers for an entire note
+ */
+
+abstract class NoteIndexer<IOType extends FileIO> {
     linkedBlockIds: string[];
     calloutIndexer: MathCalloutIndexer<IOType>;
     equationIndexer: EquationIndexer<IOType>;
@@ -212,6 +224,12 @@ class NoteIndexer<IOType extends FileIO> {
 
 
 export class ActiveNoteIndexer extends NoteIndexer<ActiveNoteIO> {
+    /**
+     * Indexer for the currently active note.
+     * @param app 
+     * @param plugin 
+     * @param view 
+     */
     constructor(public app: App, public plugin: MathBooster, view: MarkdownView) {
         super(app, plugin, view.file, new ActiveNoteIO(view.editor));
     }
@@ -219,15 +237,37 @@ export class ActiveNoteIndexer extends NoteIndexer<ActiveNoteIO> {
 
 
 export class NonActiveNoteIndexer extends NoteIndexer<NonActiveNoteIO> {
+    /**
+     * Indexer for non-active (= currently not opened / currently opened but not focused) notes.
+     * @param app 
+     * @param plugin 
+     * @param file 
+     */
     constructor(app: App, plugin: MathBooster, file: TFile) {
         super(app, plugin, file, new NonActiveNoteIO(app, file));
     }
 }
 
 
+/**
+ * Utility indexers
+ */
+
 export class AutoNoteIndexer {
+    /**
+     * Convenient class that automatically judges which of ActiveNoteIndexer or NonActiveNoteIndexer 
+     * should be called for the given file.
+     * @param app 
+     * @param plugin 
+     * @param file 
+     */
     constructor(public app: App, public plugin: MathBooster, public file: TFile) { }
 
+    /**
+     * Get an appropriate indexer for the active markdown view.
+     * @param activeMarkdownView 
+     * @returns 
+     */
     getIndexer(activeMarkdownView?: MarkdownView | null): ActiveNoteIndexer | NonActiveNoteIndexer {
         activeMarkdownView = activeMarkdownView ?? this.app.workspace.getActiveViewOfType(MarkdownView);
         if (activeMarkdownView?.file == this.file && activeMarkdownView.getMode() == "source") {
@@ -242,7 +282,14 @@ export class AutoNoteIndexer {
     }
 }
 
+
 export class LinkedNotesIndexer {
+    /**
+     * Re-index the changed note and all the notes that have forward/backlinks to the changed note.
+     * @param app 
+     * @param plugin 
+     * @param changedFile 
+     */
     constructor(public app: App, public plugin: MathBooster, public changedFile: TFile) { }
 
     async run() {
@@ -281,7 +328,13 @@ export class LinkedNotesIndexer {
     }
 }
 
+
 export class VaultIndexer {
+    /**
+     * Index the entire vault.
+     * @param app 
+     * @param plugin 
+     */
     constructor(public app: App, public plugin: MathBooster) { }
 
     async run() {
