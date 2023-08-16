@@ -171,7 +171,7 @@ export function printMathInfoSet(set: MathInfoSet, state: EditorState) {
     // Debugging utility
     console.log("MathInfoSet:");
     set.between(0, state.doc.length, (from, to, value) => {
-        console.log(`  ${from}-${to}: ${value.mathText} ${value.display ? "(display)" : ""}`);
+        console.log(`  ${from}-${to}: ${value.mathText} ${value.display ? "(display)" : ""} ${value.insideCallout ? "(in callout)" : ""}`);
     });
 }
 

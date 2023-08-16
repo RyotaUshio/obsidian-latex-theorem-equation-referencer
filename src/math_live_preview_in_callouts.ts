@@ -4,6 +4,7 @@ import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpd
 import { syntaxTree } from '@codemirror/language';
 
 import { isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed } from 'utils';
+import { CALLOUT } from "math_callout_metadata_hider";
 
 
 const DISPLAY_MATH_BEGIN = "formatting_formatting-math_formatting-math-begin_keyword_math_math-block";
@@ -24,7 +25,7 @@ class MathPreviewWidget extends WidgetType {
         this.info.mathEl.classList.add("math-booster-preview");
         if (this.info.display) {
             const containerEl = createDiv({
-                cls: ["math", "math-block", "cm-embed-block"], 
+                cls: ["math", "math-block", "cm-embed-block"],
                 attr: {
                     contenteditable: false,
                 }
@@ -35,7 +36,7 @@ class MathPreviewWidget extends WidgetType {
                 .setTooltip("Edit this block");
             editButton.extraSettingsEl.addEventListener("click", (ev: MouseEvent) => {
                 ev.stopPropagation();
-                view.dispatch({selection: {anchor: this.info.from + 2, head: this.info.to - 2}});
+                view.dispatch({ selection: { anchor: this.info.from + 2, head: this.info.to - 2 } });
             })
             editButton.extraSettingsEl.classList.add("math-booster-preview-edit-button");
             return containerEl;
@@ -52,7 +53,7 @@ class MathPreviewWidget extends WidgetType {
 class MathInfo extends RangeValue {
     mathEl: HTMLElement;
 
-    constructor(public mathText: string, public display: boolean, public from: number, public to: number) {
+    constructor(public mathText: string, public display: boolean, public from: number, public to: number, public insideCallout: boolean) {
         super();
         this.render()
     }
@@ -90,9 +91,25 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
     let insideMath = false;
     let display: boolean | undefined;
     let quoteContentStart = 0;
+    let insideCallout = false;
+    let lastCalloutPos: number;
 
     tree.iterate({
         enter(node) {
+            if (node.node.parent?.name == "Document") {
+                if (insideCallout) {
+                    if (node.from == lastCalloutPos + 1 && node.name.match(BLOCKQUOTE)) {
+                        lastCalloutPos = node.to;
+                    } else {
+                        insideCallout = false;
+                    }
+                }
+                if (node.name.match(CALLOUT)) {
+                    insideCallout = true;
+                    lastCalloutPos = node.to;
+                }
+            }
+
             if (node.from < quoteContentStart) {
                 return;
             }
@@ -101,7 +118,7 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
                     builder.add(
                         from,
                         node.to,
-                        new MathInfo(mathText, display as boolean, from, node.to)
+                        new MathInfo(mathText, display as boolean, from, node.to, insideCallout)
                     );
                     insideMath = false;
                     display = undefined;
@@ -116,7 +133,7 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
                     builder.add(
                         from,
                         from + 2, // 2 = "$$".length
-                        new MathInfo(mathText, false, from, from + 2)
+                        new MathInfo(mathText, false, from, from + 2, insideCallout)
                     );
                     insideMath = false;
                     display = undefined;
@@ -148,7 +165,7 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
                         display = false;
                         from = node.from;
                         mathText = "";
-                    }    
+                    }
                 }
             }
         }
@@ -163,7 +180,7 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
         builder.add(
             from,
             from + 2, // 2 = "$$".length
-            new MathInfo("", false, from, from + 2)
+            new MathInfo("", false, from, from + 2, insideCallout)
         );
     }
 
@@ -210,7 +227,11 @@ export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
         // set mathInfoSet & rerendered
         let mathInfoSet: MathInfoSet;
         let rerendered = false;
-        if (isInCalloutsOrQuotes) {
+        if (!prev.mathInfoSet.size) {
+            // rebuild all math info, including rendered MathJax (this should be done more efficiently in the near future)
+            mathInfoSet = buildMathInfoSet(transaction.state);
+            rerendered = true;
+        } else if (isInCalloutsOrQuotes) {
             if (
                 !prev.isInCalloutsOrQuotes // If newly entered inside a callout or quote
                 || (prev.hasOverlappingMath && !hasOverlappingMath) // or just got out of math
@@ -231,6 +252,7 @@ export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
         } else {
             mathInfoSet = prev.mathInfoSet;
         }
+
         return { mathInfoSet, isInCalloutsOrQuotes, hasOverlappingMath, hasOverlappingDisplayMath, rerendered };
     },
 });
@@ -308,7 +330,9 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
             (from, to, value) => {
                 if (value.display) {
                     if (to < range.from || from > range.to) {
-                        builder.add(from, to, value.toDecoration("replace"));
+                        if (!value.insideCallout || transaction.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
+                            builder.add(from, to, value.toDecoration("replace"));    
+                        }
                     } else {
                         builder.add(to + 1, to + 1, value.toDecoration("insert"));
                     }
