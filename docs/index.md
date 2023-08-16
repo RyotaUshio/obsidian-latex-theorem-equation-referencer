@@ -49,3 +49,5 @@ The following community plugins are required to be installed and enabled.
 Make sure **Enable MathLinks API** is turned on in the MathLinks plugin settings.
 
 ![MathLinks settings](fig/mathlinks.png)
+
+Also, you need to install the [CMU Serif](https://www.cufonfonts.com/font/cmu-serif) font to fully enjoy some of the [preset styles](style-your-theorems#styles-gallery).
