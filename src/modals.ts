@@ -51,8 +51,8 @@ abstract class MathSettingModal<SettingsType> extends Modal {
                 btn.buttonEl.classList.add("insert-math-item-button");
             });
 
-        let button = contentEl.querySelector(".insert-math-item-button");
-        let settingTextboxes = contentEl.querySelectorAll("input");
+        const button = contentEl.querySelector(".insert-math-item-button");
+        const settingTextboxes = contentEl.querySelectorAll("input");
         if (button) {
             settingTextboxes.forEach((textbox) => {
                 textbox.addEventListener("keypress", (event) => {
@@ -96,7 +96,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
             .addButton((button) => {
                 button.setButtonText("Open")
                     .onClick((event) => {
-                        let modal = new ContextSettingModal(
+                        const modal = new ContextSettingModal(
                             this.app,
                             this.plugin, 
                             this.view.file.path, 
@@ -165,8 +165,8 @@ abstract class FileSuggestModal extends FuzzySuggestModal<TAbstractFile> {
         if (abstractFile instanceof TFolder && abstractFile.isRoot()) {
             return false;
         }
-        for (let path of this.plugin.excludedFiles) {
-            let file = this.app.vault.getAbstractFileByPath(path)
+        for (const path of this.plugin.excludedFiles) {
+            const file = this.app.vault.getAbstractFileByPath(path)
             if (file && isEqualToOrChildOf(abstractFile, file)) {
                 return false
             }
@@ -183,7 +183,7 @@ export class LocalContextSettingsSuggestModal extends FileSuggestModal {
     }
 
     onChooseItem(file: TAbstractFile, evt: MouseEvent | KeyboardEvent) {
-        let modal = new ContextSettingModal(this.app, this.plugin, file.path);
+        const modal = new ContextSettingModal(this.app, this.plugin, file.path);
         modal.resolveDefaultSettings(file);
         modal.open();
     }
@@ -202,7 +202,7 @@ export class FileExcludeSuggestModal extends FileSuggestModal {
     }
 
     filterCallback(abstractFile: TAbstractFile): boolean {
-        for (let path in this.plugin.settings) {
+        for (const path in this.plugin.settings) {
             if (path == abstractFile.path) {
                 return false;
             }
@@ -223,11 +223,11 @@ export class ExcludedFileManageModal extends Modal {
 
     async newDisplay() {
         await this.plugin.saveSettings();
-        let { contentEl } = this;
+        const { contentEl } = this;
         contentEl.empty();
         contentEl.createEl('h3', { text: 'Excluded files/folders' });
 
-        let addButtonContainer = new Setting(contentEl)
+        const addButtonContainer = new Setting(contentEl)
             .setName('The files/folders in this list and their descendants will be excluded from suggestion for local settings.')
             .addButton((btn) => {
                 btn.setIcon("plus")
@@ -236,7 +236,7 @@ export class ExcludedFileManageModal extends Modal {
                     });
             });
 
-        // let saveButtonContainer = new Setting(contentEl)
+        // const saveButtonContainer = new Setting(contentEl)
         //     .addButton((btn) => {
         //         btn.setButtonText("Save")
         //             .onClick(async (event) => {
@@ -245,8 +245,8 @@ export class ExcludedFileManageModal extends Modal {
         //             });
         //     });
 
-        // let addButtonEl = addButtonContainer.controlEl.querySelector<HTMLElement>('button');
-        // let saveButtonEl = saveButtonContainer.controlEl.querySelector<HTMLElement>('button');
+        // const addButtonEl = addButtonContainer.controlEl.querySelector<HTMLElement>('button');
+        // const saveButtonEl = saveButtonContainer.controlEl.querySelector<HTMLElement>('button');
         // if (addButtonEl && saveButtonEl) {
         //     addButtonContainer.controlEl.replaceChildren(
         //         addButtonEl, saveButtonEl
@@ -255,9 +255,9 @@ export class ExcludedFileManageModal extends Modal {
         // contentEl.removeChild(saveButtonContainer.settingEl);
 
         if (this.plugin.excludedFiles.length) {
-            let list = contentEl.createEl('ul');
-            for (let path of this.plugin.excludedFiles) {
-                let item = list.createEl('li').createDiv();
+            const list = contentEl.createEl('ul');
+            for (const path of this.plugin.excludedFiles) {
+                const item = list.createEl('li').createDiv();
                 new Setting(item).setName(path).addExtraButton((btn) => {
                     btn.setIcon('x').onClick(async () => {
                         this.plugin.excludedFiles.remove(path);
@@ -271,7 +271,7 @@ export class ExcludedFileManageModal extends Modal {
     }
 
     onClose() {
-        let { contentEl } = this;
+        const { contentEl } = this;
         contentEl.empty();
     }
 }

@@ -23,14 +23,14 @@ class MathPreviewWidget extends WidgetType {
     toDOM(view: EditorView): HTMLElement {
         this.info.mathEl.classList.add("math-booster-preview");
         if (this.info.display) {
-            let containerEl = createDiv({
+            const containerEl = createDiv({
                 cls: ["math", "math-block", "cm-embed-block"], 
                 attr: {
                     contenteditable: false,
                 }
             });
             containerEl.appendChild(this.info.mathEl);
-            let editButton = new ExtraButtonComponent(containerEl)
+            const editButton = new ExtraButtonComponent(containerEl)
                 .setIcon("code-2")
                 .setTooltip("Edit this block");
             editButton.extraSettingsEl.addEventListener("click", (ev: MouseEvent) => {
@@ -82,8 +82,8 @@ export type MathInfoSet = RangeSet<MathInfo>;
 
 function buildMathInfoSet(state: EditorState): MathInfoSet {
 
-    let tree = syntaxTree(state);
-    let builder = new RangeSetBuilder<MathInfo>();
+    const tree = syntaxTree(state);
+    const builder = new RangeSetBuilder<MathInfo>();
 
     let from: number = -1;
     let mathText: string;
@@ -121,9 +121,9 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
                     insideMath = false;
                     display = undefined;
                 } else {
-                    let match = node.name.match(BLOCKQUOTE);
+                    const match = node.name.match(BLOCKQUOTE);
                     if (match) {
-                        let quoteLevel = +match[1];
+                        const quoteLevel = +match[1];
                         if (node.node.firstChild) {
                             quoteContentStart = node.node.firstChild.to;
                             mathText += nodeTextQuoteSymbolTrimmed(node.node.firstChild, state, quoteLevel) ?? "";
@@ -191,10 +191,10 @@ export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
 
     update(prev: MathPreviewInfo, transaction: Transaction): MathPreviewInfo {
         // set isInCalloutsOrQuotes
-        let isInCalloutsOrQuotes = isInBlockquoteOrCallout(transaction.state);
+        const isInCalloutsOrQuotes = isInBlockquoteOrCallout(transaction.state);
         // set hasOverlappingMath
         const range = transaction.state.selection.main;
-        let cursor = prev.mathInfoSet.iter();
+        const cursor = prev.mathInfoSet.iter();
         let hasOverlappingMath = false;
         let hasOverlappingDisplayMath = false;
         while (cursor.value) {
@@ -258,8 +258,8 @@ export const inlineMathPreviewView = ViewPlugin.fromClass(
                 return;
             }
 
-            let range = view.state.selection.main;
-            let builder = new RangeSetBuilder<Decoration>();
+            const range = view.state.selection.main;
+            const builder = new RangeSetBuilder<Decoration>();
 
             for (const { from, to } of view.visibleRanges) {
                 view.state.field(MathPreviewInfoField).mathInfoSet.between(
@@ -299,7 +299,7 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
         //         !transaction.startState.field(MathPreviewInfoField).hasOverlappingMath
         //         && transaction.state.field(MathPreviewInfoField).hasOverlappingMath
         //     ) || transaction.state.field(MathPreviewInfoField).rerendered) {
-        let builder = new RangeSetBuilder<Decoration>();
+        const builder = new RangeSetBuilder<Decoration>();
         const range = transaction.state.selection.main;
 
         transaction.state.field(MathPreviewInfoField).mathInfoSet.between(
@@ -330,12 +330,12 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
 
 
 function isInBlockquoteOrCallout(state: EditorState): boolean {
-    let range = state.selection.main;
-    let tree = syntaxTree(state);
+    const range = state.selection.main;
+    const tree = syntaxTree(state);
     let foundQuote = false;
     tree.iterate({
         enter(node) {
-            let match = node.name.match(BLOCKQUOTE);
+            const match = node.name.match(BLOCKQUOTE);
             if (match) {
                 if (node.from <= range.to && range.from <= node.to) {
                     foundQuote = true;

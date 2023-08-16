@@ -248,7 +248,11 @@ export default class MathBooster extends Plugin {
 	}
 
 	async saveSettings() {
-		await this.saveData({ settings: this.settings, excludedFiles: this.excludedFiles });
+		await this.saveData({
+			version: this.manifest.version,
+			settings: this.settings,
+			excludedFiles: this.excludedFiles,
+		});
 	}
 
 	assertDataview(): boolean {
@@ -283,10 +287,10 @@ export default class MathBooster extends Plugin {
 	}
 
 	initializeIndex() {
-		let indexStart = Date.now();
+		const indexStart = Date.now();
 		this.setOldLinkMap();
 		(new VaultIndexer(this.app, this)).run();
-		let indexEnd = Date.now();
+		const indexEnd = Date.now();
 		console.log(`${this.manifest.name}: All math callouts and equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s.`);
 	}
 
@@ -295,7 +299,7 @@ export default class MathBooster extends Plugin {
 	}
 
 	setOldLinkMap() {
-		let oldLinkMap = this.getNewLinkMap();
+		const oldLinkMap = this.getNewLinkMap();
 		if (oldLinkMap) {
 			this.oldLinkMap = structuredClone(oldLinkMap);
 		}

@@ -19,21 +19,21 @@ export class MathCalloutSettingsHelper {
         new Setting(contentEl)
             .setName("Type")
             .addDropdown((dropdown) => {
-                for (let env of ENVs) {
+                for (const env of ENVs) {
                     dropdown.addOption(env.id, env.id);
                     if (this.defaultSettings.type) {
                         dropdown.setValue(String(this.defaultSettings.type));
                     }
                 }
 
-                let initType = dropdown.getValue();
+                const initType = dropdown.getValue();
                 this.settings.type = initType;
                 this.env = getTheoremLikeEnv(initType);
 
-                let numberSetting = new Setting(contentEl)
+                const numberSetting = new Setting(contentEl)
                     .setName("Number")
                     .setDesc("Allowed values:");
-                let numberSettingDescList = numberSetting.descEl.createEl("ul");
+                const numberSettingDescList = numberSetting.descEl.createEl("ul");
                 numberSettingDescList.createEl(
                     "li",
                     { text: '"auto" - automatically numbered' }
@@ -57,13 +57,13 @@ export class MathCalloutSettingsHelper {
                     });
                 })
 
-                let titlePane = new Setting(contentEl)
+                const titlePane = new Setting(contentEl)
                     .setName("Title")
                     .setDesc("You may use inline math");
 
 
-                let labelPane = new Setting(contentEl).setName("LaTeX Label");
-                let labelPrefixEl = labelPane.controlEl.createDiv({
+                const labelPane = new Setting(contentEl).setName("LaTeX Label");
+                const labelPrefixEl = labelPane.controlEl.createDiv({
                     text: this.env.prefix + ":" + (this.defaultSettings.labelPrefix ?? "")
                 });
 
@@ -135,7 +135,7 @@ export class MathContextSettingsHelper {
 
         contentEl.createEl("h3", { text: "Math callouts" });
         this.addDropdownSetting("lang", LanguageManager.supported, this.allowUnset, "Language");
-        let styleSetting = this.addDropdownSetting("mathCalloutStyle", MATH_CALLOUT_STYLES, this.allowUnset, "Style");
+        const styleSetting = this.addDropdownSetting("mathCalloutStyle", MATH_CALLOUT_STYLES, this.allowUnset, "Style");
         styleSetting.descEl.replaceChildren(
             "Choose between your custom style and pre-defined sample styles. You will need to reload the note to see the changes. See the ",
             createEl("a", {text: "documentation", attr: {href: "https://ryotaushio.github.io/obsidian-math-booster/style-your-theorems.html"}}), 
@@ -164,8 +164,8 @@ export class MathContextSettingsHelper {
     }
 
     addDropdownSetting(name: keyof MathContextSettings, options: readonly string[], allowUnset: boolean, prettyName: string, description?: string) {
-        let callback = this.getCallback<string>(name);
-        let setting = new Setting(this.contentEl).setName(prettyName);
+        const callback = this.getCallback<string>(name);
+        const setting = new Setting(this.contentEl).setName(prettyName);
         if (description) {
             setting.setDesc(description);
         }
@@ -173,7 +173,7 @@ export class MathContextSettingsHelper {
             if (allowUnset) {
                 dropdown.addOption("", "");
             }
-            for (let option of options) {
+            for (const option of options) {
                 dropdown.addOption(option, option);
             }
             dropdown.setValue(
@@ -186,8 +186,8 @@ export class MathContextSettingsHelper {
     }
 
     addTextSetting(name: keyof MathContextSettings, prettyName: string, description?: string): Setting {
-        let callback = this.getCallback<string>(name);
-        let setting = new Setting(this.contentEl).setName(prettyName);
+        const callback = this.getCallback<string>(name);
+        const setting = new Setting(this.contentEl).setName(prettyName);
         if (description) {
             setting.setDesc(description);
         }
@@ -201,8 +201,8 @@ export class MathContextSettingsHelper {
     }
 
     addRenameSetting() {
-        let { contentEl } = this;
-        let setting = new Setting(contentEl)
+        const { contentEl } = this;
+        const setting = new Setting(contentEl)
             .setName("Rename environments")
             .setDesc("ex) print \"exercise\" as \"Problem,\" not \"Exercise\"");
 
@@ -221,7 +221,7 @@ export class MathContextSettingsHelper {
                         await this.plugin?.saveSettings();
                     })
                 });
-                let inputEl = renamePaneTextBox.settingEl.querySelector<HTMLElement>("input");
+                const inputEl = renamePaneTextBox.settingEl.querySelector<HTMLElement>("input");
                 if (inputEl) {
                     renamePaneTextBox.settingEl.replaceWith(inputEl);
                 }
@@ -231,11 +231,11 @@ export class MathContextSettingsHelper {
     }
 
     addToggleSetting(name: "lineByLine" | "mathCalloutFontInherit", prettyName: string, descriptin?: string) {
-        let setting = new Setting(this.contentEl).setName(prettyName);
+        const setting = new Setting(this.contentEl).setName(prettyName);
         if (descriptin) {
             setting.setDesc(descriptin);
         }
-        let callback = this.getCallback<boolean>(name);
+        const callback = this.getCallback<boolean>(name);
         setting.addToggle((toggle) => {
             toggle.setValue(this.defaultSettings[name])
                   .onChange(callback);
@@ -244,14 +244,14 @@ export class MathContextSettingsHelper {
     }
 
     addNumberStyleSetting(name: "numberStyle" | "eqNumberStyle", prettyName?: string, description?: string) {
-        let setting = new Setting(this.contentEl);
+        const setting = new Setting(this.contentEl);
         if (prettyName) {
             setting.setName(prettyName);
         }
         if (description) {
             setting.setDesc(description);
         }
-        let callback = this.getCallback<NumberStyle>(name);
+        const callback = this.getCallback<NumberStyle>(name);
         setting.addDropdown((dropdown) => {
             for (let style of ["arabic", "alph", "Alph", "roman", "Roman"]) {
                 dropdown.addOption(style, style);

@@ -25,7 +25,7 @@ export class MathSettingTab extends PluginSettingTab {
     }
 
     displayUnit(key: string) {
-        let file = this.app.vault.getAbstractFileByPath(key);
+        const file = this.app.vault.getAbstractFileByPath(key);
         if (file) {
             const defaultSettings = resolveSettings(undefined, this.plugin, file);
             (new MathContextSettingsHelper(
@@ -40,7 +40,7 @@ export class MathSettingTab extends PluginSettingTab {
     }
 
     display() {
-        let { containerEl } = this;
+        const { containerEl } = this;
         containerEl.empty();
 
         // containerEl.createEl("h3", { text: "Global" });

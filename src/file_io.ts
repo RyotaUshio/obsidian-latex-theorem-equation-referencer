@@ -25,14 +25,14 @@ export class ActiveNoteIO extends FileIO {
     }
 
     async getRange(position: Pos): Promise<string> {
-        let from = locToEditorPosition(position.start);
-        let to = locToEditorPosition(position.end);
-        let text = this.editor.getRange(from, to);
+        const from = locToEditorPosition(position.start);
+        const to = locToEditorPosition(position.end);
+        const text = this.editor.getRange(from, to);
         return text;
     }
 
     isSafe(lineNumber: number): boolean {
-        let cursorPos = this.editor.getCursor();
+        const cursorPos = this.editor.getCursor();
         if (cursorPos.line == lineNumber) {
             return false;
         }
@@ -48,20 +48,20 @@ export class NonActiveNoteIO extends FileIO {
 
     async setLine(lineNumber: number, text: string): Promise<void> {
         this.app.vault.process(this.file, (data: string): string => {
-            let lines = splitIntoLines(data);
+            const lines = splitIntoLines(data);
             lines[lineNumber] = text;
             return lines.join('\n');
         })
     }
 
     async getLine(lineNumber: number): Promise<string> {
-        let data = await this.app.vault.cachedRead(this.file);
-        let lines = splitIntoLines(data);
+        const data = await this.app.vault.cachedRead(this.file);
+        const lines = splitIntoLines(data);
         return lines[lineNumber];
     }
 
     async getRange(position: Pos): Promise<string> {
-        let content = await this.app.vault.cachedRead(this.file);
+        const content = await this.app.vault.cachedRead(this.file);
         return content.slice(position.start.offset, position.end.offset);
     }
 

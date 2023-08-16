@@ -23,14 +23,14 @@ export class MathCallout extends MarkdownRenderChild {
 
     async setRenderedTitleElements() {
         // ex) "Theorem 1.1", not "Theorem 1.1 (Cauchy-Schwarz)"
-        let titleWithoutSubtitle = await renderTextWithMath(formatTitleWithoutSubtitle(this.resolvedSettings));
+        const titleWithoutSubtitle = await renderTextWithMath(formatTitleWithoutSubtitle(this.resolvedSettings));
         this.renderedTitleElements = [
             ...titleWithoutSubtitle
         ];
         if (this.resolvedSettings.title) {
             // ex) "(Cauchy-Schwarz)"
-            let subtitle = await renderTextWithMath(`(${this.resolvedSettings.title})`);
-            let subtitleEl = createSpan({ cls: "math-callout-subtitle" });
+            const subtitle = await renderTextWithMath(`(${this.resolvedSettings.title})`);
+            const subtitleEl = createSpan({ cls: "math-callout-subtitle" });
             subtitleEl.replaceChildren(...subtitle)
             this.renderedTitleElements.push(" ", subtitleEl);
         }
@@ -41,7 +41,7 @@ export class MathCallout extends MarkdownRenderChild {
 
     onload() {
         // make sure setRenderedTitleElements() is called beforehand
-        let titleInner = this.containerEl.querySelector<HTMLElement>('.callout-title-inner');
+        const titleInner = this.containerEl.querySelector<HTMLElement>('.callout-title-inner');
         titleInner?.replaceChildren(...this.renderedTitleElements);
 
         // add classes for CSS snippets
@@ -52,7 +52,7 @@ export class MathCallout extends MarkdownRenderChild {
         this.containerEl.toggleClass("font-family-inherit", this.resolvedSettings.mathCalloutStyle != "custom" && this.resolvedSettings.mathCalloutFontInherit);
 
         // click the title block (div.callout-title) to edit settings
-        let button = new ExtraButtonComponent(this.containerEl)
+        const button = new ExtraButtonComponent(this.containerEl)
             .setIcon("settings-2")
             .setTooltip("Edit math callout settings");
         button.extraSettingsEl.addEventListener("click", (ev) => {
@@ -60,15 +60,15 @@ export class MathCallout extends MarkdownRenderChild {
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
             const editor = view?.editor;
             if (editor) {
-                let modal = new MathCalloutModal(
+                const modal = new MathCalloutModal(
                     this.app,
                     this.plugin,
                     view,
                     (settings) => {
                         this.settings = settings;
                         this.resolvedSettings = resolveSettings(this.settings, this.plugin, this.currentFile);
-                        let title = formatTitle(this.resolvedSettings);
-                        let indexer = (new AutoNoteIndexer(this.app, this.plugin, view.file)).getIndexer();
+                        const title = formatTitle(this.resolvedSettings);
+                        const indexer = (new AutoNoteIndexer(this.app, this.plugin, view.file)).getIndexer();
                         const info = this.context.getSectionInfo(this.containerEl);
                         let lineNumber = info?.lineStart;
                         if (lineNumber === undefined && view.getMode() == "source") { // Live preview or source mode
@@ -97,13 +97,13 @@ export class MathCallout extends MarkdownRenderChild {
 
 
 export function insertMathCalloutCallback(plugin: MathBooster, editor: Editor, config: MathSettings, currentFile: TFile) {
-    let selection = editor.getSelection();
-    let cursorPos = editor.getCursor();
-    let resolvedSettings = resolveSettings(config, plugin, currentFile);
-    let title = formatTitle(resolvedSettings);
+    const selection = editor.getSelection();
+    const cursorPos = editor.getCursor();
+    const resolvedSettings = resolveSettings(config, plugin, currentFile);
+    const title = formatTitle(resolvedSettings);
 
     if (selection) {
-        let nLines = splitIntoLines(selection).length;
+        const nLines = splitIntoLines(selection).length;
         editor.replaceSelection(
             `> [!math|${JSON.stringify(config)}] ${title}\n`
             + increaseQuoteLevel(selection)

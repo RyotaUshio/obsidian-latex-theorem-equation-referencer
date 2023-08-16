@@ -1,8 +1,8 @@
-import { App, CachedMetadata, MarkdownPostProcessorContext, MarkdownView, SectionCache, TFile, WorkspaceLeaf } from 'obsidian';
+import { App, CachedMetadata, MarkdownView, SectionCache, TFile } from 'obsidian';
 
 import MathBooster from './main';
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, MathCalloutRefFormat, ResolvedMathSettings } from './settings/settings';
-import { getBlockIdsWithBacklink, readMathCalloutSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, splitIntoLines, removeFrom, formatTitleWithoutSubtitle } from './utils';
+import { getBlockIdsWithBacklink, readMathCalloutSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, formatTitleWithoutSubtitle } from './utils';
 import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 
 type MathLinkBlocks = Record<string, string>;
@@ -26,12 +26,12 @@ abstract class BlockIndexer<IOType extends FileIO, BlockInfo extends { cache: Se
 
     async sorted(cache: Readonly<CachedMetadata>): Promise<BlockInfo[]> {
 
-        let sectionCaches = cache.sections?.filter(
+        const sectionCaches = cache.sections?.filter(
             (sectionCache) => sectionCache.type == this.blockType
         );
-        let sections: BlockInfo[] = [];
+        const sections: BlockInfo[] = [];
         if (sectionCaches) {
-            for (let sectionCache of sectionCaches) {
+            for (const sectionCache of sectionCaches) {
                 await this.addSection(sections, sectionCache);
             }
             sections.sort(
@@ -53,7 +53,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
     blockType = "callout" as BlockType;
 
     async addSection(sections: Readonly<CalloutInfo>[], sectionCache: Readonly<SectionCache>): Promise<void> {
-        let settings = readMathCalloutSettings(
+        const settings = readMathCalloutSettings(
             await this.noteIndexer.io.getLine(sectionCache.position.start.line)
         );
         if (settings) {
@@ -65,30 +65,28 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
 
     async setMathLinks(callouts: readonly Readonly<CalloutInfo>[]): Promise<void> {
         let index = 0;
-        for (let callout of callouts) {
-            let autoNumber = callout.settings.number == 'auto';
+        for (const callout of callouts) {
+            const autoNumber = callout.settings.number == 'auto';
             if (autoNumber) {
                 callout.settings._index = index++;
             }
-            let resolvedSettings = resolveSettings(
+            const resolvedSettings = resolveSettings(
                 callout.settings,
                 this.noteIndexer.plugin,
                 this.noteIndexer.file
             );
-            let newTitle = formatTitle(resolvedSettings);
-            let oldSettingsAndTitle = readMathCalloutSettingsAndTitle(
+            const newTitle = formatTitle(resolvedSettings);
+            const oldSettingsAndTitle = readMathCalloutSettingsAndTitle(
                 await this.noteIndexer.io.getLine(callout.cache.position.start.line)
             );
             if (oldSettingsAndTitle) {
-                let { settings, title } = oldSettingsAndTitle;
-                let lineNumber = callout.cache.position.start.line;
-                let newSettings = this.removeDeprecated(callout.settings);
+                const { settings, title } = oldSettingsAndTitle;
+                const lineNumber = callout.cache.position.start.line;
+                const newSettings = this.removeDeprecated(callout.settings);
                 if (this.noteIndexer.io.isSafe(lineNumber) && JSON.stringify(settings) != JSON.stringify(newSettings) || title != newTitle) {
-                    await this.overwriteSettings(
-                        lineNumber, newSettings, newTitle
-                    )
+                    await this.overwriteSettings(lineNumber, newSettings, newTitle)
                 }
-                let id = callout.cache.id;
+                const id = callout.cache.id;
                 if (id) {
                     this.mathLinkBlocks[id] = this.formatMathLink(resolvedSettings);
                 }
@@ -97,7 +95,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
     }
 
     formatMathLink(resolvedSettings: ResolvedMathSettings): string {
-        let refFormat: MathCalloutRefFormat = resolvedSettings.refFormat ?? DEFAULT_SETTINGS.refFormat;
+        const refFormat: MathCalloutRefFormat = resolvedSettings.refFormat ?? DEFAULT_SETTINGS.refFormat;
         if (refFormat == "Type + number (+ title)") {
             return formatTitle(resolvedSettings, true);
         }
@@ -121,7 +119,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
 
     private removeDeprecated(settings: MathSettings & { autoIndex?: string }): MathSettings {
         // remove the deprecated "autoIndex" key (now it's called "_index") from settings
-        let { autoIndex, ...rest } = settings;
+        const { autoIndex, ...rest } = settings;
         return rest;
     }
 }
@@ -131,8 +129,8 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
 
     async addSection(sections: Readonly<EquationInfo>[], sectionCache: Readonly<SectionCache>): Promise<void> {
         if (sectionCache.id && this.noteIndexer.linkedBlockIds.contains(sectionCache.id)) {
-            let text = await this.noteIndexer.io.getRange(sectionCache.position);
-            let tagMatch = text.match(/\\tag\{(.*)\}/);
+            const text = await this.noteIndexer.io.getRange(sectionCache.position);
+            const tagMatch = text.match(/\\tag\{(.*)\}/);
             if (tagMatch) {
                 sections.push({ cache: sectionCache, manualTag: tagMatch[1] });
             } else {
@@ -148,8 +146,8 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
         const prefix = contextSettings?.eqNumberPrefix ?? DEFAULT_SETTINGS.eqNumberPrefix;
         const suffix = contextSettings?.eqNumberSuffix ?? DEFAULT_SETTINGS.eqNumberSuffix;
         for (let i = 0; i < equations.length; i++) {
-            let equation = equations[i];
-            let id = equation.cache.id;
+            const equation = equations[i];
+            const id = equation.cache.id;
             if (id) {
                 if (equation.manualTag) {
                     this.mathLinkBlocks[id] = `(${equation.manualTag})`;
@@ -201,10 +199,10 @@ class NoteIndexer<IOType extends FileIO> {
     async getBlockText(blockID: string, cache?: CachedMetadata): Promise<string | undefined> {
         cache = cache ?? this.app.metadataCache.getFileCache(this.file) ?? undefined;
         if (cache) {
-            let sectionCache = cache.sections?.find(
+            const sectionCache = cache.sections?.find(
                 (sectionCache) => sectionCache.id == blockID
             );
-            let position = sectionCache?.position;
+            const position = sectionCache?.position;
             if (position) {
                 return await this.io.getRange(position);
             }
@@ -248,7 +246,7 @@ export class LinkedNotesIndexer {
     constructor(public app: App, public plugin: MathBooster, public changedFile: TFile) { }
 
     async run() {
-        let view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         await Promise.all([
             (new AutoNoteIndexer(this.app, this.plugin, this.changedFile)).run(),
             this.runForwardLinks(view),
@@ -265,14 +263,14 @@ export class LinkedNotesIndexer {
     }
 
     private async runImpl(key: "map" | "invMap", activeMarkdownView: MarkdownView | null) {
-        let links = this.plugin.oldLinkMap?.[key].get(this.changedFile.path);
+        const links = this.plugin.oldLinkMap?.[key].get(this.changedFile.path);
         if (links) {
             await Promise.all(
                 Array.from(links).map((link) => {
                     if (activeMarkdownView?.file.path == link) {
                         return (new ActiveNoteIndexer(this.app, this.plugin, activeMarkdownView)).run();
                     } else {
-                        let file = this.app.vault.getAbstractFileByPath(link);
+                        const file = this.app.vault.getAbstractFileByPath(link);
                         if (file instanceof TFile && file.extension == "md") {
                             return (new NonActiveNoteIndexer(this.app, this.plugin, file)).run();
                         }
@@ -289,7 +287,7 @@ export class VaultIndexer {
     async run() {
         const notes = this.app.vault.getMarkdownFiles();
         const activeMarkdownview = this.app.workspace.getActiveViewOfType(MarkdownView);
-        let promises = notes.map((note) => 
+        const promises = notes.map((note) => 
             (new AutoNoteIndexer(this.app, this.plugin, note)).run(activeMarkdownview)
         );
         await Promise.all(promises);

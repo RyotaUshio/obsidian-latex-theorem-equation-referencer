@@ -30,11 +30,11 @@ export const mathCalloutMetadataHiderPlulgin = ViewPlugin.fromClass(
             }
         }
         impl(view: EditorView) {
-            let decorationBuilder = new RangeSetBuilder<Decoration>();
-            let atomicRangeBuilder = new RangeSetBuilder<DummyRangeValue>();
-            let tree = syntaxTree(view.state);
+            const decorationBuilder = new RangeSetBuilder<Decoration>();
+            const atomicRangeBuilder = new RangeSetBuilder<DummyRangeValue>();
+            const tree = syntaxTree(view.state);
 
-            for (let { from, to } of view.visibleRanges) {
+            for (const { from, to } of view.visibleRanges) {
                 tree.iterate({
                     from,
                     to,
@@ -42,9 +42,9 @@ export const mathCalloutMetadataHiderPlulgin = ViewPlugin.fromClass(
                         const match = node.name.match(CALLOUT);
                         if (match) {
                             const level = +match[1];
-                            let calloutPreTitleNode = node.node.firstChild;
+                            const calloutPreTitleNode = node.node.firstChild;
                             if (calloutPreTitleNode?.name.match(CALLOUT_PRE_TITLE(level))) {
-                                let text = nodeText(calloutPreTitleNode, view.state);
+                                const text = nodeText(calloutPreTitleNode, view.state);
                                 if (matchMathCallout(text)) {
                                     decorationBuilder.add(
                                         calloutPreTitleNode.from + 2,

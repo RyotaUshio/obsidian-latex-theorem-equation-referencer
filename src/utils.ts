@@ -1,4 +1,3 @@
-import { Transaction } from '@codemirror/state';
 import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView } from 'obsidian';
 import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState, ChangeSet } from '@codemirror/state';
@@ -16,7 +15,7 @@ const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
 
 export function toRomanUpper(num: number): string {
     // https://stackoverflow.com/a/9083076/13613783
-    let digits = String(num).split("");
+    const digits = String(num).split("");
     let roman = "";
     let i = 3;
     while (i--) {
@@ -58,25 +57,24 @@ export async function renderTextWithMath(source: string): Promise<(HTMLElement |
     // Obsidian API's renderMath only can render math itself, but not a text with math in it.
     // e.g., it can handle "\\sqrt{x}", but cannot "$\\sqrt{x}$ is a square root"
 
-    let elements: (HTMLElement | string)[] = [];
+    const elements: (HTMLElement | string)[] = [];
 
-    let mathPattern = /\$(.*?[^\s])\$/g;
+    const mathPattern = /\$(.*?[^\s])\$/g;
     let result;
     let textFrom = 0;
     let textTo = 0;
     while ((result = mathPattern.exec(source)) !== null) {
-        let match = result[0];
-        let mathString = result[1];
+        const mathString = result[1];
         textTo = result.index;
         if (textTo > textFrom) {
             elements.push(source.slice(textFrom, textTo));
         }
         textFrom = mathPattern.lastIndex;
 
-        let mathJaxEl = renderMath(mathString, false);
+        const mathJaxEl = renderMath(mathString, false);
         await finishRenderMath();
 
-        let mathSpan = createSpan({ cls: ["math", "math-inline", "is-loaded"] });
+        const mathSpan = createSpan({ cls: ["math", "math-inline", "is-loaded"] });
         mathSpan.replaceChildren(mathJaxEl);
         elements.push(mathSpan);
     }
@@ -116,7 +114,7 @@ export function locToEditorPosition(loc: Loc): EditorPosition {
 
 export function getMathCache(cache: CachedMetadata, lineStart: number): SectionCache | undefined {
     if (cache.sections) {
-        let sectionCache = Object.values(cache.sections).find((sectionCache) =>
+        const sectionCache = Object.values(cache.sections).find((sectionCache) =>
             sectionCache.type == 'math'
             && sectionCache.position.start.line == lineStart
         );
@@ -127,7 +125,7 @@ export function getMathCache(cache: CachedMetadata, lineStart: number): SectionC
 export function getSectionCacheFromPos(cache: CachedMetadata, pos: number, type: string): SectionCache | undefined {
     // pos: CodeMirror offset units
     if (cache.sections) {
-        let sectionCache = Object.values(cache.sections).find((sectionCache) =>
+        const sectionCache = Object.values(cache.sections).find((sectionCache) =>
             sectionCache.type == type
             && (sectionCache.position.start.offset == pos || sectionCache.position.end.offset == pos)
         );
@@ -203,27 +201,27 @@ export function getDataviewAPI(plugin: MathBooster): DataviewApi | undefined {
 
 export function getBlockIdsWithBacklink(path: string, plugin: MathBooster): string[] {
     const dv = getDataviewAPI(plugin);
-    let cache = plugin.app.metadataCache.getCache(path);
-    let ids: string[] = [];
+    const cache = plugin.app.metadataCache.getCache(path);
+    const ids: string[] = [];
     if (dv && cache) {
-        let page = dv.page(path); // Dataview page object
+        const page = dv.page(path); // Dataview page object
         if (page) {
-            for (let inlink of page.file.inlinks) {
+            for (const inlink of page.file.inlinks) {
                 // cache of the source of this link (source --link--> target)
-                let sourcePath = inlink.path;
-                let sourceCache = plugin.app.metadataCache.getCache(sourcePath);
+                const sourcePath = inlink.path;
+                const sourceCache = plugin.app.metadataCache.getCache(sourcePath);
                 if (sourceCache) {
                     sourceCache.links?.forEach(
                         (item) => {
-                            let linktext = item.link;
-                            let parseResult = parseLinktext(linktext);
-                            let linkpath = parseResult.path;
-                            let subpath = parseResult.subpath;
-                            let targetFile = plugin.app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
+                            const linktext = item.link;
+                            const parseResult = parseLinktext(linktext);
+                            const linkpath = parseResult.path;
+                            const subpath = parseResult.subpath;
+                            const targetFile = plugin.app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
                             if (targetFile && targetFile.path == path) {
-                                let subpathResult = resolveSubpath(cache as CachedMetadata, subpath);
+                                const subpathResult = resolveSubpath(cache as CachedMetadata, subpath);
                                 if (subpathResult && subpathResult.type == "block") {
-                                    let blockCache = subpathResult.block;
+                                    const blockCache = subpathResult.block;
                                     ids.push(blockCache.id);
                                 }
                             }
@@ -258,21 +256,21 @@ export function matchMathCallout(line: string): RegExpExecArray | null {
 export function readMathCalloutSettingsAndTitle(line: string): { settings: MathSettings, title: string } | undefined {
     const matchResult = matchMathCallout(line);
     if (matchResult) {
-        let settings = JSON.parse(matchResult[1]) as MathSettings;
-        let title = matchResult[2].trim();
+        const settings = JSON.parse(matchResult[1]) as MathSettings;
+        const title = matchResult[2].trim();
         return { settings, title };
     }
 }
 
 export function readMathCalloutSettings(line: string): MathSettings | undefined {    // const matchResult = matchMathCallout(editor, lineNumber);
-    let result = readMathCalloutSettingsAndTitle(line);
+    const result = readMathCalloutSettingsAndTitle(line);
     if (result) {
         return result.settings;
     }
 }
 
 export function readMathCalloutTitle(line: string): string | undefined {    // const matchResult = matchMathCallout(editor, lineNumber);
-    let result = readMathCalloutSettingsAndTitle(line);
+    const result = readMathCalloutSettingsAndTitle(line);
     if (result) {
         return result.title;
     }
@@ -289,7 +287,7 @@ export function iterDescendantFiles(file: TAbstractFile, callback: (descendantFi
 }
 
 export function getAncestors(file: TAbstractFile): TAbstractFile[] {
-    let ancestors: TAbstractFile[] = [];
+    const ancestors: TAbstractFile[] = [];
     let ancestor: TAbstractFile | null = file;
     while (ancestor) {
         ancestors.push(ancestor);
@@ -311,7 +309,7 @@ export function resolveSettings(settings: MathSettings | undefined, plugin: Math
      * - ResolvedMathContextSettings or 
      * - Required<MathContextSettings> & Partial<MathCalloutSettings>.
      * */
-    let resolvedSettings = Object.assign({}, DEFAULT_SETTINGS);
+    const resolvedSettings = Object.assign({}, DEFAULT_SETTINGS);
     const ancestors = getAncestors(currentFile);
     for (const ancestor of ancestors) {
         Object.assign(resolvedSettings, plugin.settings[ancestor.path]);
@@ -321,7 +319,7 @@ export function resolveSettings(settings: MathSettings | undefined, plugin: Math
 }
 
 export function formatTitleWithoutSubtitle(settings: ResolvedMathSettings): string {
-    let env = ENVs_MAP[settings.type];
+    const env = ENVs_MAP[settings.type];
 
     let title = '';
     if (settings.rename[env.id]) {
@@ -334,8 +332,8 @@ export function formatTitleWithoutSubtitle(settings: ResolvedMathSettings): stri
         if (settings.number == 'auto') {
             if (settings._index !== undefined) {
                 settings.numberInit = settings.numberInit ?? 1;
-                let num = +settings._index + +settings.numberInit;
-                let style = settings.numberStyle ?? DEFAULT_SETTINGS.numberStyle as NumberStyle;
+                const num = +settings._index + +settings.numberInit;
+                const style = settings.numberStyle ?? DEFAULT_SETTINGS.numberStyle as NumberStyle;
                 numberString = CONVERTER[style](num);
             }
         } else {
@@ -379,7 +377,7 @@ export function formatTitle(settings: ResolvedMathSettings, noTitleSuffix: boole
 
 // export function validateLinktext(text: string): string {
 //     // "[[Filename#Heading]]" --> "Filename#Heading"
-//     let len = text.length;
+//     const len = text.length;
 //     if (text[0] == '[' && text[0] == '[' && text[len - 2] == ']' && text[len - 1] == ']') {
 //         return text.slice(2, len - 2);
 //     }
@@ -388,8 +386,8 @@ export function formatTitle(settings: ResolvedMathSettings, noTitleSuffix: boole
 
 // export function linktext2TFile(app: App, linktext: string): TFile {
 //     linktext = validateLinktext(linktext);
-//     let linkpath = getLinkpath(linktext);
-//     let file = app.metadataCache.getFirstLinkpathDest(linkpath, "");
+//     const linkpath = getLinkpath(linktext);
+//     const file = app.metadataCache.getFirstLinkpathDest(linkpath, "");
 //     if (file) {
 //         return file;
 //     }
@@ -397,9 +395,9 @@ export function formatTitle(settings: ResolvedMathSettings, noTitleSuffix: boole
 // }
 
 // export function getLinksAndEmbedsInFile(app: App, file: TFile): { links: string[] | undefined, embeds: string[] | undefined } {
-//     let cache = app.metadataCache.getFileCache(file);
+//     const cache = app.metadataCache.getFileCache(file);
 //     if (cache) {
-//         let { links, embeds } = cache;
+//         const { links, embeds } = cache;
 //         let linkStrings;
 //         let embedStrings
 //         if (links) {
@@ -425,7 +423,7 @@ export function formatTitle(settings: ResolvedMathSettings, noTitleSuffix: boole
 
 
 // export function getActiveTextView(app: App): TextFileView | null {
-//     let view = app.workspace.getActiveViewOfType(TextFileView);
+//     const view = app.workspace.getActiveViewOfType(TextFileView);
 //     if (!view) {
 //         return null;
 //     }
@@ -436,8 +434,8 @@ export function formatTitle(settings: ResolvedMathSettings, noTitleSuffix: boole
 // export function generateBlockID(app: App, length: number = 6): string {
 //     // https://stackoverflow.com/a/58326357/13613783
 //     let id = '';
-//     let file = getCurrentMarkdown(app);
-//     let cache = app.metadataCache.getFileCache(file);
+//     const file = getCurrentMarkdown(app);
+//     const cache = app.metadataCache.getFileCache(file);
 
 //     while (true) {
 //         id = [...Array(length)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
