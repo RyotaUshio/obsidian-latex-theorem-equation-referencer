@@ -75,7 +75,7 @@ if __name__ == "__main__":
             + ''.join(lines)
             + textwrap.dedent(
             """
-            .font-family-inherit {
+            .math-callout-font-family-inherit {
                 font-family: inherit !important;
             }
 

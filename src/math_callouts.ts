@@ -49,7 +49,7 @@ export class MathCallout extends MarkdownRenderChild {
         this.containerEl.classList.add("math-callout-" + this.resolvedSettings.lang);
         this.containerEl.classList.add("math-callout-" + this.resolvedSettings.type);
         this.containerEl.toggleClass(`math-callout-${this.resolvedSettings.mathCalloutStyle}`, this.resolvedSettings.mathCalloutStyle != "custom");
-        this.containerEl.toggleClass("font-family-inherit", this.resolvedSettings.mathCalloutStyle != "custom" && this.resolvedSettings.mathCalloutFontInherit);
+        this.containerEl.toggleClass("math-callout-font-family-inherit", this.resolvedSettings.mathCalloutStyle != "custom" && this.resolvedSettings.mathCalloutFontInherit);
 
         // click the title block (div.callout-title) to edit settings
         const button = new ExtraButtonComponent(this.containerEl)

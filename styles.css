@@ -164,7 +164,7 @@ so we need to replace it with this plugin's editor extension. */
     font-style: italic;
 }
 
-.font-family-inherit {
+.math-callout-font-family-inherit {
     font-family: inherit !important;
 }
 
