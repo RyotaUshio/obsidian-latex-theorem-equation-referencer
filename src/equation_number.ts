@@ -4,6 +4,7 @@ import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/vie
 import MathBooster from './main';
 import { getMathCache, getMathCacheFromPos, resolveSettings } from './utils';
 import { ActiveNoteIndexer, AutoNoteIndexer, NonActiveNoteIndexer } from './indexer';
+import { MathContextSettings } from "settings/settings";
 
 
 /** For reading mode */
@@ -60,7 +61,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
             if (text) {
                 const settings = resolveSettings(undefined, this.plugin, this.file);
                 if (this.containerEl) {
-                    const el = replaceMathTag(this.containerEl, text, mathLink, settings.lineByLine);
+                    const el = replaceMathTag(this.containerEl, text, mathLink, settings);
                     if (el) {
                         this.containerEl = el;
                     }
@@ -115,7 +116,7 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugi
                                 const text = await indexer.getBlockText(id);
                                 if (text) {
                                     const settings = resolveSettings(undefined, plugin, markdownView.file);	
-                                    replaceMathTag(mjxContainerEl, text, mathLink, settings.lineByLine);
+                                    replaceMathTag(mjxContainerEl, text, mathLink, settings);
                                 }
                             }
                         } catch (err) {
@@ -170,15 +171,20 @@ export function insertTagInMathText(textContent: string, tagContent: string, lin
         }
     }
     return textContent.replace(/[\n\r]/g, ' ') + `\\tag{${tagContent}}`;
-
 }
 
-export function replaceMathTag(displayMathEl: HTMLElement, text: string, tag: string | undefined, lineByLine: boolean) {
+
+export function replaceMathTag(displayMathEl: HTMLElement, text: string, mathLink: string | undefined, settings: Required<MathContextSettings>) {
     const tagMatch = text.match(/\\tag\{.*\}/);
     if (tagMatch) {
         return;
     }
-    const taggedText = getMathTextWithTag(text, tag, lineByLine);
+    let tag = mathLink;
+    if (mathLink) {
+        tag = mathLink.slice(settings.eqRefPrefix.length, -settings.eqRefSuffix.length)
+    }
+    console.log(`mathLink=${mathLink}, prefix=${settings.eqRefPrefix}, suffix=${settings.eqRefSuffix}, tag=${tag}`);
+    const taggedText = getMathTextWithTag(text, tag, settings.lineByLine);
     if (taggedText) {
         const mjxContainerEl = renderMath(taggedText, true);
         finishRenderMath();

@@ -156,10 +156,11 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
             const equation = equations[i];
             const id = equation.cache.id;
             if (id) {
+                const {eqRefPrefix, eqRefSuffix} = contextSettings;
                 if (equation.manualTag) {
-                    this.mathLinkBlocks[id] = `(${equation.manualTag})`;
+                    this.mathLinkBlocks[id] = eqRefPrefix + `(${equation.manualTag})` + eqRefSuffix;
                 } else {
-                    this.mathLinkBlocks[id] = "(" + prefix + CONVERTER[style](equationNumber) + suffix + ")";
+                    this.mathLinkBlocks[id] = eqRefPrefix + "(" + prefix + CONVERTER[style](equationNumber) + suffix + ")" + eqRefSuffix;
                     equationNumber++;
                 }
             }

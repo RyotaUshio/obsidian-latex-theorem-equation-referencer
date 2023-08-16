@@ -180,9 +180,16 @@ export default class MathBooster extends Plugin {
 		this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
 		this.registerEditorExtensionFactory(buildEquationNumberPlugin);
 
-		this.registerEditorExtension(MathPreviewInfoField);
-		this.registerEditorExtension(inlineMathPreviewView);
-		this.registerEditorExtension(Prec.highest(displayMathPreviewView));
+		// this.registerEditorExtension(MathPreviewInfoField);
+		// this.registerEditorExtension(inlineMathPreviewView);
+		// this.registerEditorExtension(Prec.highest(displayMathPreviewView));
+		this.registerEditorExtensionFactory(
+			(app, plugin, view) => [
+				MathPreviewInfoField, 
+				inlineMathPreviewView, 
+				displayMathPreviewView
+			]
+		);
 
 
 		/** Markdown post processors */
@@ -309,7 +316,7 @@ export default class MathBooster extends Plugin {
 	}
 
 	registerEditorExtensionFactory(
-		factory: (app: App, plugin: MathBooster, view: MarkdownView) => Extension,
+		factory: (app: App, plugin: MathBooster, view: MarkdownView) => Extension | Extension[],
 	) {
 		this.app.workspace.onLayoutReady(() => {
 			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {

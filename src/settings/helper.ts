@@ -161,6 +161,9 @@ export class MathContextSettingsHelper {
         this.addTextSetting("eqNumberInit", "Initial count");
         this.addNumberStyleSetting("eqNumberStyle", "Equation numbering style");
         this.addToggleSetting("lineByLine", "Number line by line in align");
+        contentEl.createEl("h6", { text: "Referencing" });
+        this.addTextSetting("eqRefPrefix", "Prefix");
+        this.addTextSetting("eqRefSuffix", "Suffix");
     }
 
     addDropdownSetting(name: keyof MathContextSettings, options: readonly string[], allowUnset: boolean, prettyName: string, description?: string) {

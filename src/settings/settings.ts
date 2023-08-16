@@ -42,6 +42,8 @@ export interface MathContextSettings {
     eqNumberSuffix: string;
     eqNumberInit: number;
     eqNumberStyle: NumberStyle;
+    eqRefPrefix: string;
+    eqRefSuffix: string;
     labelPrefix: string;
     rename: RenameEnv;
     lineByLine: boolean;
@@ -76,6 +78,8 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     eqNumberSuffix: "",
     eqNumberInit: 1,
     eqNumberStyle: "arabic",
+    eqRefPrefix: "", 
+    eqRefSuffix: "",
     labelPrefix: "",
     rename: {} as RenameEnv,
     lineByLine: true,
