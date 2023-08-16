@@ -124,19 +124,19 @@ export default class MathBooster extends Plugin {
 
 		this.addCommand({
 			id: 'insert-inline-math',
-			name: 'Insert Inline Math',
+			name: 'Insert inline math',
 			editorCallback: insertInlineMath
 		});
 
 		this.addCommand({
 			id: 'insert-display-math',
-			name: 'Insert Display Math',
+			name: 'Insert display math',
 			editorCallback: (editor) => insertDisplayMath(editor, this.app)
 		});
 
 		this.addCommand({
 			id: 'insert-math-callout',
-			name: 'Insert Math Callout',
+			name: 'Insert math callout',
 			editorCallback: async (editor, context) => {
 				if (context instanceof MarkdownView) {
 					const modal = new MathCalloutModal(
@@ -159,7 +159,7 @@ export default class MathBooster extends Plugin {
 
 		this.addCommand({
 			id: 'open-local-settings-for-current-note',
-			name: 'Open Local Settings for the Current Note',
+			name: 'Open local settings for the current note',
 			callback: () => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (view) {
@@ -189,15 +189,8 @@ export default class MathBooster extends Plugin {
 		this.registerEditorExtension(MathPreviewInfoField);
 		this.registerEditorExtension(inlineMathPreviewView);
 		this.registerEditorExtension(Prec.highest(displayMathPreviewView));
-		// this.registerEditorExtensionFactory(
-		// 	(app, plugin, view) => [
-		// 		MathPreviewInfoField, 
-		// 		inlineMathPreviewView, 
-		// 		displayMathPreviewView
-		// 	]
-		// );
 
-
+		
 		/** Markdown post processors */
 
 		// for math callouts
