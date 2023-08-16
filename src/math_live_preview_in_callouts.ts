@@ -1,9 +1,9 @@
-import { ExtraButtonComponent, finishRenderMath, renderMath } from "obsidian";
+import { ExtraButtonComponent, editorInfoField, finishRenderMath, renderMath } from "obsidian";
 import { Extension, Transaction, StateField, RangeSetBuilder, EditorState, RangeValue, RangeSet } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { syntaxTree } from '@codemirror/language';
 
-import { isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed } from 'utils';
+import { isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed, printMathInfoSet, printNode } from 'utils';
 import { CALLOUT } from "math_callout_metadata_hider";
 
 
@@ -97,6 +97,7 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
     tree.iterate({
         enter(node) {
             if (node.node.parent?.name == "Document") {
+                printNode(node, state);
                 if (insideCallout) {
                     if (node.from == lastCalloutPos + 1 && node.name.match(BLOCKQUOTE)) {
                         lastCalloutPos = node.to;
@@ -108,6 +109,7 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
                     insideCallout = true;
                     lastCalloutPos = node.to;
                 }
+                console.log("insideCallout:", insideCallout);
             }
 
             if (node.from < quoteContentStart) {
@@ -207,6 +209,9 @@ export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
     },
 
     update(prev: MathPreviewInfo, transaction: Transaction): MathPreviewInfo {
+        console.log(transaction.startState.field(editorInfoField).file?.path);
+        console.log(prev);
+        printMathInfoSet(prev.mathInfoSet, transaction.startState);
         // set isInCalloutsOrQuotes
         const isInCalloutsOrQuotes = isInBlockquoteOrCallout(transaction.state);
         // set hasOverlappingMath
@@ -330,10 +335,13 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
             (from, to, value) => {
                 if (value.display) {
                     if (to < range.from || from > range.to) {
+                        console.log("mathInfo:", value);
                         if (!value.insideCallout || transaction.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
+                            console.log("replace");
                             builder.add(from, to, value.toDecoration("replace"));    
                         }
                     } else {
+                        console.log("insert");
                         builder.add(to + 1, to + 1, value.toDecoration("insert"));
                     }
                 }
