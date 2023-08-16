@@ -206,11 +206,11 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addDropdownSetting("lang", LanguageManager.supported, "Language");
         const styleSetting = this.addDropdownSetting("mathCalloutStyle", MATH_CALLOUT_STYLES, "Style");
         styleSetting.descEl.replaceChildren(
-            "Choose between your custom style and pre-defined sample styles. You will need to reload the note to see the changes. See the ",
+            "Choose between your custom style and preset styles. You will need to reload the note to see the changes. See the ",
             createEl("a", {text: "documentation", attr: {href: "https://ryotaushio.github.io/obsidian-math-booster/style-your-theorems.html"}}), 
             " for how to customize the appearance of math callouts.",
         );
-        this.addToggleSetting("mathCalloutFontInherit", "Don't override the app's font setting when using sample styles", "You will need to reload the note to see the changes.");
+        this.addToggleSetting("mathCalloutFontInherit", "Don't override the app's font setting when using preset styles", "You will need to reload the note to see the changes.");
         this.addTextSetting("titleSuffix", "Title suffix", "ex) \"\" > Definition 2 (Group) / \".\" > Definition 2 (Group).");
         this.addTextSetting("labelPrefix", "LaTeX label prefix", 'ex) "geometry:" > a theorem with label="pythhagorean-theorem" will be given a LaTeX label "thm:geometry:pythhagorean-theorem"');
         this.addRenameSetting();
