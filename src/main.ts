@@ -69,7 +69,7 @@ export default class MathBooster extends Plugin {
 
 		this.registerEvent(
 			this.app.metadataCache.on("math-booster:local-settings-updated", async (file) => {
-				let promises: Promise<void>[] = []
+				const promises: Promise<void>[] = []
 				iterDescendantFiles(
 					file,
 					(descendantFile) => {
@@ -133,7 +133,7 @@ export default class MathBooster extends Plugin {
 			name: 'Insert Math Callout',
 			editorCallback: async (editor, context) => {
 				if (context instanceof MarkdownView) {
-					let modal = new MathCalloutModal(
+					const modal = new MathCalloutModal(
 						this.app,
 						this,
 						context,
@@ -157,13 +157,13 @@ export default class MathBooster extends Plugin {
 			callback: () => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (view) {
-					let modal = new ContextSettingModal(
+					const modal = new ContextSettingModal(
 						this.app,
 						this, view.file.path,
 						(settings) => {
-							let cache = this.app.metadataCache.getCache((view as MarkdownView).file.path);
+							const cache = this.app.metadataCache.getCache((view as MarkdownView).file.path);
 							if (cache) {
-								let indexer = new ActiveNoteIndexer(this.app, this, view as MarkdownView);
+								const indexer = new ActiveNoteIndexer(this.app, this, view as MarkdownView);
 								indexer.run(cache);
 							}
 						}
@@ -184,25 +184,27 @@ export default class MathBooster extends Plugin {
 		this.registerEditorExtension(inlineMathPreviewView);
 		this.registerEditorExtension(Prec.highest(displayMathPreviewView));
 
+
 		/** Markdown post processors */
 
+		// for math callouts
 		this.registerMarkdownPostProcessor(async (element, context) => {
 			const callouts = element.querySelectorAll<HTMLElement>(".callout");
 
 			for (let index = 0; index < callouts.length; index++) {
-				let callout = callouts[index];
+				const callout = callouts[index];
 
-				let type = callout.getAttribute('data-callout');
-				let metadata = callout.getAttribute('data-callout-metadata');
+				const type = callout.getAttribute('data-callout');
+				const metadata = callout.getAttribute('data-callout-metadata');
 				if (metadata) {
 					const isSmartCallout = (type?.toLowerCase() == 'math');
 
 					if (isSmartCallout) {
 						const settings = JSON.parse(metadata);
 
-						let currentFile = this.app.vault.getAbstractFileByPath(context.sourcePath);
+						const currentFile = this.app.vault.getAbstractFileByPath(context.sourcePath);
 						if (currentFile instanceof TFile) {
-							let smartCallout = new MathCallout(callout, this.app, this, settings, currentFile, context);
+							const smartCallout = new MathCallout(callout, this.app, this, settings, currentFile, context);
 							await smartCallout.setRenderedTitleElements();
 							context.addChild(smartCallout);
 						}
@@ -211,11 +213,12 @@ export default class MathBooster extends Plugin {
 			}
 		});
 
+		// for equation numbers
 		this.registerMarkdownPostProcessor((element, context) => {
-			let mjxElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax > mjx-math[display="true"]');
+			const mjxElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax > mjx-math[display="true"]');
 			if (mjxElements) {
 				for (let i = 0; i < mjxElements.length; i++) {
-					let mjxContainerEl = mjxElements[i].parentElement;
+					const mjxContainerEl = mjxElements[i].parentElement;
 					if (mjxContainerEl) {
 						context.addChild(
 							new DisplayMathRenderChild(
@@ -236,13 +239,13 @@ export default class MathBooster extends Plugin {
 	}
 
 	async loadSettings() {
-		let loadedData = await this.loadData();
+		const loadedData = await this.loadData();
 		if (loadedData) {
-			let { settings, excludedFiles } = loadedData;
+			const { settings, excludedFiles } = loadedData;
 			this.settings = Object.assign({}, { [VAULT_ROOT]: DEFAULT_SETTINGS }, settings);
 			this.excludedFiles = excludedFiles;
 		} else {
-			this.settings = Object.assign({}, { [VAULT_ROOT]: DEFAULT_SETTINGS }, undefined);
+			this.settings = Object.assign({}, { [VAULT_ROOT]: DEFAULT_SETTINGS });
 			this.excludedFiles = [];
 		}
 	}
@@ -278,7 +281,7 @@ export default class MathBooster extends Plugin {
 	}
 
 	getMathLinksAPI(): MathLinks.MathLinksAPIAccount | undefined {
-		let account = MathLinks.getAPIAccount(this);
+		const account = MathLinks.getAPIAccount(this);
 		if (account) {
 			account.blockPrefix = "";
 			account.enableFileNameBlockLinks = false;
