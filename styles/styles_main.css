@@ -1,10 +1,6 @@
 .math-booster-preview {
     cursor: text;
 }
-                
-.cm-embed-block {
-    position: relative;
-}
 
 .cm-embed-block .math-booster-preview-edit-button {
     padding: var(--size-2-2) var(--size-2-3);
