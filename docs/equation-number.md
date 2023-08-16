@@ -58,6 +58,8 @@ Also, if you delete all the links to an equation, ...
 
 ![Result](fig/equation_number_8.png)
 
+## Remarks
+
 You must include at least one line break between `$$ ... $$` if you want the equation to be numbered.
 Otherwise, Obsidian will not recognize it as a math block.
 
@@ -82,6 +84,8 @@ $$f(x)$$
 
 Also, note that you cannot insert a link to equations in callouts or blockquotes. 
 This is an inherent limitation of Obsidian rather than this plugin.[^1]
+
+Lastly, make sure there is an emtpy line under the block ID of the equation. Again, this is needed due to how Obsidian works.
 
 [^1]: Technically, it is possible to display an equation number for an equation in callouts. However, I think there is no point in doing it if the equation cannot be referenced.
 
