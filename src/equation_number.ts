@@ -61,7 +61,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
             if (text) {
                 const settings = resolveSettings(undefined, this.plugin, this.file);
                 if (this.containerEl) {
-                    const el = replaceMathTag(this.containerEl, text, mathLink, settings);
+                    const el = await replaceMathTag(this.containerEl, text, mathLink, settings);
                     if (el) {
                         this.containerEl = el;
                     }
@@ -116,7 +116,7 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugi
                                 const text = await indexer.getBlockText(id);
                                 if (text) {
                                     const settings = resolveSettings(undefined, plugin, markdownView.file);	
-                                    replaceMathTag(mjxContainerEl, text, mathLink, settings);
+                                    await replaceMathTag(mjxContainerEl, text, mathLink, settings);
                                 }
                             }
                         } catch (err) {
@@ -174,21 +174,20 @@ export function insertTagInMathText(textContent: string, tagContent: string, lin
 }
 
 
-export function replaceMathTag(displayMathEl: HTMLElement, text: string, mathLink: string | undefined, settings: Required<MathContextSettings>) {
+export async function replaceMathTag(displayMathEl: HTMLElement, text: string, mathLink: string | undefined, settings: Required<MathContextSettings>) {
     const tagMatch = text.match(/\\tag\{.*\}/);
     if (tagMatch) {
         return;
     }
     let tag = mathLink;
     if (mathLink) {
-        tag = mathLink.slice(settings.eqRefPrefix.length, -settings.eqRefSuffix.length)
+        tag = mathLink.slice(settings.eqRefPrefix.length, mathLink.length - settings.eqRefSuffix.length)
     }
-    console.log(`mathLink=${mathLink}, prefix=${settings.eqRefPrefix}, suffix=${settings.eqRefSuffix}, tag=${tag}`);
     const taggedText = getMathTextWithTag(text, tag, settings.lineByLine);
     if (taggedText) {
         const mjxContainerEl = renderMath(taggedText, true);
-        finishRenderMath();
         displayMathEl.replaceWith(mjxContainerEl);
+        await finishRenderMath();
         return mjxContainerEl;
     }
 }
