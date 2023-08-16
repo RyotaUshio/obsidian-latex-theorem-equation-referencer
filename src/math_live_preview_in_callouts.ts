@@ -24,14 +24,23 @@ class MathPreviewWidget extends WidgetType {
     toDOM(view: EditorView): HTMLElement {
         this.info.mathEl.classList.add("math-booster-preview");
         if (this.info.display) {
+            // <img class="cm-widgetBuffer" aria-hidden="true">
             const containerEl = createDiv({
+                cls: ["HyperMD-quote", "HyperMD-quote-1", "HyperMD-quote-lazy", "cm-line"],
+                attr: {style: "text-indent:-15px;padding-inline-start:19px;"}
+            });
+            containerEl.createEl("img", {
+                cls: "cm-widgetBuffer", 
+                attr: {"aria-hidden": "true"}
+            });
+            const cmEmbedBlockEl = containerEl.createDiv({
                 cls: ["math", "math-block", "cm-embed-block"],
                 attr: {
                     contenteditable: false,
                 }
             });
-            containerEl.appendChild(this.info.mathEl);
-            const editButton = new ExtraButtonComponent(containerEl)
+            cmEmbedBlockEl.appendChild(this.info.mathEl);
+            const editButton = new ExtraButtonComponent(cmEmbedBlockEl)
                 .setIcon("code-2")
                 .setTooltip("Edit this block");
             editButton.extraSettingsEl.addEventListener("click", (ev: MouseEvent) => {
@@ -70,11 +79,12 @@ class MathInfo extends RangeValue {
     toDecoration(which: "replace" | "insert"): Decoration {
         return which == "replace"
             ? Decoration.replace({
-                widget: this.toWidget()
+                widget: this.toWidget(), 
+                block: this.display,
             })
             : Decoration.widget({
                 widget: this.toWidget(),
-                block: true,
+                block: this.display,
             });
     }
 }
@@ -97,7 +107,7 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
     tree.iterate({
         enter(node) {
             if (node.node.parent?.name == "Document") {
-                printNode(node, state);
+                // printNode(node, state);
                 if (insideCallout) {
                     if (node.from == lastCalloutPos + 1 && node.name.match(BLOCKQUOTE)) {
                         lastCalloutPos = node.to;
@@ -210,6 +220,11 @@ export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
 
     update(prev: MathPreviewInfo, transaction: Transaction): MathPreviewInfo {
         console.log(transaction.startState.field(editorInfoField).file?.path);
+        const oldPath = transaction.startState.field(editorInfoField).file?.path;
+        const newPath = transaction.state.field(editorInfoField).file?.path;
+        if (oldPath != newPath) {
+            console.log("--------------------- File changed -------------------");
+        }
         console.log(prev);
         printMathInfoSet(prev.mathInfoSet, transaction.startState);
         // set isInCalloutsOrQuotes
@@ -334,10 +349,10 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
             transaction.state.doc.length,
             (from, to, value) => {
                 if (value.display) {
+                    console.log("mathInfo:", value);
                     if (to < range.from || from > range.to) {
-                        console.log("mathInfo:", value);
                         if (!value.insideCallout || transaction.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
-                            console.log("replace");
+                            console.log(`replace: ${from}-${to}`);
                             builder.add(from, to, value.toDecoration("replace"));    
                         }
                     } else {

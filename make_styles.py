@@ -45,7 +45,7 @@ if __name__ == "__main__":
                 transition: 0s;
                 opacity: 1
             }
-
+                            
             /* Unlike in callouts, Obsidian natively renders MathJax in blockquotes. But it is rather buggy 
             (see https://forum.obsidian.md/t/live-preview-support-math-block-in-quotes/32564/2), 
             so we need to replace it with this plugin's editor extension. */
