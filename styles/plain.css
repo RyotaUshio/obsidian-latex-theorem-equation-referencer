@@ -4,6 +4,8 @@
     background-color: rgb(0, 0, 0, 0);
     padding-left: 0;
     padding-right: 0;
+    border: none;
+    box-shadow: none;
 }
 
 .math-callout .callout-icon {
