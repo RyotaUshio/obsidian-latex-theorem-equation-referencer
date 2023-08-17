@@ -1,10 +1,10 @@
-import { App, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Notice, TFile } from "obsidian";
+import { App, CachedMetadata, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Notice, TFile } from "obsidian";
 
 import MathBooster from './main';
 import { MathCalloutModal } from './modals';
 import { MathSettings, ResolvedMathSettings } from './settings/settings';
 import { TheoremLikeEnv, getTheoremLikeEnv } from './env';
-import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, getSectionCacheFromPos, readMathCalloutSettings } from './utils';
+import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, getSectionCacheFromPos, readMathCalloutSettings, isEditingView } from './utils';
 import { AutoNoteIndexer } from './indexer';
 
 
@@ -56,11 +56,14 @@ export class MathCallout extends MarkdownRenderChild {
             .setIcon("settings-2")
             .setTooltip("Edit math callout settings");
         button.extraSettingsEl.addEventListener("click", (ev) => {
-            const cache = this.app.metadataCache.getFileCache(this.currentFile);
             ev.stopPropagation();
+            const cache = this.app.metadataCache.getFileCache(this.currentFile);
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
             const editor = view?.editor;
             if (editor) {
+                // Make sure to get the line number BEFORE opening the modal!!
+                const lineNumber = this.getLineNumber(view, cache, ev);
+
                 const modal = new MathCalloutModal(
                     this.app,
                     this.plugin,
@@ -70,20 +73,6 @@ export class MathCallout extends MarkdownRenderChild {
                         this.resolvedSettings = resolveSettings(this.settings, this.plugin, this.currentFile);
                         const title = formatTitle(this.resolvedSettings);
                         const indexer = (new AutoNoteIndexer(this.app, this.plugin, view.file)).getIndexer();
-                        const info = this.context.getSectionInfo(this.containerEl);
-                        let lineNumber = info?.lineStart;
-                        if (lineNumber === undefined && view.getMode() == "source") { // Live preview or source mode
-                            let pos = editor.cm?.posAtDOM(this.containerEl);
-                            if (pos !== undefined && cache) {
-                                lineNumber = getSectionCacheFromPos(cache, pos, "callout")?.position.start.line;
-                            }
-                            if (lineNumber === undefined && cache) {
-                                const pos = editor.cm?.posAtCoords(ev) ?? editor.cm?.posAtCoords(ev, false);
-                                if (pos !== undefined) {
-                                    lineNumber = getSectionCacheFromPos(cache, pos, "callout")?.position.start.line;
-                                }
-                            }
-                        }
                         if (lineNumber !== undefined) {
                             await indexer.calloutIndexer.overwriteSettings(lineNumber, this.settings, title);
                         } else {
@@ -103,6 +92,28 @@ export class MathCallout extends MarkdownRenderChild {
         });
         button.extraSettingsEl.classList.add("math-callout-setting-button");
 
+    }
+
+    getLineNumber(view: MarkdownView, cache: CachedMetadata | null, event: MouseEvent): number | undefined {
+        const info = this.context.getSectionInfo(this.containerEl);
+        let lineNumber = info?.lineStart;
+        if (lineNumber === undefined) {
+            if (isEditingView(view)) {
+                let pos = view.editor.cm?.posAtDOM(this.containerEl);
+                if (pos !== undefined && cache) {
+                    lineNumber = getSectionCacheFromPos(cache, pos, "callout")?.position.start.line;
+                }
+                if (lineNumber === undefined && cache) {
+                    const pos = view.editor.cm?.posAtCoords(event) ?? view.editor.cm?.posAtCoords(event, false);
+                    if (pos !== undefined) {
+                        lineNumber = getSectionCacheFromPos(cache, pos, "callout")?.position.start.line;
+                    }
+                }    
+            } else {
+                // what can I do in reading view??
+            }
+        }
+        return lineNumber;
     }
 }
 
