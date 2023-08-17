@@ -1,10 +1,10 @@
-import { App, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, TFile } from "obsidian";
+import { App, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Notice, TFile } from "obsidian";
 
 import MathBooster from './main';
 import { MathCalloutModal } from './modals';
 import { MathSettings, ResolvedMathSettings } from './settings/settings';
 import { TheoremLikeEnv, getTheoremLikeEnv } from './env';
-import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, getSectionCacheFromPos } from './utils';
+import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, getSectionCacheFromPos, readMathCalloutSettings } from './utils';
 import { AutoNoteIndexer } from './indexer';
 
 
@@ -56,6 +56,7 @@ export class MathCallout extends MarkdownRenderChild {
             .setIcon("settings-2")
             .setTooltip("Edit math callout settings");
         button.extraSettingsEl.addEventListener("click", (ev) => {
+            const cache = this.app.metadataCache.getFileCache(this.currentFile);
             ev.stopPropagation();
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
             const editor = view?.editor;
@@ -65,7 +66,6 @@ export class MathCallout extends MarkdownRenderChild {
                     this.plugin,
                     view.file,
                     async (settings) => {
-                        console.log("math_callouts.ts: settings =", this.settings);
                         this.settings = settings;
                         this.resolvedSettings = resolveSettings(this.settings, this.plugin, this.currentFile);
                         const title = formatTitle(this.resolvedSettings);
@@ -73,17 +73,25 @@ export class MathCallout extends MarkdownRenderChild {
                         const info = this.context.getSectionInfo(this.containerEl);
                         let lineNumber = info?.lineStart;
                         if (lineNumber === undefined && view.getMode() == "source") { // Live preview or source mode
-                            const pos = editor.cm?.posAtDOM(this.containerEl);
-                            const cache = this.app.metadataCache.getFileCache(this.currentFile);
+                            let pos = editor.cm?.posAtDOM(this.containerEl);
                             if (pos !== undefined && cache) {
                                 lineNumber = getSectionCacheFromPos(cache, pos, "callout")?.position.start.line;
+                            }
+                            if (lineNumber === undefined && cache) {
+                                const pos = editor.cm?.posAtCoords(ev) ?? editor.cm?.posAtCoords(ev, false);
+                                if (pos !== undefined) {
+                                    lineNumber = getSectionCacheFromPos(cache, pos, "callout")?.position.start.line;
+                                }
                             }
                         }
                         if (lineNumber !== undefined) {
                             await indexer.calloutIndexer.overwriteSettings(lineNumber, this.settings, title);
+                        } else {
+                            new Notice(
+                                `${this.plugin.manifest.name}: Could not find the line number to overwrite. Retry later.`,
+                                5000
+                            )
                         }
-                        console.log("math_callouts.ts: last: ", this.settings);
-                        this.app.metadataCache.trigger("math-booster:math-callout-settings-updated", this.currentFile);
                     },
                     "Confirm",
                     "Edit math callout settings",

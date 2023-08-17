@@ -1,8 +1,8 @@
-import { MarkdownView, Setting, TAbstractFile, TFile, TFolder, TextComponent } from 'obsidian';
+import { Setting, TAbstractFile, TFile, TFolder, TextComponent } from 'obsidian';
 
 import MathBooster from '../main';
 import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from '../env';
-import { DEFAULT_SETTINGS, ExtraSettings, MAIN_MATH_CALLOUT_SPECIFIERS, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, RenameEnv } from './settings';
+import { DEFAULT_SETTINGS, ExtraSettings, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, RenameEnv } from './settings';
 import LanguageManager from '../language';
 import { BooleanKeys, formatTitle } from '../utils';
 import { AutoNoteIndexer } from 'indexer';
@@ -115,9 +115,6 @@ export class MathCalloutSettingsHelper {
         new Setting(contentEl).setName("Use this math callout to set this note's mathLink").addToggle((toggle) => {
             this.settings.setAsNoteMathLink = this.defaultSettings.setAsNoteMathLink ?? false;
             toggle.setValue(this.settings.setAsNoteMathLink);
-            if (this.defaultSettings.mainMathCallout != "None") {
-                toggle.setDisabled(true);
-            }
             toggle.onChange(async (value) => {
                     const cache = this.plugin.app.metadataCache.getFileCache(this.file);
                     if (cache) {
@@ -255,12 +252,6 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
             MATH_CALLOUT_REF_FORMATS,
             "Note mathLink format",
             "When a math callout's \"Use this math callout to set this note's mathLink\" setting is turned on, this format will be used for links to the note containing that math callout."
-        );
-        this.addDropdownSetting(
-            "mainMathCallout",
-            MAIN_MATH_CALLOUT_SPECIFIERS,
-            "Set \"main\" math callout",
-            "The \"Use this math callout to set this note's mathLink\" setting of the main one is automatically turned on."
         );
 
         contentEl.createEl("h4", { text: "Equations" });

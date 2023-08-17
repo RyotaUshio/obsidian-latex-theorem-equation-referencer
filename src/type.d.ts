@@ -22,10 +22,6 @@ declare module "obsidian" {
             callback: (indexer: ActiveNoteIndexer | NonActiveNoteIndexer) => any
         ): EventRef;
         on(
-            name: "math-booster:math-callout-settings-updated", 
-            callback: (file: TFile) => any
-        ): EventRef;
-        on(
             name: "math-booster:local-settings-updated", 
             callback: (file: TAbstractFile) => any
         ): EventRef;

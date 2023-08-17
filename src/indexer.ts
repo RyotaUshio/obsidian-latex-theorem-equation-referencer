@@ -27,7 +27,7 @@ abstract class BlockIndexer<IOType extends FileIO, BlockInfo extends { cache: Se
     abstract readonly blockType: BlockType;
 
     abstract addSection(sections: Readonly<BlockInfo>[], sectionCache: Readonly<SectionCache>): Promise<void>;
-    abstract setMathLinks(blocks: readonly BlockInfo[]): Promise<void>;
+    abstract setMathLinks(blocks: readonly Readonly<BlockInfo>[]): Promise<void>;
 
     async getBlocks(cache: Readonly<CachedMetadata>): Promise<BlockInfo[]> {
         const sectionCaches = cache.sections?.filter(
@@ -49,21 +49,6 @@ abstract class BlockIndexer<IOType extends FileIO, BlockInfo extends { cache: Se
                 return section1.cache.position.start.line - section2.cache.position.start.line;
             }
         );
-        // const sectionCaches = cache.sections?.filter(
-        //     (sectionCache) => sectionCache.type == this.blockType
-        // );
-        // const sections: BlockInfo[] = [];
-        // if (sectionCaches) {
-        //     for (const sectionCache of sectionCaches) {
-        //         await this.addSection(sections, sectionCache);
-        //     }
-        //     sections.sort(
-        //         (section1, section2) => {
-        //             return section1.cache.position.start.line - section2.cache.position.start.line;
-        //         }
-        //     )
-        // }
-        // return sections;
     }
 
     async iter(cache: Readonly<CachedMetadata>, callback: (section: BlockInfo) => any): Promise<void> {
@@ -83,8 +68,6 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
 
     async addSection(sections: Readonly<CalloutInfo>[], sectionCache: Readonly<SectionCache>): Promise<void> {
         const line = await this.noteIndexer.io.getLine(sectionCache.position.start.line);
-        if (false && this.noteIndexer.file.basename == "Even more MathLinks integration")
-        console.log(line);
         const settings = readMathCalloutSettings(line);
         if (settings) {
             sections.push(
@@ -93,23 +76,15 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
         }
     }
 
-    resolveSettings(callout: CalloutInfo): ResolvedMathSettings {
+    resolveSettings(callout: Readonly<CalloutInfo>): ResolvedMathSettings {
         return resolveSettings(callout.settings, this.noteIndexer.plugin, this.noteIndexer.file);    
     }
 
-    async setMathLinks(callouts: readonly CalloutInfo[]): Promise<void> {
+    async setMathLinks(callouts: readonly Readonly<CalloutInfo>[]): Promise<void> {
         let index = 0;
-        for (let i = 0; i < callouts.length; i++) {
-            const callout = callouts[i];
+        for (const callout of callouts) {
             const resolvedSettings = this.resolveSettings(callout);
-            const main = resolvedSettings.mainMathCallout;
             
-            if (main == "First") {
-                callout.settings.setAsNoteMathLink = (i == 0);
-            } else if (main == "Last") {
-                callout.settings.setAsNoteMathLink = (i == callouts.length - 1);
-            }
-
             const autoNumber = callout.settings.number == 'auto';
             if (autoNumber) {
                 callout.settings._index = index++;
@@ -124,7 +99,6 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
                 const lineNumber = callout.cache.position.start.line;
                 const newSettings = this.removeDeprecated(callout.settings);
                 if (this.noteIndexer.io.isSafe(lineNumber) && JSON.stringify(settings) != JSON.stringify(newSettings) || title != newTitle) {
-                    console.log("indexer.ts: newSettings =", newSettings);
                     await this.overwriteSettings(lineNumber, newSettings, newTitle)
                 }
                 const id = callout.cache.id;
@@ -137,13 +111,9 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
     }
 
     setNoteMathLink(callouts: readonly CalloutInfo[]) {
-        const print = false && this.noteIndexer.file.basename == "Even more MathLinks integration";
-
         const index = callouts.findIndex((callout) => callout.settings.setAsNoteMathLink);
         if (index >= 0) {
             const resolvedSettings = this.resolveSettings(callouts[index]);
-            if (print)
-            console.log(`update: ${this.formatMathLink(resolvedSettings, "noteMathLinkFormat")}`, resolvedSettings);
 
             this.noteIndexer.plugin.getMathLinksAPI()?.update(
                 this.noteIndexer.file.path, {
@@ -151,9 +121,6 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
                 }
             )
         } else {
-            if (print)
-            console.log(`update: undefined`);
-
             this.noteIndexer.plugin.getMathLinksAPI()?.update(
                 this.noteIndexer.file.path, {
                     "mathLink": undefined
@@ -175,7 +142,6 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
     }
 
     async overwriteSettings(lineNumber: number, settings: MathSettings, title?: string) {
-        console.log("WRITTEN:", settings);
         const matchResult = matchMathCallout(await this.noteIndexer.io.getLine(lineNumber));
         if (!matchResult) {
             throw Error(`Math callout not found at line ${lineNumber}, could not overwrite`);
