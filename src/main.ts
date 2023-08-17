@@ -173,7 +173,7 @@ export default class MathBooster extends Plugin {
 
 		/** Editor Extensions */
 
-		this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
+		// this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
 		this.registerEditorExtensionFactory(buildEquationNumberPlugin);
 
 		this.registerEditorExtension(MathPreviewInfoField);
@@ -192,13 +192,14 @@ export default class MathBooster extends Plugin {
 
 				const type = callout.getAttribute('data-callout');
 				const metadata = callout.getAttribute('data-callout-metadata');
+
 				if (metadata) {
 					const isMathCallout = (type?.toLowerCase() == 'math');
 
 					if (isMathCallout) {
 						const settings = JSON.parse(metadata);
-
 						const currentFile = this.app.vault.getAbstractFileByPath(context.sourcePath);
+
 						if (currentFile instanceof TFile) {
 							const mathCallout = new MathCallout(callout, this.app, this, settings, currentFile, context);
 							await mathCallout.setRenderedTitleElements();

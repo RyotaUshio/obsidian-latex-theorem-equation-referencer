@@ -56,6 +56,7 @@ export interface MathCalloutSettings {
     number: string;
     title?: string;
     label?: string;
+    setAsNoteMathLink: boolean;
 }
 
 export interface MathCalloutPrivateFields {
