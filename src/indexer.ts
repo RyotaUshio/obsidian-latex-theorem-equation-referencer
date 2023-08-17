@@ -71,7 +71,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
         const settings = readMathCalloutSettings(line);
         if (settings) {
             sections.push(
-                { cache: sectionCache, settings: settings }
+                { cache: sectionCache, settings: this.removeDeprecated(settings) }
             );
         }
     }
@@ -97,7 +97,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
             if (oldSettingsAndTitle) {
                 const { settings, title } = oldSettingsAndTitle;
                 const lineNumber = callout.cache.position.start.line;
-                const newSettings = this.removeDeprecated(callout.settings);
+                const newSettings = callout.settings;
                 if (this.noteIndexer.io.isSafe(lineNumber) && JSON.stringify(settings) != JSON.stringify(newSettings) || title != newTitle) {
                     await this.overwriteSettings(lineNumber, newSettings, newTitle)
                 }

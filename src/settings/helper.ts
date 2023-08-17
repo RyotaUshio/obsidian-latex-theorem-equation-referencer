@@ -116,20 +116,20 @@ export class MathCalloutSettingsHelper {
             this.settings.setAsNoteMathLink = this.defaultSettings.setAsNoteMathLink ?? false;
             toggle.setValue(this.settings.setAsNoteMathLink);
             toggle.onChange(async (value) => {
-                    const cache = this.plugin.app.metadataCache.getFileCache(this.file);
-                    if (cache) {
-                        const indexer = (new AutoNoteIndexer(this.plugin.app, this.plugin, this.file)).getIndexer().calloutIndexer;
-                        await indexer.iter(cache, async (mathCallout) => {
-                            mathCallout.settings.setAsNoteMathLink = false;
-                            await indexer.overwriteSettings(
-                                mathCallout.cache.position.start.line,
-                                indexer.removeDeprecated(mathCallout.settings),
-                                formatTitle(indexer.resolveSettings(mathCallout))
-                            );
-                        });
-                        this.settings.setAsNoteMathLink = value; // no need to call indexer.overwriteSettings() here
-                    }
-                });
+                const cache = this.plugin.app.metadataCache.getFileCache(this.file);
+                if (cache) {
+                    const indexer = (new AutoNoteIndexer(this.plugin.app, this.plugin, this.file)).getIndexer().calloutIndexer;
+                    await indexer.iter(cache, async (mathCallout) => {
+                        mathCallout.settings.setAsNoteMathLink = false;
+                        await indexer.overwriteSettings(
+                            mathCallout.cache.position.start.line,
+                            mathCallout.settings,
+                            formatTitle(indexer.resolveSettings(mathCallout))
+                        );
+                    });
+                    this.settings.setAsNoteMathLink = value; // no need to call indexer.overwriteSettings() here
+                }
+            });
         });
     }
 }
