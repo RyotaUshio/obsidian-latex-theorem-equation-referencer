@@ -3,6 +3,7 @@
     border-top: none;
     border-bottom: none;
     border-left: 5px solid rgb(var(--callout-color));
+    border-right: none;
     border-radius: 0px;
     box-shadow: none;
     padding: 0px;
