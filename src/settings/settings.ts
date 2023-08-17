@@ -38,6 +38,7 @@ export interface MathContextSettings {
     numberStyle: NumberStyle;
     numberDefault: string;
     refFormat: MathCalloutRefFormat;
+    noteMathLinkFormat: MathCalloutRefFormat;
     eqNumberPrefix: string;
     eqNumberSuffix: string;
     eqNumberInit: number;
@@ -56,6 +57,7 @@ export interface MathCalloutSettings {
     number: string;
     title?: string;
     label?: string;
+    setAsNoteMathLink: boolean;
 }
 
 export interface MathCalloutPrivateFields {
@@ -78,6 +80,7 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     numberStyle: "arabic",
     numberDefault: "auto", 
     refFormat: "Type + number (+ title)",
+    noteMathLinkFormat: "Type + number (+ title)",
     eqNumberPrefix: "",
     eqNumberSuffix: "",
     eqNumberInit: 1,

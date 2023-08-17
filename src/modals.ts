@@ -27,7 +27,7 @@ abstract class MathSettingModal<SettingsType> extends Modal {
     }
 
     resolveDefaultSettings(currentFile: TAbstractFile) {
-        // redundant, but probably necessary for the Typescript compiler to work
+        // The if statement is redundant, but probably necessary for the Typescript compiler to work
         if (this.currentCalloutSettings === undefined) {
             this.defaultSettings = resolveSettings(this.currentCalloutSettings, this.plugin, currentFile)
         } else {
@@ -55,7 +55,12 @@ abstract class MathSettingModal<SettingsType> extends Modal {
         const settingTextboxes = contentEl.querySelectorAll("input");
         if (button) {
             settingTextboxes.forEach((textbox) => {
-                textbox.addEventListener("keypress", (event) => {
+                /**
+                 * 'keypress' is deprecated, but here we need to use it.
+                 * 'keydown' causes a serious inconvenience at least for Japanese users.
+                 * See https://qiita.com/ledsun/items/31e43a97413dd3c8e38e
+                 */
+                this.plugin.registerDomEvent(textbox, "keypress", (event) => {
                     if (event.key === "Enter") {
                         (button as HTMLElement).click();
                     }
@@ -70,7 +75,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
     constructor(
         app: App,
         plugin: MathBooster,
-        public view: MarkdownView,
+        public file: TFile,
         callback: (settings: MathSettings) => void,
         public buttonText: string,
         public headerText: string, 
@@ -88,7 +93,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
             contentEl.createEl("h4", {text: this.headerText});
         }
 
-        const itemSettingsHelper = new MathCalloutSettingsHelper(contentEl, this.settings, this.defaultSettings);
+        const itemSettingsHelper = new MathCalloutSettingsHelper(contentEl, this.settings, this.defaultSettings, this.plugin, this.file);
         itemSettingsHelper.makeSettingPane();
 
         new Setting(contentEl)
@@ -99,10 +104,10 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
                         const modal = new ContextSettingModal(
                             this.app,
                             this.plugin, 
-                            this.view.file.path, 
+                            this.file.path, 
                             undefined, 
                         );
-                        modal.resolveDefaultSettings(this.view.file);
+                        modal.resolveDefaultSettings(this.file);
                         modal.open();
                     })
             });

@@ -318,15 +318,18 @@ export function resolveSettings(settings: MathSettings | undefined, plugin: Math
     return resolvedSettings;
 }
 
-export function formatTitleWithoutSubtitle(settings: ResolvedMathSettings): string {
+export function formatMathCalloutType(settings: ResolvedMathSettings): string {
     const env = ENVs_MAP[settings.type];
 
-    let title = '';
     if (settings.rename[env.id]) {
-        title = settings.rename[env.id] as string;
-    } else {
-        title = env.printedNames[settings.lang as string];
+        return settings.rename[env.id];
     }
+    return env.printedNames[settings.lang];
+}
+
+export function formatTitleWithoutSubtitle(settings: ResolvedMathSettings): string {
+    let title = formatMathCalloutType(settings);
+    
     if (settings.number) {
         let numberString = '';
         if (settings.number == 'auto') {

@@ -1,10 +1,11 @@
-import { Setting, TAbstractFile, TFolder, TextComponent } from 'obsidian';
+import { Setting, TAbstractFile, TFile, TFolder, TextComponent } from 'obsidian';
 
 import MathBooster from '../main';
 import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from '../env';
 import { DEFAULT_SETTINGS, ExtraSettings, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, RenameEnv } from './settings';
 import LanguageManager from '../language';
-import { BooleanKeys } from '../utils';
+import { BooleanKeys, formatTitle } from '../utils';
+import { AutoNoteIndexer } from 'indexer';
 
 
 export class MathCalloutSettingsHelper {
@@ -13,6 +14,8 @@ export class MathCalloutSettingsHelper {
         public contentEl: HTMLElement,
         public settings: MathCalloutSettings,
         public defaultSettings: Required<MathContextSettings> & Partial<MathCalloutSettings>,
+        public plugin: MathBooster,
+        public file: TFile,
     ) { }
 
     makeSettingPane() {
@@ -21,7 +24,8 @@ export class MathCalloutSettingsHelper {
             .setName("Type")
             .addDropdown((dropdown) => {
                 for (const env of ENVs) {
-                    dropdown.addOption(env.id, env.id);
+                    const envName = this.defaultSettings.rename[env.id] ?? env.printedNames[this.defaultSettings.lang];
+                    dropdown.addOption(env.id, envName);
                     if (this.defaultSettings.type) {
                         dropdown.setValue(String(this.defaultSettings.type));
                     }
@@ -106,6 +110,27 @@ export class MathCalloutSettingsHelper {
                     }
                 });
             });
+
+
+        new Setting(contentEl).setName("Use this math callout to set this note's mathLink").addToggle((toggle) => {
+            this.settings.setAsNoteMathLink = this.defaultSettings.setAsNoteMathLink ?? false;
+            toggle.setValue(this.settings.setAsNoteMathLink);
+            toggle.onChange(async (value) => {
+                const cache = this.plugin.app.metadataCache.getFileCache(this.file);
+                if (cache) {
+                    const indexer = (new AutoNoteIndexer(this.plugin.app, this.plugin, this.file)).getIndexer().calloutIndexer;
+                    await indexer.iter(cache, async (mathCallout) => {
+                        mathCallout.settings.setAsNoteMathLink = false;
+                        await indexer.overwriteSettings(
+                            mathCallout.cache.position.start.line,
+                            mathCallout.settings,
+                            formatTitle(indexer.resolveSettings(mathCallout))
+                        );
+                    });
+                    this.settings.setAsNoteMathLink = value; // no need to call indexer.overwriteSettings() here
+                }
+            });
+        });
     }
 }
 
@@ -120,7 +145,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         public defaultSettings: Required<SettingsType>,
         public plugin: MathBooster,
         public allowUnset: boolean,
-    ) {}
+    ) { }
 
     getCallback<Type>(name: keyof SettingsType): (value: Type) => Promise<void> {
         return async (value: Type): Promise<void> => {
@@ -147,8 +172,8 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
             }
             dropdown.setValue(
                 this.allowUnset
-                ? (this.settings[name] ? this.defaultSettings[name] as unknown as string : "")
-                : this.defaultSettings[name] as unknown as string
+                    ? (this.settings[name] ? this.defaultSettings[name] as unknown as string : "")
+                    : this.defaultSettings[name] as unknown as string
             ).onChange(callback);
         });
         return setting;
@@ -177,7 +202,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         const callback = this.getCallback<boolean>(name);
         setting.addToggle((toggle) => {
             toggle.setValue(this.defaultSettings[name] as unknown as boolean)
-                  .onChange(callback);
+                .onChange(callback);
         });
         return setting;
     }
@@ -207,7 +232,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         const styleSetting = this.addDropdownSetting("mathCalloutStyle", MATH_CALLOUT_STYLES, "Style");
         styleSetting.descEl.replaceChildren(
             "Choose between your custom style and preset styles. You will need to reload the note to see the changes. See the ",
-            createEl("a", {text: "documentation", attr: {href: "https://ryotaushio.github.io/obsidian-math-booster/style-your-theorems.html"}}), 
+            createEl("a", { text: "documentation", attr: { href: "https://ryotaushio.github.io/obsidian-math-booster/style-your-theorems.html" } }),
             " for how to customize the appearance of math callouts.",
         );
         this.addToggleSetting("mathCalloutFontInherit", "Don't override the app's font setting when using preset styles", "You will need to reload the note to see the changes.");
@@ -222,6 +247,12 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addTextSetting("numberDefault", "Default value for the \"Number\" field");
         contentEl.createEl("h6", { text: "Referencing" });
         this.addDropdownSetting("refFormat", MATH_CALLOUT_REF_FORMATS, "Format");
+        this.addDropdownSetting(
+            "noteMathLinkFormat",
+            MATH_CALLOUT_REF_FORMATS,
+            "Note mathLink format",
+            "When a math callout's \"Use this math callout to set this note's mathLink\" setting is turned on, this format will be used for links to the note containing that math callout."
+        );
 
         contentEl.createEl("h4", { text: "Equations" });
         contentEl.createEl("h6", { text: "Numbering" });
@@ -252,7 +283,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
                             this.settings.rename = {} as RenameEnv;
                         }
                         Object.assign(this.settings.rename, { [selectedEnvId]: newName });
-                        this.plugin.app.metadataCache.trigger("math-booster:local-settings-updated", this.file);            
+                        this.plugin.app.metadataCache.trigger("math-booster:local-settings-updated", this.file);
                         await this.plugin?.saveSettings();
                     })
                 });
@@ -290,7 +321,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
 export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
     eventName: string = "math-booster:extra-settings-updated";
     eventArgs: never[] = [];
-    
+
     makeSettingPane(): void {
         this.addToggleSetting("noteTitleInLink", "Show note title at link's head", "If turned on, a link to \"Theorem 1\" will look like \"Note title > Theorem 1.\" The same applies to equations.")
     }

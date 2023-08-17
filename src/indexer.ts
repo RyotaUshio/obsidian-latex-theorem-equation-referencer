@@ -29,8 +29,7 @@ abstract class BlockIndexer<IOType extends FileIO, BlockInfo extends { cache: Se
     abstract addSection(sections: Readonly<BlockInfo>[], sectionCache: Readonly<SectionCache>): Promise<void>;
     abstract setMathLinks(blocks: readonly Readonly<BlockInfo>[]): Promise<void>;
 
-    async sorted(cache: Readonly<CachedMetadata>): Promise<BlockInfo[]> {
-
+    async getBlocks(cache: Readonly<CachedMetadata>): Promise<BlockInfo[]> {
         const sectionCaches = cache.sections?.filter(
             (sectionCache) => sectionCache.type == this.blockType
         );
@@ -39,13 +38,22 @@ abstract class BlockIndexer<IOType extends FileIO, BlockInfo extends { cache: Se
             for (const sectionCache of sectionCaches) {
                 await this.addSection(sections, sectionCache);
             }
-            sections.sort(
-                (section1, section2) => {
-                    return section1.cache.position.start.line - section2.cache.position.start.line;
-                }
-            )
         }
         return sections;
+    }
+
+    async sorted(cache: Readonly<CachedMetadata>): Promise<BlockInfo[]> {
+        const blocks = await this.getBlocks(cache)
+        return blocks.sort(
+            (section1, section2) => {
+                return section1.cache.position.start.line - section2.cache.position.start.line;
+            }
+        );
+    }
+
+    async iter(cache: Readonly<CachedMetadata>, callback: (section: BlockInfo) => any): Promise<void> {
+        const blocks = await this.getBlocks(cache);
+        blocks.forEach(callback);
     }
 
     async run(cache: Readonly<CachedMetadata>): Promise<void> {
@@ -59,28 +67,29 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
     blockType = "callout" as BlockType;
 
     async addSection(sections: Readonly<CalloutInfo>[], sectionCache: Readonly<SectionCache>): Promise<void> {
-        const settings = readMathCalloutSettings(
-            await this.noteIndexer.io.getLine(sectionCache.position.start.line)
-        );
+        const line = await this.noteIndexer.io.getLine(sectionCache.position.start.line);
+        const settings = readMathCalloutSettings(line);
         if (settings) {
             sections.push(
-                { cache: sectionCache, settings: settings }
+                { cache: sectionCache, settings: this.removeDeprecated(settings) }
             );
         }
+    }
+
+    resolveSettings(callout: Readonly<CalloutInfo>): ResolvedMathSettings {
+        return resolveSettings(callout.settings, this.noteIndexer.plugin, this.noteIndexer.file);    
     }
 
     async setMathLinks(callouts: readonly Readonly<CalloutInfo>[]): Promise<void> {
         let index = 0;
         for (const callout of callouts) {
+            const resolvedSettings = this.resolveSettings(callout);
+            
             const autoNumber = callout.settings.number == 'auto';
             if (autoNumber) {
                 callout.settings._index = index++;
             }
-            const resolvedSettings = resolveSettings(
-                callout.settings,
-                this.noteIndexer.plugin,
-                this.noteIndexer.file
-            );
+            
             const newTitle = formatTitle(resolvedSettings);
             const oldSettingsAndTitle = readMathCalloutSettingsAndTitle(
                 await this.noteIndexer.io.getLine(callout.cache.position.start.line)
@@ -88,20 +97,40 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
             if (oldSettingsAndTitle) {
                 const { settings, title } = oldSettingsAndTitle;
                 const lineNumber = callout.cache.position.start.line;
-                const newSettings = this.removeDeprecated(callout.settings);
+                const newSettings = callout.settings;
                 if (this.noteIndexer.io.isSafe(lineNumber) && JSON.stringify(settings) != JSON.stringify(newSettings) || title != newTitle) {
                     await this.overwriteSettings(lineNumber, newSettings, newTitle)
                 }
                 const id = callout.cache.id;
                 if (id) {
-                    this.mathLinkBlocks[id] = this.formatMathLink(resolvedSettings);
+                    this.mathLinkBlocks[id] = this.formatMathLink(resolvedSettings, "refFormat");
                 }
             }
         }
+        this.setNoteMathLink(callouts);
     }
 
-    formatMathLink(resolvedSettings: ResolvedMathSettings): string {
-        const refFormat: MathCalloutRefFormat = resolvedSettings.refFormat ?? DEFAULT_SETTINGS.refFormat;
+    setNoteMathLink(callouts: readonly CalloutInfo[]) {
+        const index = callouts.findIndex((callout) => callout.settings.setAsNoteMathLink);
+        if (index >= 0) {
+            const resolvedSettings = this.resolveSettings(callouts[index]);
+
+            this.noteIndexer.plugin.getMathLinksAPI()?.update(
+                this.noteIndexer.file.path, {
+                    "mathLink": this.formatMathLink(resolvedSettings, "noteMathLinkFormat")
+                }
+            )
+        } else {
+            this.noteIndexer.plugin.getMathLinksAPI()?.update(
+                this.noteIndexer.file.path, {
+                    "mathLink": undefined
+                }
+            )
+        }
+    }
+
+    formatMathLink(resolvedSettings: ResolvedMathSettings, key: "refFormat" | "noteMathLinkFormat"): string {
+        const refFormat: MathCalloutRefFormat = resolvedSettings[key];
         if (refFormat == "Type + number (+ title)") {
             return formatTitle(resolvedSettings, true);
         }
@@ -123,7 +152,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
         );
     }
 
-    private removeDeprecated(settings: MathSettings & { autoIndex?: string }): MathSettings {
+    removeDeprecated(settings: MathSettings & { autoIndex?: string }): MathSettings {
         // remove the deprecated "autoIndex" key (now it's called "_index") from settings
         const { autoIndex, ...rest } = settings;
         return rest;
@@ -156,7 +185,7 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
             const equation = equations[i];
             const id = equation.cache.id;
             if (id) {
-                const {eqRefPrefix, eqRefSuffix} = contextSettings;
+                const { eqRefPrefix, eqRefSuffix } = contextSettings;
                 if (equation.manualTag) {
                     this.mathLinkBlocks[id] = eqRefPrefix + `(${equation.manualTag})` + eqRefSuffix;
                 } else {
@@ -341,7 +370,7 @@ export class VaultIndexer {
     async run() {
         const notes = this.app.vault.getMarkdownFiles();
         const activeMarkdownview = this.app.workspace.getActiveViewOfType(MarkdownView);
-        const promises = notes.map((note) => 
+        const promises = notes.map((note) =>
             (new AutoNoteIndexer(this.app, this.plugin, note)).run(activeMarkdownview)
         );
         await Promise.all(promises);

@@ -143,7 +143,7 @@ export default class MathBooster extends Plugin {
 					const modal = new MathCalloutModal(
 						this.app,
 						this,
-						context,
+						context.file,
 						(config) => {
 							if (context.file) {
 								insertMathCalloutCallback(this, editor, config, context.file);
@@ -192,17 +192,18 @@ export default class MathBooster extends Plugin {
 
 				const type = callout.getAttribute('data-callout');
 				const metadata = callout.getAttribute('data-callout-metadata');
+
 				if (metadata) {
-					const isSmartCallout = (type?.toLowerCase() == 'math');
+					const isMathCallout = (type?.toLowerCase() == 'math');
 
-					if (isSmartCallout) {
+					if (isMathCallout) {
 						const settings = JSON.parse(metadata);
-
 						const currentFile = this.app.vault.getAbstractFileByPath(context.sourcePath);
+
 						if (currentFile instanceof TFile) {
-							const smartCallout = new MathCallout(callout, this.app, this, settings, currentFile, context);
-							await smartCallout.setRenderedTitleElements();
-							context.addChild(smartCallout);
+							const mathCallout = new MathCallout(callout, this.app, this, settings, currentFile, context);
+							await mathCallout.setRenderedTitleElements();
+							context.addChild(mathCallout);
 						}
 					}
 				}
@@ -261,7 +262,7 @@ export default class MathBooster extends Plugin {
 		if (!Dataview.isPluginEnabled(this.app)) {
 			new Notice(
 				`${this.manifest.name}: Make sure Dataview is installed & enabled.`,
-				100000
+				10000
 			);
 			return false;
 		}
@@ -272,7 +273,7 @@ export default class MathBooster extends Plugin {
 		if (!MathLinks.isPluginEnabled(this.app)) {
 			new Notice(
 				`${this.manifest.name}: Make sure MathLinks is installed & enabled.`,
-				100000
+				10000
 			);
 			return false;
 		}
