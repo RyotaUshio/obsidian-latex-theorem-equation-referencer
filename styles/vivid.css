@@ -1,7 +1,10 @@
 .math-callout {
     --callout-color: 238, 15, 149;
+    border-top: none;
+    border-bottom: none;
     border-left: 5px solid rgb(var(--callout-color));
     border-radius: 0px;
+    box-shadow: none;
     padding: 0px;
     font-family: CMU Serif;
 }
