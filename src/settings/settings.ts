@@ -29,6 +29,21 @@ export const MATH_CALLOUT_REF_FORMATS = [
 ] as const;
 export type MathCalloutRefFormat = typeof MATH_CALLOUT_REF_FORMATS[number];
 
+/**
+ * Set a specific math callout to be "main" of the note.
+ * Used to automatically set "setAsNoteMathLink" of each math callout.
+ * 
+ * - None: Do not set a main math callout.
+ * - First: Set the first math callout of the note as main.
+ * - Last: Set the last math callout of the note as main.
+ */
+export const MAIN_MATH_CALLOUT_SPECIFIERS = [
+    "None",
+    "First", 
+    "Last",
+] as const;
+export type MainMathCalloutSpecifier = typeof MAIN_MATH_CALLOUT_SPECIFIERS[number];
+
 export interface MathContextSettings {
     lang: string;
     titleSuffix: string;
@@ -38,6 +53,7 @@ export interface MathContextSettings {
     numberStyle: NumberStyle;
     numberDefault: string;
     refFormat: MathCalloutRefFormat;
+    noteMathLinkFormat: MathCalloutRefFormat;
     eqNumberPrefix: string;
     eqNumberSuffix: string;
     eqNumberInit: number;
@@ -49,6 +65,7 @@ export interface MathContextSettings {
     lineByLine: boolean;
     mathCalloutStyle: MathCalloutStyle;
     mathCalloutFontInherit: boolean;
+    mainMathCallout: MainMathCalloutSpecifier;
 }
 
 export interface MathCalloutSettings {
@@ -79,6 +96,7 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     numberStyle: "arabic",
     numberDefault: "auto", 
     refFormat: "Type + number (+ title)",
+    noteMathLinkFormat: "Type + number (+ title)",
     eqNumberPrefix: "",
     eqNumberSuffix: "",
     eqNumberInit: 1,
@@ -90,6 +108,7 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     lineByLine: true,
     mathCalloutStyle: "framed",
     mathCalloutFontInherit: false,
+    mainMathCallout: "None",
 }
 
 export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {

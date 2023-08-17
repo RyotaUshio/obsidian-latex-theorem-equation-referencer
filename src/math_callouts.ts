@@ -63,8 +63,9 @@ export class MathCallout extends MarkdownRenderChild {
                 const modal = new MathCalloutModal(
                     this.app,
                     this.plugin,
-                    view,
-                    (settings) => {
+                    view.file,
+                    async (settings) => {
+                        console.log("math_callouts.ts: settings =", this.settings);
                         this.settings = settings;
                         this.resolvedSettings = resolveSettings(this.settings, this.plugin, this.currentFile);
                         const title = formatTitle(this.resolvedSettings);
@@ -79,8 +80,10 @@ export class MathCallout extends MarkdownRenderChild {
                             }
                         }
                         if (lineNumber !== undefined) {
-                            indexer.calloutIndexer.overwriteSettings(lineNumber, this.settings, title);
+                            await indexer.calloutIndexer.overwriteSettings(lineNumber, this.settings, title);
                         }
+                        console.log("math_callouts.ts: last: ", this.settings);
+                        this.app.metadataCache.trigger("math-booster:math-callout-settings-updated", this.currentFile);
                     },
                     "Confirm",
                     "Edit math callout settings",

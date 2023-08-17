@@ -69,6 +69,12 @@ export default class MathBooster extends Plugin {
 		);
 
 		this.registerEvent(
+			this.app.metadataCache.on("math-booster:math-callout-settings-updated", async (changedFile) => {
+				await (new LinkedNotesIndexer(this.app, this, changedFile)).run();
+			})
+		);
+
+		this.registerEvent(
 			this.app.metadataCache.on("math-booster:local-settings-updated", async (file) => {
 				const promises: Promise<void>[] = [];
 				iterDescendantFiles(
@@ -143,7 +149,7 @@ export default class MathBooster extends Plugin {
 					const modal = new MathCalloutModal(
 						this.app,
 						this,
-						context,
+						context.file,
 						(config) => {
 							if (context.file) {
 								insertMathCalloutCallback(this, editor, config, context.file);

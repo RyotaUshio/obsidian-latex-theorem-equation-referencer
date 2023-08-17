@@ -75,7 +75,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
     constructor(
         app: App,
         plugin: MathBooster,
-        public view: MarkdownView,
+        public file: TFile,
         callback: (settings: MathSettings) => void,
         public buttonText: string,
         public headerText: string, 
@@ -93,7 +93,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
             contentEl.createEl("h4", {text: this.headerText});
         }
 
-        const itemSettingsHelper = new MathCalloutSettingsHelper(contentEl, this.settings, this.defaultSettings, this.plugin);
+        const itemSettingsHelper = new MathCalloutSettingsHelper(contentEl, this.settings, this.defaultSettings, this.plugin, this.file);
         itemSettingsHelper.makeSettingPane();
 
         new Setting(contentEl)
@@ -104,10 +104,10 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
                         const modal = new ContextSettingModal(
                             this.app,
                             this.plugin, 
-                            this.view.file.path, 
+                            this.file.path, 
                             undefined, 
                         );
-                        modal.resolveDefaultSettings(this.view.file);
+                        modal.resolveDefaultSettings(this.file);
                         modal.open();
                     })
             });

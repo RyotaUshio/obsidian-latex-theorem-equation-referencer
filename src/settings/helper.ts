@@ -1,11 +1,11 @@
-import { MarkdownView, Setting, TAbstractFile, TFolder, TextComponent } from 'obsidian';
+import { MarkdownView, Setting, TAbstractFile, TFile, TFolder, TextComponent } from 'obsidian';
 
 import MathBooster from '../main';
 import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from '../env';
-import { DEFAULT_SETTINGS, ExtraSettings, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, RenameEnv } from './settings';
+import { DEFAULT_SETTINGS, ExtraSettings, MAIN_MATH_CALLOUT_SPECIFIERS, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, RenameEnv } from './settings';
 import LanguageManager from '../language';
 import { BooleanKeys, formatTitle } from '../utils';
-import { ActiveNoteIndexer } from 'indexer';
+import { AutoNoteIndexer } from 'indexer';
 
 
 export class MathCalloutSettingsHelper {
@@ -15,6 +15,7 @@ export class MathCalloutSettingsHelper {
         public settings: MathCalloutSettings,
         public defaultSettings: Required<MathContextSettings> & Partial<MathCalloutSettings>,
         public plugin: MathBooster,
+        public file: TFile,
     ) { }
 
     makeSettingPane() {
@@ -111,25 +112,25 @@ export class MathCalloutSettingsHelper {
             });
 
 
-        new Setting(contentEl).setName("use this math callout to set this note's mathLink").addToggle((toggle) => {
+        new Setting(contentEl).setName("Use this math callout to set this note's mathLink").addToggle((toggle) => {
             this.settings.setAsNoteMathLink = this.defaultSettings.setAsNoteMathLink ?? false;
-            toggle.setValue(this.settings.setAsNoteMathLink)
-                .onChange(async (value) => {
-                    const view = this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
-                    if (view?.file) {
-                        const cache = this.plugin.app.metadataCache.getFileCache(view.file);
-                        if (cache) {
-                            const indexer = (new ActiveNoteIndexer(this.plugin.app, this.plugin, view)).calloutIndexer;
-                            await indexer.iter(cache, async (mathCallout) => {
-                                mathCallout.settings.setAsNoteMathLink = false;
-                                await indexer.overwriteSettings(
-                                    mathCallout.cache.position.start.line,
-                                    indexer.removeDeprecated(mathCallout.settings),
-                                    formatTitle(indexer.resolveSettings(mathCallout))
-                                );
-                            });
-                            this.settings.setAsNoteMathLink = value; // no need to call indexer.overwriteSettings() here
-                        }
+            toggle.setValue(this.settings.setAsNoteMathLink);
+            if (this.defaultSettings.mainMathCallout != "None") {
+                toggle.setDisabled(true);
+            }
+            toggle.onChange(async (value) => {
+                    const cache = this.plugin.app.metadataCache.getFileCache(this.file);
+                    if (cache) {
+                        const indexer = (new AutoNoteIndexer(this.plugin.app, this.plugin, this.file)).getIndexer().calloutIndexer;
+                        await indexer.iter(cache, async (mathCallout) => {
+                            mathCallout.settings.setAsNoteMathLink = false;
+                            await indexer.overwriteSettings(
+                                mathCallout.cache.position.start.line,
+                                indexer.removeDeprecated(mathCallout.settings),
+                                formatTitle(indexer.resolveSettings(mathCallout))
+                            );
+                        });
+                        this.settings.setAsNoteMathLink = value; // no need to call indexer.overwriteSettings() here
                     }
                 });
         });
@@ -249,6 +250,18 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addTextSetting("numberDefault", "Default value for the \"Number\" field");
         contentEl.createEl("h6", { text: "Referencing" });
         this.addDropdownSetting("refFormat", MATH_CALLOUT_REF_FORMATS, "Format");
+        this.addDropdownSetting(
+            "noteMathLinkFormat",
+            MATH_CALLOUT_REF_FORMATS,
+            "Note mathLink format",
+            "When a math callout's \"Use this math callout to set this note's mathLink\" setting is turned on, this format will be used for links to the note containing that math callout."
+        );
+        this.addDropdownSetting(
+            "mainMathCallout",
+            MAIN_MATH_CALLOUT_SPECIFIERS,
+            "Set \"main\" math callout",
+            "The \"Use this math callout to set this note's mathLink\" setting of the main one is automatically turned on."
+        );
 
         contentEl.createEl("h4", { text: "Equations" });
         contentEl.createEl("h6", { text: "Numbering" });
