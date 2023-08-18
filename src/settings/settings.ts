@@ -1,5 +1,6 @@
 import { ENV_IDs } from "../env";
 import { DEFAULT_LANG } from "../default_lang";
+import { DEFAULT_PROFILES, Profile } from "profile";
 
 
 export const NUMBER_STYLES = [
@@ -30,6 +31,7 @@ export const MATH_CALLOUT_REF_FORMATS = [
 export type MathCalloutRefFormat = typeof MATH_CALLOUT_REF_FORMATS[number];
 
 export interface MathContextSettings {
+    profile: string;
     lang: string;
     titleSuffix: string;
     numberPrefix: string;
@@ -66,12 +68,14 @@ export interface MathCalloutPrivateFields {
 
 export interface ExtraSettings {
     noteTitleInLink: boolean;
+    profiles: Record<string, Profile>;
 }
 
 export type MathSettings = Partial<MathContextSettings> & MathCalloutSettings & MathCalloutPrivateFields;
 export type ResolvedMathSettings = Required<MathContextSettings> & MathCalloutSettings & MathCalloutPrivateFields;
 
 export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
+    profile: Object.keys(DEFAULT_PROFILES)[0],
     lang: DEFAULT_LANG,
     titleSuffix: ".",
     numberPrefix: "",
@@ -96,4 +100,5 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
 
 export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     noteTitleInLink: true,
+    profiles: DEFAULT_PROFILES,
 };

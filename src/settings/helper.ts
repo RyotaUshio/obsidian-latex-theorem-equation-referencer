@@ -228,6 +228,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         const { contentEl } = this;
 
         contentEl.createEl("h4", { text: "Math callouts" });
+        this.addDropdownSetting("profile", Object.keys(this.plugin.extraSettings.profiles), "Profile");
         this.addDropdownSetting("lang", LanguageManager.supported, "Language");
         const styleSetting = this.addDropdownSetting("mathCalloutStyle", MATH_CALLOUT_STYLES, "Style");
         styleSetting.descEl.replaceChildren(

@@ -5,6 +5,7 @@ import { DEFAULT_EXTRA_SETTINGS, DEFAULT_SETTINGS } from "./settings";
 import { ExtraSettingsHelper, MathContextSettingsHelper } from "./helper";
 import { resolveSettings } from "../utils";
 import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "modals";
+import { ManageProfileModal } from "profile";
 
 
 export class MathSettingTab extends PluginSettingTab {
@@ -76,6 +77,16 @@ export class MathSettingTab extends PluginSettingTab {
                     .onClick((event) => {
                         new ExcludedFileManageModal(this.app, this.plugin).open();
                     });
+            });
+
+        containerEl.createEl("h3", { text: "Profiles" });
+        new Setting(containerEl)
+            .setName("Test")
+            .addButton((button) => {
+                button.setButtonText("Manage")
+                    .onClick((event) => {
+                        new ManageProfileModal(this.app, this.plugin).open();
+                    })
             });
     }
 }

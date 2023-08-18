@@ -1,4 +1,4 @@
-import { MarkdownView, TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder } from 'obsidian';
+import { TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder } from 'obsidian';
 
 import MathBooster from './main';
 import { MathSettings, MathContextSettings } from './settings/settings';

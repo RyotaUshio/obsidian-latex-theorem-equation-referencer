@@ -1,5 +1,22 @@
 /* This file is auto-generated. Do not edit it. */
 
+.math-booster-add-profile {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.math-booster-add-profile > input {
+    width: 200px;
+}
+
+.math-booster-add-profile-button-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: var(--size-4-2);
+}
+
 .math-booster-preview {
     cursor: text;
 }
