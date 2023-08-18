@@ -96,8 +96,8 @@ export class ManageProfileModal extends Modal {
                         .setTooltip("Copy")
                         .onClick(() => {
                             const copied = JSON.parse(JSON.stringify(this.plugin.extraSettings.profiles[id]));
-                            copied.id = `Copy of ${id}`;
-                            this.plugin.extraSettings.profiles[`Copy of ${id}`] = copied;
+                            copied.id = makeIdOfCopy(id, this.plugin.extraSettings.profiles);
+                            this.plugin.extraSettings.profiles[copied.id] = copied;
                             this.open();
                         });
                 }).addButton((deleteButton) => {
@@ -350,4 +350,15 @@ class UpdateProfileModal extends Modal {
         delete this.parent.parent.plugin.extraSettings.profiles[this.parent.id];
         this.parent.close();
     }
+}
+
+function makeIdOfCopy(oldID: string, profiles: Record<string, Profile>) {
+    let newId = `Copy of ${oldID}`;
+    if (!(newId in profiles)) {
+        return newId;
+    }
+    const ids = Object.keys(profiles);
+    const numbers: number[] = ids.map((id) => id.slice(oldID.length + 1).match(/\(([1-9][0-9]*)\)/)?.[1] ?? "0").map((numStr: string): number => +numStr);
+    const max = Math.max(...numbers);
+    return `${newId} (${max + 1})`;
 }

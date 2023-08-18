@@ -164,7 +164,6 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
             for (const option of options) {
                 dropdown.addOption(option, option);
             }
-            console.log("defaultValue:", defaultValue);
             dropdown.setValue(
                 defaultValue ??
                 this.allowUnset
