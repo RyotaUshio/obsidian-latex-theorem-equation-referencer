@@ -8,7 +8,7 @@ import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SET
 import { MathSettingTab } from "./settings/tab";
 import { MathCallout, insertMathCalloutCallback } from './math_callouts';
 import { ContextSettingModal, MathCalloutModal } from './modals';
-import { insertDisplayMath, insertInlineMath } from './key';
+import { insertDisplayMath } from './key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
 import { MathPreviewInfoField, displayMathPreviewView, inlineMathPreviewView } from './math_live_preview_in_callouts';
 import { LinkedNotesIndexer, VaultIndexer } from './indexer';
@@ -126,7 +126,7 @@ export default class MathBooster extends Plugin {
 		this.addCommand({
 			id: 'insert-display-math',
 			name: 'Insert display math',
-			editorCallback: (editor) => insertDisplayMath(editor, this.app)
+			editorCallback: (editor) => insertDisplayMath(editor)
 		});
 
 		this.addCommand({
