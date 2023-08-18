@@ -1,15 +1,14 @@
-import { Setting, TAbstractFile, TFile, TFolder, TextComponent } from 'obsidian';
+import { ButtonComponent, Setting, TAbstractFile, TFile, TFolder, TextComponent } from 'obsidian';
 
 import MathBooster from '../main';
-import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from '../env';
-import { DEFAULT_SETTINGS, ExtraSettings, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, MathSettings, NUMBER_STYLES, NumberStyle, RenameEnv } from './settings';
-import LanguageManager from '../language';
-import { BooleanKeys, formatTitle } from '../utils';
+import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from '../env';
+import { ExtraSettings, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, NUMBER_STYLES } from './settings';
+import { BooleanKeys, formatMathCalloutType, formatTitle } from '../utils';
 import { AutoNoteIndexer } from 'indexer';
+import { ManageProfileModal } from 'profile';
 
 
 export class MathCalloutSettingsHelper {
-    env: TheoremLikeEnv;
     constructor(
         public contentEl: HTMLElement,
         public settings: MathCalloutSettings,
@@ -23,9 +22,9 @@ export class MathCalloutSettingsHelper {
         new Setting(contentEl)
             .setName("Type")
             .addDropdown((dropdown) => {
-                for (const env of ENVs) {
-                    const envName = this.defaultSettings.rename[env.id] ?? env.printedNames[this.defaultSettings.lang];
-                    dropdown.addOption(env.id, envName);
+                for (const id of THEOREM_LIKE_ENV_IDs) {
+                    const envName = formatMathCalloutType(this.plugin, { type: id, profile: this.defaultSettings.profile })
+                    dropdown.addOption(id, envName);
                     if (this.defaultSettings.type) {
                         dropdown.setValue(String(this.defaultSettings.type));
                     }
@@ -33,7 +32,6 @@ export class MathCalloutSettingsHelper {
 
                 const initType = dropdown.getValue();
                 this.settings.type = initType;
-                this.env = getTheoremLikeEnv(initType);
 
                 const numberSetting = new Setting(contentEl)
                     .setName("Number")
@@ -66,10 +64,9 @@ export class MathCalloutSettingsHelper {
                     .setName("Title")
                     .setDesc("You may use inline math");
 
-
                 const labelPane = new Setting(contentEl).setName("Pandoc label");
                 const labelPrefixEl = labelPane.controlEl.createDiv({
-                    text: this.env.prefix + ":" + (this.defaultSettings.labelPrefix ?? "")
+                    text: THEOREM_LIKE_ENVs[this.settings.type as TheoremLikeEnvID].prefix + ":" + (this.defaultSettings.labelPrefix ?? "")
                 });
 
                 titlePane.addText((text) => {
@@ -103,8 +100,7 @@ export class MathCalloutSettingsHelper {
 
                 dropdown.onChange((value) => {
                     this.settings.type = value;
-                    this.env = getTheoremLikeEnv(value);
-                    labelPrefixEl.textContent = this.env.prefix + ":";
+                    labelPrefixEl.textContent = THEOREM_LIKE_ENVs[this.settings.type as TheoremLikeEnvID].prefix + ":";
                     if (this.defaultSettings.labelPrefix) {
                         labelPrefixEl.textContent += this.defaultSettings.labelPrefix;
                     }
@@ -124,7 +120,7 @@ export class MathCalloutSettingsHelper {
                         await indexer.overwriteSettings(
                             mathCallout.cache.position.start.line,
                             mathCallout.settings,
-                            formatTitle(indexer.resolveSettings(mathCallout))
+                            formatTitle(this.plugin, indexer.resolveSettings(mathCallout))
                         );
                     });
                     this.settings.setAsNoteMathLink = value; // no need to call indexer.overwriteSettings() here
@@ -228,8 +224,13 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         const { contentEl } = this;
 
         contentEl.createEl("h4", { text: "Math callouts" });
-        this.addDropdownSetting("profile", Object.keys(this.plugin.extraSettings.profiles), "Profile");
-        this.addDropdownSetting("lang", LanguageManager.supported, "Language");
+        const profileSetting = this.addDropdownSetting("profile", Object.keys(this.plugin.extraSettings.profiles), "Profile");
+        new ButtonComponent(profileSetting.controlEl)
+            .setButtonText("Manage profiles")
+            .onClick(() => {
+                new ManageProfileModal(this.plugin.app, this.plugin).open();
+            });
+        profileSetting.controlEl.classList.add("math-booster-profile-setting");
         const styleSetting = this.addDropdownSetting("mathCalloutStyle", MATH_CALLOUT_STYLES, "Style");
         styleSetting.descEl.replaceChildren(
             "Choose between your custom style and preset styles. You will need to reload the note to see the changes. See the ",
@@ -239,7 +240,6 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addToggleSetting("mathCalloutFontInherit", "Don't override the app's font setting when using preset styles", "You will need to reload the note to see the changes.");
         this.addTextSetting("titleSuffix", "Title suffix", "ex) \"\" > Definition 2 (Group) / \".\" > Definition 2 (Group).");
         this.addTextSetting("labelPrefix", "Pandoc label prefix", 'ex) "geometry:" > a theorem with label="pythhagorean-theorem" will be given a LaTeX label "thm:geometry:pythhagorean-theorem"');
-        this.addRenameSetting();
         contentEl.createEl("h6", { text: "Numbering" });
         this.addTextSetting("numberPrefix", "Prefix");
         this.addTextSetting("numberSuffix", "Suffix");
@@ -265,39 +265,6 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         contentEl.createEl("h6", { text: "Referencing" });
         this.addTextSetting("eqRefPrefix", "Prefix");
         this.addTextSetting("eqRefSuffix", "Suffix");
-    }
-
-    addRenameSetting() {
-
-
-        const { contentEl } = this;
-        const setting = new Setting(contentEl)
-            .setName("Rename environments")
-            .setDesc("ex) print \"exercise\" as \"Problem,\" not \"Exercise\"");
-
-        setting.addDropdown((dropdown) => {
-            for (const env of ENVs) {
-                const envName = this.defaultSettings.rename[env.id] ?? env.printedNames[this.defaultSettings.lang];
-                dropdown.addOption(env.id, envName);
-            }
-            dropdown.onChange((selectedEnvId) => {
-                let renamePaneTextBox = new Setting(setting.controlEl).addText((text) => {
-                    text.onChange(async (newName) => {
-                        if (this.settings.rename === undefined) {
-                            this.settings.rename = {} as RenameEnv;
-                        }
-                        Object.assign(this.settings.rename, { [selectedEnvId]: newName });
-                        this.plugin.app.metadataCache.trigger("math-booster:local-settings-updated", this.file);
-                        await this.plugin.saveSettings();
-                    })
-                });
-                const inputEl = renamePaneTextBox.settingEl.querySelector<HTMLElement>("input");
-                if (inputEl) {
-                    renamePaneTextBox.settingEl.replaceWith(inputEl);
-                }
-            });
-        });
-        return setting;
     }
 }
 

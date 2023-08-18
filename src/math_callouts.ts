@@ -3,7 +3,6 @@ import { App, CachedMetadata, Editor, ExtraButtonComponent, MarkdownPostProcesso
 import MathBooster from './main';
 import { MathCalloutModal } from './modals';
 import { MathSettings, ResolvedMathSettings } from './settings/settings';
-import { TheoremLikeEnv, getTheoremLikeEnv } from './env';
 import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, getSectionCacheFromPos, readMathCalloutSettings, isEditingView } from './utils';
 import { AutoNoteIndexer } from './indexer';
 
@@ -11,19 +10,17 @@ import { AutoNoteIndexer } from './indexer';
 export class MathCallout extends MarkdownRenderChild {
     settings: MathSettings;
     resolvedSettings: ResolvedMathSettings;
-    env: TheoremLikeEnv;
     renderedTitleElements: (HTMLElement | string)[];
 
     constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, settings: MathSettings, public currentFile: TFile, public context: MarkdownPostProcessorContext) {
         super(containerEl);
         this.settings = settings;
-        this.env = getTheoremLikeEnv(this.settings.type);
         this.resolvedSettings = resolveSettings(this.settings, this.plugin, this.currentFile);
     }
 
     async setRenderedTitleElements() {
         // ex) "Theorem 1.1", not "Theorem 1.1 (Cauchy-Schwarz)"
-        const titleWithoutSubtitle = await renderTextWithMath(formatTitleWithoutSubtitle(this.resolvedSettings));
+        const titleWithoutSubtitle = await renderTextWithMath(formatTitleWithoutSubtitle(this.plugin, this.resolvedSettings));
         this.renderedTitleElements = [
             ...titleWithoutSubtitle
         ];
@@ -46,7 +43,10 @@ export class MathCallout extends MarkdownRenderChild {
 
         // add classes for CSS snippets
         this.containerEl.classList.add("math-callout");
-        this.containerEl.classList.add("math-callout-" + this.resolvedSettings.lang);
+        // this.containerEl.classList.add("math-callout-" + this.resolvedSettings.lang);
+        for (const tag of this.plugin.extraSettings.profiles[this.resolvedSettings.profile].meta.tags) {
+            this.containerEl.classList.add("math-callout-" + tag);
+        }
         this.containerEl.classList.add("math-callout-" + this.resolvedSettings.type);
         this.containerEl.toggleClass(`math-callout-${this.resolvedSettings.mathCalloutStyle}`, this.resolvedSettings.mathCalloutStyle != "custom");
         this.containerEl.toggleClass("math-callout-font-family-inherit", this.resolvedSettings.mathCalloutStyle != "custom" && this.resolvedSettings.mathCalloutFontInherit);
@@ -71,7 +71,7 @@ export class MathCallout extends MarkdownRenderChild {
                     async (settings) => {
                         this.settings = settings;
                         this.resolvedSettings = resolveSettings(this.settings, this.plugin, this.currentFile);
-                        const title = formatTitle(this.resolvedSettings);
+                        const title = formatTitle(this.plugin, this.resolvedSettings);
                         const indexer = (new AutoNoteIndexer(this.app, this.plugin, view.file)).getIndexer();
                         if (lineNumber !== undefined) {
                             await indexer.calloutIndexer.overwriteSettings(lineNumber, this.settings, title);
@@ -122,7 +122,7 @@ export function insertMathCalloutCallback(plugin: MathBooster, editor: Editor, c
     const selection = editor.getSelection();
     const cursorPos = editor.getCursor();
     const resolvedSettings = resolveSettings(config, plugin, currentFile);
-    const title = formatTitle(resolvedSettings);
+    const title = formatTitle(plugin, resolvedSettings);
 
     if (selection) {
         const nLines = splitIntoLines(selection).length;

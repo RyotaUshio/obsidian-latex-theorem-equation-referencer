@@ -1,5 +1,3 @@
-import { ENV_IDs } from "../env";
-import { DEFAULT_LANG } from "../default_lang";
 import { DEFAULT_PROFILES, Profile } from "profile";
 
 
@@ -11,8 +9,6 @@ export const NUMBER_STYLES = [
     "Roman"
 ] as const;
 export type NumberStyle = typeof NUMBER_STYLES[number];
-
-export type RenameEnv = { [K in typeof ENV_IDs[number]]: string };
 
 export const MATH_CALLOUT_STYLES = [
     "custom", 
@@ -32,7 +28,6 @@ export type MathCalloutRefFormat = typeof MATH_CALLOUT_REF_FORMATS[number];
 
 export interface MathContextSettings {
     profile: string;
-    lang: string;
     titleSuffix: string;
     numberPrefix: string;
     numberSuffix: string;
@@ -48,7 +43,6 @@ export interface MathContextSettings {
     eqRefPrefix: string;
     eqRefSuffix: string;
     labelPrefix: string;
-    rename: RenameEnv;
     lineByLine: boolean;
     mathCalloutStyle: MathCalloutStyle;
     mathCalloutFontInherit: boolean;
@@ -76,7 +70,6 @@ export type ResolvedMathSettings = Required<MathContextSettings> & MathCalloutSe
 
 export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     profile: Object.keys(DEFAULT_PROFILES)[0],
-    lang: DEFAULT_LANG,
     titleSuffix: ".",
     numberPrefix: "",
     numberSuffix: "",
@@ -92,7 +85,6 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     eqRefPrefix: "", 
     eqRefSuffix: "",
     labelPrefix: "",
-    rename: {} as RenameEnv,
     lineByLine: true,
     mathCalloutStyle: "framed",
     mathCalloutFontInherit: false,

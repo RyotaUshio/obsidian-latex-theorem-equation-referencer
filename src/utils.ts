@@ -4,9 +4,9 @@ import { EditorState, ChangeSet } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
 
 import MathBooster from './main';
-import { ENVs_MAP } from './env';
 import { DEFAULT_SETTINGS, MathContextSettings, MathSettings, NumberStyle, ResolvedMathSettings } from './settings/settings';
 import { MathInfoSet } from 'math_live_preview_in_callouts';
+import { TheoremLikeEnvID } from 'env';
 
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
@@ -318,17 +318,13 @@ export function resolveSettings(settings: MathSettings | undefined, plugin: Math
     return resolvedSettings;
 }
 
-export function formatMathCalloutType(settings: ResolvedMathSettings): string {
-    const env = ENVs_MAP[settings.type];
-
-    if (settings.rename[env.id]) {
-        return settings.rename[env.id];
-    }
-    return env.printedNames[settings.lang];
+export function formatMathCalloutType(plugin: MathBooster, settings: {type: string, profile: string}): string {
+    const profile = plugin.extraSettings.profiles[settings.profile];
+    return profile.body[settings.type as TheoremLikeEnvID];
 }
 
-export function formatTitleWithoutSubtitle(settings: ResolvedMathSettings): string {
-    let title = formatMathCalloutType(settings);
+export function formatTitleWithoutSubtitle(plugin: MathBooster, settings: ResolvedMathSettings): string {
+    let title = formatMathCalloutType(plugin, settings);
     
     if (settings.number) {
         let numberString = '';
@@ -349,8 +345,8 @@ export function formatTitleWithoutSubtitle(settings: ResolvedMathSettings): stri
     return title;
 }
 
-export function formatTitle(settings: ResolvedMathSettings, noTitleSuffix: boolean = false): string {
-    let title = formatTitleWithoutSubtitle(settings);
+export function formatTitle(plugin: MathBooster, settings: ResolvedMathSettings, noTitleSuffix: boolean = false): string {
+    let title = formatTitleWithoutSubtitle(plugin, settings);
     if (settings.title) {
         title += ` (${settings.title})`;
     }

@@ -100,7 +100,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
             .setName('Open local settings for the current note')
             .addButton((button) => {
                 button.setButtonText("Open")
-                    .onClick((event) => {
+                    .onClick(() => {
                         const modal = new ContextSettingModal(
                             this.app,
                             this.plugin, 

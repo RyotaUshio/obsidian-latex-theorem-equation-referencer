@@ -1,10 +1,10 @@
 import MathBooster from 'main';
-import { THEOREM_LIKE_ENV_IDs } from './env';
-import { App, ButtonComponent, Modal, Setting, TextComponent } from 'obsidian';
+import { THEOREM_LIKE_ENV_IDs, TheoremLikeEnvID } from './env';
+import { App, ButtonComponent, Modal, Notice, Setting, TextComponent } from 'obsidian';
 
 
 export type ProfileMeta = { tags: string[] };
-export type ProfileBody = { [k in typeof THEOREM_LIKE_ENV_IDs[number]]: string };
+export type ProfileBody = { [k in TheoremLikeEnvID]: string };
 export type Profile = {
     id: string;
     meta: ProfileMeta;
@@ -69,6 +69,7 @@ export class ManageProfileModal extends Modal {
         contentEl.createEl("h3", { text: "Manage profiles" });
 
         new Setting(contentEl)
+            .setName("Add profile")
             .addButton((button) => {
                 button.setIcon("plus").onClick(() => {
                     new AddProfileModal(this).open()
@@ -84,15 +85,17 @@ export class ManageProfileModal extends Modal {
                         .setCta()
                         .onClick(() => {
                             new EditProfileModal(
-                                this.app, 
-                                this.plugin.extraSettings.profiles[id]
+                                this.plugin.extraSettings.profiles[id], 
+                                this
                             ).open();
                         });
                 }).addButton((editButton) => {
                     editButton.setIcon("copy")
                         .setTooltip("Copy")
                         .onClick(() => {
-                            this.plugin.extraSettings.profiles[`Copy of ${id}`] = JSON.parse(JSON.stringify(this.plugin.extraSettings.profiles[id]));
+                            const copied = JSON.parse(JSON.stringify(this.plugin.extraSettings.profiles[id]));
+                            copied.id = `Copy of ${id}`;
+                            this.plugin.extraSettings.profiles[`Copy of ${id}`] = copied;
                             this.open();
                         });
                 }).addButton((deleteButton) => {
@@ -105,16 +108,18 @@ export class ManageProfileModal extends Modal {
         }
     }
 
-    onClose() {
+    async onClose() {
         let { contentEl } = this;
         contentEl.empty();
+        await this.plugin.saveSettings();
+        this.app.metadataCache.trigger("math-booster:extra-settings-updated");
     }
 }
 
 
 class EditProfileModal extends Modal {
-    constructor(app: App, public profile: Profile) {
-        super(app);
+    constructor(public profile: Profile, public parent: ManageProfileModal) {
+        super(parent.app);
     }
 
     onOpen() {
@@ -131,14 +136,18 @@ class EditProfileModal extends Modal {
                     });
             });
 
-        new Setting(contentEl)
+        const tagSetting = new Setting(contentEl)
             .setName("Tags")
-            .setDesc("Comma-separated list of tags. Each tag is converted into a CSS class \".math-callout-<tag>\".")
+            .setDesc("Comma-separated list of tags. Only lower-case alphabets or hyphens are allowed. Each tag is converted into a CSS class \".math-callout-<tag>\".")
             .addText((text) => {
                 text.setValue(this.profile.meta.tags.join(", "))
                     .onChange((value) => {
-                        this.profile.meta.tags = value.split(",").map((item) => item.trim());
-                        console.log(this.profile);
+                        const tags = value.split(",").map((item) => item.trim());
+                        if (tags.every((tag) => tag.match(/^[a-z\-]+$/))) {
+                            this.profile.meta.tags = tags;
+                        } else {
+                            new Notice("A tag can only contain lower-case alphabets or hyphens.", 5000);
+                        }
                     });
             });
 
@@ -148,15 +157,24 @@ class EditProfileModal extends Modal {
                 text.setValue(this.profile.body[envID] ?? "")
                     .onChange((value) => {
                         this.profile.body[envID] = value;
-                        console.log(this.profile);
                     })
             });
         }
     }
 
     onClose() {
+        const profiles = this.parent.plugin.extraSettings.profiles;
+        for (const oldID in profiles) {
+            const newID = profiles[oldID].id;
+            if (newID != oldID) {
+                profiles[newID] = profiles[oldID];
+                delete profiles[oldID];
+            }
+        }
+
         let { contentEl } = this;
         contentEl.empty();
+        this.parent.open();
     }
 }
 
@@ -178,7 +196,6 @@ class ConfirmProfileDeletionModal extends Modal {
             .onClick(() => {
                 delete this.parent.plugin.extraSettings.profiles[this.id];
                 this.close();
-                this.parent.open();
             });
         new ButtonComponent(contentEl)
             .setButtonText("Cancel")
@@ -190,6 +207,7 @@ class ConfirmProfileDeletionModal extends Modal {
     onClose() {
         let { contentEl } = this;
         contentEl.empty();
+        this.parent.open();
     }
 }
 
@@ -198,7 +216,7 @@ class AddProfileModal extends Modal {
     constructor(public parent: ManageProfileModal) {
         super(parent.app);
     }
-    
+
     onOpen() {
         let { contentEl } = this;
         contentEl.empty();
@@ -206,7 +224,7 @@ class AddProfileModal extends Modal {
         let id: string;
 
         contentEl.createEl("h3", { text: "Add profile" });
-        const addProfileEl = contentEl.createDiv({cls: "math-booster-add-profile"});
+        const addProfileEl = contentEl.createDiv({ cls: "math-booster-add-profile" });
 
         new TextComponent(addProfileEl)
             .setPlaceholder("Enter name...")
@@ -214,7 +232,7 @@ class AddProfileModal extends Modal {
                 id = value;
             });
 
-        const buttonContainerEl = addProfileEl.createDiv({cls: "math-booster-add-profile-button-container"});
+        const buttonContainerEl = addProfileEl.createDiv({ cls: "math-booster-add-profile-button-container" });
         new ButtonComponent(buttonContainerEl)
             .setButtonText("Add")
             .setCta()
@@ -228,8 +246,7 @@ class AddProfileModal extends Modal {
                     meta: { tags: [] },
                     body: newBody
                 };
-                this.parent.open();
-                new EditProfileModal(this.app, this.parent.plugin.extraSettings.profiles[id]).open();
+                new EditProfileModal(this.parent.plugin.extraSettings.profiles[id], this.parent).open();
                 this.close();
             });
         new ButtonComponent(buttonContainerEl)
@@ -242,5 +259,6 @@ class AddProfileModal extends Modal {
     onClose() {
         let { contentEl } = this;
         contentEl.empty();
+        this.parent.open();
     }
 }

@@ -5,7 +5,6 @@ import { DEFAULT_EXTRA_SETTINGS, DEFAULT_SETTINGS } from "./settings";
 import { ExtraSettingsHelper, MathContextSettingsHelper } from "./helper";
 import { resolveSettings } from "../utils";
 import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "modals";
-import { ManageProfileModal } from "profile";
 
 
 export class MathSettingTab extends PluginSettingTab {
@@ -64,7 +63,7 @@ export class MathSettingTab extends PluginSettingTab {
             .setDesc("You can set up file-specific or folder-specific configurations, which have more precedence than the global settings.")
             .addButton((btn) => {
                 btn.setButtonText("Search files & folders")
-                    .onClick((event) => {
+                    .onClick(() => {
                         new LocalContextSettingsSuggestModal(this.app, this.plugin, this).open();
                     });
             });
@@ -74,19 +73,9 @@ export class MathSettingTab extends PluginSettingTab {
             .setDesc("You can make your search results more visible by excluding certain files or folders.")
             .addButton((btn) => {
                 btn.setButtonText("Manage")
-                    .onClick((event) => {
+                    .onClick(() => {
                         new ExcludedFileManageModal(this.app, this.plugin).open();
                     });
-            });
-
-        containerEl.createEl("h3", { text: "Profiles" });
-        new Setting(containerEl)
-            .setName("Test")
-            .addButton((button) => {
-                button.setButtonText("Manage")
-                    .onClick((event) => {
-                        new ManageProfileModal(this.app, this.plugin).open();
-                    })
             });
     }
 }
