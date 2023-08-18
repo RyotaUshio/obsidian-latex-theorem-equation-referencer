@@ -42,3 +42,9 @@ There are several ways to set up the local settings.
 ### Profile
 
 **Profiles** define the displayed name of each environment (`theorem`/`definition`/`lemma`/...).
+For example, the default "English" profile displays `exercise` as "Exercise."
+If you want to change it to "Problem" inside a certain folder, define a new profile:
+
+1. Create a new profile by copying the "English" profile.
+2. Modify the "exercise" field of the new profile to "Problem."
+3. Apply the profile to the folder.
