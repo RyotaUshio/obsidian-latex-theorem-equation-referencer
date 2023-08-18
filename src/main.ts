@@ -207,12 +207,7 @@ export default class MathBooster extends Plugin {
 					const mjxContainerEl = mjxElements[i].parentElement;
 					if (mjxContainerEl) {
 						context.addChild(
-							new DisplayMathRenderChild(
-								mjxContainerEl,
-								this.app,
-								this,
-								context
-							)
+							new DisplayMathRenderChild(mjxContainerEl, this.app, this, context)
 						);
 					}
 				}
