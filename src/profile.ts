@@ -160,7 +160,7 @@ class EditProfileModal extends Modal {
                     });
             });
 
-        contentEl.createEl("h5", { text: "Displayed name" });
+        contentEl.createEl("h5", { text: "Displayed names" });
         for (const envID of THEOREM_LIKE_ENV_IDs) {
             new Setting(contentEl).setName(envID).addText((text) => {
                 text.setValue(this.profile.body[envID] ?? "")
