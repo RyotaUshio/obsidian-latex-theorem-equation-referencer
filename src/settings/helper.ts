@@ -67,7 +67,7 @@ export class MathCalloutSettingsHelper {
                     .setDesc("You may use inline math");
 
 
-                const labelPane = new Setting(contentEl).setName("LaTeX label");
+                const labelPane = new Setting(contentEl).setName("Pandoc label");
                 const labelPrefixEl = labelPane.controlEl.createDiv({
                     text: this.env.prefix + ":" + (this.defaultSettings.labelPrefix ?? "")
                 });
