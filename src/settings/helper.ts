@@ -33,9 +33,7 @@ export class MathCalloutSettingsHelper {
                 const initType = dropdown.getValue();
                 this.settings.type = initType;
 
-                const numberSetting = new Setting(contentEl)
-                    .setName("Number")
-                    .setDesc("Allowed values:");
+                const numberSetting = new Setting(contentEl).setName("Number");
                 const numberSettingDescList = numberSetting.descEl.createEl("ul");
                 numberSettingDescList.createEl(
                     "li",
