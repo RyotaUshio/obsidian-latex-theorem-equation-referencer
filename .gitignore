@@ -23,3 +23,6 @@ data.json
 
 # Docs
 docs/_site/
+
+# Unused
+src/callout_decoration.ts
