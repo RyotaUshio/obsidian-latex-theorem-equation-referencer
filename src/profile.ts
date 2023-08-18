@@ -190,14 +190,15 @@ class ConfirmProfileDeletionModal extends Modal {
 
         contentEl.createEl("h3", { text: "Delete profile" });
         contentEl.createDiv({ text: `Are you sure you want to delete the profile "${this.id}"?` });
-        new ButtonComponent(contentEl)
+        const buttonContainerEl = contentEl.createDiv({ cls: "math-booster-profile-button-container" });
+        new ButtonComponent(buttonContainerEl)
             .setButtonText("Delete")
             .setCta()
             .onClick(() => {
                 delete this.parent.plugin.extraSettings.profiles[this.id];
                 this.close();
             });
-        new ButtonComponent(contentEl)
+        new ButtonComponent(buttonContainerEl)
             .setButtonText("Cancel")
             .onClick(() => {
                 this.close();
@@ -232,7 +233,7 @@ class AddProfileModal extends Modal {
                 id = value;
             });
 
-        const buttonContainerEl = addProfileEl.createDiv({ cls: "math-booster-add-profile-button-container" });
+        const buttonContainerEl = addProfileEl.createDiv({ cls: "math-booster-profile-button-container" });
         new ButtonComponent(buttonContainerEl)
             .setButtonText("Add")
             .setCta()
