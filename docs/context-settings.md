@@ -36,3 +36,9 @@ There are several ways to set up the local settings.
 - Plugin setting tab
 - "Open Local Settings for the Current Note" command
 - "Open local settings for the current note" button in math callout settings
+
+## Description
+
+### Profile
+
+**Profiles** define the displayed name of each environment (`theorem`/`definition`/`lemma`/...).

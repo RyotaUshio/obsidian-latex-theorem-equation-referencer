@@ -43,8 +43,8 @@ export class MathCallout extends MarkdownRenderChild {
 
         // add classes for CSS snippets
         this.containerEl.classList.add("math-callout");
-        // this.containerEl.classList.add("math-callout-" + this.resolvedSettings.lang);
-        for (const tag of this.plugin.extraSettings.profiles[this.resolvedSettings.profile].meta.tags) {
+        const profile = this.plugin.extraSettings.profiles[this.resolvedSettings.profile];
+        for (const tag of profile.meta.tags) {
             this.containerEl.classList.add("math-callout-" + tag);
         }
         this.containerEl.classList.add("math-callout-" + this.resolvedSettings.type);

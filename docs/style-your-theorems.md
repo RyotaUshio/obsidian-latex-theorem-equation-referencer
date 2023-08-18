@@ -28,7 +28,7 @@ When **Don't override the app's font setting when using sample styles** is turne
 
 - `.math-callout`: Assigned to all math callouts. You can use it as an alternative to `.callout[data-callout="math"]`.
 - `.math-callout-{type}`: Indicates the environment type. For example, a math callout whose type is "theorem" will be given the `.math-callout-theorem` class.
-- `.math-callout-{language code}`: Indicates the language used for the math callout. Currently only `en` and `ja` are available.
+- `.math-callout-{tag}`: A [profile](context-settings#profile) has tags, each of which is converted to this `.math-callout-{tag}` class. As for the default profiles "English" and "Japanese", the tags are "en" and "ja", respectively. They are used to generate CSS classes `.math-callout-en` and `.math-callout-ja` indicating the language used for the math callout, making it possible to use different styles depending on it. I recommend defining language tags for your custom profiles.
 - `.math-callout-subtitle`: Corresponds to the **title** field in the math callout settings. Lives inside `.callout-title-inner`. Ex) Theorem 1.1 (here is `.math-callout-subtitle`)
 
 ## Styles gallery
