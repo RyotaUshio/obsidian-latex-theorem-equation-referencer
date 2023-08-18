@@ -18,14 +18,14 @@ You can make use of this cascaded structure for customizing the settings specifi
 Folder structure                    Local settings
 ───────────────────────────────────────────────────────────────
 vault root
-├── Textbook written in Japanese    <--- Language = "ja"
+├── Textbook written in Japanese    <--- Profile = "Japanese"
 │   ├── Chapter 1
 │   │   ├── 1-1.md                  <--- Number prefix = "1.1."
 │   │   └── 1-2.md                  <--- Number prefix = "1.2."
 │   ├── Chapter 2
 │   │   ├── 2-1.md                  <--- Number prefix = "2.1."
 │   │   └── 2-2.md                  <--- Number prefix = "2.2."
-├── Paper written in English.md     <--- Language = "en"
+├── Paper written in English.md     <--- Profile = "English"
 ├── ...
 </pre>
 
