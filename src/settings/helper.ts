@@ -2,7 +2,7 @@ import { Setting, TAbstractFile, TFile, TFolder, TextComponent } from 'obsidian'
 
 import MathBooster from '../main';
 import { ENV_IDs, ENVs, TheoremLikeEnv, getTheoremLikeEnv } from '../env';
-import { DEFAULT_SETTINGS, ExtraSettings, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, RenameEnv } from './settings';
+import { DEFAULT_SETTINGS, ExtraSettings, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, MathSettings, NUMBER_STYLES, NumberStyle, RenameEnv } from './settings';
 import LanguageManager from '../language';
 import { BooleanKeys, formatTitle } from '../utils';
 import { AutoNoteIndexer } from 'indexer';
@@ -237,13 +237,13 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         );
         this.addToggleSetting("mathCalloutFontInherit", "Don't override the app's font setting when using preset styles", "You will need to reload the note to see the changes.");
         this.addTextSetting("titleSuffix", "Title suffix", "ex) \"\" > Definition 2 (Group) / \".\" > Definition 2 (Group).");
-        this.addTextSetting("labelPrefix", "LaTeX label prefix", 'ex) "geometry:" > a theorem with label="pythhagorean-theorem" will be given a LaTeX label "thm:geometry:pythhagorean-theorem"');
+        this.addTextSetting("labelPrefix", "Pandoc label prefix", 'ex) "geometry:" > a theorem with label="pythhagorean-theorem" will be given a LaTeX label "thm:geometry:pythhagorean-theorem"');
         this.addRenameSetting();
         contentEl.createEl("h6", { text: "Numbering" });
         this.addTextSetting("numberPrefix", "Prefix");
         this.addTextSetting("numberSuffix", "Suffix");
         this.addTextSetting("numberInit", "Initial count");
-        this.addNumberStyleSetting("numberStyle", "Style");
+        this.addDropdownSetting("numberStyle", NUMBER_STYLES, "Style");
         this.addTextSetting("numberDefault", "Default value for the \"Number\" field");
         contentEl.createEl("h6", { text: "Referencing" });
         this.addDropdownSetting("refFormat", MATH_CALLOUT_REF_FORMATS, "Format");
@@ -259,7 +259,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addTextSetting("eqNumberPrefix", "Prefix");
         this.addTextSetting("eqNumberSuffix", "Suffix");
         this.addTextSetting("eqNumberInit", "Initial count");
-        this.addNumberStyleSetting("eqNumberStyle", "Style");
+        this.addDropdownSetting("eqNumberStyle", NUMBER_STYLES, "Style");
         this.addToggleSetting("lineByLine", "Number line by line in align");
         contentEl.createEl("h6", { text: "Referencing" });
         this.addTextSetting("eqRefPrefix", "Prefix");
@@ -267,14 +267,17 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
     }
 
     addRenameSetting() {
+
+
         const { contentEl } = this;
         const setting = new Setting(contentEl)
             .setName("Rename environments")
             .setDesc("ex) print \"exercise\" as \"Problem,\" not \"Exercise\"");
 
         setting.addDropdown((dropdown) => {
-            for (let envId of ENV_IDs) {
-                dropdown.addOption(envId, envId);
+            for (const env of ENVs) {
+                const envName = this.defaultSettings.rename[env.id] ?? env.printedNames[this.defaultSettings.lang];
+                dropdown.addOption(env.id, envName);
             }
             dropdown.onChange((selectedEnvId) => {
                 let renamePaneTextBox = new Setting(setting.controlEl).addText((text) => {
@@ -284,7 +287,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
                         }
                         Object.assign(this.settings.rename, { [selectedEnvId]: newName });
                         this.plugin.app.metadataCache.trigger("math-booster:local-settings-updated", this.file);
-                        await this.plugin?.saveSettings();
+                        await this.plugin.saveSettings();
                     })
                 });
                 const inputEl = renamePaneTextBox.settingEl.querySelector<HTMLElement>("input");
@@ -292,26 +295,6 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
                     renamePaneTextBox.settingEl.replaceWith(inputEl);
                 }
             });
-        });
-        return setting;
-    }
-
-    addNumberStyleSetting(name: "numberStyle" | "eqNumberStyle", prettyName?: string, description?: string) {
-        const setting = new Setting(this.contentEl);
-        if (prettyName) {
-            setting.setName(prettyName);
-        }
-        if (description) {
-            setting.setDesc(description);
-        }
-        const callback = this.getCallback<NumberStyle>(name);
-        setting.addDropdown((dropdown) => {
-            for (let style of ["arabic", "alph", "Alph", "roman", "Roman"]) {
-                dropdown.addOption(style, style);
-            }
-            dropdown
-                .setValue(this.defaultSettings[name] ?? DEFAULT_SETTINGS[name])
-                .onChange(callback)
         });
         return setting;
     }
