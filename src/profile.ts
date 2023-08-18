@@ -152,7 +152,7 @@ class EditProfileModal extends Modal {
                 text.setValue(this.profile.meta.tags.join(", "))
                     .onChange((value) => {
                         const tags = value.split(",").map((item) => item.trim());
-                        if (tags.every((tag) => tag.match(/^[a-z\-]+$/))) {
+                        if (tags.every((tag) => tag.match(/^[a-z\-]+$/) ?? !tag)) {
                             this.profile.meta.tags = tags;
                         } else {
                             new Notice("A tag can only contain lower-case alphabets or hyphens.", 5000);
