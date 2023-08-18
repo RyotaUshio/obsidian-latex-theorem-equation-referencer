@@ -78,7 +78,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
         public file: TFile,
         callback: (settings: MathSettings) => void,
         public buttonText: string,
-        public headerText: string, 
+        public headerText: string,
         currentCalloutSettings?: MathSettings,
     ) {
         super(app, plugin, callback, currentCalloutSettings);
@@ -88,9 +88,12 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
     onOpen(): void {
         this.settings = this.currentCalloutSettings ?? {} as MathSettings;
         const { contentEl } = this;
+        contentEl.empty();
+
+        this.resolveDefaultSettings(this.file);
 
         if (this.headerText) {
-            contentEl.createEl("h4", {text: this.headerText});
+            contentEl.createEl("h4", { text: this.headerText });
         }
 
         const itemSettingsHelper = new MathCalloutSettingsHelper(contentEl, this.settings, this.defaultSettings, this.plugin, this.file);
@@ -103,9 +106,10 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
                     .onClick(() => {
                         const modal = new ContextSettingModal(
                             this.app,
-                            this.plugin, 
-                            this.file.path, 
-                            undefined, 
+                            this.plugin,
+                            this.file.path,
+                            undefined,
+                            this
                         );
                         modal.resolveDefaultSettings(this.file);
                         modal.open();
@@ -120,28 +124,38 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
 export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
 
     constructor(
-        app: App, 
-        plugin: MathBooster, 
-        public path: string, 
-        callback?: (settings: MathContextSettings) => void, 
+        app: App,
+        plugin: MathBooster,
+        public path: string,
+        callback?: (settings: MathContextSettings) => void,
+        public parent?: MathCalloutModal | undefined
     ) {
         super(app, plugin, callback);
     }
 
     onOpen(): void {
         const { contentEl } = this;
+        contentEl.empty();
 
         const file = this.app.vault.getAbstractFileByPath(this.path);
         if (file) {
             contentEl
-            .createEl('h3', { text: 'Local settings for ' + this.path });
+                .createEl('h3', { text: 'Local settings for ' + this.path });
 
-        if (this.plugin.settings[this.path] === undefined) {
-            this.plugin.settings[this.path] = {} as MathContextSettings;
+            if (this.plugin.settings[this.path] === undefined) {
+                this.plugin.settings[this.path] = {} as MathContextSettings;
+            }
+            const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.path], this.defaultSettings, this.plugin, file);
+            contextSettingsHelper.makeSettingPane();
+            this.addButton('Save');
         }
-        const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.path], this.defaultSettings, this.plugin, file);
-        contextSettingsHelper.makeSettingPane();
-        this.addButton('Save');
+    }
+
+    onClose(): void {
+        super.onClose();
+
+        if (this.parent) {
+            this.parent.open();
         }
     }
 }
@@ -240,24 +254,6 @@ export class ExcludedFileManageModal extends Modal {
                         new FileExcludeSuggestModal(this.app, this.plugin, this).open();
                     });
             });
-
-        // const saveButtonContainer = new Setting(contentEl)
-        //     .addButton((btn) => {
-        //         btn.setButtonText("Save")
-        //             .onClick(async (event) => {
-        //                 await this.plugin.saveSettings();
-        //                 this.close();
-        //             });
-        //     });
-
-        // const addButtonEl = addButtonContainer.controlEl.querySelector<HTMLElement>('button');
-        // const saveButtonEl = saveButtonContainer.controlEl.querySelector<HTMLElement>('button');
-        // if (addButtonEl && saveButtonEl) {
-        //     addButtonContainer.controlEl.replaceChildren(
-        //         addButtonEl, saveButtonEl
-        //     )
-        // }
-        // contentEl.removeChild(saveButtonContainer.settingEl);
 
         if (this.plugin.excludedFiles.length) {
             const list = contentEl.createEl('ul');
