@@ -141,9 +141,7 @@ export default class MathBooster extends Plugin {
 						},
 						"Insert",
 						"Insert math callout",
-					);
-					modal.resolveDefaultSettings(context.file);
-					modal.open();
+					).open();
 				}
 			}
 		});

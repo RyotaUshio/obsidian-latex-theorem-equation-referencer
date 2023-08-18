@@ -85,9 +85,7 @@ export class MathCallout extends MarkdownRenderChild {
                     "Confirm",
                     "Edit math callout settings",
                     this.settings,
-                );
-                modal.resolveDefaultSettings(view.file);
-                modal.open();
+                ).open();
             }
         });
         button.extraSettingsEl.classList.add("math-callout-setting-button");
