@@ -43,10 +43,7 @@ export class ActiveNoteIO extends FileIO {
 
     isSafe(lineNumber: number): boolean {
         const cursorPos = this.editor.getCursor();
-        if (cursorPos.line == lineNumber) {
-            return false;
-        }
-        return true;
+        return cursorPos.line != lineNumber;
     }
 }
 
