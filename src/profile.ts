@@ -1,6 +1,8 @@
-import MathBooster from 'main';
+import MathBooster, { VAULT_ROOT } from 'main';
 import { THEOREM_LIKE_ENV_IDs, TheoremLikeEnvID } from './env';
-import { App, ButtonComponent, Modal, Notice, Setting, TextComponent } from 'obsidian';
+import { App, ButtonComponent, DropdownComponent, Modal, Notice, Setting, TextComponent } from 'obsidian';
+import { MathContextSettingsHelper } from 'settings/helper';
+import { DEFAULT_SETTINGS } from 'settings/settings';
 
 
 export type ProfileMeta = { tags: string[] };
@@ -58,8 +60,8 @@ export const DEFAULT_PROFILES: Record<string, Profile> = {
 
 
 export class ManageProfileModal extends Modal {
-    constructor(app: App, public plugin: MathBooster) {
-        super(app);
+    constructor(public plugin: MathBooster, public helper: MathContextSettingsHelper, public profileSetting: Setting) {
+        super(plugin.app);
     }
 
     onOpen() {
@@ -85,7 +87,7 @@ export class ManageProfileModal extends Modal {
                         .setCta()
                         .onClick(() => {
                             new EditProfileModal(
-                                this.plugin.extraSettings.profiles[id], 
+                                this.plugin.extraSettings.profiles[id],
                                 this
                             ).open();
                         });
@@ -111,8 +113,13 @@ export class ManageProfileModal extends Modal {
     async onClose() {
         let { contentEl } = this;
         contentEl.empty();
+
         await this.plugin.saveSettings();
         this.app.metadataCache.trigger("math-booster:extra-settings-updated");
+
+        this.profileSetting.settingEl.replaceWith(
+            this.helper.addProfileSetting().settingEl
+        );
     }
 }
 
@@ -195,8 +202,13 @@ class ConfirmProfileDeletionModal extends Modal {
             .setButtonText("Delete")
             .setCta()
             .onClick(() => {
-                delete this.parent.plugin.extraSettings.profiles[this.id];
-                this.close();
+                const affected = getAffectedFiles(this.parent.plugin, this.id);
+                if (affected.length) {
+                    new UpdateProfileModal(this, this.id, affected).open();
+                } else {
+                    delete this.parent.plugin.extraSettings.profiles[this.id];
+                    this.close();
+                }
             });
         new ButtonComponent(buttonContainerEl)
             .setButtonText("Cancel")
@@ -261,5 +273,75 @@ class AddProfileModal extends Modal {
         let { contentEl } = this;
         contentEl.empty();
         this.parent.open();
+    }
+}
+
+
+function getAffectedFiles(plugin: MathBooster, deletedProfileName: string) {
+    const affected: string[] = [];
+    for (const path in plugin.settings) {
+        const localSettings = plugin.settings[path];
+        if (localSettings.profile == deletedProfileName) {
+            affected.push(path);
+        }
+    }
+    return affected;
+}
+
+class UpdateProfileModal extends Modal {
+    constructor(public parent: ConfirmProfileDeletionModal, public deletedID: string, public affected: string[]) {
+        super(parent.app);
+    }
+
+    onOpen() {
+        let { contentEl } = this;
+        contentEl.empty();
+
+        contentEl.createEl("h3", { text: "Update profiles" });
+        contentEl.createDiv({ text: `The following ${this.affected.length > 1 ? this.affected.length : ""} local setting${this.affected.length > 1 ? "s are" : " is"} affected by the deletion of profile "${this.deletedID}." Select a new profile to be applied for them.` });
+
+        const profiles = this.parent.parent.plugin.extraSettings.profiles;
+        const ids = Object.keys(profiles);
+        let newProfileID = DEFAULT_SETTINGS.profile;
+
+        const buttonContainerEl = contentEl.createDiv({ cls: "math-booster-profile-button-container" });
+        const dropdown = new DropdownComponent(buttonContainerEl);
+        for (const id of ids) {
+            if (id != this.deletedID) {
+                dropdown.addOption(id, id);
+            }
+        }
+        dropdown.setValue(profiles[ids[0]].id)
+            .onChange((value) => {
+                newProfileID = value;
+            });
+        new ButtonComponent(buttonContainerEl)
+            .setButtonText("Confirm")
+            .setCta()
+            .onClick(async () => {
+                for (const path of this.affected) {
+                    const localSettings = this.parent.parent.plugin.settings[path];
+                    localSettings.profile = newProfileID;
+                }
+                await this.parent.parent.plugin.saveSettings();
+                this.close();
+            })
+        new ButtonComponent(buttonContainerEl)
+            .setButtonText("Cancel")
+            .onClick(() => {
+                this.close();
+            });
+
+        const listEl = contentEl.createEl("ul");
+        for (const path of this.affected) {
+            const itemEl = listEl.createEl("li", { text: path == VAULT_ROOT ? "(Vault root)" : path });
+        }
+    }
+
+    onClose() {
+        let { contentEl } = this;
+        contentEl.empty();
+        delete this.parent.parent.plugin.extraSettings.profiles[this.parent.id];
+        this.parent.close();
     }
 }

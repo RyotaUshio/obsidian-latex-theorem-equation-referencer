@@ -318,14 +318,14 @@ export function resolveSettings(settings: MathSettings | undefined, plugin: Math
     return resolvedSettings;
 }
 
-export function formatMathCalloutType(plugin: MathBooster, settings: {type: string, profile: string}): string {
+export function formatMathCalloutType(plugin: MathBooster, settings: { type: string, profile: string }): string {
     const profile = plugin.extraSettings.profiles[settings.profile];
     return profile.body[settings.type as TheoremLikeEnvID];
 }
 
 export function formatTitleWithoutSubtitle(plugin: MathBooster, settings: ResolvedMathSettings): string {
     let title = formatMathCalloutType(plugin, settings);
-    
+
     if (settings.number) {
         let numberString = '';
         if (settings.number == 'auto') {

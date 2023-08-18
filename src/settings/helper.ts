@@ -224,13 +224,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         const { contentEl } = this;
 
         contentEl.createEl("h4", { text: "Math callouts" });
-        const profileSetting = this.addDropdownSetting("profile", Object.keys(this.plugin.extraSettings.profiles), "Profile");
-        new ButtonComponent(profileSetting.controlEl)
-            .setButtonText("Manage profiles")
-            .onClick(() => {
-                new ManageProfileModal(this.plugin.app, this.plugin).open();
-            });
-        profileSetting.controlEl.classList.add("math-booster-profile-setting");
+        this.addProfileSetting();
         const styleSetting = this.addDropdownSetting("mathCalloutStyle", MATH_CALLOUT_STYLES, "Style");
         styleSetting.descEl.replaceChildren(
             "Choose between your custom style and preset styles. You will need to reload the note to see the changes. See the ",
@@ -265,6 +259,17 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         contentEl.createEl("h6", { text: "Referencing" });
         this.addTextSetting("eqRefPrefix", "Prefix");
         this.addTextSetting("eqRefSuffix", "Suffix");
+    }
+
+    addProfileSetting(): Setting {
+        const profileSetting = this.addDropdownSetting("profile", Object.keys(this.plugin.extraSettings.profiles), "Profile");
+        new ButtonComponent(profileSetting.controlEl)
+            .setButtonText("Manage profiles")
+            .onClick(() => {
+                new ManageProfileModal(this.plugin, this, profileSetting).open();
+            });
+        profileSetting.controlEl.classList.add("math-booster-profile-setting");
+        return profileSetting;
     }
 }
 
