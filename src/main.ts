@@ -105,11 +105,7 @@ export default class MathBooster extends Plugin {
 		)
 
 		this.registerEvent(
-			/**
-			 * Don't delete local settings right after the file deletion because the file might be recovered afterward.
-			 * If a new file with the same path is created, delete the old local settings to avoid conflicts.
-			 */
-			this.app.vault.on("create", (file) => {
+			this.app.vault.on("delete", (file) => {
 				if (file.path in this.settings) {
 					delete this.settings[file.path];
 				}
