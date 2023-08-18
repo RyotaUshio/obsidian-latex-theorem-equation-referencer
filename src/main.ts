@@ -122,7 +122,7 @@ export default class MathBooster extends Plugin {
 		this.addCommand({
 			id: 'insert-display-math',
 			name: 'Insert display math',
-			editorCallback: (editor) => insertDisplayMath(editor)
+			editorCallback: insertDisplayMath,
 		});
 
 		this.addCommand({
