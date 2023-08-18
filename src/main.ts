@@ -124,12 +124,6 @@ export default class MathBooster extends Plugin {
 		/** Commands */
 
 		this.addCommand({
-			id: 'insert-inline-math',
-			name: 'Insert inline math',
-			editorCallback: insertInlineMath
-		});
-
-		this.addCommand({
 			id: 'insert-display-math',
 			name: 'Insert display math',
 			editorCallback: (editor) => insertDisplayMath(editor, this.app)

@@ -1,21 +1,22 @@
-import { App, Editor } from 'obsidian';
+import { Editor } from 'obsidian';
 
 
-export function insertInlineMath(editor: Editor) {
+/**
+ * Correctly insert a display math even inside callouts or quotes.
+ * @param editor 
+ * @param app 
+ */
+export function insertDisplayMath(editor: Editor) {
     const cursorPos = editor.getCursor();
-    editor.replaceRange('${  }$', cursorPos);
-    cursorPos.ch += 3;
-    editor.setCursor(cursorPos);
-}
+    const line = editor.getLine(cursorPos.line).trimStart();
+    const nonQuoteMatch = line.match(/[^>\s]/);
 
-export function insertDisplayMath(editor: Editor, app: App) {
-    const cursorPos = editor.getCursor();
-    const inQuoteOrCallout = editor.getLine(cursorPos.line).trimStart().startsWith('>');
-    const quoteMark = inQuoteOrCallout ? '> ' : '';
-    const insertText = '$$\n' + quoteMark + '\n' + quoteMark + '$$';
-    editor.replaceRange(insertText, cursorPos);
+    const head = nonQuoteMatch?.index ?? line.length;
+    const quoteLevel = line.slice(0, head).match(/>\s*/g)?.length ?? 0;
+    let insert = "$$\n" + "> ".repeat(quoteLevel) + "\n" + "> ".repeat(quoteLevel) + "$$";
+
+    editor.replaceRange(insert, cursorPos);
     cursorPos.line += 1;
-    cursorPos.ch = quoteMark.length;
+    cursorPos.ch = quoteLevel * 2;
     editor.setCursor(cursorPos);
 }
-
