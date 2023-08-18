@@ -153,7 +153,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
 
     abstract makeSettingPane(): void;
 
-    addDropdownSetting(name: keyof SettingsType, options: readonly string[], prettyName: string, description?: string) {
+    addDropdownSetting(name: keyof SettingsType, options: readonly string[], prettyName: string, description?: string, defaultValue?: string) {
         const callback = this.getCallback<string>(name);
         const setting = new Setting(this.contentEl).setName(prettyName);
         if (description) {
@@ -166,7 +166,9 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
             for (const option of options) {
                 dropdown.addOption(option, option);
             }
+            console.log("defaultValue:", defaultValue);
             dropdown.setValue(
+                defaultValue ??
                 this.allowUnset
                     ? (this.settings[name] ? this.defaultSettings[name] as unknown as string : "")
                     : this.defaultSettings[name] as unknown as string
@@ -261,8 +263,8 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addTextSetting("eqRefSuffix", "Suffix");
     }
 
-    addProfileSetting(): Setting {
-        const profileSetting = this.addDropdownSetting("profile", Object.keys(this.plugin.extraSettings.profiles), "Profile");
+    addProfileSetting(defaultValue?: string): Setting {
+        const profileSetting = this.addDropdownSetting("profile", Object.keys(this.plugin.extraSettings.profiles), "Profile", undefined, defaultValue);
         new ButtonComponent(profileSetting.controlEl)
             .setButtonText("Manage profiles")
             .onClick(() => {

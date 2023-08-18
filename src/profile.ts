@@ -118,7 +118,9 @@ export class ManageProfileModal extends Modal {
         this.app.metadataCache.trigger("math-booster:extra-settings-updated");
 
         this.profileSetting.settingEl.replaceWith(
-            this.helper.addProfileSetting().settingEl
+            this.helper.addProfileSetting(
+                this.plugin.settings[this.helper.file.path].profile
+            ).settingEl
         );
     }
 }
@@ -302,28 +304,32 @@ class UpdateProfileModal extends Modal {
 
         const profiles = this.parent.parent.plugin.extraSettings.profiles;
         const ids = Object.keys(profiles);
-        let newProfileID = DEFAULT_SETTINGS.profile;
+        let newProfileID: string | undefined;
 
         const buttonContainerEl = contentEl.createDiv({ cls: "math-booster-profile-button-container" });
         const dropdown = new DropdownComponent(buttonContainerEl);
+        dropdown.addOption("", "");
         for (const id of ids) {
             if (id != this.deletedID) {
                 dropdown.addOption(id, id);
             }
         }
-        dropdown.setValue(profiles[ids[0]].id)
-            .onChange((value) => {
-                newProfileID = value;
-            });
+        newProfileID = dropdown.getValue();
+        dropdown.onChange((value) => {
+            newProfileID = value;
+        });
         new ButtonComponent(buttonContainerEl)
             .setButtonText("Confirm")
             .setCta()
             .onClick(async () => {
                 for (const path of this.affected) {
                     const localSettings = this.parent.parent.plugin.settings[path];
-                    localSettings.profile = newProfileID;
+                    if (newProfileID) {
+                        localSettings.profile = newProfileID;
+                    } else {
+                        delete localSettings.profile;
+                    }
                 }
-                await this.parent.parent.plugin.saveSettings();
                 this.close();
             })
         new ButtonComponent(buttonContainerEl)
