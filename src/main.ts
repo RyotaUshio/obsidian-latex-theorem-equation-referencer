@@ -169,7 +169,6 @@ export default class MathBooster extends Plugin {
 
 		this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
 		this.registerEditorExtensionFactory(buildEquationNumberPlugin);
-
 		this.registerEditorExtension(MathPreviewInfoField);
 		this.registerEditorExtension(inlineMathPreviewView);
 		this.registerEditorExtension(Prec.highest(displayMathPreviewView));
