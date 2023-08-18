@@ -20,6 +20,8 @@ You can also customize the appearance of math callous using CSS snippets. See th
 
 See the [documentation](https://ryotaushio.github.io/obsidian-math-booster/) for the details and installation instructions.
 
+Also check out the [No More Flickering Inline Math](https://github.com/RyotaUshio/obsidian-inline-math) plugin that lets you work with inline math much more comfortably.
+
 (The theorem in the screenshot is cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
 
 ## Dependencies
