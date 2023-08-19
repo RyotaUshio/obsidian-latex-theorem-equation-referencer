@@ -85,8 +85,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
         for (const callout of callouts) {
             const resolvedSettings = this.resolveSettings(callout);
             
-            const autoNumber = callout.settings.number == 'auto';
-            if (autoNumber) {
+            if (callout.settings.number == 'auto') {
                 callout.settings._index = index++;
             }
             

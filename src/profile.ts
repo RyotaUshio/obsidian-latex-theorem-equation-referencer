@@ -1,8 +1,7 @@
 import MathBooster, { VAULT_ROOT } from 'main';
 import { THEOREM_LIKE_ENV_IDs, TheoremLikeEnvID } from './env';
-import { App, ButtonComponent, DropdownComponent, Modal, Notice, Setting, TextComponent } from 'obsidian';
+import { ButtonComponent, DropdownComponent, Modal, Notice, Setting, TextComponent } from 'obsidian';
 import { MathContextSettingsHelper } from 'settings/helper';
-import { DEFAULT_SETTINGS } from 'settings/settings';
 
 
 export type ProfileMeta = { tags: string[] };
@@ -178,6 +177,8 @@ class EditProfileModal extends Modal {
             if (newID != oldID) {
                 profiles[newID] = profiles[oldID];
                 delete profiles[oldID];
+                const affected = getAffectedFiles(this.parent.plugin, oldID);
+                updateProfile(this.parent.plugin, affected, newID);
             }
         }
 
@@ -279,17 +280,6 @@ class AddProfileModal extends Modal {
 }
 
 
-function getAffectedFiles(plugin: MathBooster, deletedProfileName: string) {
-    const affected: string[] = [];
-    for (const path in plugin.settings) {
-        const localSettings = plugin.settings[path];
-        if (localSettings.profile == deletedProfileName) {
-            affected.push(path);
-        }
-    }
-    return affected;
-}
-
 class UpdateProfileModal extends Modal {
     constructor(public parent: ConfirmProfileDeletionModal, public deletedID: string, public affected: string[]) {
         super(parent.app);
@@ -322,14 +312,7 @@ class UpdateProfileModal extends Modal {
             .setButtonText("Confirm")
             .setCta()
             .onClick(async () => {
-                for (const path of this.affected) {
-                    const localSettings = this.parent.parent.plugin.settings[path];
-                    if (newProfileID) {
-                        localSettings.profile = newProfileID;
-                    } else {
-                        delete localSettings.profile;
-                    }
-                }
+                updateProfile(this.parent.parent.plugin, this.affected, newProfileID);
                 this.close();
             })
         new ButtonComponent(buttonContainerEl)
@@ -352,6 +335,19 @@ class UpdateProfileModal extends Modal {
     }
 }
 
+
+function getAffectedFiles(plugin: MathBooster, oldProfileId: string) {
+    const affected: string[] = [];
+    for (const path in plugin.settings) {
+        const localSettings = plugin.settings[path];
+        if (localSettings.profile == oldProfileId) {
+            affected.push(path);
+        }
+    }
+    return affected;
+}
+
+
 function makeIdOfCopy(oldID: string, profiles: Record<string, Profile>) {
     let newId = `Copy of ${oldID}`;
     if (!(newId in profiles)) {
@@ -361,4 +357,16 @@ function makeIdOfCopy(oldID: string, profiles: Record<string, Profile>) {
     const numbers: number[] = ids.map((id) => id.slice(oldID.length + 1).match(/\(([1-9][0-9]*)\)/)?.[1] ?? "0").map((numStr: string): number => +numStr);
     const max = Math.max(...numbers);
     return `${newId} (${max + 1})`;
+}
+
+
+function updateProfile(plugin: MathBooster, paths: string[], newID?: string) {
+    for (const path of paths) {
+        const localSettings = plugin.settings[path];
+        if (newID) {
+            localSettings.profile = newID;
+        } else {
+            delete localSettings.profile;
+        }
+    }
 }
