@@ -263,8 +263,6 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
     }
 
     addProfileSetting(defaultValue?: string): Setting {
-        console.log("default:", defaultValue);
-        console.log("options:", Object.keys(this.plugin.extraSettings.profiles));
         const profileSetting = this.addDropdownSetting("profile", Object.keys(this.plugin.extraSettings.profiles), "Profile", undefined, defaultValue);
         new ButtonComponent(profileSetting.controlEl)
             .setButtonText("Manage profiles")
