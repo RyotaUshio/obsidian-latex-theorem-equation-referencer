@@ -16,7 +16,7 @@ export class MathSettingTab extends PluginSettingTab {
         new Setting(this.containerEl)
             .addButton((btn) => {
                 btn.setButtonText("Restore defaults");
-                btn.onClick(async (event) => {
+                btn.onClick(async () => {
                     Object.assign(this.plugin.settings[VAULT_ROOT], DEFAULT_SETTINGS);
                     Object.assign(this.plugin.extraSettings, DEFAULT_EXTRA_SETTINGS);
                     await this.plugin.saveSettings();
