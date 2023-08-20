@@ -1,5 +1,5 @@
 import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
-import { Prec } from '@codemirror/state';
+import { Prec, StateField } from '@codemirror/state';
 
 import * as MathLinks from 'obsidian-mathlinks'
 import * as Dataview from 'obsidian-dataview';
@@ -14,7 +14,7 @@ import { MathPreviewInfoField, displayMathPreviewView, inlineMathPreviewView } f
 import { LinkedNotesIndexer, VaultIndexer } from './indexer';
 import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
 import { iterDescendantFiles } from './utils';
-import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor } from './proof';
+import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory } from './proof';
 
 
 export const VAULT_ROOT = '/';
@@ -25,6 +25,7 @@ export default class MathBooster extends Plugin {
 	extraSettings: ExtraSettings;
 	excludedFiles: string[];
 	oldLinkMap: Dataview.IndexMap;
+	proofPositionField: StateField<ProofPosition[]>;
 
 	async onload() {
 
@@ -167,9 +168,10 @@ export default class MathBooster extends Plugin {
 		this.registerEditorExtension(MathPreviewInfoField);
 		this.registerEditorExtension(inlineMathPreviewView);
 		this.registerEditorExtension(Prec.highest(displayMathPreviewView));
-		const proofPositionField = proofPositionFieldFactory(this);
-		this.registerEditorExtension(proofPositionField);
-		this.registerEditorExtension(proofDecorationFactory(this, proofPositionField));
+		this.proofPositionField = proofPositionFieldFactory(this);
+		this.registerEditorExtension(this.proofPositionField);
+		this.registerEditorExtension(proofDecorationFactory(this));
+		this.registerEditorExtension(proofFoldFactory(this));
 
 		
 		/** Markdown post processors */

@@ -5,7 +5,7 @@ import { MarkdownPostProcessorContext, MarkdownRenderChild, editorInfoField } fr
 
 import MathBooster from './main';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
-import { syntaxTree } from '@codemirror/language';
+import { foldService, syntaxTree } from '@codemirror/language';
 import { hasOverlap, nodeText, resolveSettings } from './utils';
 import { MathContextSettings } from './settings/settings';
 import { Profile } from 'profile';
@@ -38,10 +38,7 @@ export class ProofRenderChild extends MarkdownRenderChild {
 
 export const ProofProcessor = (element: HTMLElement, context: MarkdownPostProcessorContext, plugin: MathBooster) => {
     const file = plugin.app.vault.getAbstractFileByPath(context.sourcePath);
-    if (!file) {
-        console.log("file not found");
-        return;
-    }
+    if (!file) return;
 
     const codes = element.querySelectorAll<HTMLElement>("code");
     const settings = resolveSettings(undefined, plugin, file);
@@ -119,7 +116,7 @@ function makeField(state: EditorState, plugin: MathBooster) {
 }
 
 
-export const proofDecorationFactory = (plugin: MathBooster, proofPositionField: StateField<ProofPosition[]>) => ViewPlugin.fromClass(
+export const proofDecorationFactory = (plugin: MathBooster) => ViewPlugin.fromClass(
     class implements PluginValue {
         decorations: DecorationSet;
 
@@ -143,7 +140,7 @@ export const proofDecorationFactory = (plugin: MathBooster, proofPositionField: 
 
             const builder = new RangeSetBuilder<Decoration>();
             const range = view.state.selection.main;
-            const positions = view.state.field(proofPositionField);
+            const positions = view.state.field(plugin.proofPositionField);
 
             for (const pos of positions) {
                 if (pos.begin && !hasOverlap(pos.begin, range)) {
@@ -169,4 +166,15 @@ export const proofDecorationFactory = (plugin: MathBooster, proofPositionField: 
         }
     }, {
     decorations: instance => instance.decorations
+});
+
+
+export const proofFoldFactory = (plugin: MathBooster) => foldService.of((state: EditorState, lineStart: number, lineEnd: number) => {
+    const positions = state.field(plugin.proofPositionField);
+    for (const pos of positions) {
+        if (pos.begin && pos.end && lineStart <= pos.begin.from && pos.begin.to <= lineEnd) {
+            return { from: pos.begin.to, to: pos.end.to };
+        }
+    }
+    return null;
 });
