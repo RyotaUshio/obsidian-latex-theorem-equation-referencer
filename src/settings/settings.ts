@@ -1,4 +1,4 @@
-import { DEFAULT_PROFILES, Profile } from "profile";
+import { DEFAULT_PROFILES, Profile } from "../profile";
 
 
 export const NUMBER_STYLES = [

@@ -1,6 +1,6 @@
 import { CachedMetadata, Editor, Pos, TFile } from "obsidian";
 
-import MathBooster from "main";
+import MathBooster from "./main";
 import { locToEditorPosition, splitIntoLines } from "./utils";
 
 

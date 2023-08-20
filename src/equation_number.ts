@@ -4,8 +4,8 @@ import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/vie
 import MathBooster from './main';
 import { getMathCache, getMathCacheFromPos, resolveSettings } from './utils';
 import { ActiveNoteIndexer, AutoNoteIndexer, NonActiveNoteIndexer } from './indexer';
-import { MathContextSettings } from "settings/settings";
-import { ActiveNoteIO } from "file_io";
+import { MathContextSettings } from "./settings/settings";
+import { ActiveNoteIO } from "./file_io";
 
 
 /** For reading view */

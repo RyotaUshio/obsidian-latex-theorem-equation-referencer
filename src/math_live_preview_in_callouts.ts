@@ -3,8 +3,8 @@ import { Extension, Transaction, StateField, RangeSetBuilder, EditorState, Range
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { syntaxTree } from '@codemirror/language';
 
-import { isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed } from 'utils';
-import { CALLOUT } from "math_callout_metadata_hider";
+import { isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed } from './utils';
+import { CALLOUT } from "./math_callout_metadata_hider";
 
 
 const DISPLAY_MATH_BEGIN = "formatting_formatting-math_formatting-math-begin_keyword_math_math-block";

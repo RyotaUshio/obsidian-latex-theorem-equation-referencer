@@ -3,11 +3,11 @@ import { Transaction } from '@codemirror/state';
 import { StateField, EditorState } from '@codemirror/state';
 import { MarkdownPostProcessorContext, MarkdownRenderChild, editorInfoField } from 'obsidian';
 
-import MathBooster from 'main';
+import MathBooster from './main';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
 import { syntaxTree } from '@codemirror/language';
-import { hasOverlap, nodeText, resolveSettings } from 'utils';
-import { MathContextSettings } from 'settings/settings';
+import { hasOverlap, nodeText, resolveSettings } from './utils';
+import { MathContextSettings } from './settings/settings';
 
 export const INLINE_CODE = "inline-code";
 

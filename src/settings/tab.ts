@@ -4,7 +4,7 @@ import MathBooster, { VAULT_ROOT } from "../main";
 import { DEFAULT_EXTRA_SETTINGS, DEFAULT_SETTINGS } from "./settings";
 import { ExtraSettingsHelper, MathContextSettingsHelper } from "./helper";
 import { resolveSettings } from "../utils";
-import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "modals";
+import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "../modals";
 
 
 export class MathSettingTab extends PluginSettingTab {

@@ -5,8 +5,8 @@ import { SyntaxNodeRef } from '@lezer/common';
 
 import MathBooster from './main';
 import { DEFAULT_SETTINGS, MathContextSettings, MathSettings, NumberStyle, ResolvedMathSettings } from './settings/settings';
-import { MathInfoSet } from 'math_live_preview_in_callouts';
-import { TheoremLikeEnvID } from 'env';
+import { MathInfoSet } from './math_live_preview_in_callouts';
+import { TheoremLikeEnvID } from './env';
 
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",

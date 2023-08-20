@@ -13,8 +13,8 @@ import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_nu
 import { MathPreviewInfoField, displayMathPreviewView, inlineMathPreviewView } from './math_live_preview_in_callouts';
 import { LinkedNotesIndexer, VaultIndexer } from './indexer';
 import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
-import { iterDescendantFiles } from 'utils';
-import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor } from 'proof';
+import { iterDescendantFiles } from './utils';
+import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor } from './proof';
 
 
 export const VAULT_ROOT = '/';
