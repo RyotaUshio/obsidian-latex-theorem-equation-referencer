@@ -219,7 +219,7 @@ export default class MathBooster extends Plugin {
 		});
 
 		// for proof environments
-		this.registerMarkdownPostProcessor((element, context) => ProofProcessor(element, context, this));
+		this.registerMarkdownPostProcessor((element, context) => ProofProcessor(this.app, this, element, context));
 	}
 
 	onunload() {

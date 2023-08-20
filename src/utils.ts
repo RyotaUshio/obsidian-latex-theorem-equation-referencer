@@ -1,4 +1,4 @@
-import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView } from 'obsidian';
+import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView, Component, MarkdownRenderer } from 'obsidian';
 import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState, ChangeSet } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
@@ -84,7 +84,16 @@ export async function renderTextWithMath(source: string): Promise<(HTMLElement |
     }
 
     return elements;
+}
 
+export async function renderMarkdownWithoutContainer(markdown: string, el: HTMLElement, sourcePath: string): Promise<NodeList | undefined> {
+    const component = new Component();
+    await MarkdownRenderer.renderMarkdown(markdown, el, sourcePath, component);
+    for (const child of el.children) {
+        if (child.tagName == "P") {
+            return child.childNodes;
+        }
+    }
 }
 
 export function isEqualToOrChildOf(file1: TAbstractFile, file2: TAbstractFile): boolean {
