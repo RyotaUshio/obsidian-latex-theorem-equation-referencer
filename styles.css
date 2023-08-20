@@ -1,5 +1,18 @@
 /* This file is auto-generated. Do not edit it. */
 
+.math-booster-setting-description {
+    color: var(--text-muted);
+}
+
+.math-booster-begin-proof {
+    font-style: italic;
+    padding-right: 10px;
+}
+
+.math-booster-end-proof {
+    float: right;
+}
+
 .math-booster-add-profile {
     display: flex;
     flex-direction: row;

@@ -27,34 +27,36 @@ export class MathSettingTab extends PluginSettingTab {
             });
     }
 
-    displayUnit(key: string) {
-        const file = this.app.vault.getAbstractFileByPath(key);
-        if (file) {
-            const defaultSettings = resolveSettings(undefined, this.plugin, file);
-            (new MathContextSettingsHelper(
-                this.containerEl,
-                this.plugin.settings[key],
-                defaultSettings,
-                this.plugin,
-                file
-            )).makeSettingPane();
-        }
-    }
-
     display() {
         const { containerEl } = this;
         containerEl.empty();
 
         containerEl.createEl("h3", { text: "Global" });
-        this.displayUnit(VAULT_ROOT);
 
-        (new ExtraSettingsHelper(
+        const root = this.app.vault.getRoot();
+        const defaultSettings = resolveSettings(undefined, this.plugin, root);
+        const globalHelper = new MathContextSettingsHelper(
+            this.containerEl,
+            this.plugin.settings[VAULT_ROOT],
+            defaultSettings,
+            this.plugin,
+            root
+        );
+        globalHelper.makeSettingPane();
+
+        const extraHelper = new ExtraSettingsHelper(
             this.containerEl,
             this.plugin.extraSettings,
             this.plugin.extraSettings,
             this.plugin,
             false
-        )).makeSettingPane();
+        );
+        extraHelper.makeSettingPane();
+
+        this.containerEl.insertBefore(
+            extraHelper.settingRefs.noteTitleInLink.settingEl, 
+            globalHelper.settingRefs.noteMathLinkFormat.settingEl
+        );
 
         this.addRestoreDefaultsButton();
 

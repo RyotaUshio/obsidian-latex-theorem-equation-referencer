@@ -132,6 +132,7 @@ export class MathCalloutSettingsHelper {
 export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraSettings> {
     abstract readonly eventName: string;
     abstract readonly eventArgs: any[];
+    settingRefs: Record<keyof SettingsType, Setting>;
 
     constructor(
         public contentEl: HTMLElement,
@@ -139,7 +140,9 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         public defaultSettings: Required<SettingsType>,
         public plugin: MathBooster,
         public allowUnset: boolean,
-    ) { }
+    ) {
+        this.settingRefs = {} as Record<keyof SettingsType, Setting>;
+    }
 
     getCallback<Type>(name: keyof SettingsType): (value: Type) => Promise<void> {
         return async (value: Type): Promise<void> => {
@@ -173,6 +176,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
             );
             dropdown.onChange(callback);
         });
+        this.settingRefs[name] = setting;
         return setting;
     }
 
@@ -188,6 +192,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
                 .setValue(String(this.settings[name] ?? ""))
                 .onChange(callback)
         });
+        this.settingRefs[name] = setting;
         return setting;
     }
 
@@ -201,6 +206,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
             toggle.setValue(this.defaultSettings[name] as unknown as boolean)
                 .onChange(callback);
         });
+        this.settingRefs[name] = setting;
         return setting;
     }
 }
@@ -260,6 +266,16 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         contentEl.createEl("h6", { text: "Referencing" });
         this.addTextSetting("eqRefPrefix", "Prefix");
         this.addTextSetting("eqRefSuffix", "Suffix");
+
+        contentEl.createEl("h4", { text: "Proofs" });
+        contentEl.createDiv({ 
+            text: "For example, you can replace a pair of inline codes `\\begin{proof}` & `\\end{proof}` with \"Proof.\" & \"∎\". You can style it with CSS snippets targetting the classes .math-booster-begin-proof and .math-booster-end-proof.",
+            cls: "math-booster-setting-description"
+        });
+        this.addTextSetting("beginProof", "Beginning of a proof");
+        this.addTextSetting("beginProofReplace", "Replace the above with");
+        this.addTextSetting("endProof", "End of a proof");
+        this.addTextSetting("endProofReplace", "Replace the above with");
     }
 
     addProfileSetting(defaultValue?: string): Setting {

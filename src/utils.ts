@@ -356,6 +356,10 @@ export function formatTitle(plugin: MathBooster, settings: ResolvedMathSettings,
     return title;
 }
 
+export function hasOverlap(range1: {from: number, to: number}, range2: {from: number, to: number}): boolean {
+    return range1.from <= range2.to && range2.from <= range1.to;
+}
+
 // https://stackoverflow.com/a/50851710/13613783
 export type BooleanKeys<T> = { [k in keyof T]: T[k] extends boolean ? k : never }[keyof T];
 

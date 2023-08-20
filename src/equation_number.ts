@@ -8,7 +8,7 @@ import { MathContextSettings } from "settings/settings";
 import { ActiveNoteIO } from "file_io";
 
 
-/** For reading mode */
+/** For reading view */
 
 export class DisplayMathRenderChild extends MarkdownRenderChild {
     file: TFile;
@@ -48,7 +48,11 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         this.plugin.registerEvent(
             this.app.metadataCache.on(
                 "math-booster:index-updated",
-                (indexer) => this.impl(indexer)
+                (indexer) => {
+                    if (indexer.file == this.file) {
+                        this.impl(indexer)
+                    }
+                }
             )
         );
         (new AutoNoteIndexer(this.app, this.plugin, this.file)).run();
@@ -181,7 +185,7 @@ export async function replaceMathTag(displayMathEl: HTMLElement, text: string, m
     if (taggedText) {
         const mjxContainerEl = renderMath(taggedText, true);
         displayMathEl.replaceWith(mjxContainerEl);
-        await finishRenderMath();
+        finishRenderMath();
         return mjxContainerEl;
     }
 }

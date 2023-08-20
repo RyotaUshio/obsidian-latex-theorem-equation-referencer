@@ -14,7 +14,7 @@ import { MathPreviewInfoField, displayMathPreviewView, inlineMathPreviewView } f
 import { LinkedNotesIndexer, VaultIndexer } from './indexer';
 import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
 import { iterDescendantFiles } from 'utils';
-// import { ProofPositionField, ProofProcessor, proofDecorationFactory } from 'proof';
+import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor } from 'proof';
 
 
 export const VAULT_ROOT = '/';
@@ -167,8 +167,9 @@ export default class MathBooster extends Plugin {
 		this.registerEditorExtension(MathPreviewInfoField);
 		this.registerEditorExtension(inlineMathPreviewView);
 		this.registerEditorExtension(Prec.highest(displayMathPreviewView));
-		// this.registerEditorExtension(ProofPositionField);
-		// this.registerEditorExtension(proofDecorationFactory(this));
+		const proofPositionField = proofPositionFieldFactory(this);
+		this.registerEditorExtension(proofPositionField);
+		this.registerEditorExtension(proofDecorationFactory(this, proofPositionField));
 
 		
 		/** Markdown post processors */
@@ -215,8 +216,8 @@ export default class MathBooster extends Plugin {
 			}
 		});
 
-		// // for proof environments
-		// this.registerMarkdownPostProcessor((element, context) => ProofProcessor(element, context, this));
+		// for proof environments
+		this.registerMarkdownPostProcessor((element, context) => ProofProcessor(element, context, this));
 	}
 
 	onunload() {

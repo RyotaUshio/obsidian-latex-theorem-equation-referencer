@@ -26,6 +26,8 @@ export const MATH_CALLOUT_REF_FORMATS = [
 ] as const;
 export type MathCalloutRefFormat = typeof MATH_CALLOUT_REF_FORMATS[number];
 
+// Context settings are called "local settings" in the documentation and UI.
+// Sorry for confusion, this is due to a historical reason. I'll fix it later.
 export interface MathContextSettings {
     profile: string;
     titleSuffix: string;
@@ -46,6 +48,10 @@ export interface MathContextSettings {
     lineByLine: boolean;
     mathCalloutStyle: MathCalloutStyle;
     mathCalloutFontInherit: boolean;
+    beginProof: string;
+    endProof: string;
+    beginProofReplace: string;
+    endProofReplace: string;
 }
 
 export interface MathCalloutSettings {
@@ -88,6 +94,10 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     lineByLine: true,
     mathCalloutStyle: "framed",
     mathCalloutFontInherit: false,
+    beginProof: "\\begin{proof}",
+    endProof: "\\end{proof}",
+    beginProofReplace: "Proof.",
+    endProofReplace: "□",
 }
 
 export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
