@@ -236,19 +236,6 @@ abstract class NoteIndexer<IOType extends FileIO> {
             this
         );
     }
-
-    async getBlockText(blockID: string, cache?: CachedMetadata): Promise<string | undefined> {
-        cache = cache ?? this.app.metadataCache.getFileCache(this.file) ?? undefined;
-        if (cache) {
-            const sectionCache = cache.sections?.find(
-                (sectionCache) => sectionCache.id == blockID
-            );
-            const position = sectionCache?.position;
-            if (position) {
-                return await this.io.getRange(position);
-            }
-        }
-    }
 }
 
 
@@ -260,7 +247,7 @@ export class ActiveNoteIndexer extends NoteIndexer<ActiveNoteIO> {
      * @param view 
      */
     constructor(public app: App, public plugin: MathBooster, view: MarkdownView) {
-        super(app, plugin, view.file, new ActiveNoteIO(view.editor));
+        super(app, plugin, view.file, new ActiveNoteIO(plugin, view.file, view.editor));
     }
 }
 
@@ -273,7 +260,7 @@ export class NonActiveNoteIndexer extends NoteIndexer<NonActiveNoteIO> {
      * @param file 
      */
     constructor(app: App, plugin: MathBooster, file: TFile) {
-        super(app, plugin, file, new NonActiveNoteIO(app, file));
+        super(app, plugin, file, new NonActiveNoteIO(plugin, file));
     }
 }
 

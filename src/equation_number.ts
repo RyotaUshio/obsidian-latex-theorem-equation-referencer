@@ -1,10 +1,11 @@
-import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, MarkdownView, CachedMetadata, SectionCache, MarkdownSectionInformation, TFile } from "obsidian";
+import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, CachedMetadata, SectionCache, MarkdownSectionInformation, TFile, editorInfoField } from "obsidian";
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
 import MathBooster from './main';
 import { getMathCache, getMathCacheFromPos, resolveSettings } from './utils';
 import { ActiveNoteIndexer, AutoNoteIndexer, NonActiveNoteIndexer } from './indexer';
 import { MathContextSettings } from "settings/settings";
+import { ActiveNoteIO } from "file_io";
 
 
 /** For reading mode */
@@ -57,7 +58,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         this.setId();
         if (this.id) {
             const mathLink = indexer.mathLinkBlocks[this.id];
-            const text = await indexer.getBlockText(this.id);
+            const text = await indexer.io.getBlockText(this.id);
             if (text) {
                 const settings = resolveSettings(undefined, this.plugin, this.file);
                 if (this.containerEl) {
@@ -74,20 +75,10 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
 
 /** For live preview */
 
-export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugin: MathBooster, markdownView: MarkdownView): ViewPlugin<V> {
+export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBooster): ViewPlugin<V> {
 
     return ViewPlugin.fromClass(class implements PluginValue {
         constructor(view: EditorView) {
-            // plugin.registerEvent(
-            //     app.metadataCache.on(
-            //         "math-booster:index-updated",
-            //         (indexer) => {
-            //             if (indexer instanceof ActiveNoteIndexer) {
-            //                 this.callback(view, indexer);
-            //             }
-            //         }
-            //     )
-            // );
             this.impl(view);
         }
 
@@ -96,14 +87,16 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugi
         }
 
         impl(view: EditorView) {
-            const indexer = new ActiveNoteIndexer(app, plugin, markdownView);
-            this.callback(view, indexer);
+            const info = view.state.field(editorInfoField);
+            if (info.file && info.editor) {
+                const io = new ActiveNoteIO(plugin, info.file, info.editor);
+                this.callback(view, io);
+            }
         }
 
-        async callback(view: EditorView, indexer: ActiveNoteIndexer) {
+        async callback(view: EditorView, io: ActiveNoteIO) {
             const mjxElements = view.contentDOM.querySelectorAll<HTMLElement>('mjx-container.MathJax > mjx-math[display="true"]');
-            const cache = app.metadataCache.getFileCache(indexer.file);
-            const path = markdownView.file?.path;
+            const cache = app.metadataCache.getFileCache(io.file);
             if (mjxElements && cache) {
                 for (let i = 0; i < mjxElements.length; i++) {
                     const mjxContainerEl = mjxElements[i].parentElement;
@@ -112,10 +105,10 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugi
                             const pos = view.posAtDOM(mjxContainerEl);
                             const id = getMathCacheFromPos(cache, pos)?.id;
                             if (id) {
-                                const mathLink = plugin.getMathLinksAPI()?.get(path, id);
-                                const text = await indexer.getBlockText(id);
+                                const mathLink = plugin.getMathLinksAPI()?.get(io.file.path, id);
+                                const text = await io.getBlockText(id);
                                 if (text) {
-                                    const settings = resolveSettings(undefined, plugin, markdownView.file);	
+                                    const settings = resolveSettings(undefined, plugin, io.file);
                                     await replaceMathTag(mjxContainerEl, text, mathLink, settings);
                                 }
                             }
@@ -125,6 +118,7 @@ export function buildEquationNumberPlugin<V extends PluginValue>(app: App, plugi
                     }
                 }
             }
+
         }
 
         destroy() { }

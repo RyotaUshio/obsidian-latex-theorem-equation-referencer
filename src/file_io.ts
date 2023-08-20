@@ -1,17 +1,35 @@
-import { App, Editor, Pos, TFile } from "obsidian";
+import { CachedMetadata, Editor, Pos, TFile } from "obsidian";
 
+import MathBooster from "main";
 import { locToEditorPosition, splitIntoLines } from "./utils";
 
 
 export abstract class FileIO {
+    constructor(public plugin: MathBooster, public file: TFile) {}
     abstract setLine(lineNumber: number, text: string): Promise<void>;
     abstract getLine(lineNumber: number): Promise<string>;
     abstract getRange(position: Pos): Promise<string>;
     /**
      * Check if the line at `lineNumber` can be safely overwritten.
+     * It was necessary for sure before, but I'm not sure if it is now, 
+     * because now the JSON metadata of math callouts are hidden by a view plugin.
+     * I'll check it later.
      * @param lineNumber 
      */
     abstract isSafe(lineNumber: number): boolean;
+
+    async getBlockText(blockID: string, cache?: CachedMetadata): Promise<string | undefined> {
+        cache = cache ?? this.plugin.app.metadataCache.getFileCache(this.file) ?? undefined;
+        if (cache) {
+            const sectionCache = cache.sections?.find(
+                (sectionCache) => sectionCache.id == blockID
+            );
+            const position = sectionCache?.position;
+            if (position) {
+                return await this.getRange(position);
+            }
+        }
+    }
 }
 
 
@@ -22,8 +40,8 @@ export class ActiveNoteIO extends FileIO {
      * (See https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Prefer+the+Editor+API+instead+of+%60Vault.modify%60)
      * @param editor 
      */
-    constructor(public editor: Editor) {
-        super();
+    constructor(plugin: MathBooster, file: TFile, public editor: Editor) {
+        super(plugin, file);
     }
 
     async setLine(lineNumber: number, text: string): Promise<void> {
@@ -52,15 +70,10 @@ export class NonActiveNoteIO extends FileIO {
     /**
      * File IO for non-active (= currently not opened / currently opened but not focused) notes.
      * Uses the Vault interface instead of Editor.
-     * @param app 
-     * @param file 
      */
-    constructor(public app: App, public file: TFile) {
-        super();
-    }
 
     async setLine(lineNumber: number, text: string): Promise<void> {
-        this.app.vault.process(this.file, (data: string): string => {
+        this.plugin.app.vault.process(this.file, (data: string): string => {
             const lines = splitIntoLines(data);
             lines[lineNumber] = text;
             return lines.join('\n');
@@ -68,13 +81,13 @@ export class NonActiveNoteIO extends FileIO {
     }
 
     async getLine(lineNumber: number): Promise<string> {
-        const data = await this.app.vault.cachedRead(this.file);
+        const data = await this.plugin.app.vault.cachedRead(this.file);
         const lines = splitIntoLines(data);
         return lines[lineNumber];
     }
 
     async getRange(position: Pos): Promise<string> {
-        const content = await this.app.vault.cachedRead(this.file);
+        const content = await this.plugin.app.vault.cachedRead(this.file);
         return content.slice(position.start.offset, position.end.offset);
     }
 

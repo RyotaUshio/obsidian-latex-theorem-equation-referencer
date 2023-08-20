@@ -1,5 +1,5 @@
-import { App, MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
-import { Extension, Prec } from '@codemirror/state';
+import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
+import { Prec } from '@codemirror/state';
 
 import * as MathLinks from 'obsidian-mathlinks'
 import * as Dataview from 'obsidian-dataview';
@@ -14,6 +14,7 @@ import { MathPreviewInfoField, displayMathPreviewView, inlineMathPreviewView } f
 import { LinkedNotesIndexer, VaultIndexer } from './indexer';
 import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
 import { iterDescendantFiles } from 'utils';
+// import { ProofPositionField, ProofProcessor, proofDecorationFactory } from 'proof';
 
 
 export const VAULT_ROOT = '/';
@@ -162,10 +163,12 @@ export default class MathBooster extends Plugin {
 		/** Editor Extensions */
 
 		this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
-		this.registerEditorExtensionFactory(buildEquationNumberPlugin);
+		this.registerEditorExtension(buildEquationNumberPlugin(this));
 		this.registerEditorExtension(MathPreviewInfoField);
 		this.registerEditorExtension(inlineMathPreviewView);
 		this.registerEditorExtension(Prec.highest(displayMathPreviewView));
+		// this.registerEditorExtension(ProofPositionField);
+		// this.registerEditorExtension(proofDecorationFactory(this));
 
 		
 		/** Markdown post processors */
@@ -211,6 +214,9 @@ export default class MathBooster extends Plugin {
 				}
 			}
 		});
+
+		// // for proof environments
+		// this.registerMarkdownPostProcessor((element, context) => ProofProcessor(element, context, this));
 	}
 
 	onunload() {
@@ -288,25 +294,5 @@ export default class MathBooster extends Plugin {
 		if (oldLinkMap) {
 			this.oldLinkMap = structuredClone(oldLinkMap);
 		}
-	}
-
-	registerEditorExtensionFactory(
-		factory: (app: App, plugin: MathBooster, view: MarkdownView) => Extension | Extension[],
-	) {
-		this.app.workspace.onLayoutReady(() => {
-			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
-				if (leaf.view instanceof MarkdownView) {
-					this.registerEditorExtension(factory(this.app, this, leaf.view));
-				}
-			});
-		});
-
-		this.registerEvent(
-			this.app.workspace.on("active-leaf-change", (leaf: WorkspaceLeaf) => {
-				if (leaf.view instanceof MarkdownView) {
-					this.registerEditorExtension(factory(this.app, this, leaf.view));
-				}
-			})
-		);
 	}
 }
