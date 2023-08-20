@@ -269,7 +269,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
 
         contentEl.createEl("h4", { text: "Proofs" });
         contentEl.createDiv({ 
-            text: "For example, you can replace a pair of inline codes `\\begin{proof}` & `\\end{proof}` with \"Proof.\" & \"∎\". You can style it with CSS snippets targetting the classes .math-booster-begin-proof and .math-booster-end-proof.",
+            text: "For example, you can replace a pair of inline codes `\\begin{proof}` & `\\end{proof}` with \"Proof.\" & \"∎\". You can style it with CSS snippets. See the documentation for the details.",
             cls: "math-booster-setting-description"
         });
         this.addTextSetting("beginProof", "Beginning of a proof");

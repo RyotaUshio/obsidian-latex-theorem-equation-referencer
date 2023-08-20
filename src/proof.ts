@@ -8,53 +8,49 @@ import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpd
 import { syntaxTree } from '@codemirror/language';
 import { hasOverlap, nodeText, resolveSettings } from './utils';
 import { MathContextSettings } from './settings/settings';
+import { Profile } from 'profile';
 
 export const INLINE_CODE = "inline-code";
 
 
-/** For reading view */
-
-export class BeginProof extends MarkdownRenderChild {
-    constructor(containerEl: HTMLElement, public settings: Required<MathContextSettings>) {
-        super(containerEl);
-    }
-
-    onload(): void {
-        this.containerEl.replaceWith(
-            createSpan({
-                text: this.settings.beginProofReplace,
-                cls: "math-booster-begin-proof",
-            })
-        );
-    }
+function makeProofElement(which: "begin" | "end", settings: Required<MathContextSettings>, profile: Profile) {
+    return createSpan({
+        text: settings[(which + "ProofReplace") as "beginProofReplace" | "endProofReplace"],
+        cls: [
+            "math-booster-" + which + "-proof",
+            ...profile.meta.tags.map((tag) => "math-booster-" + which + "-proof-" + tag)
+        ]
+    })
 }
 
-export class EndProof extends MarkdownRenderChild {
-    constructor(containerEl: HTMLElement, public settings: Required<MathContextSettings>) {
+
+/** For reading view */
+
+export class ProofRenderChild extends MarkdownRenderChild {
+    constructor(containerEl: HTMLElement, public which: "begin" | "end", public settings: Required<MathContextSettings>, public profile: Profile) {
         super(containerEl);
     }
 
     onload(): void {
-        this.containerEl.replaceWith(
-            createSpan({
-                text: this.settings.endProofReplace,
-                cls: "math-booster-end-proof",
-            })
-        );
+        this.containerEl.replaceWith(makeProofElement(this.which, this.settings, this.profile));
     }
 }
 
 export const ProofProcessor = (element: HTMLElement, context: MarkdownPostProcessorContext, plugin: MathBooster) => {
     const file = plugin.app.vault.getAbstractFileByPath(context.sourcePath);
-    if (!file) return;
+    if (!file) {
+        console.log("file not found");
+        return;
+    }
 
-    const codes = element.getElementsByTagName("code");
+    const codes = element.querySelectorAll<HTMLElement>("code");
     const settings = resolveSettings(undefined, plugin, file);
+    const profile = plugin.extraSettings.profiles[settings.profile];
     for (const code of codes) {
         if (code.textContent == settings.beginProof) {
-            context.addChild(new BeginProof(code, settings));
+            context.addChild(new ProofRenderChild(code, "begin", settings, profile));
         } else if (code.textContent == settings.endProof) {
-            context.addChild(new EndProof(code, settings));
+            context.addChild(new ProofRenderChild(code, "end", settings, profile));
         }
     }
 };
@@ -62,30 +58,13 @@ export const ProofProcessor = (element: HTMLElement, context: MarkdownPostProces
 
 /** For live preview */
 
-class BeginProofWidget extends WidgetType {
-    constructor(public settings: Required<MathContextSettings>) {
+class ProofWidget extends WidgetType {
+    constructor(public which: "begin" | "end", public settings: Required<MathContextSettings>, public profile: Profile) {
         super();
     }
 
     toDOM(view: EditorView): HTMLElement {
-        return createSpan({
-            text: this.settings.beginProofReplace,
-            cls: "math-booster-begin-proof",
-        });
-    }
-}
-
-
-class EndProofWidget extends WidgetType {
-    constructor(public settings: Required<MathContextSettings>) {
-        super();
-    }
-
-    toDOM(view: EditorView): HTMLElement {
-        return createSpan({
-            text: this.settings.endProofReplace,
-            cls: "math-booster-end-proof",
-        });
+        return makeProofElement(this.which, this.settings, this.profile);
     }
 }
 
@@ -127,10 +106,15 @@ function makeField(state: EditorState, plugin: MathBooster) {
                 } else if (text == settings.endProof) {
                     end = { from: node.from - 1, to: node.to + 1 }; // 1 = "`".length
                     field.push({ begin, end });
+                    begin = undefined;
+                    end = undefined;
                 }
             }
         }
     });
+    if (!end && begin) {
+        field.push({ begin });
+    }
     return field;
 }
 
@@ -155,6 +139,7 @@ export const proofDecorationFactory = (plugin: MathBooster, proofPositionField: 
             }
 
             const settings = resolveSettings(undefined, plugin, file);
+            const profile = plugin.extraSettings.profiles[settings.profile];
 
             const builder = new RangeSetBuilder<Decoration>();
             const range = view.state.selection.main;
@@ -166,7 +151,7 @@ export const proofDecorationFactory = (plugin: MathBooster, proofPositionField: 
                         pos.begin.from,
                         pos.begin.to,
                         Decoration.replace({
-                            widget: new BeginProofWidget(settings)
+                            widget: new ProofWidget("begin", settings, profile)
                         })
                     );
                 }
@@ -175,7 +160,7 @@ export const proofDecorationFactory = (plugin: MathBooster, proofPositionField: 
                         pos.end.from,
                         pos.end.to,
                         Decoration.replace({
-                            widget: new EndProofWidget(settings)
+                            widget: new ProofWidget("end", settings, profile)
                         })
                     );
                 }
