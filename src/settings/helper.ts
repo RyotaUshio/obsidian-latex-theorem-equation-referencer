@@ -276,6 +276,13 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addTextSetting("beginProofReplace", "Replace the above with");
         this.addTextSetting("endProof", "End of a proof");
         this.addTextSetting("endProofReplace", "Replace the above with");
+        contentEl.createEl("h6", { text: "Linked proofs" });
+        contentEl.createDiv({ 
+            text: `For example, you can render \`${DEFAULT_SETTINGS.beginProof}\`@[[link to Theorem 1]] as "${DEFAULT_SETTINGS.linkedBeginProofPrefix}Theorem 1${DEFAULT_SETTINGS.linkedBeginProofSuffix}".`,
+            cls: "setting-item-description"
+        });
+        this.addTextSetting("linkedBeginProofPrefix", "Prefix");
+        this.addTextSetting("linkedBeginProofSuffix", "Suffix");
     }
 
     addProfileSetting(defaultValue?: string): Setting {

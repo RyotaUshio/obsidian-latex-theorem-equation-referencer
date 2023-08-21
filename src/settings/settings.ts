@@ -52,6 +52,8 @@ export interface MathContextSettings {
     endProof: string;
     beginProofReplace: string;
     endProofReplace: string;
+    linkedBeginProofPrefix: string;
+    linkedBeginProofSuffix: string;
 }
 
 export interface MathCalloutSettings {
@@ -98,6 +100,8 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     endProof: "\\end{proof}",
     beginProofReplace: "Proof.",
     endProofReplace: "□",
+    linkedBeginProofPrefix: "Proof of ",
+    linkedBeginProofSuffix: ".",
 }
 
 export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {

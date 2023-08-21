@@ -61,7 +61,7 @@ export class ProofRenderChild extends MarkdownRenderChild {
         if (result) {
             const { atSign, links } = result;
             const el = createSpan({ cls: makeProofClasses(this.which, this.profile) });
-            el.replaceChildren("Proof of ", ...links, ".");
+            el.replaceChildren(this.settings.linkedBeginProofPrefix, ...links, this.settings.linkedBeginProofSuffix);
             this.containerEl.replaceWith(el);
             atSign.textContent = "";
             return;
@@ -130,7 +130,7 @@ class ProofWidget extends WidgetType {
     toDOM(view: EditorView): HTMLElement {
         if (this.which == "begin" && this.sourcePath && this.plugin) {
             const el = createSpan({ cls: makeProofClasses(this.which, this.profile) });
-            const display = this.pos.linktext ? `Proof of [[${this.pos.linktext}]]!` : this.pos.display;
+            const display = this.pos.linktext ? `${this.settings.linkedBeginProofPrefix} [[${this.pos.linktext}]]${this.settings.linkedBeginProofSuffix}` : this.pos.display;
             if (display) {
                 ProofWidget.renderDisplay(el, display, this.sourcePath, this.plugin);
                 return el;
