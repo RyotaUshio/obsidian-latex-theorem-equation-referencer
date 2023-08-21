@@ -1,7 +1,7 @@
 import { RangeSetBuilder } from '@codemirror/state';
 import { Transaction } from '@codemirror/state';
 import { StateField, EditorState } from '@codemirror/state';
-import { App, MarkdownPostProcessorContext, MarkdownRenderChild, editorInfoField } from 'obsidian';
+import { App, Editor, MarkdownFileInfo, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, editorInfoField } from 'obsidian';
 
 import MathBooster from './main';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
@@ -293,3 +293,12 @@ export const proofFoldFactory = (plugin: MathBooster) => foldService.of((state: 
     }
     return null;
 });
+
+export function insertProof(plugin: MathBooster, editor: Editor, context: MarkdownView | MarkdownFileInfo) {
+    if (context.file) {
+        const settings = resolveSettings(undefined, plugin, context.file);
+        const cursor = editor.getCursor();
+        editor.replaceRange(`\`${settings.beginProof}\`\`${settings.endProof}\``, cursor);
+        editor.setCursor({line: cursor.line, ch: cursor.ch + settings.beginProof.length + 2});
+    }
+}

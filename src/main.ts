@@ -14,7 +14,7 @@ import { MathPreviewInfoField, displayMathPreviewView, inlineMathPreviewView } f
 import { LinkedNotesIndexer, VaultIndexer } from './indexer';
 import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
 import { iterDescendantFiles } from './utils';
-import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory } from './proof';
+import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
 
 
 export const VAULT_ROOT = '/';
@@ -158,6 +158,12 @@ export default class MathBooster extends Plugin {
 					modal.open();
 				}
 			}
+		});
+
+		this.addCommand({
+			id: 'insert-proof', 
+			name: 'Insert proof', 
+			editorCallback: (editor, context) => insertProof(this, editor, context)
 		});
 
 
