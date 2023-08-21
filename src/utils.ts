@@ -336,7 +336,7 @@ export function resolveSettings(settings: MathSettings | undefined, plugin: Math
 
 export function formatMathCalloutType(plugin: MathBooster, settings: { type: string, profile: string }): string {
     const profile = plugin.extraSettings.profiles[settings.profile];
-    return profile.body[settings.type as TheoremLikeEnvID];
+    return profile.body.theorem[settings.type as TheoremLikeEnvID];
 }
 
 export function formatTitleWithoutSubtitle(plugin: MathBooster, settings: ResolvedMathSettings): string {
