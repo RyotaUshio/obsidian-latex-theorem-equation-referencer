@@ -1,4 +1,4 @@
-import { DEFAULT_PROFILES, Profile } from "../profile";
+import { DEFAULT_PROFILES, Profile } from "./profile";
 
 
 export const NUMBER_STYLES = [
@@ -50,8 +50,10 @@ export interface MathContextSettings {
     mathCalloutFontInherit: boolean;
     beginProof: string;
     endProof: string;
-    beginProofReplace: string;
-    endProofReplace: string;
+    // beginProofReplace: string;
+    // endProofReplace: string;
+    // linkedBeginProofPrefix: string;
+    // linkedBeginProofSuffix: string;
 }
 
 export interface MathCalloutSettings {
@@ -96,8 +98,10 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     mathCalloutFontInherit: false,
     beginProof: "\\begin{proof}",
     endProof: "\\end{proof}",
-    beginProofReplace: "Proof.",
-    endProofReplace: "□",
+    // beginProofReplace: "Proof.",
+    // endProofReplace: "□",
+    // linkedBeginProofPrefix: "Proof of ",
+    // linkedBeginProofSuffix: ".",
 }
 
 export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {

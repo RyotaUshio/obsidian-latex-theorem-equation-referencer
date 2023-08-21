@@ -173,7 +173,7 @@ export default class MathBooster extends Plugin {
 		this.registerEditorExtension(proofDecorationFactory(this));
 		this.registerEditorExtension(proofFoldFactory(this));
 
-		
+
 		/** Markdown post processors */
 
 		// for math callouts
@@ -219,7 +219,9 @@ export default class MathBooster extends Plugin {
 		});
 
 		// for proof environments
-		this.registerMarkdownPostProcessor((element, context) => ProofProcessor(this.app, this, element, context));
+		this.registerMarkdownPostProcessor(
+			(element, context) => ProofProcessor(this.app, this, element, context),
+		);
 	}
 
 	onunload() {

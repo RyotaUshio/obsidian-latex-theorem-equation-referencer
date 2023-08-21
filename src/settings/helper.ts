@@ -5,7 +5,7 @@ import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from '../en
 import { DEFAULT_SETTINGS, ExtraSettings, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, NUMBER_STYLES } from './settings';
 import { BooleanKeys, formatMathCalloutType, formatTitle } from '../utils';
 import { AutoNoteIndexer } from '../indexer';
-import { ManageProfileModal } from '../profile';
+import { DEFAULT_PROFILES, ManageProfileModal } from './profile';
 
 
 export class MathCalloutSettingsHelper {
@@ -269,13 +269,11 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
 
         contentEl.createEl("h4", { text: "Proofs" });
         contentEl.createDiv({ 
-            text: `For example, you can replace a pair of inline codes \`${DEFAULT_SETTINGS.beginProof}\` & \`${DEFAULT_SETTINGS.endProof}\` with \"${DEFAULT_SETTINGS.beginProofReplace}\" & \"${DEFAULT_SETTINGS.endProofReplace}\". You can style it with CSS snippets. See the documentation for the details.`,
+            text: `For example, you can replace a pair of inline codes \`${DEFAULT_SETTINGS.beginProof}\` & \`${DEFAULT_SETTINGS.endProof}\` with \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.begin}\" & \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.end}\". You can style it with CSS snippets. See the documentation for the details.`,
             cls: "setting-item-description"
         });
         this.addTextSetting("beginProof", "Beginning of a proof");
-        this.addTextSetting("beginProofReplace", "Replace the above with");
         this.addTextSetting("endProof", "End of a proof");
-        this.addTextSetting("endProofReplace", "Replace the above with");
     }
 
     addProfileSetting(defaultValue?: string): Setting {

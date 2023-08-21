@@ -1,17 +1,30 @@
 import { ButtonComponent, DropdownComponent, Modal, Notice, Setting, TextComponent } from 'obsidian';
 
-import MathBooster, { VAULT_ROOT } from './main';
-import { THEOREM_LIKE_ENV_IDs, TheoremLikeEnvID } from './env';
-import { MathContextSettingsHelper } from './settings/helper';
+import MathBooster, { VAULT_ROOT } from '../main';
+import { THEOREM_LIKE_ENV_IDs, TheoremLikeEnvID } from '../env';
+import { MathContextSettingsHelper } from '../settings/helper';
+import { DEFAULT_SETTINGS } from './settings';
 
 
 export type ProfileMeta = { tags: string[] };
-export type ProfileBody = { [k in TheoremLikeEnvID]: string };
+export type TheoremLinkEnvDisplay = { [k in TheoremLikeEnvID]: string };
+export const PROOF_SETTING_KEYS = [
+    "begin",
+    "end",
+    "linkedBeginPrefix",
+    "linkedBeginSuffix",
+] as const;
+export type ProofSettingKey = typeof PROOF_SETTING_KEYS[number];
+export type ProofDisplay = { [k in ProofSettingKey]: string };
+export type ProfileBody = {
+    theorem: TheoremLinkEnvDisplay; 
+    proof: ProofDisplay;
+};
 export type Profile = {
     id: string;
     meta: ProfileMeta;
     body: ProfileBody;
-}
+};
 
 export const DEFAULT_PROFILES: Record<string, Profile> = {
     "English": {
@@ -20,41 +33,57 @@ export const DEFAULT_PROFILES: Record<string, Profile> = {
             tags: ["en"],
         },
         body: {
-            "axiom": "Axiom",
-            "definition": "Definition",
-            "lemma": "Lemma",
-            "proposition": "Proposition",
-            "theorem": "Theorem",
-            "corollary": "Corollary",
-            "claim": "Claim",
-            "assumption": "Assumption",
-            "example": "Example",
-            "exercise": "Exercise",
-            "conjecture": "Conjecture",
-            "hypothesis": "Hypothesis",
-            "remark": "Remark",
-        }
+            theorem: {
+                "axiom": "Axiom",
+                "definition": "Definition",
+                "lemma": "Lemma",
+                "proposition": "Proposition",
+                "theorem": "Theorem",
+                "corollary": "Corollary",
+                "claim": "Claim",
+                "assumption": "Assumption",
+                "example": "Example",
+                "exercise": "Exercise",
+                "conjecture": "Conjecture",
+                "hypothesis": "Hypothesis",
+                "remark": "Remark",
+            },
+            proof: {
+                begin: "Proof.",
+                end: "□",
+                linkedBeginPrefix: "Proof of ",
+                linkedBeginSuffix: ".",                
+            },
+        },
     },
-    "Japanese": {
-        id: "Japanese",
+    "日本語": {
+        id: "日本語",
         meta: {
             tags: ["ja"],
         },
         body: {
-            "axiom": "公理",
-            "definition": "定義",
-            "lemma": "補題",
-            "proposition": "命題",
-            "theorem": "定理",
-            "corollary": "系",
-            "claim": "主張",
-            "assumption": "仮定",
-            "example": "例",
-            "exercise": "演習問題",
-            "conjecture": "予想",
-            "hypothesis": "仮説",
-            "remark": "注",
-        }
+            theorem: {
+                "axiom": "公理",
+                "definition": "定義",
+                "lemma": "補題",
+                "proposition": "命題",
+                "theorem": "定理",
+                "corollary": "系",
+                "claim": "主張",
+                "assumption": "仮定",
+                "example": "例",
+                "exercise": "演習問題",
+                "conjecture": "予想",
+                "hypothesis": "仮説",
+                "remark": "注",
+            },
+            proof: {
+                begin: "証明.",
+                end: "□",
+                linkedBeginPrefix: "",
+                linkedBeginSuffix: "の証明.",
+            },
+        },
     },
 };
 
@@ -127,8 +156,10 @@ export class ManageProfileModal extends Modal {
 
 
 class EditProfileModal extends Modal {
+    settingRefs: Record<TheoremLikeEnvID | ProofSettingKey, Setting>;
     constructor(public profile: Profile, public parent: ManageProfileModal) {
         super(parent.app);
+        this.settingRefs = {} as Record<TheoremLikeEnvID | ProofSettingKey, Setting>;
     }
 
     onOpen() {
@@ -160,15 +191,42 @@ class EditProfileModal extends Modal {
                     });
             });
 
-        contentEl.createEl("h5", { text: "Displayed names" });
+        contentEl.createEl("h5", { text: "Theorem-like environments" });
         for (const envID of THEOREM_LIKE_ENV_IDs) {
-            new Setting(contentEl).setName(envID).addText((text) => {
-                text.setValue(this.profile.body[envID] ?? "")
+            this.settingRefs[envID] = new Setting(contentEl).setName(envID).addText((text) => {
+                text.setValue(this.profile.body.theorem[envID] ?? "")
                     .onChange((value) => {
-                        this.profile.body[envID] = value;
+                        this.profile.body.theorem[envID] = value;
                     })
             });
         }
+
+        contentEl.createEl("h5", { text: "Proofs" });
+
+        const prettyNames = [
+            "Beginning of proof",
+            "Ending of proof",
+            "Prefix", 
+            "Suffix",
+        ];
+        for (let i = 0; i < PROOF_SETTING_KEYS.length; i++) {
+            const key = PROOF_SETTING_KEYS[i];
+            const name = prettyNames[i];
+            this.settingRefs[key] = new Setting(contentEl).setName(name).addText((text) => {
+                text.setValue(this.profile.body.proof[key] ?? "")
+                    .onChange((value) => {
+                        this.profile.body.proof[key] = value;
+                    })
+            });
+        }
+
+        const linkedProofHeading = contentEl.createEl("h6", {text: "Linked proofs"});
+        const linkedProofDesc = contentEl.createDiv({ 
+            text: `For example, you can render \`${DEFAULT_SETTINGS.beginProof}\`@[[link to Theorem 1]] as "${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.linkedBeginPrefix}Theorem 1${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.linkedBeginSuffix}".`,
+            cls: "setting-item-description"
+        });
+        contentEl.insertBefore(linkedProofHeading, this.settingRefs.linkedBeginPrefix.settingEl);
+        contentEl.insertBefore(linkedProofDesc, this.settingRefs.linkedBeginPrefix.settingEl);
     }
 
     onClose() {
@@ -254,9 +312,9 @@ class AddProfileModal extends Modal {
             .setButtonText("Add")
             .setCta()
             .onClick(() => {
-                const newBody = {} as ProfileBody;
+                const newBody = {theorem: {}} as ProfileBody;
                 for (const envID of THEOREM_LIKE_ENV_IDs) {
-                    newBody[envID] = "";
+                    newBody.theorem[envID] = "";
                 }
                 this.parent.plugin.extraSettings.profiles[id] = {
                     id,
