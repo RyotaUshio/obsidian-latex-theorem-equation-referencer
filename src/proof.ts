@@ -8,7 +8,7 @@ import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpd
 import { foldService, syntaxTree } from '@codemirror/language';
 import { hasOverlap, nodeText, resolveSettings, renderMarkdown, printNode } from './utils';
 import { MathContextSettings } from './settings/settings';
-import { Profile } from 'profile';
+import { Profile } from './settings/profile';
 import { SyntaxNodeRef } from '@lezer/common';
 
 

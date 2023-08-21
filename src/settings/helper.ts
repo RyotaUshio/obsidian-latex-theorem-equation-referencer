@@ -5,7 +5,7 @@ import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from '../en
 import { DEFAULT_SETTINGS, ExtraSettings, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, NUMBER_STYLES } from './settings';
 import { BooleanKeys, formatMathCalloutType, formatTitle } from '../utils';
 import { AutoNoteIndexer } from '../indexer';
-import { ManageProfileModal } from '../profile';
+import { ManageProfileModal } from './profile';
 
 
 export class MathCalloutSettingsHelper {
