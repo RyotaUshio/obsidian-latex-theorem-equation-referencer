@@ -6,20 +6,22 @@ import { App, MarkdownPostProcessorContext, MarkdownRenderChild, TFile, editorIn
 import MathBooster from './main';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
 import { foldService, syntaxTree } from '@codemirror/language';
-import { hasOverlap, nodeText, resolveSettings } from './utils';
+import { hasOverlap, nodeText, resolveSettings, renderMarkdown } from './utils';
 import { MathContextSettings } from './settings/settings';
 import { Profile } from 'profile';
 
 export const INLINE_CODE = "inline-code";
 
 
-function makeProofElement(which: "begin" | "end", settings: Required<MathContextSettings>, profile: Profile, display?: string) {
+function makeProofClasses(which: "begin" | "end", profile: Profile) {
+    return ["math-booster-" + which + "-proof",
+    ...profile.meta.tags.map((tag) => "math-booster-" + which + "-proof-" + tag)];
+}
+
+function makeProofElement(which: "begin" | "end", settings: Required<MathContextSettings>, profile: Profile) {
     return createSpan({
-        text: display ?? settings[(which + "ProofReplace") as "beginProofReplace" | "endProofReplace"],
-        cls: [
-            "math-booster-" + which + "-proof",
-            ...profile.meta.tags.map((tag) => "math-booster-" + which + "-proof-" + tag)
-        ]
+        text: settings[(which + "ProofReplace") as "beginProofReplace" | "endProofReplace"],
+        cls: makeProofClasses(which, profile)
     })
 }
 
@@ -32,7 +34,22 @@ export class ProofRenderChild extends MarkdownRenderChild {
     }
 
     onload(): void {
-        this.containerEl.replaceWith(makeProofElement(this.which, this.settings, this.profile, this.display));
+        if (this.display && this.sourcePath) {
+            this.renderDisplay();
+            return;
+        }
+        this.containerEl.replaceWith(makeProofElement(this.which, this.settings, this.profile));
+    }
+
+    async renderDisplay() {
+        if (this.display && this.sourcePath) {
+            const children = await renderMarkdown(this.display, this.sourcePath, this.plugin);
+            if (children) {
+                const el = createSpan({ cls: makeProofClasses(this.which, this.profile) });
+                el.replaceChildren(...children);
+                this.containerEl.replaceWith(el);
+            }
+        }
     }
 }
 
@@ -66,12 +83,26 @@ export const ProofProcessor = (app: App, plugin: MathBooster, element: HTMLEleme
 /** For live preview */
 
 class ProofWidget extends WidgetType {
-    constructor(public which: "begin" | "end", public settings: Required<MathContextSettings>, public profile: Profile, public display?: string) {
+    constructor(public which: "begin" | "end", public settings: Required<MathContextSettings>, public profile: Profile, public display?: string, public sourcePath?: string, public plugin?: MathBooster) {
         super();
     }
 
     toDOM(view: EditorView): HTMLElement {
-        return makeProofElement(this.which, this.settings, this.profile, this.display);
+        if (this.display && this.sourcePath) {
+            const el = createSpan({ cls: makeProofClasses(this.which, this.profile) });
+            this.renderDisplay(el);
+            return el;
+        }
+        return makeProofElement(this.which, this.settings, this.profile);
+    }
+
+    async renderDisplay(el: HTMLElement) {
+        if (this.display && this.sourcePath && this.plugin) {
+            const children = await renderMarkdown(this.display, this.sourcePath, this.plugin);
+            if (children) {
+                el.replaceChildren(...children);
+            }
+        }
     }
 }
 
@@ -168,7 +199,7 @@ export const proofDecorationFactory = (plugin: MathBooster) => ViewPlugin.fromCl
                         pos.begin.from,
                         pos.begin.to,
                         Decoration.replace({
-                            widget: new ProofWidget("begin", settings, profile, pos.display)
+                            widget: new ProofWidget("begin", settings, profile, pos.display, file.path, plugin)
                         })
                     );
                 }

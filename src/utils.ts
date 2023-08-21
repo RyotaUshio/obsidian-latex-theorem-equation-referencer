@@ -86,8 +86,15 @@ export async function renderTextWithMath(source: string): Promise<(HTMLElement |
     return elements;
 }
 
-export async function renderMarkdownWithoutContainer(markdown: string, el: HTMLElement, sourcePath: string): Promise<NodeList | undefined> {
-    const component = new Component();
+/**
+ * Easy-to-use version of MarkdownRenderer.renderMarkdown.
+ * @param markdown 
+ * @param sourcePath 
+ * @param component - Typically you can just pass the plugin instance. 
+ * @returns 
+ */
+export async function renderMarkdown(markdown: string, sourcePath: string, component: Component): Promise<NodeList | undefined> {
+    const el = createSpan();
     await MarkdownRenderer.renderMarkdown(markdown, el, sourcePath, component);
     for (const child of el.children) {
         if (child.tagName == "P") {
@@ -365,7 +372,7 @@ export function formatTitle(plugin: MathBooster, settings: ResolvedMathSettings,
     return title;
 }
 
-export function hasOverlap(range1: {from: number, to: number}, range2: {from: number, to: number}): boolean {
+export function hasOverlap(range1: { from: number, to: number }, range2: { from: number, to: number }): boolean {
     return range1.from <= range2.to && range2.from <= range1.to;
 }
 
