@@ -11,8 +11,9 @@ title: Overview
 
 **[Math Booster](https://github.com/RyotaUshio/obsidian-math-booster)** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience with several powerful features, including:
 
-- [Special "math callouts" for theorems/definitions/exercises/...](math-callouts)
+- [Theorem environments: "math callouts"](math-callouts)
 - [Automatic equation numbering](equation-number)
+- [Proof environments](proofs)
 - [Math live preview in callouts & blockquotes](math-preview)
 
 Math callouts & equations can be [referenced with their title or number](cleveref) similarly to the `cleveref` package in LaTeX.

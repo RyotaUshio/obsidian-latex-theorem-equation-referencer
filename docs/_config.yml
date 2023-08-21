@@ -5,6 +5,7 @@ theme: minima
 header_pages:
   - math-callouts.md
   - equation-number.md
+  - proofs.md
   - math-preview.md
   - style-your-theorems.md
   - tips.md
