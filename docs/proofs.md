@@ -11,6 +11,8 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, ...
 `\end{proof}`
 ```
 
+Proofs can be folded (collapsed) in live preview.
+
 ### Custom texts
 
 Use the following syntax to print custom text. 
