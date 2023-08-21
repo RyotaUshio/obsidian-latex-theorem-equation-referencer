@@ -110,7 +110,7 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
                                 const text = await io.getBlockText(id);
                                 if (text) {
                                     const settings = resolveSettings(undefined, plugin, io.file);
-                                    await replaceMathTag(mjxContainerEl, text, mathLink, settings);
+                                    replaceMathTag(mjxContainerEl, text, mathLink, settings);
                                 }
                             }
                         } catch (err) {
@@ -169,7 +169,7 @@ export function insertTagInMathText(textContent: string, tagContent: string, lin
 }
 
 
-export async function replaceMathTag(displayMathEl: HTMLElement, text: string, mathLink: string | undefined, settings: Required<MathContextSettings>) {
+export function replaceMathTag(displayMathEl: HTMLElement, text: string, mathLink: string | undefined, settings: Required<MathContextSettings>) {
     const tagMatch = text.match(/\\tag\{.*\}/);
     if (tagMatch) {
         return;
