@@ -215,9 +215,6 @@ function makeField(state: EditorState, plugin: MathBooster) {
             }
         }
     });
-    if (begin) {
-        field.push({ begin, end, display, linktext, linknodes });
-    }
     return field;
 }
 
