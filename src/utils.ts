@@ -278,14 +278,14 @@ export function readMathCalloutSettingsAndTitle(line: string): { settings: MathS
     }
 }
 
-export function readMathCalloutSettings(line: string): MathSettings | undefined {    // const matchResult = matchMathCallout(editor, lineNumber);
+export function readMathCalloutSettings(line: string): MathSettings | undefined {
     const result = readMathCalloutSettingsAndTitle(line);
     if (result) {
         return result.settings;
     }
 }
 
-export function readMathCalloutTitle(line: string): string | undefined {    // const matchResult = matchMathCallout(editor, lineNumber);
+export function readMathCalloutTitle(line: string): string | undefined {
     const result = readMathCalloutSettingsAndTitle(line);
     if (result) {
         return result.title;

@@ -156,8 +156,10 @@ export class ManageProfileModal extends Modal {
 
 
 class EditProfileModal extends Modal {
+    settingRefs: Record<TheoremLikeEnvID | ProofSettingKey, Setting>;
     constructor(public profile: Profile, public parent: ManageProfileModal) {
         super(parent.app);
+        this.settingRefs = {} as Record<TheoremLikeEnvID | ProofSettingKey, Setting>;
     }
 
     onOpen() {
@@ -191,7 +193,7 @@ class EditProfileModal extends Modal {
 
         contentEl.createEl("h5", { text: "Theorem-like environments" });
         for (const envID of THEOREM_LIKE_ENV_IDs) {
-            new Setting(contentEl).setName(envID).addText((text) => {
+            this.settingRefs[envID] = new Setting(contentEl).setName(envID).addText((text) => {
                 text.setValue(this.profile.body.theorem[envID] ?? "")
                     .onChange((value) => {
                         this.profile.body.theorem[envID] = value;
@@ -200,18 +202,31 @@ class EditProfileModal extends Modal {
         }
 
         contentEl.createEl("h5", { text: "Proofs" });
-        contentEl.createDiv({ 
-            text: `For example, you can render \`${DEFAULT_SETTINGS.beginProof}\`@[[link to Theorem 1]] as "${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.linkedBeginPrefix}Theorem 1${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.linkedBeginSuffix}".`,
-            cls: "setting-item-description"
-        });
-        for (const key of PROOF_SETTING_KEYS) {
-            new Setting(contentEl).setName(key).addText((text) => {
+
+        const prettyNames = [
+            "Beginning of proof",
+            "Ending of proof",
+            "Prefix", 
+            "Suffix",
+        ];
+        for (let i = 0; i < PROOF_SETTING_KEYS.length; i++) {
+            const key = PROOF_SETTING_KEYS[i];
+            const name = prettyNames[i];
+            this.settingRefs[key] = new Setting(contentEl).setName(name).addText((text) => {
                 text.setValue(this.profile.body.proof[key] ?? "")
                     .onChange((value) => {
                         this.profile.body.proof[key] = value;
                     })
             });
         }
+
+        const linkedProofHeading = contentEl.createEl("h6", {text: "Linked proofs"});
+        const linkedProofDesc = contentEl.createDiv({ 
+            text: `For example, you can render \`${DEFAULT_SETTINGS.beginProof}\`@[[link to Theorem 1]] as "${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.linkedBeginPrefix}Theorem 1${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.linkedBeginSuffix}".`,
+            cls: "setting-item-description"
+        });
+        contentEl.insertBefore(linkedProofHeading, this.settingRefs.linkedBeginPrefix.settingEl);
+        contentEl.insertBefore(linkedProofDesc, this.settingRefs.linkedBeginPrefix.settingEl);
     }
 
     onClose() {
