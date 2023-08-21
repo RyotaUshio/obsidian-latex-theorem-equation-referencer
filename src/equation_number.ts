@@ -66,10 +66,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
             if (text) {
                 const settings = resolveSettings(undefined, this.plugin, this.file);
                 if (this.containerEl) {
-                    const el = await replaceMathTag(this.containerEl, text, mathLink, settings);
-                    if (el) {
-                        this.containerEl = el;
-                    }
+                    replaceMathTag(this.containerEl, text, mathLink, settings);
                 }
             }
         }
@@ -184,7 +181,7 @@ export async function replaceMathTag(displayMathEl: HTMLElement, text: string, m
     const taggedText = getMathTextWithTag(text, tag, settings.lineByLine);
     if (taggedText) {
         const mjxContainerEl = renderMath(taggedText, true);
-        displayMathEl.replaceWith(mjxContainerEl);
+        displayMathEl.replaceChildren(...mjxContainerEl.childNodes)
         finishRenderMath();
         return mjxContainerEl;
     }
