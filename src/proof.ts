@@ -207,7 +207,7 @@ function makeField(state: EditorState, plugin: MathBooster) {
                     }
                 } else if (text == settings.endProof) {
                     end = { from: node.from - 1, to: node.to + 1 }; // 1 = "`".length
-                    field.push({ begin, end, display, linktext });
+                    field.push({ begin, end, display, linktext, linknodes });
                     begin = undefined;
                     end = undefined;
                     display = undefined;
@@ -217,9 +217,10 @@ function makeField(state: EditorState, plugin: MathBooster) {
             }
         }
     });
-    if (!end && begin) {
-        field.push({ begin, display, linktext, linknodes });
+    if (begin) {
+        field.push({ begin, end, display, linktext, linknodes });
     }
+    console.log("make:", field);
     return field;
 }
 
@@ -249,6 +250,8 @@ export const proofDecorationFactory = (plugin: MathBooster) => ViewPlugin.fromCl
             const builder = new RangeSetBuilder<Decoration>();
             const range = view.state.selection.main;
             const positions = view.state.field(plugin.proofPositionField);
+
+            console.log("deco:", positions);
 
             for (const pos of positions) {
                 if (pos.begin) {
