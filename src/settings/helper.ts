@@ -155,7 +155,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
     abstract makeSettingPane(): void;
 
     addDropdownSetting(name: keyof SettingsType, options: readonly string[], prettyName: string, description?: string, defaultValue?: string) {
-        const callback = this.getCallback<string>(name);
+        // const callback = this.getCallback<string>(name);
         const setting = new Setting(this.contentEl).setName(prettyName);
         if (description) {
             setting.setDesc(description);
@@ -174,7 +174,16 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
                         : this.defaultSettings[name] as unknown as string
                 )
             );
-            dropdown.onChange(callback);
+            // dropdown.onChange(callback);
+            dropdown.onChange(async (value: string): Promise<void> => {
+                if (this.allowUnset && !value) {
+                    delete this.settings[name];
+                } else {
+                    Object.assign(this.settings, {[name]: value});
+                }
+                await this.plugin.saveSettings();
+                this.plugin.app.metadataCache.trigger(this.eventName, ...this.eventArgs);
+            })
         });
         this.settingRefs[name] = setting;
         return setting;
@@ -268,7 +277,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addTextSetting("eqRefSuffix", "Suffix");
 
         contentEl.createEl("h4", { text: "Proofs" });
-        contentEl.createDiv({ 
+        contentEl.createDiv({
             text: `For example, you can replace a pair of inline codes \`${DEFAULT_SETTINGS.beginProof}\` & \`${DEFAULT_SETTINGS.endProof}\` with \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.begin}\" & \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.end}\". You can style it with CSS snippets. See the documentation for the details.`,
             cls: "setting-item-description"
         });
