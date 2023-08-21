@@ -198,11 +198,9 @@ function makeField(state: EditorState, plugin: MathBooster) {
                         const next = node.node.nextSibling?.nextSibling;
                         const afterNext = node.node.nextSibling?.nextSibling?.nextSibling;
                         const afterAfterNext = node.node.nextSibling?.nextSibling?.nextSibling?.nextSibling;
-                        // console.log("makeField:", next, afterNext, afterAfterNext);
                         if (next?.name == LINK_BEGIN && afterNext?.name == LINK && afterAfterNext?.name == LINK_END) {
                             linktext = nodeText(afterNext, state);
                             linknodes = { linkBegin: next, link: afterNext, linkEnd: afterAfterNext };
-                            // console.log("makeField:", linktext, linknodes.linkBegin, linknodes.link, linknodes.linkEnd);
                         }
                     }
                 } else if (text == settings.endProof) {
@@ -220,7 +218,6 @@ function makeField(state: EditorState, plugin: MathBooster) {
     if (begin) {
         field.push({ begin, end, display, linktext, linknodes });
     }
-    console.log("make:", field);
     return field;
 }
 
@@ -251,11 +248,8 @@ export const proofDecorationFactory = (plugin: MathBooster) => ViewPlugin.fromCl
             const range = view.state.selection.main;
             const positions = view.state.field(plugin.proofPositionField);
 
-            console.log("deco:", positions);
-
             for (const pos of positions) {
                 if (pos.begin) {
-                    // console.log("proofDecorationFactory:", pos.linktext, pos.linknodes?.linkBegin, pos.linknodes?.link, pos.linknodes?.linkEnd);
                     if (pos.linktext && pos.linknodes) {
                         if (!hasOverlap({ from: pos.begin.from, to: pos.linknodes.linkEnd.to }, range)) {
                             builder.add(
