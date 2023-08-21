@@ -1,8 +1,8 @@
 import { ButtonComponent, DropdownComponent, Modal, Notice, Setting, TextComponent } from 'obsidian';
 
-import MathBooster, { VAULT_ROOT } from './main';
-import { THEOREM_LIKE_ENV_IDs, TheoremLikeEnvID } from './env';
-import { MathContextSettingsHelper } from './settings/helper';
+import MathBooster, { VAULT_ROOT } from '../main';
+import { THEOREM_LIKE_ENV_IDs, TheoremLikeEnvID } from '../env';
+import { MathContextSettingsHelper } from '../settings/helper';
 
 
 export type ProfileMeta = { tags: string[] };
