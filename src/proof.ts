@@ -1,16 +1,21 @@
 import { RangeSetBuilder } from '@codemirror/state';
 import { Transaction } from '@codemirror/state';
 import { StateField, EditorState } from '@codemirror/state';
-import { App, MarkdownPostProcessorContext, MarkdownRenderChild, TFile, editorInfoField, parseLinktext, resolveSubpath } from 'obsidian';
+import { App, MarkdownPostProcessorContext, MarkdownRenderChild, editorInfoField } from 'obsidian';
 
 import MathBooster from './main';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
 import { foldService, syntaxTree } from '@codemirror/language';
-import { hasOverlap, nodeText, resolveSettings, renderMarkdown } from './utils';
+import { hasOverlap, nodeText, resolveSettings, renderMarkdown, printNode } from './utils';
 import { MathContextSettings } from './settings/settings';
 import { Profile } from 'profile';
+import { SyntaxNodeRef } from '@lezer/common';
+
 
 export const INLINE_CODE = "inline-code";
+export const LINK_BEGIN = "formatting-link_formatting-link-start";
+export const LINK = "hmd-internal-link";
+export const LINK_END = "formatting-link_formatting-link-end";
 
 
 function makeProofClasses(which: "begin" | "end", profile: Profile) {
@@ -25,6 +30,20 @@ function makeProofElement(which: "begin" | "end", settings: Required<MathContext
     })
 }
 
+function parseAtSignLink(codeEl: HTMLElement) {
+    const next = codeEl.nextSibling;
+    const afterNext = next?.nextSibling;
+    const afterAfterNext = afterNext?.nextSibling;
+    if (afterNext) {
+        if (next.nodeType == Node.TEXT_NODE && next.textContent == "@"
+            && afterNext instanceof HTMLElement && afterNext.matches("a.internal-link")
+            && afterAfterNext instanceof HTMLElement && afterAfterNext.matches("a.mathLink-internal-link")) {
+            return { atSign: next, links: [afterNext, afterAfterNext] };
+        }
+    }
+}
+
+
 
 /** For reading view */
 
@@ -34,10 +53,31 @@ export class ProofRenderChild extends MarkdownRenderChild {
     }
 
     onload(): void {
+        const result = parseAtSignLink(this.containerEl);
+
+        /**
+         * `\begin{proof}`@[[<link to Theorem 1>]] => Proof of Theorem 1.
+         */
+        if (result) {
+            const { atSign, links } = result;
+            const el = createSpan({ cls: makeProofClasses(this.which, this.profile) });
+            el.replaceChildren("Proof of ", ...links, ".");
+            this.containerEl.replaceWith(el);
+            atSign.textContent = "";
+            return;
+        }
+
+        /**
+         * `\begin{proof}[Foo.]` => Foo.
+         */
         if (this.display && this.sourcePath) {
             this.renderDisplay();
             return;
         }
+
+        /**
+         * `\begin{proof}` => Proof.
+         */
         this.containerEl.replaceWith(makeProofElement(this.which, this.settings, this.profile));
     }
 
@@ -83,25 +123,26 @@ export const ProofProcessor = (app: App, plugin: MathBooster, element: HTMLEleme
 /** For live preview */
 
 class ProofWidget extends WidgetType {
-    constructor(public which: "begin" | "end", public settings: Required<MathContextSettings>, public profile: Profile, public display?: string, public sourcePath?: string, public plugin?: MathBooster) {
+    constructor(public which: "begin" | "end", public pos: ProofPosition, public settings: Required<MathContextSettings>, public profile: Profile, public sourcePath?: string, public plugin?: MathBooster) {
         super();
     }
 
     toDOM(view: EditorView): HTMLElement {
-        if (this.display && this.sourcePath) {
+        if (this.which == "begin" && this.sourcePath && this.plugin) {
             const el = createSpan({ cls: makeProofClasses(this.which, this.profile) });
-            this.renderDisplay(el);
-            return el;
+            const display = this.pos.linktext ? `Proof of [[${this.pos.linktext}]]!` : this.pos.display;
+            if (display) {
+                ProofWidget.renderDisplay(el, display, this.sourcePath, this.plugin);
+                return el;
+            }
         }
         return makeProofElement(this.which, this.settings, this.profile);
     }
 
-    async renderDisplay(el: HTMLElement) {
-        if (this.display && this.sourcePath && this.plugin) {
-            const children = await renderMarkdown(this.display, this.sourcePath, this.plugin);
-            if (children) {
-                el.replaceChildren(...children);
-            }
+    static async renderDisplay(el: HTMLElement, display: string, sourcePath: string, plugin: MathBooster) {
+        const children = await renderMarkdown(display, sourcePath, plugin);
+        if (children) {
+            el.replaceChildren(...children);
         }
     }
 }
@@ -111,6 +152,8 @@ export interface ProofPosition {
     begin?: { from: number, to: number },
     end?: { from: number, to: number },
     display?: string,
+    linktext?: string,
+    linknodes?: { linkBegin: SyntaxNodeRef, link: SyntaxNodeRef, linkEnd: SyntaxNodeRef },
 }
 
 export const proofPositionFieldFactory = (plugin: MathBooster) => StateField.define<ProofPosition[]>({
@@ -138,6 +181,8 @@ function makeField(state: EditorState, plugin: MathBooster) {
     let end: { from: number, to: number } | undefined;
     let display: string | undefined;
     let displayMatch;
+    let linktext: string | undefined;
+    let linknodes: { linkBegin: SyntaxNodeRef, link: SyntaxNodeRef, linkEnd: SyntaxNodeRef } | undefined;
     tree.iterate({
         enter(node) {
             if (node.name == INLINE_CODE) {
@@ -150,18 +195,29 @@ function makeField(state: EditorState, plugin: MathBooster) {
                         display = displayMatch[1];
                         begin = { from: node.from - 1, to: node.to + 1 }; // 1 = "`".length
                     }
+                    if (begin && state.sliceDoc(node.to + 1, node.to + 2) == "@") {
+                        const next = node.node.nextSibling?.nextSibling;
+                        const afterNext = node.node.nextSibling?.nextSibling?.nextSibling;
+                        const afterAfterNext = node.node.nextSibling?.nextSibling?.nextSibling?.nextSibling;
+                        if (next?.name == LINK_BEGIN && afterNext?.name == LINK && afterAfterNext?.name == LINK_END) {
+                            linktext = nodeText(afterNext, state);
+                            linknodes = { linkBegin: next, link: afterNext, linkEnd: afterAfterNext };
+                        }
+                    }
                 } else if (text == settings.endProof) {
                     end = { from: node.from - 1, to: node.to + 1 }; // 1 = "`".length
-                    field.push({ begin, end, display });
+                    field.push({ begin, end, display, linktext });
                     begin = undefined;
                     end = undefined;
                     display = undefined;
+                    linktext = undefined;
+                    linknodes = undefined;
                 }
             }
         }
     });
     if (!end && begin) {
-        field.push({ begin, display });
+        field.push({ begin, display, linktext, linknodes });
     }
     return field;
 }
@@ -194,21 +250,33 @@ export const proofDecorationFactory = (plugin: MathBooster) => ViewPlugin.fromCl
             const positions = view.state.field(plugin.proofPositionField);
 
             for (const pos of positions) {
-                if (pos.begin && !hasOverlap(pos.begin, range)) {
-                    builder.add(
-                        pos.begin.from,
-                        pos.begin.to,
-                        Decoration.replace({
-                            widget: new ProofWidget("begin", settings, profile, pos.display, file.path, plugin)
-                        })
-                    );
+                if (pos.begin) {
+                    if (pos.linktext && pos.linknodes) {
+                        if (!hasOverlap({ from: pos.begin.from, to: pos.linknodes.linkEnd.to }, range)) {
+                            builder.add(
+                                pos.begin.from,
+                                pos.linknodes.linkEnd.to,
+                                Decoration.replace({
+                                    widget: new ProofWidget("begin", pos, settings, profile, file.path, plugin)
+                                })
+                            );
+                        }
+                    } else if (!hasOverlap(pos.begin, range)) {
+                        builder.add(
+                            pos.begin.from,
+                            pos.begin.to,
+                            Decoration.replace({
+                                widget: new ProofWidget("begin", pos, settings, profile, file.path, plugin)
+                            })
+                        );
+                    }
                 }
                 if (pos.end && !hasOverlap(pos.end, range)) {
                     builder.add(
                         pos.end.from,
                         pos.end.to,
                         Decoration.replace({
-                            widget: new ProofWidget("end", settings, profile)
+                            widget: new ProofWidget("end", pos, settings, profile)
                         })
                     );
                 }

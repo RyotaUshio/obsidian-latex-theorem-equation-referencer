@@ -220,7 +220,8 @@ export default class MathBooster extends Plugin {
 
 		// for proof environments
 		this.registerMarkdownPostProcessor(
-			(element, context) => ProofProcessor(this.app, this, element, context)
+			(element, context) => ProofProcessor(this.app, this, element, context),
+			1000000
 		);
 	}
 
@@ -255,7 +256,7 @@ export default class MathBooster extends Plugin {
 		if (!Dataview.isPluginEnabled(this.app)) {
 			new Notice(
 				`${this.manifest.name}: Make sure Dataview is installed & enabled.`,
-				10000
+				10000 // `\begin{proof}`@[[link]] is not correctly rendered at the app's startup without this brute force
 			);
 			return false;
 		}
