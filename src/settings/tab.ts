@@ -3,7 +3,6 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import MathBooster, { VAULT_ROOT } from "../main";
 import { DEFAULT_EXTRA_SETTINGS, DEFAULT_SETTINGS } from "./settings";
 import { ExtraSettingsHelper, MathContextSettingsHelper } from "./helper";
-import { resolveSettings } from "../utils";
 import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "../modals";
 
 
@@ -19,9 +18,6 @@ export class MathSettingTab extends PluginSettingTab {
                 btn.onClick(async () => {
                     Object.assign(this.plugin.settings[VAULT_ROOT], DEFAULT_SETTINGS);
                     Object.assign(this.plugin.extraSettings, DEFAULT_EXTRA_SETTINGS);
-                    await this.plugin.saveSettings();
-                    this.plugin.app.metadataCache.trigger("math-booster:local-settings-updated", this.app.vault.getRoot());
-                    this.plugin.app.metadataCache.trigger("math-booster:extra-settings-updated");
                     this.display();
                 })
             });
@@ -79,5 +75,11 @@ export class MathSettingTab extends PluginSettingTab {
                         new ExcludedFileManageModal(this.app, this.plugin).open();
                     });
             });
+    }
+
+    async hide() {
+        super.hide();
+        await this.plugin.saveSettings();
+        this.app.metadataCache.trigger("math-booster:global-settings-updated");
     }
 }

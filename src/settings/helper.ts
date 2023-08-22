@@ -130,8 +130,6 @@ export class MathCalloutSettingsHelper {
 
 
 export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraSettings> {
-    abstract readonly eventName: string;
-    abstract readonly eventArgs: any[];
     settingRefs: Record<keyof SettingsType, Setting>;
 
     constructor(
@@ -145,21 +143,11 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         this.settingRefs = {} as Record<keyof SettingsType, Setting>;
     }
 
-    getCallback<Type>(name: keyof SettingsType): (value: Type) => Promise<void> {
-        return async (value: Type): Promise<void> => {
-            Object.assign(this.settings, { [name]: value });
-            await this.plugin.saveSettings();
-            this.plugin.app.metadataCache.trigger(this.eventName, ...this.eventArgs);
-        }
-    }
-
     addClearButton(name: keyof SettingsType, setting: Setting, additionalCallback: () => void) {
         setting.addButton((button) => {
             button.setButtonText("Clear").onClick(async () => {
                 delete this.settings[name];
                 additionalCallback();
-                await this.plugin.saveSettings();
-                this.plugin.app.metadataCache.trigger(this.eventName, ...this.eventArgs);    
             })
         });
     }
@@ -191,8 +179,6 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
                 } else {
                     Object.assign(this.settings, {[name]: value});
                 }
-                await this.plugin.saveSettings();
-                this.plugin.app.metadataCache.trigger(this.eventName, ...this.eventArgs);
             })
         });
         this.settingRefs[name] = setting;
@@ -200,7 +186,6 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
     }
 
     addTextSetting(name: keyof SettingsType, prettyName: string, description?: string): Setting {
-        const callback = this.getCallback<string>(name);
         const setting = new Setting(this.contentEl).setName(prettyName);
         if (description) {
             setting.setDesc(description);
@@ -210,7 +195,9 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
             textComponent = text;
             text.setPlaceholder(String(this.defaultSettings[name] ?? ""))
                 .setValue(String(this.settings[name] ?? ""))
-                .onChange(callback)
+                .onChange((value) => {
+                    Object.assign(this.settings, {[name]: value});
+                })
         });
         if (this.addClear) {
             this.addClearButton(name, setting, () => {
@@ -226,7 +213,6 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         if (description) {
             setting.setDesc(description);
         }
-        const callback = this.getCallback<boolean>(name);
         let toggleComponent: ToggleComponent;
         setting.addToggle((toggle) => {
             toggleComponent = toggle;
@@ -234,7 +220,9 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
             if (this.settings[name] !== undefined) {
                 toggle.setValue(this.settings[name] as unknown as boolean);
             }
-            toggle.onChange(callback);
+            toggle.onChange((value) => {
+                Object.assign(this.settings, {[name]: value});
+            });
         });
         if (this.addClear) {
             this.addClearButton(name, setting, () => {
@@ -248,9 +236,6 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
 
 
 export class MathContextSettingsHelper extends SettingsHelper<MathContextSettings> {
-    eventName: string = "math-booster:local-settings-updated";
-    eventArgs: TAbstractFile[];
-
     constructor(
         contentEl: HTMLElement,
         settings: Partial<MathContextSettings>,
@@ -260,7 +245,6 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
     ) {
         const isRoot = file instanceof TFolder && file.isRoot();
         super(contentEl, settings, defaultSettings, plugin, !isRoot, !isRoot);
-        this.eventArgs = [this.file];
     }
 
     makeSettingPane() {
@@ -326,9 +310,6 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
 
 
 export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
-    eventName: string = "math-booster:extra-settings-updated";
-    eventArgs: never[] = [];
-
     makeSettingPane(): void {
         this.addToggleSetting("noteTitleInLink", "Show note title at link's head", "If turned on, a link to \"Theorem 1\" will look like \"Note title > Theorem 1.\" The same applies to equations.")
     }

@@ -200,7 +200,7 @@ export type MathPreviewInfo = {
     rerendered: boolean;
 }
 
-export const MathPreviewInfoField = StateField.define<MathPreviewInfo>({
+export const mathPreviewInfoField = StateField.define<MathPreviewInfo>({
     create(state: EditorState): MathPreviewInfo {
         return {
             mathInfoSet: buildMathInfoSet(state), // RangeSet.empty,
@@ -272,7 +272,7 @@ export const inlineMathPreviewView = ViewPlugin.fromClass(
         }
 
         update(update: ViewUpdate) {
-            if (update.view.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
+            if (update.view.state.field(mathPreviewInfoField).isInCalloutsOrQuotes) {
                 this.buildDecorations(update.view);
             } else {
                 this.decorations = Decoration.none;
@@ -289,7 +289,7 @@ export const inlineMathPreviewView = ViewPlugin.fromClass(
             const builder = new RangeSetBuilder<Decoration>();
 
             for (const { from, to } of view.visibleRanges) {
-                view.state.field(MathPreviewInfoField).mathInfoSet.between(
+                view.state.field(mathPreviewInfoField).mathInfoSet.between(
                     from,
                     to,
                     (from, to, value) => {
@@ -320,22 +320,22 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
             return Decoration.none;
         }
 
-        // if (transaction.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
+        // if (transaction.state.field(mathPreviewInfoField).isInCalloutsOrQuotes) {
 
         //     if ((
-        //         !transaction.startState.field(MathPreviewInfoField).hasOverlappingMath
-        //         && transaction.state.field(MathPreviewInfoField).hasOverlappingMath
-        //     ) || transaction.state.field(MathPreviewInfoField).rerendered) {
+        //         !transaction.startState.field(mathPreviewInfoField).hasOverlappingMath
+        //         && transaction.state.field(mathPreviewInfoField).hasOverlappingMath
+        //     ) || transaction.state.field(mathPreviewInfoField).rerendered) {
         const builder = new RangeSetBuilder<Decoration>();
         const range = transaction.state.selection.main;
 
-        transaction.state.field(MathPreviewInfoField).mathInfoSet.between(
+        transaction.state.field(mathPreviewInfoField).mathInfoSet.between(
             0,
             transaction.state.doc.length,
             (from, to, value) => {
                 if (value.display) {
                     if (to < range.from || from > range.to) {
-                        if (!value.insideCallout || transaction.state.field(MathPreviewInfoField).isInCalloutsOrQuotes) {
+                        if (!value.insideCallout || transaction.state.field(mathPreviewInfoField).isInCalloutsOrQuotes) {
                             builder.add(from, to, value.toDecoration("replace"));
                         }
                     } else {

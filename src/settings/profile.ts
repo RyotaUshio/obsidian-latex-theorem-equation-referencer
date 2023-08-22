@@ -144,7 +144,7 @@ export class ManageProfileModal extends Modal {
         contentEl.empty();
 
         await this.plugin.saveSettings();
-        this.app.metadataCache.trigger("math-booster:extra-settings-updated");
+        this.app.metadataCache.trigger("math-booster:global-settings-updated");
 
         this.profileSetting.settingEl.replaceWith(
             this.helper.addProfileSetting(

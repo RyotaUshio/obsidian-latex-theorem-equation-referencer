@@ -10,7 +10,7 @@ import { MathCallout, insertMathCalloutCallback } from './math_callouts';
 import { ContextSettingModal, MathCalloutModal } from './modals';
 import { insertDisplayMath } from './key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
-import { MathPreviewInfoField, displayMathPreviewView, inlineMathPreviewView } from './math_live_preview_in_callouts';
+import { mathPreviewInfoField, displayMathPreviewView, inlineMathPreviewView } from './math_live_preview_in_callouts';
 import { LinkedNotesIndexer, VaultIndexer } from './indexer';
 import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
 import { iterDescendantFiles } from './utils';
@@ -85,7 +85,7 @@ export default class MathBooster extends Plugin {
 		);
 
 		this.registerEvent(
-			this.app.metadataCache.on("math-booster:extra-settings-updated", async () => {
+			this.app.metadataCache.on("math-booster:global-settings-updated", async () => {
 				await (new VaultIndexer(this.app, this)).run();
 			})
 		);
@@ -153,7 +153,7 @@ export default class MathBooster extends Plugin {
 			name: 'Open local settings for the current note',
 			editorCallback: (editor, context) => {
 				if (context instanceof MarkdownView) {
-					const modal = new ContextSettingModal(this.app, this, context.file.path);
+					const modal = new ContextSettingModal(this.app, this, context.file);
 					modal.open();
 				}
 			}
@@ -170,7 +170,7 @@ export default class MathBooster extends Plugin {
 
 		this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
 		this.registerEditorExtension(buildEquationNumberPlugin(this));
-		this.registerEditorExtension(MathPreviewInfoField);
+		this.registerEditorExtension(mathPreviewInfoField);
 		this.registerEditorExtension(inlineMathPreviewView);
 		this.registerEditorExtension(Prec.highest(displayMathPreviewView));
 		this.proofPositionField = proofPositionFieldFactory(this);

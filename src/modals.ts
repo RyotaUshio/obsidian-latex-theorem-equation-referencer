@@ -103,7 +103,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
                         const modal = new ContextSettingModal(
                             this.app,
                             this.plugin,
-                            this.file.path,
+                            this.file,
                             undefined,
                             this
                         );
@@ -121,7 +121,7 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
     constructor(
         app: App,
         plugin: MathBooster,
-        public path: string,
+        public file: TAbstractFile,
         callback?: (settings: MathContextSettings) => void,
         public parent?: MathCalloutModal | undefined
     ) {
@@ -132,25 +132,25 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
         const { contentEl } = this;
         contentEl.empty();
 
-        const file = this.app.vault.getAbstractFileByPath(this.path);
-        if (file) {
-            contentEl
-                .createEl('h3', { text: 'Local settings for ' + this.path });
+        contentEl
+            .createEl('h3', { text: 'Local settings for ' + this.file.path });
 
-            if (this.plugin.settings[this.path] === undefined) {
-                this.plugin.settings[this.path] = {} as MathContextSettings;
-            }
-
-            const defaultSettings = file.parent ? resolveSettings(undefined, this.plugin, file.parent) : DEFAULT_SETTINGS;
-
-            const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.path], defaultSettings, this.plugin, file);
-            contextSettingsHelper.makeSettingPane();
-            this.addButton('Save');
+        if (this.plugin.settings[this.file.path] === undefined) {
+            this.plugin.settings[this.file.path] = {} as MathContextSettings;
         }
+
+        const defaultSettings = this.file.parent ? resolveSettings(undefined, this.plugin, this.file.parent) : DEFAULT_SETTINGS;
+
+        const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.file.path], defaultSettings, this.plugin, this.file);
+        contextSettingsHelper.makeSettingPane();
+        this.addButton('Save');
     }
 
     onClose(): void {
         super.onClose();
+
+        this.plugin.saveSettings();
+        this.app.metadataCache.trigger("math-booster:local-settings-updated", this.file);
 
         if (this.parent) {
             this.parent.open();
@@ -200,7 +200,7 @@ export class LocalContextSettingsSuggestModal extends FileSuggestModal {
     }
 
     onChooseItem(file: TAbstractFile, evt: MouseEvent | KeyboardEvent) {
-        const modal = new ContextSettingModal(this.app, this.plugin, file.path);
+        const modal = new ContextSettingModal(this.app, this.plugin, file);
         modal.open();
     }
 }

@@ -26,7 +26,7 @@ declare module "obsidian" {
             callback: (file: TAbstractFile) => any
         ): EventRef;
         on(
-            name: "math-booster:extra-settings-updated", 
+            name: "math-booster:global-settings-updated", 
             callback: () => any
         ): EventRef;
 
