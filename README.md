@@ -31,7 +31,7 @@ The following community plugins are required to be installed and enabled.
 - [Dataview](https://github.com/blacksmithgu/obsidian-dataview) version >= 0.5.56
 - [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) version >= 0.4.3
 
-Also, you need to install the [CMU Serif](https://www.cufonfonts.com/font/cmu-serif) font to fully enjoy some of the preset styles listed below.
+Also, you need to install the [CMU Serif](https://www.cufonfonts.com/font/cmu-serif) font to fully enjoy some of the preset styles listed below. Additionally, the [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) font is required to correctly render proofs using the Japanese profile.
 
 ## Styles gallery
 

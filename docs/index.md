@@ -42,3 +42,4 @@ Make sure **Enable MathLinks API** is turned on in the MathLinks plugin settings
 ![MathLinks settings](fig/mathlinks.png)
 
 Also, you need to install the [CMU Serif](https://www.cufonfonts.com/font/cmu-serif) font to fully enjoy some of the [preset styles](style-your-theorems#styles-gallery).
+Additionally, the [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) font is required to correctly render proofs using the Japanese profile.
