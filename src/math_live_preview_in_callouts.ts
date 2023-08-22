@@ -263,7 +263,7 @@ export const mathPreviewInfoField = StateField.define<MathPreviewInfo>({
 });
 
 
-export const inlineMathPreviewView = ViewPlugin.fromClass(
+export const mathPreviewViewPlugin = ViewPlugin.fromClass(
     class implements PluginValue {
         decorations: DecorationSet;
 
@@ -287,30 +287,41 @@ export const inlineMathPreviewView = ViewPlugin.fromClass(
 
             const range = view.state.selection.main;
             const builder = new RangeSetBuilder<Decoration>();
+            const field = view.state.field(mathPreviewInfoField);
 
             const mjxInQuote = Array.from(
-                view.contentDOM.querySelectorAll<HTMLElement>('mjx-container.MathJax:has( > mjx-math[display="true"])')
-            ).filter((el) => el.parentElement?.matches(".HyperMD-quote.cm-line .math.math-block.cm-embed-block") && !el.matches(".math-booster-preview"));
-            const positions = mjxInQuote.map((el) => view.posAtDOM(el));
+                view.contentDOM.querySelectorAll<HTMLElement>(
+                    '.HyperMD-quote.cm-line .math.math-block.cm-embed-block > mjx-container.MathJax:has( > mjx-math[display="true"]):not(.math-booster-preview)'
+                )
+            );
+            const mjxPositions = mjxInQuote.map((el) => view.posAtDOM(el));
 
             for (const { from, to } of view.visibleRanges) {
-                view.state.field(mathPreviewInfoField).mathInfoSet.between(
+                field.mathInfoSet.between(
                     from,
                     to,
                     (from, to, value) => {
-                        if (!value.display && (to < range.from || from > range.to)) {
-                            builder.add(
-                                from,
-                                to,
-                                value.toDecoration("replace")
-                            );
-                        } else if (value.display && !value.insideCallout && (to < range.from || from > range.to)) {
-                            for (let i = 0; i < mjxInQuote.length; i++) {
-                                const mjx = mjxInQuote[i];
-                                const pos = positions[i];
-                                if (from - 1 <= pos && pos <= to) {
-                                    value.mathEl.classList.add("math-booster-preview");
-                                    mjx.replaceWith(value.mathEl);
+                        if (to < range.from || from > range.to) {
+                            if (!value.display) {
+                                /**
+                                 * Inline math that is not overlapping with the current selection or cursor
+                                 */
+                                builder.add(
+                                    from,
+                                    to,
+                                    value.toDecoration("replace")
+                                );
+                            } else if (value.display && !value.insideCallout) {
+                                /**
+                                 * Display math inside blockquote (not callout) that is not overlapping with the current selection or cursor
+                                 */
+                                for (let i = 0; i < mjxInQuote.length; i++) {
+                                    const mjx = mjxInQuote[i];
+                                    const pos = mjxPositions[i];
+                                    if (from - 1 <= pos && pos <= to) {
+                                        value.mathEl.classList.add("math-booster-preview");
+                                        mjx.replaceWith(value.mathEl);
+                                    }
                                 }
                             }
                         }
@@ -324,7 +335,7 @@ export const inlineMathPreviewView = ViewPlugin.fromClass(
 );
 
 
-export const displayMathPreviewView = StateField.define<DecorationSet>({
+export const mathPreviewStateField = StateField.define<DecorationSet>({
     create(state: EditorState): DecorationSet {
         return Decoration.none;
     },
@@ -334,22 +345,10 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
             return Decoration.none;
         }
 
-        // if (transaction.state.field(mathPreviewInfoField).isInCalloutsOrQuotes) {
-
-        //     if ((
-        //         !transaction.startState.field(mathPreviewInfoField).hasOverlappingMath
-        //         && transaction.state.field(mathPreviewInfoField).hasOverlappingMath
-        //     ) || transaction.state.field(mathPreviewInfoField).rerendered) {
         const builder = new RangeSetBuilder<Decoration>();
         const range = transaction.state.selection.main;
-
-        // const view = transaction.state.field(editorEditorField);
-        // const mjxInQuote = Array.from(
-        //     view.contentDOM.querySelectorAll<HTMLElement>('mjx-container.MathJax:has( > mjx-math[display="true"])')
-        // ).filter((el) => el.parentElement?.matches(".HyperMD-quote.cm-line .math.math-block.cm-embed-block") && !el.matches(".math-booster-preview"));
-        // const positions = mjxInQuote.map((el) => view.posAtDOM(el));
-
         const field = transaction.state.field(mathPreviewInfoField);
+
         field.mathInfoSet.between(
             0,
             transaction.state.doc.length,
@@ -366,11 +365,6 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
             }
         );
         return builder.finish();
-        //     } else {
-        //         return value;
-        //     }
-        // }
-        // return Decoration.none;
     },
 
     provide(field: StateField<DecorationSet>): Extension {
