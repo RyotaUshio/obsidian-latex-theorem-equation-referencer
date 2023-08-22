@@ -1,5 +1,11 @@
-.math-booster-begin-proof {
+.math-booster-begin-proof-en {
     font-style: italic;
+    padding-right: 10px;
+}
+
+.math-booster-begin-proof-ja {
+    font-weight: 500;
+    font-family: Noto Sans JP;
     padding-right: 10px;
 }
 
