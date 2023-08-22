@@ -4,7 +4,7 @@ import { EditorState, ChangeSet } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
 
 import MathBooster from './main';
-import { DEFAULT_SETTINGS, MathContextSettings, MathSettings, NumberStyle, ResolvedMathSettings } from './settings/settings';
+import { DEFAULT_SETTINGS, MathCalloutPrivateFields, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, ResolvedMathSettings } from './settings/settings';
 import { MathInfoSet } from './math_live_preview_in_callouts';
 import { TheoremLikeEnvID } from './env';
 
@@ -269,16 +269,16 @@ export function matchMathCallout(line: string): RegExpExecArray | null {
     return null;
 }
 
-export function readMathCalloutSettingsAndTitle(line: string): { settings: MathSettings, title: string } | undefined {
+export function readMathCalloutSettingsAndTitle(line: string): { settings: MathCalloutSettings & MathCalloutPrivateFields, title: string } | undefined {
     const matchResult = matchMathCallout(line);
     if (matchResult) {
-        const settings = JSON.parse(matchResult[1]) as MathSettings;
+        const settings = JSON.parse(matchResult[1]) as MathCalloutSettings;
         const title = matchResult[2].trim();
         return { settings, title };
     }
 }
 
-export function readMathCalloutSettings(line: string): MathSettings | undefined {
+export function readMathCalloutSettings(line: string): MathCalloutSettings & MathCalloutPrivateFields | undefined {
     const result = readMathCalloutSettingsAndTitle(line);
     if (result) {
         return result.settings;
@@ -316,10 +316,10 @@ export function getAncestors(file: TAbstractFile): TAbstractFile[] {
     return ancestors;
 }
 
-export function resolveSettings(settings: MathSettings, plugin: MathBooster, currentFile: TAbstractFile): ResolvedMathSettings;
+export function resolveSettings(settings: MathCalloutSettings, plugin: MathBooster, currentFile: TAbstractFile): ResolvedMathSettings;
 export function resolveSettings(settings: undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings>;
 
-export function resolveSettings(settings: MathSettings | undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings> {
+export function resolveSettings(settings: MathCalloutSettings | undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings> {
     /** Resolves settings. Does not overwride, but returns a new settings object.
      * Returned settings can be either 
      * - ResolvedMathContextSettings or 

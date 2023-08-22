@@ -1,7 +1,7 @@
 import { TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder } from 'obsidian';
 
 import MathBooster from './main';
-import { MathSettings, MathContextSettings, DEFAULT_SETTINGS } from './settings/settings';
+import { MathSettings, MathContextSettings, DEFAULT_SETTINGS, MathCalloutSettings } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
 import { MathCalloutSettingsHelper, MathContextSettingsHelper } from "./settings/helper";
 import { isEqualToOrChildOf, resolveSettings } from './utils';

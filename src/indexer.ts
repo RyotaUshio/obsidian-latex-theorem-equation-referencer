@@ -1,7 +1,7 @@
 import { App, CachedMetadata, MarkdownView, SectionCache, TFile } from 'obsidian';
 
 import MathBooster from './main';
-import { DEFAULT_SETTINGS, MathSettings, NumberStyle, MathCalloutRefFormat, ResolvedMathSettings } from './settings/settings';
+import { DEFAULT_SETTINGS, MathSettings, NumberStyle, MathCalloutRefFormat, ResolvedMathSettings, MathCalloutSettings, MathCalloutPrivateFields } from './settings/settings';
 import { getBlockIdsWithBacklink, readMathCalloutSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, formatTitleWithoutSubtitle } from './utils';
 import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 
@@ -9,7 +9,7 @@ import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 type MathLinkBlocks = Record<string, string>;
 
 type BlockType = "callout" | "math";
-type CalloutInfo = { cache: SectionCache, settings: MathSettings };
+type CalloutInfo = { cache: SectionCache, settings: MathCalloutSettings & MathCalloutPrivateFields };
 type EquationInfo = { cache: SectionCache, manualTag?: string };
 
 
@@ -140,7 +140,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
         return resolvedSettings.title ? resolvedSettings.title : formatTitleWithoutSubtitle(this.noteIndexer.plugin, resolvedSettings);
     }
 
-    async overwriteSettings(lineNumber: number, settings: MathSettings, title?: string) {
+    async overwriteSettings(lineNumber: number, settings: MathCalloutSettings & MathCalloutPrivateFields, title?: string) {
         const matchResult = matchMathCallout(await this.noteIndexer.io.getLine(lineNumber));
         if (!matchResult) {
             throw Error(`Math callout not found at line ${lineNumber}, could not overwrite`);
@@ -151,7 +151,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
         );
     }
 
-    removeDeprecated(settings: MathSettings & { autoIndex?: string }): MathSettings {
+    removeDeprecated(settings: MathSettings & { autoIndex?: string }): MathCalloutSettings & MathCalloutPrivateFields {
         // remove the deprecated "autoIndex" key (now it's called "_index") from settings
         const { autoIndex, ...rest } = settings;
         return rest;

@@ -2,13 +2,13 @@ import { App, CachedMetadata, Editor, ExtraButtonComponent, MarkdownPostProcesso
 
 import MathBooster from './main';
 import { MathCalloutModal } from './modals';
-import { MathSettings, ResolvedMathSettings } from './settings/settings';
+import { MathCalloutSettings, MathSettings, ResolvedMathSettings } from './settings/settings';
 import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, getSectionCacheFromPos, readMathCalloutSettings, isEditingView } from './utils';
 import { AutoNoteIndexer } from './indexer';
 
 
 export class MathCallout extends MarkdownRenderChild {
-    settings: MathSettings;
+    settings: MathCalloutSettings;
     resolvedSettings: ResolvedMathSettings;
     renderedTitleElements: (HTMLElement | string)[];
 
@@ -64,7 +64,7 @@ export class MathCallout extends MarkdownRenderChild {
                 // Make sure to get the line number BEFORE opening the modal!!
                 const lineNumber = this.getLineNumber(view, cache, ev);
 
-                const modal = new MathCalloutModal(
+                new MathCalloutModal(
                     this.app,
                     this.plugin,
                     view.file,
@@ -89,7 +89,6 @@ export class MathCallout extends MarkdownRenderChild {
             }
         });
         button.extraSettingsEl.classList.add("math-callout-setting-button");
-
     }
 
     getLineNumber(view: MarkdownView, cache: CachedMetadata | null, event: MouseEvent): number | undefined {
