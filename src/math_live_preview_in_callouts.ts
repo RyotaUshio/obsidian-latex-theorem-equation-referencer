@@ -1,9 +1,9 @@
-import { ExtraButtonComponent, editorEditorField, finishRenderMath, renderMath } from "obsidian";
+import { ExtraButtonComponent, finishRenderMath, renderMath } from "obsidian";
 import { Extension, Transaction, StateField, RangeSetBuilder, EditorState, RangeValue, RangeSet } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { syntaxTree } from '@codemirror/language';
 
-import { isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed, printMathInfoSet } from './utils';
+import { isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed } from './utils';
 import { CALLOUT } from "./math_callout_metadata_hider";
 
 
@@ -272,11 +272,7 @@ export const mathPreviewViewPlugin = ViewPlugin.fromClass(
         }
 
         update(update: ViewUpdate) {
-            if (update.view.state.field(mathPreviewInfoField).isInCalloutsOrQuotes) {
-                this.buildDecorations(update.view);
-            } else {
-                this.decorations = Decoration.none;
-            }
+            this.buildDecorations(update.view);
         }
 
         buildDecorations(view: EditorView) {

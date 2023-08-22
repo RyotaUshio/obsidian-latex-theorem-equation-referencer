@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-math-booster",
-	"version": "0.5.7",
+	"version": "0.5.8",
 	"description": "Introduce LaTeX-like mathematic note-taking features into Obsidian",
 	"main": "main.js",
 	"scripts": {
