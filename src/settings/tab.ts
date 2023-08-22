@@ -34,11 +34,10 @@ export class MathSettingTab extends PluginSettingTab {
         containerEl.createEl("h3", { text: "Global" });
 
         const root = this.app.vault.getRoot();
-        const defaultSettings = resolveSettings(undefined, this.plugin, root);
         const globalHelper = new MathContextSettingsHelper(
             this.containerEl,
             this.plugin.settings[VAULT_ROOT],
-            defaultSettings,
+            DEFAULT_SETTINGS,
             this.plugin,
             root
         );
@@ -49,6 +48,7 @@ export class MathSettingTab extends PluginSettingTab {
             this.plugin.extraSettings,
             this.plugin.extraSettings,
             this.plugin,
+            false, 
             false
         );
         extraHelper.makeSettingPane();

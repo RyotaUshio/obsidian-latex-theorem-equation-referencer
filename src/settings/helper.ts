@@ -1,4 +1,4 @@
-import { ButtonComponent, Setting, TAbstractFile, TFile, TFolder, TextComponent } from 'obsidian';
+import { ButtonComponent, Setting, TAbstractFile, TFile, TFolder, TextComponent, ToggleComponent } from 'obsidian';
 
 import MathBooster from '../main';
 import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from '../env';
@@ -140,6 +140,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         public defaultSettings: Required<SettingsType>,
         public plugin: MathBooster,
         public allowUnset: boolean,
+        public addClear: boolean,
     ) {
         this.settingRefs = {} as Record<keyof SettingsType, Setting>;
     }
@@ -152,10 +153,20 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         }
     }
 
+    addClearButton(name: keyof SettingsType, setting: Setting, additionalCallback: () => void) {
+        setting.addButton((button) => {
+            button.setButtonText("Clear").onClick(async () => {
+                delete this.settings[name];
+                additionalCallback();
+                await this.plugin.saveSettings();
+                this.plugin.app.metadataCache.trigger(this.eventName, ...this.eventArgs);    
+            })
+        });
+    }
+
     abstract makeSettingPane(): void;
 
     addDropdownSetting(name: keyof SettingsType, options: readonly string[], prettyName: string, description?: string, defaultValue?: string) {
-        // const callback = this.getCallback<string>(name);
         const setting = new Setting(this.contentEl).setName(prettyName);
         if (description) {
             setting.setDesc(description);
@@ -170,11 +181,10 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
             dropdown.setValue(
                 defaultValue ?? (
                     this.allowUnset
-                        ? (this.settings[name] ? this.defaultSettings[name] as unknown as string : "")
+                        ? (this.settings[name] ? this.settings[name] as unknown as string : "")
                         : this.defaultSettings[name] as unknown as string
                 )
             );
-            // dropdown.onChange(callback);
             dropdown.onChange(async (value: string): Promise<void> => {
                 if (this.allowUnset && !value) {
                     delete this.settings[name];
@@ -195,12 +205,18 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         if (description) {
             setting.setDesc(description);
         }
+        let textComponent: TextComponent;
         setting.addText((text) => {
-            text
-                .setPlaceholder(String(this.defaultSettings[name] ?? ""))
+            textComponent = text;
+            text.setPlaceholder(String(this.defaultSettings[name] ?? ""))
                 .setValue(String(this.settings[name] ?? ""))
                 .onChange(callback)
         });
+        if (this.addClear) {
+            this.addClearButton(name, setting, () => {
+                textComponent.setPlaceholder(String(this.defaultSettings[name] ?? "")).setValue("")
+            });
+        }
         this.settingRefs[name] = setting;
         return setting;
     }
@@ -211,10 +227,20 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
             setting.setDesc(description);
         }
         const callback = this.getCallback<boolean>(name);
+        let toggleComponent: ToggleComponent;
         setting.addToggle((toggle) => {
-            toggle.setValue(this.defaultSettings[name] as unknown as boolean)
-                .onChange(callback);
+            toggleComponent = toggle;
+            toggle.setValue(this.defaultSettings[name] as unknown as boolean);
+            if (this.settings[name] !== undefined) {
+                toggle.setValue(this.settings[name] as unknown as boolean);
+            }
+            toggle.onChange(callback);
         });
+        if (this.addClear) {
+            this.addClearButton(name, setting, () => {
+                toggleComponent.setValue(this.defaultSettings[name] as unknown as boolean)
+            });
+        }
         this.settingRefs[name] = setting;
         return setting;
     }
@@ -228,11 +254,12 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
     constructor(
         contentEl: HTMLElement,
         settings: Partial<MathContextSettings>,
-        defaultSettings: MathContextSettings,
+        defaultSettings: Required<MathContextSettings>,
         plugin: MathBooster,
         public file: TAbstractFile,
     ) {
-        super(contentEl, settings, defaultSettings, plugin, !(file instanceof TFolder && file.isRoot()))
+        const isRoot = file instanceof TFolder && file.isRoot();
+        super(contentEl, settings, defaultSettings, plugin, !isRoot, !isRoot);
         this.eventArgs = [this.file];
     }
 

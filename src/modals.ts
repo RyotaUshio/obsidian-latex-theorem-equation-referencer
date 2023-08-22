@@ -1,7 +1,7 @@
 import { TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder } from 'obsidian';
 
 import MathBooster from './main';
-import { MathSettings, MathContextSettings } from './settings/settings';
+import { MathSettings, MathContextSettings, DEFAULT_SETTINGS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
 import { MathCalloutSettingsHelper, MathContextSettingsHelper } from "./settings/helper";
 import { isEqualToOrChildOf, resolveSettings } from './utils';
@@ -9,38 +9,24 @@ import { isEqualToOrChildOf, resolveSettings } from './utils';
 
 abstract class MathSettingModal<SettingsType> extends Modal {
     settings: SettingsType;
-    defaultSettings: Required<MathContextSettings>; // this is different from DEFAULT_SETTINGS
-    // this.default.Settings determines what is preset in the input elements in the modal
 
     constructor(
         app: App,
         public plugin: MathBooster,
         public callback?: (settings: SettingsType) => void,
-        public currentCalloutSettings?: MathSettings,
     ) {
         super(app);
-        // this.defaultSettings = {} as Partial<MathSettings>;
     }
 
     onClose(): void {
         this.contentEl.empty();
     }
 
-    resolveDefaultSettings(currentFile: TAbstractFile) {
-        // The if statement is redundant, but probably necessary for the Typescript compiler to work
-        if (this.currentCalloutSettings === undefined) {
-            this.defaultSettings = resolveSettings(this.currentCalloutSettings, this.plugin, currentFile)
-        } else {
-            this.defaultSettings = resolveSettings(this.currentCalloutSettings, this.plugin, currentFile)
-        }
-    }
-
     addButton(buttonText: string) {
         const { contentEl } = this;
         new Setting(contentEl)
             .addButton((btn) => {
-                btn
-                    .setButtonText(buttonText)
+                btn.setButtonText(buttonText)
                     .setCta()
                     .onClick(() => {
                         this.close();
@@ -72,6 +58,8 @@ abstract class MathSettingModal<SettingsType> extends Modal {
 
 
 export class MathCalloutModal extends MathSettingModal<MathSettings> {
+    defaultSettings: Required<MathContextSettings>;
+
     constructor(
         app: App,
         plugin: MathBooster,
@@ -79,11 +67,19 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
         callback: (settings: MathSettings) => void,
         public buttonText: string,
         public headerText: string,
-        currentCalloutSettings?: MathSettings,
+        public currentCalloutSettings?: MathSettings,
     ) {
-        super(app, plugin, callback, currentCalloutSettings);
+        super(app, plugin, callback);
     }
 
+    resolveDefaultSettings(currentFile: TAbstractFile) {
+        // The if statement is redundant, but probably necessary for the Typescript compiler to work
+        if (this.currentCalloutSettings === undefined) {
+            this.defaultSettings = resolveSettings(this.currentCalloutSettings, this.plugin, currentFile)
+        } else {
+            this.defaultSettings = resolveSettings(this.currentCalloutSettings, this.plugin, currentFile)
+        }
+    }
 
     onOpen(): void {
         this.settings = this.currentCalloutSettings ?? {} as MathSettings;
@@ -96,8 +92,8 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
             contentEl.createEl("h4", { text: this.headerText });
         }
 
-        const itemSettingsHelper = new MathCalloutSettingsHelper(contentEl, this.settings, this.defaultSettings, this.plugin, this.file);
-        itemSettingsHelper.makeSettingPane();
+        const helper = new MathCalloutSettingsHelper(contentEl, this.settings, this.defaultSettings, this.plugin, this.file);
+        helper.makeSettingPane();
 
         new Setting(contentEl)
             .setName('Open local settings for the current note')
@@ -111,7 +107,6 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
                             undefined,
                             this
                         );
-                        modal.resolveDefaultSettings(this.file);
                         modal.open();
                     })
             });
@@ -145,7 +140,10 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
             if (this.plugin.settings[this.path] === undefined) {
                 this.plugin.settings[this.path] = {} as MathContextSettings;
             }
-            const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.path], this.defaultSettings, this.plugin, file);
+
+            const defaultSettings = file.parent ? resolveSettings(undefined, this.plugin, file.parent) : DEFAULT_SETTINGS;
+
+            const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.path], defaultSettings, this.plugin, file);
             contextSettingsHelper.makeSettingPane();
             this.addButton('Save');
         }
@@ -203,7 +201,6 @@ export class LocalContextSettingsSuggestModal extends FileSuggestModal {
 
     onChooseItem(file: TAbstractFile, evt: MouseEvent | KeyboardEvent) {
         const modal = new ContextSettingModal(this.app, this.plugin, file.path);
-        modal.resolveDefaultSettings(file);
         modal.open();
     }
 }
@@ -246,7 +243,7 @@ export class ExcludedFileManageModal extends Modal {
         contentEl.empty();
         contentEl.createEl('h3', { text: 'Excluded files/folders' });
 
-        const addButtonContainer = new Setting(contentEl)
+        new Setting(contentEl)
             .setName('The files/folders in this list and their descendants will be excluded from suggestion for local settings.')
             .addButton((btn) => {
                 btn.setIcon("plus")
