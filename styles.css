@@ -55,7 +55,7 @@
 /* Unlike in callouts, Obsidian natively renders MathJax in blockquotes. But it is rather buggy 
 (see https://forum.obsidian.md/t/live-preview-support-math-block-in-quotes/32564/2), 
 so we need to replace it with this plugin's editor extension. */
-.cm-line .math.math-block.cm-embed-block > mjx-container.MathJax:not(.math-booster-preview) > mjx-math[display="true"] {
+.cm-line:has( .math.math-block.cm-embed-block > mjx-container.MathJax:not(.math-booster-preview) > mjx-math[display="true"]) {
     display: none;
 }
                 

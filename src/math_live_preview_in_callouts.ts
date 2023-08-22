@@ -1,9 +1,9 @@
-import { ExtraButtonComponent, editorInfoField, finishRenderMath, renderMath } from "obsidian";
+import { ExtraButtonComponent, editorEditorField, finishRenderMath, renderMath } from "obsidian";
 import { Extension, Transaction, StateField, RangeSetBuilder, EditorState, RangeValue, RangeSet } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { syntaxTree } from '@codemirror/language';
 
-import { isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed } from './utils';
+import { isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed, printMathInfoSet } from './utils';
 import { CALLOUT } from "./math_callout_metadata_hider";
 
 
@@ -329,6 +329,27 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
         const builder = new RangeSetBuilder<Decoration>();
         const range = transaction.state.selection.main;
 
+
+
+        const view = transaction.state.field(editorEditorField);
+        const mjxInQuote = Array.from(
+            view.contentDOM.querySelectorAll<HTMLElement>('mjx-container.MathJax:has( > mjx-math[display="true"])')
+        ).filter((el) => el.parentElement?.matches(".HyperMD-quote.cm-line .math.math-block.cm-embed-block") && !el.matches(".math-booster-preview"));
+        const positions = mjxInQuote.map((el) => view.posAtDOM(el));
+        console.log(mjxInQuote, positions);
+        //         view.state.field(mathPreviewInfoField).mathInfoSet.between(
+        //             0, view.state.doc.length, 
+        //             (from, to, info) => {
+        //                 if (from - 1 <= pos && pos <= to + 1) {
+        //                     info.mathEl.classList.add("math-booster-preview");
+        //                     mjxContainerEl.replaceWith(info.mathEl);
+        //                 }
+        //             }
+        //         )
+
+
+
+
         transaction.state.field(mathPreviewInfoField).mathInfoSet.between(
             0,
             transaction.state.doc.length,
@@ -337,6 +358,15 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
                     if (to < range.from || from > range.to) {
                         if (value.insideCallout && transaction.state.field(mathPreviewInfoField).isInCalloutsOrQuotes) {
                             builder.add(from, to, value.toDecoration("replace"));
+                        } else if (!value.insideCallout) {
+                            for (let i = 0; i < mjxInQuote.length; i++) {
+                                const mjx = mjxInQuote[i];
+                                const pos = positions[i];
+                                if (from - 1 <= pos && pos <= to + 1) {
+                                    value.mathEl.classList.add("math-booster-preview");
+                                    mjx.replaceWith(value.mathEl);
+                                }
+                            }
                         }
                     } else {
                         builder.add(to, to, value.toDecoration("widget"));

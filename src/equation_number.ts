@@ -106,19 +106,19 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
                         try {
                             const pos = view.posAtDOM(mjxContainerEl);
                             const id = getMathCacheFromPos(cache, pos)?.id;
-                            if (mjxContainerEl.parentElement?.matches(".cm-line .math.math-block.cm-embed-block")
-                                && !mjxContainerEl.matches(".math-booster-preview")
-                            ) {
-                                    view.state.field(mathPreviewInfoField).mathInfoSet.between(
-                                        0, view.state.doc.length, 
-                                        (from, to, info) => {
-                                            if (from - 1 <= pos && pos <= to + 1) {
-                                                info.mathEl.classList.add("math-booster-preview");
-                                                mjxContainerEl.replaceWith(info.mathEl);
-                                            }
-                                        }
-                                    )
-                            }
+                            // if (mjxContainerEl.parentElement?.matches(".cm-line .math.math-block.cm-embed-block")
+                            //     && !mjxContainerEl.matches(".math-booster-preview")
+                            // ) {
+                            //         view.state.field(mathPreviewInfoField).mathInfoSet.between(
+                            //             0, view.state.doc.length, 
+                            //             (from, to, info) => {
+                            //                 if (from - 1 <= pos && pos <= to + 1) {
+                            //                     info.mathEl.classList.add("math-booster-preview");
+                            //                     mjxContainerEl.replaceWith(info.mathEl);
+                            //                 }
+                            //             }
+                            //         )
+                            // }
 
                             if (id) {
                                 const mathLink = plugin.getMathLinksAPI()?.get(io.file.path, id);
