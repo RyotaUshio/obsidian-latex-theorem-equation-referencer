@@ -288,6 +288,11 @@ export const inlineMathPreviewView = ViewPlugin.fromClass(
             const range = view.state.selection.main;
             const builder = new RangeSetBuilder<Decoration>();
 
+            const mjxInQuote = Array.from(
+                view.contentDOM.querySelectorAll<HTMLElement>('mjx-container.MathJax:has( > mjx-math[display="true"])')
+            ).filter((el) => el.parentElement?.matches(".HyperMD-quote.cm-line .math.math-block.cm-embed-block") && !el.matches(".math-booster-preview"));
+            const positions = mjxInQuote.map((el) => view.posAtDOM(el));
+
             for (const { from, to } of view.visibleRanges) {
                 view.state.field(mathPreviewInfoField).mathInfoSet.between(
                     from,
@@ -299,6 +304,15 @@ export const inlineMathPreviewView = ViewPlugin.fromClass(
                                 to,
                                 value.toDecoration("replace")
                             );
+                        } else if (value.display && !value.insideCallout && (to < range.from || from > range.to)) {
+                            for (let i = 0; i < mjxInQuote.length; i++) {
+                                const mjx = mjxInQuote[i];
+                                const pos = positions[i];
+                                if (from - 1 <= pos && pos <= to) {
+                                    value.mathEl.classList.add("math-booster-preview");
+                                    mjx.replaceWith(value.mathEl);
+                                }
+                            }
                         }
                     }
                 );
@@ -329,44 +343,21 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
         const builder = new RangeSetBuilder<Decoration>();
         const range = transaction.state.selection.main;
 
+        // const view = transaction.state.field(editorEditorField);
+        // const mjxInQuote = Array.from(
+        //     view.contentDOM.querySelectorAll<HTMLElement>('mjx-container.MathJax:has( > mjx-math[display="true"])')
+        // ).filter((el) => el.parentElement?.matches(".HyperMD-quote.cm-line .math.math-block.cm-embed-block") && !el.matches(".math-booster-preview"));
+        // const positions = mjxInQuote.map((el) => view.posAtDOM(el));
 
-
-        const view = transaction.state.field(editorEditorField);
-        const mjxInQuote = Array.from(
-            view.contentDOM.querySelectorAll<HTMLElement>('mjx-container.MathJax:has( > mjx-math[display="true"])')
-        ).filter((el) => el.parentElement?.matches(".HyperMD-quote.cm-line .math.math-block.cm-embed-block") && !el.matches(".math-booster-preview"));
-        const positions = mjxInQuote.map((el) => view.posAtDOM(el));
-        console.log(mjxInQuote, positions);
-        //         view.state.field(mathPreviewInfoField).mathInfoSet.between(
-        //             0, view.state.doc.length, 
-        //             (from, to, info) => {
-        //                 if (from - 1 <= pos && pos <= to + 1) {
-        //                     info.mathEl.classList.add("math-booster-preview");
-        //                     mjxContainerEl.replaceWith(info.mathEl);
-        //                 }
-        //             }
-        //         )
-
-
-
-
-        transaction.state.field(mathPreviewInfoField).mathInfoSet.between(
+        const field = transaction.state.field(mathPreviewInfoField);
+        field.mathInfoSet.between(
             0,
             transaction.state.doc.length,
             (from, to, value) => {
                 if (value.display) {
                     if (to < range.from || from > range.to) {
-                        if (value.insideCallout && transaction.state.field(mathPreviewInfoField).isInCalloutsOrQuotes) {
+                        if (value.insideCallout && field.isInCalloutsOrQuotes) {
                             builder.add(from, to, value.toDecoration("replace"));
-                        } else if (!value.insideCallout) {
-                            for (let i = 0; i < mjxInQuote.length; i++) {
-                                const mjx = mjxInQuote[i];
-                                const pos = positions[i];
-                                if (from - 1 <= pos && pos <= to + 1) {
-                                    value.mathEl.classList.add("math-booster-preview");
-                                    mjx.replaceWith(value.mathEl);
-                                }
-                            }
                         }
                     } else {
                         builder.add(to, to, value.toDecoration("widget"));
