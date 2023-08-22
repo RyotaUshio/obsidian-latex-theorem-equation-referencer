@@ -3,7 +3,7 @@ import { App, CachedMetadata, Editor, ExtraButtonComponent, MarkdownPostProcesso
 import MathBooster from './main';
 import { MathCalloutModal } from './modals';
 import { MathCalloutSettings, MathSettings, ResolvedMathSettings } from './settings/settings';
-import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, getSectionCacheFromPos, readMathCalloutSettings, isEditingView } from './utils';
+import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, getSectionCacheFromPos, isEditingView } from './utils';
 import { AutoNoteIndexer } from './indexer';
 
 

@@ -335,7 +335,7 @@ export const displayMathPreviewView = StateField.define<DecorationSet>({
             (from, to, value) => {
                 if (value.display) {
                     if (to < range.from || from > range.to) {
-                        if (!value.insideCallout || transaction.state.field(mathPreviewInfoField).isInCalloutsOrQuotes) {
+                        if (value.insideCallout && transaction.state.field(mathPreviewInfoField).isInCalloutsOrQuotes) {
                             builder.add(from, to, value.toDecoration("replace"));
                         }
                     } else {

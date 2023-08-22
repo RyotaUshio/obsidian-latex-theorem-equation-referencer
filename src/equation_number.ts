@@ -2,10 +2,11 @@ import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostPro
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
 import MathBooster from './main';
-import { getMathCache, getMathCacheFromPos, resolveSettings } from './utils';
+import { getMathCache, getMathCacheFromPos, printMathInfoSet, resolveSettings } from './utils';
 import { ActiveNoteIndexer, AutoNoteIndexer, NonActiveNoteIndexer } from './indexer';
 import { MathContextSettings } from "./settings/settings";
 import { ActiveNoteIO } from "./file_io";
+import { mathPreviewInfoField } from "math_live_preview_in_callouts";
 
 
 /** For reading view */
@@ -105,6 +106,20 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
                         try {
                             const pos = view.posAtDOM(mjxContainerEl);
                             const id = getMathCacheFromPos(cache, pos)?.id;
+                            if (mjxContainerEl.parentElement?.matches(".cm-line .math.math-block.cm-embed-block")
+                                && !mjxContainerEl.matches(".math-booster-preview")
+                            ) {
+                                    view.state.field(mathPreviewInfoField).mathInfoSet.between(
+                                        0, view.state.doc.length, 
+                                        (from, to, info) => {
+                                            if (from - 1 <= pos && pos <= to + 1) {
+                                                info.mathEl.classList.add("math-booster-preview");
+                                                mjxContainerEl.replaceWith(info.mathEl);
+                                            }
+                                        }
+                                    )
+                            }
+
                             if (id) {
                                 const mathLink = plugin.getMathLinksAPI()?.get(io.file.path, id);
                                 const text = await io.getBlockText(id);
@@ -181,8 +196,7 @@ export function replaceMathTag(displayMathEl: HTMLElement, text: string, mathLin
     const taggedText = getMathTextWithTag(text, tag, settings.lineByLine);
     if (taggedText) {
         const mjxContainerEl = renderMath(taggedText, true);
-        displayMathEl.replaceChildren(...mjxContainerEl.childNodes)
+        displayMathEl.replaceChildren(...mjxContainerEl.childNodes);
         finishRenderMath();
-        return mjxContainerEl;
     }
 }
