@@ -56,7 +56,7 @@ so we need to replace it with this plugin's editor extension. */
 .cm-line:has( .math.math-block.cm-embed-block > mjx-container.MathJax:not(.math-booster-preview) > mjx-math[display="true"]) {
     display: none;
 }
-                
+
 .math-callout {
     position: relative;
 }

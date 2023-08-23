@@ -10,7 +10,7 @@ import { MathCallout, insertMathCalloutCallback } from './math_callouts';
 import { ContextSettingModal, MathCalloutModal } from './modals';
 import { insertDisplayMath } from './key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
-import { mathPreviewInfoField, mathPreviewViewPlugin, mathPreviewStateField } from './math_live_preview_in_callouts';
+import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote } from './math_live_preview_in_callouts';
 import { LinkedNotesIndexer, VaultIndexer } from './indexer';
 import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
 import { iterDescendantFiles } from './utils';
@@ -168,15 +168,21 @@ export default class MathBooster extends Plugin {
 
 		/** Editor Extensions */
 
+		// hide > [!math|{"type":"theorem", ...}]
 		this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
+		// equation number
 		this.registerEditorExtension(buildEquationNumberPlugin(this));
+		// math preview in callouts and quotes
 		this.registerEditorExtension(mathPreviewInfoField);
-		this.registerEditorExtension(mathPreviewViewPlugin);
-		this.registerEditorExtension(mathPreviewStateField);
+		this.registerEditorExtension(inlineMathPreview);
+		this.registerEditorExtension(displayMathPreviewForCallout);
+		this.registerEditorExtension(displayMathPreviewForQuote);
+		// proofs
 		this.proofPositionField = proofPositionFieldFactory(this);
 		this.registerEditorExtension(this.proofPositionField);
 		this.registerEditorExtension(proofDecorationFactory(this));
 		this.registerEditorExtension(proofFoldFactory(this));
+
 
 
 		/** Markdown post processors */

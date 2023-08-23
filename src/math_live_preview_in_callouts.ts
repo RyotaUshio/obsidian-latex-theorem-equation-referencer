@@ -277,7 +277,7 @@ export const mathPreviewInfoField = StateField.define<MathPreviewInfo>({
 });
 
 
-export const mathPreviewViewPlugin = ViewPlugin.fromClass(
+export const inlineMathPreview = ViewPlugin.fromClass(
     class implements PluginValue {
         decorations: DecorationSet;
 
@@ -288,7 +288,7 @@ export const mathPreviewViewPlugin = ViewPlugin.fromClass(
         update(update: ViewUpdate) {
             if (update.docChanged || update.viewportChanged || overlapStateChanged(update.state)) {
                 this.buildDecorations(update.view);
-            }    
+            }
         }
 
         buildDecorations(view: EditorView) {
@@ -301,20 +301,13 @@ export const mathPreviewViewPlugin = ViewPlugin.fromClass(
             const builder = new RangeSetBuilder<Decoration>();
             const field = view.state.field(mathPreviewInfoField);
 
-            const mjxInQuote = Array.from(
-                view.contentDOM.querySelectorAll<HTMLElement>(
-                    '.HyperMD-quote.cm-line .math.math-block.cm-embed-block > mjx-container.MathJax:has( > mjx-math[display="true"]):not(.math-booster-preview)'
-                )
-            );
-            const mjxPositions = mjxInQuote.map((el) => view.posAtDOM(el));
-
             for (const { from, to } of view.visibleRanges) {
                 field.mathInfoSet.between(
                     from,
                     to,
                     (from, to, value) => {
-                        if (to < range.from || from > range.to) {
-                            if (!value.display) {
+                        // if (to < range.from || from > range.to) {
+                            if (!value.display && !hasOverlap(range, {from, to})) {
                                 /**
                                  * Inline math that is not overlapping with the current selection or cursor
                                  */
@@ -323,20 +316,8 @@ export const mathPreviewViewPlugin = ViewPlugin.fromClass(
                                     to,
                                     value.toDecoration("replace")
                                 );
-                            } else if (value.display && !value.insideCallout) {
-                                /**
-                                 * Display math inside blockquote (not callout) that is not overlapping with the current selection or cursor
-                                 */
-                                for (let i = 0; i < mjxInQuote.length; i++) {
-                                    const mjx = mjxInQuote[i];
-                                    const pos = mjxPositions[i];
-                                    if (from - 1 <= pos && pos <= to) {
-                                        value.mathEl.classList.add("math-booster-preview");
-                                        mjx.replaceWith(value.mathEl);
-                                    }
-                                }
-                            }
-                        }
+                            } 
+                        // }
                     }
                 );
             }
@@ -347,7 +328,7 @@ export const mathPreviewViewPlugin = ViewPlugin.fromClass(
 );
 
 
-export const mathPreviewStateField = StateField.define<DecorationSet>({
+export const displayMathPreviewForCallout = StateField.define<DecorationSet>({
     create(state: EditorState): DecorationSet {
         return Decoration.none;
     },
@@ -370,7 +351,7 @@ export const mathPreviewStateField = StateField.define<DecorationSet>({
             transaction.state.doc.length,
             (from, to, value) => {
                 if (value.display) {
-                    if (to < range.from || from > range.to) {
+                    if (!hasOverlap(range, {from, to})) {
                         if (value.insideCallout && field.isInCalloutsOrQuotes) {
                             builder.add(from, to, value.toDecoration("replace"));
                         }
@@ -424,3 +405,58 @@ function overlapStateChanged(state: EditorState): boolean {
     const infoSet = state.field(mathPreviewInfoField).mathInfoSet;
     return rangeSetSome(infoSet, (info) => info.overlapChanged);
 }
+
+
+export const displayMathPreviewForQuote = ViewPlugin.fromClass(
+    class implements PluginValue {
+
+        constructor(view: EditorView) {
+            this.impl(view);
+        }
+
+        update(update: ViewUpdate) {
+            this.impl(update.view);
+        }
+
+        impl(view: EditorView) {
+            if (isSourceMode(view.state)) {
+                return;
+            }
+
+            const range = view.state.selection.main;
+            const field = view.state.field(mathPreviewInfoField);
+
+            let mjxInQuote = Array.from(
+                view.contentDOM.querySelectorAll<HTMLElement>(
+                    '.HyperMD-quote.cm-line .math.math-block.cm-embed-block > mjx-container.MathJax:has( > mjx-math[display="true"]):not(.math-booster-preview)'
+                )
+            );
+
+            const mjxPositions = mjxInQuote.map((el) => view.posAtDOM(el));
+
+            for (const { from, to } of view.visibleRanges) {
+                field.mathInfoSet.between(
+                    from,
+                    to,
+                    (from, to, value) => {
+                        if (!hasOverlap(range, {from, to})) {
+                            if (value.display && !value.insideCallout) {
+                                /**
+                                 * Display math inside blockquote (not callout) that is not overlapping with the current selection or cursor
+                                 */
+                                for (let i = 0; i < mjxInQuote.length; i++) {
+                                    const mjx = mjxInQuote[i];
+                                    const pos = mjxPositions[i];
+                                    if (from - 1 <= pos && pos <= to) {
+                                        value.mathEl.classList.add("math-booster-preview");
+                                        mjx.replaceWith(value.mathEl);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+            }
+        }
+    }
+);
