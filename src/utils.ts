@@ -1,6 +1,6 @@
 import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView, Component, MarkdownRenderer } from 'obsidian';
 import { DataviewApi, getAPI } from 'obsidian-dataview';
-import { EditorState, ChangeSet } from '@codemirror/state';
+import { EditorState, ChangeSet, RangeValue, RangeSet } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
 
 import MathBooster from './main';
@@ -187,7 +187,7 @@ export function printMathInfoSet(set: MathInfoSet, state: EditorState) {
     // Debugging utility
     console.log("MathInfoSet:");
     set.between(0, state.doc.length, (from, to, value) => {
-        console.log(`  ${from}-${to}: ${value.mathText} ${value.display ? "(display)" : ""} ${value.insideCallout ? "(in callout)" : ""}`);
+        console.log(`  ${from}-${to}: ${value.mathText} ${value.display ? "(display)" : ""} ${value.insideCallout ? "(in callout)" : ""} ${value.overlap === undefined ? "(overlap not checked yet)": value.overlap ? "(overlapping)" : "(non-overlapping)"}`);
     });
 }
 
@@ -205,6 +205,19 @@ export function printChangeSet(changes: ChangeSet) {
             console.log(`${fromA}-${toA}: "${inserted.toString()}" inserted (${fromB}-${toB} in new state)`);
         }
     );
+}
+
+export function rangeSetSome<T extends RangeValue>(set: RangeSet<T>, predicate: (value: T, index: number, set: RangeSet<T>) => unknown) {
+    const cursor = set.iter();
+    let index = 0;
+    while (cursor.value) {
+        if (predicate(cursor.value, index, set)) {
+            return true;
+        }
+        cursor.next();
+        index++;
+    }
+    return false;
 }
 
 export function getDataviewAPI(plugin: MathBooster): DataviewApi | undefined {

@@ -3,7 +3,7 @@ import { Extension, Transaction, StateField, RangeSetBuilder, EditorState, Range
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { syntaxTree } from '@codemirror/language';
 
-import { isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed } from './utils';
+import { hasOverlap, isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed, printMathInfoSet, rangeSetSome } from './utils';
 import { CALLOUT } from "./math_callout_metadata_hider";
 
 
@@ -61,6 +61,8 @@ class MathPreviewWidget extends WidgetType {
 
 class MathInfo extends RangeValue {
     mathEl: HTMLElement;
+    overlap: boolean; // whether this math has an overlap with the main selection
+    overlapChanged: boolean = true; // whether this.overlap has changed in the last update
 
     constructor(public mathText: string, public display: boolean, public from: number, public to: number, public insideCallout: boolean) {
         super();
@@ -258,6 +260,18 @@ export const mathPreviewInfoField = StateField.define<MathPreviewInfo>({
             mathInfoSet = prev.mathInfoSet;
         }
 
+        const oldCursor = prev.mathInfoSet.iter();
+        const newCursor = mathInfoSet.iter();
+        while (oldCursor.value && newCursor.value) {
+            // NOTE THAT oldCursor.value & newCursor.value can point to the same object!!!
+            const oldOverlap = oldCursor.value.overlap;
+            const newOverlap = hasOverlap(range, newCursor);
+            newCursor.value.overlapChanged = oldOverlap != newOverlap;
+            newCursor.value.overlap = newOverlap;
+            oldCursor.next();
+            newCursor.next();
+        }
+
         return { mathInfoSet, isInCalloutsOrQuotes, hasOverlappingMath, hasOverlappingDisplayMath, rerendered };
     },
 });
@@ -272,7 +286,9 @@ export const mathPreviewViewPlugin = ViewPlugin.fromClass(
         }
 
         update(update: ViewUpdate) {
-            this.buildDecorations(update.view);
+            if (update.docChanged || update.viewportChanged || overlapStateChanged(update.state)) {
+                this.buildDecorations(update.view);
+            }    
         }
 
         buildDecorations(view: EditorView) {
@@ -341,6 +357,10 @@ export const mathPreviewStateField = StateField.define<DecorationSet>({
             return Decoration.none;
         }
 
+        if (!transaction.docChanged && !overlapStateChanged(transaction.state)) {
+            return value;
+        }
+
         const builder = new RangeSetBuilder<Decoration>();
         const range = transaction.state.selection.main;
         const field = transaction.state.field(mathPreviewInfoField);
@@ -398,4 +418,9 @@ function involvesDollar(transaction: Transaction): boolean {
         }
     )
     return ret;
+}
+
+function overlapStateChanged(state: EditorState): boolean {
+    const infoSet = state.field(mathPreviewInfoField).mathInfoSet;
+    return rangeSetSome(infoSet, (info) => info.overlapChanged);
 }
