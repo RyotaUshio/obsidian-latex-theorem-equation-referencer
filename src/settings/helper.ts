@@ -312,5 +312,9 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
 export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
     makeSettingPane(): void {
         this.addToggleSetting("noteTitleInLink", "Show note title at link's head", "If turned on, a link to \"Theorem 1\" will look like \"Note title > Theorem 1.\" The same applies to equations.")
+
+        this.contentEl.createEl("h3", {text: "Search"});
+        this.addTextSetting("searchTrigger", "Trigger theorem search with", "Type this string to trigger search for theorem callouts.")
+        // this.addTextSetting("searchLimit", "Number of displayed results");
     }
 }

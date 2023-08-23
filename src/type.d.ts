@@ -50,4 +50,14 @@ declare module "obsidian" {
     interface Editor {
         cm?: EditorView;
     }
+    // Reference: https://github.com/tadashi-aikawa/obsidian-various-complements-plugin/blob/be4a12c3f861c31f2be3c0f81809cfc5ab6bb5fd/src/ui/AutoCompleteSuggest.ts#L595-L619
+    interface EditorSuggest<T> {
+        scope: Scope;
+        suggestions: {
+          selectedItem: number;
+          values: T[];
+          containerEl: HTMLElement;
+        };
+        suggestEl: HTMLElement;
+    }
 }

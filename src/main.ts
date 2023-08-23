@@ -15,6 +15,7 @@ import { LinkedNotesIndexer, VaultIndexer } from './indexer';
 import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
 import { iterDescendantFiles } from './utils';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
+import { TheoremSuggest } from 'search';
 
 
 export const VAULT_ROOT = '/';
@@ -233,6 +234,10 @@ export default class MathBooster extends Plugin {
 		this.registerMarkdownPostProcessor(
 			(element, context) => ProofProcessor(this.app, this, element, context),
 		);
+
+		
+		/** Editor suggest */
+		this.registerEditorSuggest(new TheoremSuggest(this.app, this));
 	}
 
 	onunload() {

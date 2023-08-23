@@ -20,10 +20,13 @@ export class BacklinkModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
 
+        contentEl.createEl("h3", {text: "Backlinks"});
+
         this.containerEl.querySelector<HTMLElement>("div.modal")?.addClass("math-booster-backlink-modal");
 
         if (this.backlinks) {
             if (this.backlinks.length) {
+                contentEl.createDiv({text: "Click on an item to open it."})
                 const list = contentEl.createEl("ul");
                 for (const backlink of this.backlinks) {
                     const item = list.createEl("li");

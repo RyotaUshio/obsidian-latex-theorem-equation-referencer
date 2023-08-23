@@ -1,5 +1,9 @@
 /* This file is auto-generated. Do not edit it. */
 
+.math-booster-search-item-description {
+    color: var(--text-faint);
+}
+
 .math-booster-backlink-modal {
     width: var(--file-line-width);
 }

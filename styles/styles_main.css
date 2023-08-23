@@ -1,3 +1,7 @@
+.math-booster-search-item-description {
+    color: var(--text-faint);
+}
+
 .math-booster-backlink-modal {
     width: var(--file-line-width);
 }

@@ -67,6 +67,8 @@ export interface MathCalloutPrivateFields {
 export interface ExtraSettings {
     noteTitleInLink: boolean;
     profiles: Record<string, Profile>;
+    searchTrigger: string;
+    // searchLimit: number;
 }
 
 export type MathSettings = Partial<MathContextSettings> & MathCalloutSettings & MathCalloutPrivateFields;
@@ -99,4 +101,6 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
 export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     noteTitleInLink: true,
     profiles: DEFAULT_PROFILES,
+    searchTrigger: "@",
+    // searchLimit: 10,
 };
