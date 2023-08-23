@@ -1,3 +1,13 @@
+.math-booster-backlink-modal {
+    width: var(--file-line-width);
+}
+
+.math-booster-backlink-preview {
+    border: var(--border-width) solid var(--background-modifier-border); 
+    border-radius: var(--radius-s);
+    padding: var(--size-4-6);
+}
+
 .math-booster-begin-proof-en {
     font-style: italic;
     padding-right: 10px;

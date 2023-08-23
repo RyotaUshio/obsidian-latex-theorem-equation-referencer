@@ -1,0 +1,86 @@
+import { getIO } from 'file_io';
+import MathBooster from 'main';
+import { MathCallout } from 'math_callouts';
+import { App, LinkCache, MarkdownRenderer, MarkdownView, Modal, Pos, TFile } from 'obsidian';
+import { locToEditorPosition, renderMarkdown } from 'utils';
+
+
+export type Backlink = { sourcePath: string, position: Pos };
+
+export interface BacklinkProvider {
+    getBacklinks: () => Backlink[] | null;
+}
+
+
+export class BacklinkModal extends Modal {
+    constructor(app: App, public plugin: MathBooster, public backlinks: Backlink[] | null, public showPrev: number = 1, public showNext: number = 1) {
+        super(app);
+    }
+
+    onOpen(): void {
+        const { contentEl } = this;
+        contentEl.empty();
+
+        this.containerEl.querySelector<HTMLElement>("div.modal")?.addClass("math-booster-backlink-modal");
+
+        if (this.backlinks) {
+            if (this.backlinks.length) {
+                const list = contentEl.createEl("ul");
+                for (const backlink of this.backlinks) {
+                    const item = list.createEl("li");
+                    this.renderBacklink(item, backlink);
+                }
+            } else {
+                contentEl.createDiv({ text: "No backlink was found." })
+            }
+        } else {
+            contentEl.createDiv({ text: "An error occured when searching backlinks." })
+        }
+    }
+
+    onClose(): void {
+        const { contentEl } = this;
+        contentEl.empty();
+    }
+
+    async renderBacklink(el: HTMLElement, backlink: Backlink) {
+        const file = this.app.vault.getAbstractFileByPath(backlink.sourcePath);
+        const cache = this.app.metadataCache.getCache(backlink.sourcePath);
+
+        if (file instanceof TFile && cache?.sections) {
+            const io = getIO(this.plugin, file);
+            const index = cache.sections.findIndex((secCache) => {
+                const { start: secStart, end: secEnd } = secCache.position;
+                const { start: linkStart, end: linkEnd } = backlink.position;
+                return secStart.offset <= linkStart.offset && linkEnd.offset <= secEnd.offset;
+            });
+            el.createEl("h6", {
+                text: `${file.path.slice(0, - (file.extension.length + 1))}, line ${cache.sections[index].position.start.line}`
+            });
+
+            if (index >= 0) {
+                const content = await io.getRange({
+                    start: cache.sections[Math.max(index - this.showPrev, 0)].position.start,
+                    end: cache.sections[Math.min(index + this.showNext, cache.sections.length - 1)].position.end,
+                });
+                const previewEl = el.createDiv({ cls: "math-booster-backlink-preview" });
+                MarkdownRenderer.renderMarkdown(content, previewEl, backlink.sourcePath, this.plugin);
+            }
+
+            this.plugin.registerDomEvent(
+                el, "click", async () => {
+                    this.close();
+                    const newLeaf = !(file == this.app.workspace.activeEditor?.file);
+                    const leaf = this.app.workspace.getLeaf(newLeaf);
+                    await leaf.openFile(file);
+                    if (leaf.view instanceof MarkdownView) {
+                        leaf.view.editor.setSelection(
+                            locToEditorPosition(backlink.position.start),
+                            locToEditorPosition(backlink.position.end)
+                        );
+                    }
+                }
+            );
+        }
+    }
+}

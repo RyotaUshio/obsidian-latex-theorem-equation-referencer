@@ -1,11 +1,11 @@
-import { CachedMetadata, Editor, Pos, TFile } from "obsidian";
+import { App, CachedMetadata, Editor, MarkdownView, Pos, TFile } from "obsidian";
 
 import MathBooster from "./main";
-import { locToEditorPosition, splitIntoLines } from "./utils";
+import { isEditingView, locToEditorPosition, splitIntoLines } from "./utils";
 
 
 export abstract class FileIO {
-    constructor(public plugin: MathBooster, public file: TFile) {}
+    constructor(public plugin: MathBooster, public file: TFile) { }
     abstract setLine(lineNumber: number, text: string): Promise<void>;
     abstract getLine(lineNumber: number): Promise<string>;
     abstract getRange(position: Pos): Promise<string>;
@@ -93,5 +93,19 @@ export class NonActiveNoteIO extends FileIO {
 
     isSafe(lineNumber: number): boolean {
         return true;
+    }
+}
+
+
+/**
+ * Automatically judges which of ActiveNoteIO or NonActiveNoteIO
+ * should be used for the given file.
+ */
+export function getIO(plugin: MathBooster, file: TFile, activeMarkdownView?: MarkdownView | null) {
+    activeMarkdownView = activeMarkdownView ?? plugin.app.workspace.getActiveViewOfType(MarkdownView);
+    if (activeMarkdownView && activeMarkdownView.file == file && isEditingView(activeMarkdownView)) {
+        return new ActiveNoteIO(plugin, file, activeMarkdownView.editor);
+    } else {
+        return new NonActiveNoteIO(plugin, file);
     }
 }

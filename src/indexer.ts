@@ -2,7 +2,7 @@ import { App, CachedMetadata, MarkdownView, SectionCache, TFile } from 'obsidian
 
 import MathBooster from './main';
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, MathCalloutRefFormat, ResolvedMathSettings, MathCalloutSettings, MathCalloutPrivateFields } from './settings/settings';
-import { getBlockIdsWithBacklink, readMathCalloutSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, formatTitleWithoutSubtitle } from './utils';
+import { getBlockIdsWithBacklink, readMathCalloutSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, formatTitleWithoutSubtitle, isEditingView } from './utils';
 import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 
 
@@ -286,7 +286,7 @@ export class AutoNoteIndexer {
      */
     getIndexer(activeMarkdownView?: MarkdownView | null): ActiveNoteIndexer | NonActiveNoteIndexer {
         activeMarkdownView = activeMarkdownView ?? this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (activeMarkdownView?.file == this.file && activeMarkdownView.getMode() == "source") {
+        if (activeMarkdownView?.file == this.file && isEditingView(activeMarkdownView)) {
             return new ActiveNoteIndexer(this.app, this.plugin, activeMarkdownView);
         } else {
             return new NonActiveNoteIndexer(this.app, this.plugin, this.file);
