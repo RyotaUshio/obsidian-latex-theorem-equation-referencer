@@ -57,25 +57,6 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
             )
         );
         (new AutoNoteIndexer(this.app, this.plugin, this.file)).run();
-
-        this.plugin.registerDomEvent(
-            this.containerEl, "contextmenu", (event) => {
-                const menu = new Menu();
-
-                // Show backlinks
-                menu.addItem((item) => {
-                    item.setTitle("Show backlinks");
-                    item.onClick((clickEvent) => {
-                        if (clickEvent instanceof MouseEvent) {
-                            const backlinks = this.getBacklinks(event);
-                            new BacklinkModal(this.app, this.plugin, backlinks).open();
-                        }
-                    })
-                });
-
-                menu.showAtMouseEvent(event);
-            }
-        );
     }
 
     async impl(indexer: ActiveNoteIndexer | NonActiveNoteIndexer) {
@@ -87,6 +68,25 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
                 const settings = resolveSettings(undefined, this.plugin, this.file);
                 if (this.containerEl) {
                     replaceMathTag(this.containerEl, text, mathLink, settings);
+                    this.plugin.registerDomEvent(
+                        this.containerEl, "contextmenu", (event) => {
+                            const menu = new Menu();
+
+                            // Show backlinks
+                            menu.addItem((item) => {
+                                item.setTitle("Show backlinks");
+                                item.onClick((clickEvent) => {
+                                    if (clickEvent instanceof MouseEvent) {
+                                        const backlinks = this.getBacklinks(event);
+                                        new BacklinkModal(this.app, this.plugin, backlinks).open();
+                                    }
+                                })
+                            });
+
+                            menu.showAtMouseEvent(event);
+                        }
+                    );
+
                 }
             }
         }
@@ -143,30 +143,30 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
                                 if (text) {
                                     const settings = resolveSettings(undefined, plugin, io.file);
                                     replaceMathTag(mjxContainerEl, text, mathLink, settings);
+                                    plugin.registerDomEvent(
+                                        mjxContainerEl, "contextmenu", (event) => {
+                                            const menu = new Menu();
+
+                                            // Show backlinks
+                                            menu.addItem((item) => {
+                                                item.setTitle("Show backlinks");
+                                                item.onClick((clickEvent) => {
+                                                    if (clickEvent instanceof MouseEvent) {
+                                                        const backlinks = this.getBacklinks(mjxContainerEl, event, io.file, view);
+                                                        new BacklinkModal(plugin.app, plugin, backlinks).open();
+                                                    }
+                                                })
+                                            });
+
+                                            menu.showAtMouseEvent(event);
+                                        }
+                                    );
+
                                 }
                             }
                         } catch (err) {
                             // try it again later
                         }
-
-                        plugin.registerDomEvent(
-                            mjxContainerEl, "contextmenu", (event) => {
-                                const menu = new Menu();
-                
-                                // Show backlinks
-                                menu.addItem((item) => {
-                                    item.setTitle("Show backlinks");
-                                    item.onClick((clickEvent) => {
-                                        if (clickEvent instanceof MouseEvent) {
-                                            const backlinks = this.getBacklinks(mjxContainerEl, event, io.file, view);
-                                            new BacklinkModal(plugin.app, plugin, backlinks).open();
-                                        }
-                                    })
-                                });
-                
-                                menu.showAtMouseEvent(event);
-                            }
-                        );
                     }
                 }
             }
