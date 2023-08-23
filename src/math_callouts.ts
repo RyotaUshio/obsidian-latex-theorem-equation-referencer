@@ -3,7 +3,7 @@ import { App, CachedMetadata, Editor, ExtraButtonComponent, LinkCache, MarkdownP
 import MathBooster from './main';
 import { MathCalloutModal } from './modals';
 import { MathCalloutSettings, MathSettings, ResolvedMathSettings } from './settings/settings';
-import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, getSectionCacheFromPos, isEditingView } from './utils';
+import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, getSectionCacheFromPos, isEditingView, getSectionCacheOfDOM, getSectionCacheFromMouseEvent, getBacklinks } from './utils';
 import { AutoNoteIndexer } from './indexer';
 import { Backlink, BacklinkModal } from "backlinks";
 import { getIO } from "file_io";
@@ -107,67 +107,6 @@ export class MathCallout extends MarkdownRenderChild {
                     })
                 });
 
-                // // Go to proof
-                // menu.addItem((item) => {
-                //     item.setTitle("Go to proof");
-                //     item.onClick(async (clickEvent) => {
-                //         const cache = this.app.metadataCache.getFileCache(this.currentFile);
-                //         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-                //         const settings = resolveSettings(undefined, this.plugin, this.currentFile);
-                //         const proofs: Backlink[] = [];
-
-                //         if (cache?.sections && view) {
-                //             const io = getIO(this.plugin, this.currentFile);
-                //             const lineNumber = this.getLineNumber(view, cache, event);
-                //             if (lineNumber) {
-                //                 const index = cache.sections.findIndex((sec) => sec.position.start.line <= lineNumber && lineNumber <= sec.position.end.line);
-                //                 if (0 <= index && index <= cache.sections.length - 2) {
-                //                     const nextSec = cache.sections[index + 1];
-                //                     const nextSecFirstLine = await io.getLine(nextSec.position.start.line);
-                //                     const nextSecIsProof = nextSecFirstLine.startsWith("`" + settings.beginProof + "`");
-                //                     if (nextSecIsProof) {
-                //                         proofs.push({
-                //                             position: nextSec.position,
-                //                             sourcePath: this.currentFile.path,
-                //                         })
-                //                     }
-                //                 }
-                //             }
-                //         }
-
-                //         if (clickEvent instanceof MouseEvent) {
-                //             const backlinks = this.getBacklinks(clickEvent);
-
-                //             if (backlinks) {
-                //                 await Promise.all(
-                //                     backlinks.map(async (backlink) => {
-                //                         const file = this.app.vault.getAbstractFileByPath(backlink.sourcePath);
-                //                         if (file instanceof TFile) {
-                //                             const start = backlink.position.start;
-                //                             const io = getIO(this.plugin, file);
-                //                             // 3 = "`".length + "`".length + "@".length
-                //                             const offset = settings.beginProof.length + 3;
-                //                             if (start.col >= offset) {
-                //                                 const preLink = await io.getRange({
-                //                                     start: { line: start.line, col: start.col - offset, offset: start.offset - offset },
-                //                                     end: start
-                //                                 });
-                //                                 const isProof = preLink == "`" + settings.beginProof + "`@";
-                //                                 if (isProof) {
-                //                                     proofs.push(backlink);
-                //                                 }
-                //                             }
-                //                         }
-                //                     })
-                //                 );
-                //                 // if (proofs.length > 1) {
-                //                 new BacklinkModal(this.app, this.plugin, proofs, 0, 0).open();
-                //                 // }
-                //             }
-
-                //         }
-                //     })
-                // })
                 menu.showAtMouseEvent(event);
             }
         );
@@ -176,23 +115,25 @@ export class MathCallout extends MarkdownRenderChild {
     getLineNumber(view: MarkdownView, cache: CachedMetadata | null, event: MouseEvent): number | undefined {
         const info = this.context.getSectionInfo(this.containerEl);
         let lineNumber = info?.lineStart;
-        if (lineNumber === undefined) {
-            if (isEditingView(view)) {
-                let pos = view.editor.cm?.posAtDOM(this.containerEl);
-                if (pos !== undefined && cache) {
-                    lineNumber = getSectionCacheFromPos(cache, pos, "callout")?.position.start.line;
-                }
-                if (lineNumber === undefined && cache) {
-                    const pos = view.editor.cm?.posAtCoords(event) ?? view.editor.cm?.posAtCoords(event, false);
-                    if (pos !== undefined) {
-                        lineNumber = getSectionCacheFromPos(cache, pos, "callout")?.position.start.line;
-                    }
-                }
-            } else {
-                // what can I do in reading view??
-            }
+        if (typeof lineNumber == "number") {
+            return lineNumber;
         }
-        return lineNumber;
+
+        if (isEditingView(view) && view.editor.cm && cache) {
+            let sec = getSectionCacheOfDOM(this.containerEl, "callout", view.editor.cm, cache);
+            lineNumber = sec?.position.start.line;
+            if (typeof lineNumber == "number") {
+                return lineNumber;
+            }
+
+            sec = getSectionCacheFromMouseEvent(event, "callout", view.editor.cm, cache)
+            lineNumber = sec?.position.start.line;
+            if (typeof lineNumber == "number") {
+                return lineNumber;
+            }
+        } else {
+            // what can I do in reading view??
+        }
     }
 
     getBacklinks(event: MouseEvent): Backlink[] | null {
@@ -201,24 +142,9 @@ export class MathCallout extends MarkdownRenderChild {
         if (!view || !cache) return null;
 
         const lineNumber = this.getLineNumber(view, cache, event);
-        if (lineNumber == undefined) return null;
+        if (typeof lineNumber != "number") return null;
 
-        const backlinksToNote = this.plugin.oldLinkMap.invMap.get(this.currentFile.path); // backlinks to the note containing this math callout
-        const backlinks: Backlink[] = [] // backlinks to this math callout
-        if (backlinksToNote) {
-            for (const backlink of backlinksToNote) {
-                const sourceCache = this.app.metadataCache.getCache(backlink);
-                sourceCache?.links
-                    ?.forEach((link: LinkCache) => {
-                        const { subpath } = parseLinktext(link.link);
-                        const subpathResult = resolveSubpath(cache, subpath);
-                        if (subpathResult?.type == "block" && subpathResult.block.position.start.line == lineNumber) {
-                            backlinks.push({ sourcePath: backlink, position: link.position });
-                        }
-                    })
-            }
-        }
-        return backlinks;
+        return getBacklinks(this.app, this.plugin, this.currentFile, cache, (block) => block.position.start.line == lineNumber);
     }
 }
 

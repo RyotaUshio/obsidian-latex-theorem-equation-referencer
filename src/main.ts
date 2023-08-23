@@ -160,8 +160,8 @@ export default class MathBooster extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'insert-proof', 
-			name: 'Insert proof', 
+			id: 'insert-proof',
+			name: 'Insert proof',
 			editorCallback: (editor, context) => insertProof(this, editor, context)
 		});
 

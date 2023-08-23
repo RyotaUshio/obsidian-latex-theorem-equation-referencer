@@ -1,8 +1,7 @@
 import { getIO } from 'file_io';
 import MathBooster from 'main';
-import { MathCallout } from 'math_callouts';
-import { App, LinkCache, MarkdownRenderer, MarkdownView, Modal, Pos, TFile } from 'obsidian';
-import { locToEditorPosition, renderMarkdown } from 'utils';
+import { App, MarkdownRenderer, MarkdownView, Modal, Pos, TFile } from 'obsidian';
+import { locToEditorPosition } from 'utils';
 
 
 export type Backlink = { sourcePath: string, position: Pos };
@@ -55,7 +54,7 @@ export class BacklinkModal extends Modal {
                 return secStart.offset <= linkStart.offset && linkEnd.offset <= secEnd.offset;
             });
             el.createEl("h6", {
-                text: `${file.path.slice(0, - (file.extension.length + 1))}, line ${cache.sections[index].position.start.line}`
+                text: `${file.path.slice(0, - (file.extension.length + 1))}, line ${cache.sections[index].position.start.line + 1}`
             });
 
             if (index >= 0) {

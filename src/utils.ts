@@ -1,12 +1,14 @@
-import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView, Component, MarkdownRenderer } from 'obsidian';
+import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView, Component, MarkdownRenderer, LinkCache, BlockCache, App } from 'obsidian';
 import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState, ChangeSet, RangeValue, RangeSet } from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
 import { SyntaxNodeRef } from '@lezer/common';
 
 import MathBooster from './main';
-import { DEFAULT_SETTINGS, MathCalloutPrivateFields, MathCalloutSettings, MathContextSettings, MathSettings, NumberStyle, ResolvedMathSettings } from './settings/settings';
+import { DEFAULT_SETTINGS, MathCalloutPrivateFields, MathCalloutSettings, MathContextSettings, NumberStyle, ResolvedMathSettings } from './settings/settings';
 import { MathInfoSet } from './math_live_preview_in_callouts';
 import { TheoremLikeEnvID } from './env';
+import { Backlink } from './backlinks';
 
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
@@ -153,6 +155,35 @@ export function getMathCacheFromPos(cache: CachedMetadata, pos: number): Section
     return getSectionCacheFromPos(cache, pos, "math");
 }
 
+export function getSectionCacheOfDOM(el: HTMLElement, type: string, view: EditorView, cache: CachedMetadata) {
+    const pos = view.posAtDOM(el);
+    return getSectionCacheFromPos(cache, pos, type);
+}
+
+export function getSectionCacheFromMouseEvent(event: MouseEvent, type: string, view: EditorView, cache: CachedMetadata) {
+    const pos = view.posAtCoords(event) ?? view.posAtCoords(event, false);
+    return getSectionCacheFromPos(cache, pos, type);
+}
+
+export function getBacklinks(app: App, plugin: MathBooster, file: TFile, cache: CachedMetadata, pick: (block: BlockCache) => boolean): Backlink[] | null {
+    const backlinksToNote = plugin.oldLinkMap.invMap.get(file.path); // backlinks to the note containing this math callout
+    const backlinks: Backlink[] = [] // backlinks to this math callout
+    if (backlinksToNote) {
+        for (const backlink of backlinksToNote) {
+            const sourceCache = app.metadataCache.getCache(backlink);
+            sourceCache?.links
+                ?.forEach((link: LinkCache) => {
+                    const { subpath } = parseLinktext(link.link);
+                    const subpathResult = resolveSubpath(cache, subpath);
+                    if (subpathResult?.type == "block" && pick(subpathResult.block)) {
+                        backlinks.push({ sourcePath: backlink, position: link.position });
+                    }
+                })
+        }
+    }
+    return backlinks;
+}
+
 export function isLivePreview(state: EditorState) {
     return state.field(editorLivePreviewField);
 }
@@ -187,7 +218,7 @@ export function printMathInfoSet(set: MathInfoSet, state: EditorState) {
     // Debugging utility
     console.log("MathInfoSet:");
     set.between(0, state.doc.length, (from, to, value) => {
-        console.log(`  ${from}-${to}: ${value.mathText} ${value.display ? "(display)" : ""} ${value.insideCallout ? "(in callout)" : ""} ${value.overlap === undefined ? "(overlap not checked yet)": value.overlap ? "(overlapping)" : "(non-overlapping)"}`);
+        console.log(`  ${from}-${to}: ${value.mathText} ${value.display ? "(display)" : ""} ${value.insideCallout ? "(in callout)" : ""} ${value.overlap === undefined ? "(overlap not checked yet)" : value.overlap ? "(overlapping)" : "(non-overlapping)"}`);
     });
 }
 
