@@ -105,69 +105,69 @@ export class MathCallout extends MarkdownRenderChild {
                             new BacklinkModal(this.app, this.plugin, backlinks).open();
                         }
                     })
-                })
+                });
 
-                // Go to proof
-                menu.addItem((item) => {
-                    item.setTitle("Go to proof");
-                    item.onClick(async (clickEvent) => {
-                        const cache = this.app.metadataCache.getFileCache(this.currentFile);
-                        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-                        const settings = resolveSettings(undefined, this.plugin, this.currentFile);
-                        const proofs: Backlink[] = [];
+                // // Go to proof
+                // menu.addItem((item) => {
+                //     item.setTitle("Go to proof");
+                //     item.onClick(async (clickEvent) => {
+                //         const cache = this.app.metadataCache.getFileCache(this.currentFile);
+                //         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+                //         const settings = resolveSettings(undefined, this.plugin, this.currentFile);
+                //         const proofs: Backlink[] = [];
 
-                        if (cache?.sections && view) {
-                            const io = getIO(this.plugin, this.currentFile);
-                            const lineNumber = this.getLineNumber(view, cache, event);
-                            if (lineNumber) {
-                                const index = cache.sections.findIndex((sec) => sec.position.start.line <= lineNumber && lineNumber <= sec.position.end.line);
-                                if (0 <= index && index <= cache.sections.length - 2) {
-                                    const nextSec = cache.sections[index + 1];
-                                    const nextSecFirstLine = await io.getLine(nextSec.position.start.line);
-                                    const nextSecIsProof = nextSecFirstLine.startsWith("`" + settings.beginProof + "`");
-                                    if (nextSecIsProof) {
-                                        proofs.push({
-                                            position: nextSec.position,
-                                            sourcePath: this.currentFile.path,
-                                        })
-                                    }
-                                }
-                            }
-                        }
+                //         if (cache?.sections && view) {
+                //             const io = getIO(this.plugin, this.currentFile);
+                //             const lineNumber = this.getLineNumber(view, cache, event);
+                //             if (lineNumber) {
+                //                 const index = cache.sections.findIndex((sec) => sec.position.start.line <= lineNumber && lineNumber <= sec.position.end.line);
+                //                 if (0 <= index && index <= cache.sections.length - 2) {
+                //                     const nextSec = cache.sections[index + 1];
+                //                     const nextSecFirstLine = await io.getLine(nextSec.position.start.line);
+                //                     const nextSecIsProof = nextSecFirstLine.startsWith("`" + settings.beginProof + "`");
+                //                     if (nextSecIsProof) {
+                //                         proofs.push({
+                //                             position: nextSec.position,
+                //                             sourcePath: this.currentFile.path,
+                //                         })
+                //                     }
+                //                 }
+                //             }
+                //         }
 
-                        if (clickEvent instanceof MouseEvent) {
-                            const backlinks = this.getBacklinks(clickEvent);
+                //         if (clickEvent instanceof MouseEvent) {
+                //             const backlinks = this.getBacklinks(clickEvent);
 
-                            if (backlinks) {
-                                await Promise.all(
-                                    backlinks.map(async (backlink) => {
-                                        const file = this.app.vault.getAbstractFileByPath(backlink.sourcePath);
-                                        if (file instanceof TFile) {
-                                            const start = backlink.position.start;
-                                            const io = getIO(this.plugin, file);
-                                            // 3 = "`".length + "`".length + "@".length
-                                            const offset = settings.beginProof.length + 3;
-                                            if (start.col >= offset) {
-                                                const preLink = await io.getRange({
-                                                    start: { line: start.line, col: start.col - offset, offset: start.offset - offset },
-                                                    end: start
-                                                });
-                                                const isProof = preLink == "`" + settings.beginProof + "`@";
-                                                if (isProof) {
-                                                    proofs.push(backlink);
-                                                }
-                                            }
-                                        }
-                                    })
-                                );
-                                // if (proofs.length > 1) {
-                                new BacklinkModal(this.app, this.plugin, proofs, 0, 0).open();
-                                // }
-                            }
+                //             if (backlinks) {
+                //                 await Promise.all(
+                //                     backlinks.map(async (backlink) => {
+                //                         const file = this.app.vault.getAbstractFileByPath(backlink.sourcePath);
+                //                         if (file instanceof TFile) {
+                //                             const start = backlink.position.start;
+                //                             const io = getIO(this.plugin, file);
+                //                             // 3 = "`".length + "`".length + "@".length
+                //                             const offset = settings.beginProof.length + 3;
+                //                             if (start.col >= offset) {
+                //                                 const preLink = await io.getRange({
+                //                                     start: { line: start.line, col: start.col - offset, offset: start.offset - offset },
+                //                                     end: start
+                //                                 });
+                //                                 const isProof = preLink == "`" + settings.beginProof + "`@";
+                //                                 if (isProof) {
+                //                                     proofs.push(backlink);
+                //                                 }
+                //                             }
+                //                         }
+                //                     })
+                //                 );
+                //                 // if (proofs.length > 1) {
+                //                 new BacklinkModal(this.app, this.plugin, proofs, 0, 0).open();
+                //                 // }
+                //             }
 
-                        }
-                    })
-                })
+                //         }
+                //     })
+                // })
                 menu.showAtMouseEvent(event);
             }
         );

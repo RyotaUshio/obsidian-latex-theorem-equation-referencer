@@ -297,9 +297,15 @@ export const inlineMathPreview = ViewPlugin.fromClass(
                 return;
             }
 
+            const field = view.state.field(mathPreviewInfoField);
+
+            if (!field.isInCalloutsOrQuotes) {
+                this.decorations = Decoration.none;
+                return;                
+            }
+
             const range = view.state.selection.main;
             const builder = new RangeSetBuilder<Decoration>();
-            const field = view.state.field(mathPreviewInfoField);
 
             for (const { from, to } of view.visibleRanges) {
                 field.mathInfoSet.between(
@@ -307,7 +313,7 @@ export const inlineMathPreview = ViewPlugin.fromClass(
                     to,
                     (from, to, value) => {
                         // if (to < range.from || from > range.to) {
-                            if (!value.display && !hasOverlap(range, {from, to})) {
+                            if (value.insideCallout && !value.display && !hasOverlap(range, {from, to})) {
                                 /**
                                  * Inline math that is not overlapping with the current selection or cursor
                                  */

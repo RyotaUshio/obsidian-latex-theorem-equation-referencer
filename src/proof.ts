@@ -1,4 +1,4 @@
-import { RangeSetBuilder } from '@codemirror/state';
+import { RangeSetBuilder, ChangeSet } from '@codemirror/state';
 import { Transaction } from '@codemirror/state';
 import { StateField, EditorState } from '@codemirror/state';
 import { App, Editor, MarkdownFileInfo, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, editorInfoField } from 'obsidian';
@@ -159,10 +159,12 @@ export const proofPositionFieldFactory = (plugin: MathBooster) => StateField.def
     create(state: EditorState) {
         return makeField(state, plugin);
     },
+
     update(value: ProofPosition[], tr: Transaction) {
         if (!tr.docChanged) {
             return value;
         }
+
         return makeField(tr.state, plugin);
     }
 });
@@ -173,6 +175,7 @@ function makeField(state: EditorState, plugin: MathBooster) {
     if (!file) return [];
 
     const settings = resolveSettings(undefined, plugin, file);
+    const range = state.selection.main;
 
     const field: ProofPosition[] = [];
     const tree = syntaxTree(state);
@@ -204,8 +207,10 @@ function makeField(state: EditorState, plugin: MathBooster) {
                         }
                     }
                 } else if (text == settings.endProof) {
-                    end = { from: node.from - 1, to: node.to + 1 }; // 1 = "`".length
-                    field.push({ begin, end, display, linktext, linknodes });
+                    if (begin) {
+                        end = { from: node.from - 1, to: node.to + 1 }; // 1 = "`".length
+                        field.push({ begin, end, display, linktext, linknodes });
+                    }
                     begin = undefined;
                     end = undefined;
                     display = undefined;
@@ -299,6 +304,6 @@ export function insertProof(plugin: MathBooster, editor: Editor, context: Markdo
         const settings = resolveSettings(undefined, plugin, context.file);
         const cursor = editor.getCursor();
         editor.replaceRange(`\`${settings.beginProof}\`\`${settings.endProof}\``, cursor);
-        editor.setCursor({line: cursor.line, ch: cursor.ch + settings.beginProof.length + 2});
+        editor.setCursor({ line: cursor.line, ch: cursor.ch + settings.beginProof.length + 2 });
     }
 }
