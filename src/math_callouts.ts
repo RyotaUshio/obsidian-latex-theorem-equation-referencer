@@ -1,12 +1,11 @@
-import { App, CachedMetadata, Editor, ExtraButtonComponent, LinkCache, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Menu, Notice, Pos, TFile, parseLinktext, resolveSubpath } from "obsidian";
+import { App, CachedMetadata, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Menu, Notice, TFile } from "obsidian";
 
 import MathBooster from './main';
 import { MathCalloutModal } from './modals';
 import { MathCalloutSettings, MathSettings, ResolvedMathSettings } from './settings/settings';
-import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, getSectionCacheFromPos, isEditingView, getSectionCacheOfDOM, getSectionCacheFromMouseEvent, getBacklinks } from './utils';
+import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, isEditingView, getSectionCacheOfDOM, getSectionCacheFromMouseEvent, getBacklinks } from './utils';
 import { AutoNoteIndexer } from './indexer';
 import { Backlink, BacklinkModal } from "backlinks";
-import { getIO } from "file_io";
 
 
 export class MathCallout extends MarkdownRenderChild {
@@ -101,7 +100,7 @@ export class MathCallout extends MarkdownRenderChild {
                     item.setTitle("Show backlinks");
                     item.onClick((clickEvent) => {
                         if (clickEvent instanceof MouseEvent) {
-                            const backlinks = this.getBacklinks(clickEvent);
+                            const backlinks = this.getBacklinks(event);
                             new BacklinkModal(this.app, this.plugin, backlinks).open();
                         }
                     })

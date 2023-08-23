@@ -1,12 +1,12 @@
-import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, CachedMetadata, SectionCache, MarkdownSectionInformation, TFile, editorInfoField } from "obsidian";
+import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, CachedMetadata, SectionCache, MarkdownSectionInformation, TFile, editorInfoField, Menu } from "obsidian";
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
 import MathBooster from './main';
-import { getMathCache, getMathCacheFromPos, printMathInfoSet, resolveSettings } from './utils';
+import { getBacklinks, getMathCache, getMathCacheFromPos, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveSettings } from './utils';
 import { ActiveNoteIndexer, AutoNoteIndexer, NonActiveNoteIndexer } from './indexer';
 import { MathContextSettings } from "./settings/settings";
 import { ActiveNoteIO } from "./file_io";
-import { mathPreviewInfoField } from "math_live_preview_in_callouts";
+import { Backlink, BacklinkModal } from "backlinks";
 
 
 /** For reading view */
@@ -57,6 +57,25 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
             )
         );
         (new AutoNoteIndexer(this.app, this.plugin, this.file)).run();
+
+        this.plugin.registerDomEvent(
+            this.containerEl, "contextmenu", (event) => {
+                const menu = new Menu();
+
+                // Show backlinks
+                menu.addItem((item) => {
+                    item.setTitle("Show backlinks");
+                    item.onClick((clickEvent) => {
+                        if (clickEvent instanceof MouseEvent) {
+                            const backlinks = this.getBacklinks(event);
+                            new BacklinkModal(this.app, this.plugin, backlinks).open();
+                        }
+                    })
+                });
+
+                menu.showAtMouseEvent(event);
+            }
+        );
     }
 
     async impl(indexer: ActiveNoteIndexer | NonActiveNoteIndexer) {
@@ -71,6 +90,17 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
                 }
             }
         }
+    }
+
+    getBacklinks(event: MouseEvent): Backlink[] | null {
+        const cache = this.app.metadataCache.getFileCache(this.file);
+        if (!cache) return null;
+
+        const info = this.context.getSectionInfo(this.containerEl);
+        let lineNumber = info?.lineStart;
+        if (typeof lineNumber != "number") return null;
+
+        return getBacklinks(this.app, this.plugin, this.file, cache, (block) => block.position.start.line == lineNumber);
     }
 }
 
@@ -118,6 +148,25 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
                         } catch (err) {
                             // try it again later
                         }
+
+                        plugin.registerDomEvent(
+                            mjxContainerEl, "contextmenu", (event) => {
+                                const menu = new Menu();
+                
+                                // Show backlinks
+                                menu.addItem((item) => {
+                                    item.setTitle("Show backlinks");
+                                    item.onClick((clickEvent) => {
+                                        if (clickEvent instanceof MouseEvent) {
+                                            const backlinks = this.getBacklinks(mjxContainerEl, event, io.file, view);
+                                            new BacklinkModal(plugin.app, plugin, backlinks).open();
+                                        }
+                                    })
+                                });
+                
+                                menu.showAtMouseEvent(event);
+                            }
+                        );
                     }
                 }
             }
@@ -125,6 +174,18 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
         }
 
         destroy() { }
+
+        getBacklinks(mjxContainerEl: HTMLElement, event: MouseEvent, file: TFile, view: EditorView): Backlink[] | null {
+            const cache = plugin.app.metadataCache.getFileCache(file);
+            if (!cache) return null;
+
+            const sec = getSectionCacheOfDOM(mjxContainerEl, "math", view, cache) ?? getSectionCacheFromMouseEvent(event, "math", view, cache);
+            if (sec === undefined) return null;
+
+            return getBacklinks(plugin.app, plugin, file, cache, (block) =>
+                block.position.start.line == sec.position.start.line || block.position.end.line == sec.position.end.line || block.id == sec.id
+            );
+        }
     });
 }
 
