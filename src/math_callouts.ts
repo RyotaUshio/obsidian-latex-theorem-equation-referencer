@@ -28,7 +28,7 @@ export class MathCallout extends MarkdownRenderChild {
         if (this.resolvedSettings.title) {
             // ex) "(Cauchy-Schwarz)"
             const subtitle = await renderTextWithMath(`(${this.resolvedSettings.title})`);
-            const subtitleEl = createSpan({ cls: "math-callout-subtitle" });
+            const subtitleEl = createSpan({ cls: "theorem-callout-subtitle" });
             subtitleEl.replaceChildren(...subtitle)
             this.renderedTitleElements.push(" ", subtitleEl);
         }
@@ -43,14 +43,14 @@ export class MathCallout extends MarkdownRenderChild {
         titleInner?.replaceChildren(...this.renderedTitleElements);
 
         // add classes for CSS snippets
-        this.containerEl.classList.add("math-callout");
+        this.containerEl.classList.add("theorem-callout");
         const profile = this.plugin.extraSettings.profiles[this.resolvedSettings.profile];
         for (const tag of profile.meta.tags) {
-            this.containerEl.classList.add("math-callout-" + tag);
+            this.containerEl.classList.add("theorem-callout-" + tag);
         }
-        this.containerEl.classList.add("math-callout-" + this.resolvedSettings.type);
-        this.containerEl.toggleClass(`math-callout-${this.resolvedSettings.mathCalloutStyle}`, this.resolvedSettings.mathCalloutStyle != "custom");
-        this.containerEl.toggleClass("math-callout-font-family-inherit", this.resolvedSettings.mathCalloutStyle != "custom" && this.resolvedSettings.mathCalloutFontInherit);
+        this.containerEl.classList.add("theorem-callout-" + this.resolvedSettings.type);
+        this.containerEl.toggleClass(`theorem-callout-${this.resolvedSettings.mathCalloutStyle}`, this.resolvedSettings.mathCalloutStyle != "custom");
+        this.containerEl.toggleClass("theorem-callout-font-family-inherit", this.resolvedSettings.mathCalloutStyle != "custom" && this.resolvedSettings.mathCalloutFontInherit);
 
         // click the title block (div.callout-title) to edit settings
         const button = new ExtraButtonComponent(this.containerEl)
@@ -89,7 +89,7 @@ export class MathCallout extends MarkdownRenderChild {
                 ).open();
             }
         });
-        button.extraSettingsEl.classList.add("math-callout-setting-button");
+        button.extraSettingsEl.classList.add("theorem-callout-setting-button");
 
         this.plugin.registerDomEvent(
             this.containerEl, "contextmenu", (event) => {

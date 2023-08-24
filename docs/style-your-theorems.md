@@ -26,10 +26,10 @@ When **Don't override the app's font setting when using sample styles** is turne
 
 ### Math Booster's custom classes
 
-- `.math-callout`: Assigned to all theorem callouts. You can use it as an alternative to `.callout[data-callout="math"]`.
-- `.math-callout-{type}`: Indicates the environment type. For example, a theorem callout whose type is "theorem" will be given the `.math-callout-theorem` class.
-- `.math-callout-{tag}`: A [profile](context-settings#profile) has tags, each of which is converted to this `.math-callout-{tag}` class. As for the default profiles "English" and "Japanese", the tags are "en" and "ja", respectively. They are used to generate CSS classes `.math-callout-en` and `.math-callout-ja` indicating the language used for the theorem callout, making it possible to use different styles depending on it. I recommend defining language tags for your custom profiles.
-- `.math-callout-subtitle`: Corresponds to the **title** field in the theorem callout settings. Lives inside `.callout-title-inner`. Ex) Theorem 1.1 (here is `.math-callout-subtitle`)
+- `.theorem-callout`: Assigned to all theorem callouts. You can use it as an alternative to `.callout[data-callout="math"]`.
+- `.theorem-callout-{type}`: Indicates the environment type. For example, a theorem callout whose type is "theorem" will be given the `.theorem-callout-theorem` class.
+- `.theorem-callout-{tag}`: A [profile](context-settings#profile) has tags, each of which is converted to this `.theorem-callout-{tag}` class. As for the default profiles "English" and "Japanese", the tags are "en" and "ja", respectively. They are used to generate CSS classes `.theorem-callout-en` and `.theorem-callout-ja` indicating the language used for the theorem callout, making it possible to use different styles depending on it. I recommend defining language tags for your custom profiles.
+- `.theorem-callout-subtitle`: Corresponds to the **title** field in the theorem callout settings. Lives inside `.callout-title-inner`. Ex) Theorem 1.1 (here is `.theorem-callout-subtitle`)
 
 ## Styles gallery
 

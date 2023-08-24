@@ -1,4 +1,4 @@
-.math-callout {
+.theorem-callout {
     --callout-color: 238, 15, 149;
     border-top: none;
     border-bottom: none;
@@ -10,26 +10,26 @@
     font-family: CMU Serif;
 }
 
-.math-callout .callout-title {
+.theorem-callout .callout-title {
     padding: 6px;
     padding-left: 12px;
 }
 
-.math-callout .callout-icon {
+.theorem-callout .callout-icon {
     display: none;
 }
 
-.math-callout .callout-title-inner {
+.theorem-callout .callout-title-inner {
     font-family: Inter;
     font-weight: 400;
     color: rgb(var(--callout-color));
 }
 
-.math-callout-subtitle {
+.theorem-callout-subtitle {
     font-weight: 200;
 }
 
-.math-callout .callout-content {
+.theorem-callout .callout-content {
     background-color: var(--background-primary);
     padding: 1px 20px 2px 20px;
 }

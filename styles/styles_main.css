@@ -75,11 +75,11 @@ so we need to replace it with this plugin's editor extension. */
     display: none;
 }
 
-.math-callout {
+.theorem-callout {
     position: relative;
 }
                 
-.math-callout-setting-button {
+.theorem-callout-setting-button {
     padding-bottom: var(--size-2-2);
     padding-right: var(--size-2-3);
     position: absolute;
@@ -88,12 +88,12 @@ so we need to replace it with this plugin's editor extension. */
     opacity: 0;
 }
 
-.math-callout:hover .math-callout-setting-button {
+.theorem-callout:hover .theorem-callout-setting-button {
     transition: 0s;
     opacity: 1
 }
 
-.math-callout-font-family-inherit {
+.theorem-callout-font-family-inherit {
     font-family: inherit !important;
 }
 

@@ -21,11 +21,11 @@ if __name__ == "__main__":
         # preset styles
         with open(source_style) as f:
             for line in f:
-                if line.lstrip().startswith('.math-callout'):
-                    if line.lstrip().startswith('.math-callout-subtitle'):
-                        line = f'.math-callout-{source_style.stem}' + ' ' + line    
+                if line.lstrip().startswith('.theorem-callout'):
+                    if line.lstrip().startswith('.theorem-callout-subtitle'):
+                        line = f'.theorem-callout-{source_style.stem}' + ' ' + line    
                     else:
-                        line = f'.math-callout-{source_style.stem}' + line
+                        line = f'.theorem-callout-{source_style.stem}' + line
                 lines.append(line)
         lines.append("\n")
 

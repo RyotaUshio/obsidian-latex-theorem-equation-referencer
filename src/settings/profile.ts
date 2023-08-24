@@ -178,7 +178,7 @@ class EditProfileModal extends Modal {
 
         const tagSetting = new Setting(contentEl)
             .setName("Tags")
-            .setDesc("Comma-separated list of tags. Only lower-case alphabets or hyphens are allowed. Each tag is converted into a CSS class \".math-callout-<tag>\".")
+            .setDesc("Comma-separated list of tags. Only lower-case alphabets or hyphens are allowed. Each tag is converted into a CSS class \".theorem-callout-<tag>\".")
             .addText((text) => {
                 text.setValue(this.profile.meta.tags.join(", "))
                     .onChange((value) => {

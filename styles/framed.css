@@ -1,4 +1,4 @@
-.math-callout {
+.theorem-callout {
     --callout-color: var(--text-normal);
     font-family: Times;
     background-color: rgb(0, 0, 0, 0);
@@ -6,18 +6,18 @@
     border-radius: 6px;
 }
 
-.math-callout .callout-icon {
+.theorem-callout .callout-icon {
     display: none;
 }
 
-.math-callout .callout-title-inner {
+.theorem-callout .callout-title-inner {
     font-style: bold;
 }
 
-.math-callout-subtitle {
+.theorem-callout-subtitle {
     font-weight: 400;
 }
 
-.math-callout-en .callout-content {
+.theorem-callout-en .callout-content {
     font-style: italic;
 }
