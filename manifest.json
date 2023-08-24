@@ -1,9 +1,9 @@
 {
 	"id": "math-booster",
 	"name": "Math Booster",
-	"version": "0.5.10",
+	"version": "0.6.0",
 	"minAppVersion": "1.3.5",
-	"description": "Introduce LaTeX-like mathematic note-taking features into Obsidian",
+	"description": "Turn your Obsidian into LaTeX on steroids.",
 	"author": "Ryota Ushio",
 	"authorUrl": "https://github.com/RyotaUshio",
 	"fundingUrl": "https://www.buymeacoffee.com/ryotaushio",
