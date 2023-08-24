@@ -473,6 +473,14 @@ export async function openFileAndSelectPosition(file: TFile, position: Pos, ...l
             locToEditorPosition(position.start),
             locToEditorPosition(position.end)
         );
+        const cm = leaf.view.editor.cm;
+        if (cm) {
+            const lineCenter = Math.floor((position.start.line + position.end.line) / 2);
+            const posCenter = cm.state.doc.line(lineCenter).from
+            cm.dispatch({
+                effects: EditorView.scrollIntoView(posCenter, {y: "center"}),
+            });
+        }
     }
 }
 
