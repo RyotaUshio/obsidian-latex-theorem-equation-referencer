@@ -224,8 +224,10 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
                 this.mathLinkBlocks[id] = refName;
             }
 
+            const mathText = (await this.noteIndexer.io.getRange(equation.cache.position)).match(/\$\$([\s\S]*)\$\$/)?.[1].trim();
+
             if (note.size("equation") == i) {
-                note.add({ type: "equation", printName, refName, cache: equation.cache, file: this.noteIndexer.file });
+                note.add({ type: "equation", printName, refName, cache: equation.cache, file: this.noteIndexer.file, mathText });
             }
         }
     }
@@ -405,7 +407,7 @@ export class VaultIndexer {
 
 
 export type IndexItemType = "theorem" | "equation";
-export type IndexItem = { type: IndexItemType, printName: string, refName: string, cache: SectionCache, file: TFile, settings?: MathCalloutSettings };
+export type IndexItem = { type: IndexItemType, printName: string, refName: string, cache: SectionCache, file: TFile, settings?: MathCalloutSettings, mathText?: string };
 
 export class NoteIndex {
     theorem: Set<IndexItem>;

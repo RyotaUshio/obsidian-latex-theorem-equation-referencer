@@ -1,3 +1,7 @@
+.math-booster-setting-item-description {
+    padding-bottom: 0.75em;
+}
+
 .math-booster-search-item-description {
     color: var(--text-faint);
 }

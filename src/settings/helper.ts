@@ -2,7 +2,7 @@ import { ButtonComponent, Setting, TAbstractFile, TFile, TFolder, TextComponent,
 
 import MathBooster from '../main';
 import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from '../env';
-import { DEFAULT_SETTINGS, ExtraSettings, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, NUMBER_STYLES } from './settings';
+import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, NUMBER_STYLES } from './settings';
 import { BooleanKeys, formatMathCalloutType, formatTitle } from '../utils';
 import { AutoNoteIndexer } from '../indexer';
 import { DEFAULT_PROFILES, ManageProfileModal } from './profile';
@@ -60,7 +60,7 @@ export class MathCalloutSettingsHelper {
 
                 const titlePane = new Setting(contentEl)
                     .setName("Title")
-                    .setDesc("You may use inline math");
+                    .setDesc("You can use inline math.");
 
                 const labelPane = new Setting(contentEl).setName("Pandoc label");
                 const labelPrefixEl = labelPane.controlEl.createDiv({
@@ -290,12 +290,12 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         contentEl.createEl("h4", { text: "Proofs" });
         contentEl.createDiv({
             text: `For example, you can replace a pair of inline codes \`${DEFAULT_SETTINGS.beginProof}\` & \`${DEFAULT_SETTINGS.endProof}\` with \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.begin}\" & \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.end}\". You can style it with CSS snippets. See the documentation for the details.`,
-            cls: "setting-item-description"
+            cls: ["setting-item-description", "math-booster-setting-item-description"]
         });
         this.addTextSetting("beginProof", "Beginning of a proof");
         this.addTextSetting("endProof", "End of a proof");
 
-        this.contentEl.createEl("h3", {text: "Search"});
+        this.contentEl.createEl("h3", {text: "Suggestions"});
         this.addToggleSetting("insertSpace", "Insert a space after the link");
     }
 
@@ -315,7 +315,23 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
 export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
     makeSettingPane(): void {
         this.addToggleSetting("noteTitleInLink", "Show note title at link's head", "If turned on, a link to \"Theorem 1\" will look like \"Note title > Theorem 1.\" The same applies to equations.")
-        this.addTextSetting("searchTrigger", "Trigger theorem search with", "Type this string to trigger search for theorem callouts.")
-        // this.addTextSetting("searchLimit", "Number of displayed results");
+        // Suggest
+        this.addTextSetting("triggerSuggest", "Trigger suggestion with", "Type this string to trigger suggestion for theorem callouts & equation blocks.");
+        this.addTextSetting("triggerTheoremSuggest", "Trigger theorem suggestion with", "Type this string to trigger suggestion for theorem callouts.");
+        this.addTextSetting("triggerEquationSuggest", "Trigger equation suggestion with", "Type this string to trigger suggestion for equation blocks.");
+        this.addDropdownSetting("searchMethod", ["Fuzzy", "Simple"], "Search method", "Fuzzy search is more flexible, but simple search is more light-weight.");
+        this.addToggleSetting("searchOnlyRecent", "Search only recently opened notes", "Turning this on might speed up suggestions.");
+        this.addDropdownSetting("modifierToJump", ['Mod', 'Ctrl', 'Meta', 'Shift', 'Alt'], "Modifier key for jumping to suggestion", "Press Enter and this modifier key to jump to the currently selected suggestion. Changing this option requires to reloading " + this.plugin.manifest.name + " to take effect.");
+        const list = this.settingRefs.modifierToJump.descEl.createEl("ul");
+        list.createEl("li", {text: "Mod is Cmd on MacOS and Ctrl on other OS."});
+        list.createEl("li", {text: "Meta is Cmd on MacOS and Win key on Windows."});
+        this.addDropdownSetting("suggestLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected suggestion.")
+        // backlinks
+        this.contentEl.createEl("h3", {text: "Backlinks"});
+        this.contentEl.createDiv({
+            text: `Right-click a theorem callout or an equation and select \"Show backlinks\" to see its backlinks.`,
+            cls: ["setting-item-description", "math-booster-setting-item-description"],
+        });
+        this.addDropdownSetting("backlinkLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected backlink.")
     }
 }

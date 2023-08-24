@@ -55,9 +55,9 @@ export class MathSettingTab extends PluginSettingTab {
         );
 
         this.containerEl.insertBefore(
-            extraHelper.settingRefs.searchTrigger.settingEl, 
             globalHelper.settingRefs.insertSpace.settingEl,
-        )
+            extraHelper.settingRefs.searchMethod.settingEl,
+        );
 
         this.addRestoreDefaultsButton();
 

@@ -1,4 +1,4 @@
-import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView, Component, MarkdownRenderer, LinkCache, BlockCache, App } from 'obsidian';
+import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView, Component, MarkdownRenderer, LinkCache, BlockCache, App, Pos } from 'obsidian';
 import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState, ChangeSet, RangeValue, RangeSet } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
@@ -7,9 +7,10 @@ import { SyntaxNodeRef } from '@lezer/common';
 import MathBooster from './main';
 import { DEFAULT_SETTINGS, MathCalloutPrivateFields, MathCalloutSettings, MathContextSettings, NumberStyle, ResolvedMathSettings } from './settings/settings';
 import { MathInfoSet } from './math_live_preview_in_callouts';
-import { TheoremLikeEnvID } from './env';
+import { THEOREM_LIKE_ENVs, TheoremLikeEnvID } from './env';
 import { Backlink } from './backlinks';
 import { getIO } from 'file_io';
+import { LeafArgs } from 'type';
 
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
@@ -207,11 +208,11 @@ export function generateBlockID(cache: CachedMetadata, length: number = 6): stri
     return id;
 }
 
-export async function insertBlockIdIfNotExist(plugin: MathBooster, targetFile: TFile, cache: CachedMetadata, sec: SectionCache, length: number = 6): Promise<{id: string, lineAdded: number} | undefined> {
+export async function insertBlockIdIfNotExist(plugin: MathBooster, targetFile: TFile, cache: CachedMetadata, sec: SectionCache, length: number = 6): Promise<{ id: string, lineAdded: number } | undefined> {
     // Make sure the section cache is fresh enough!
     if (!(cache?.sections)) return;
 
-    if (sec.id) return {id: sec.id, lineAdded: 0};
+    if (sec.id) return { id: sec.id, lineAdded: 0 };
 
     // The section has no block ID, so let's create a new one
     const id = generateBlockID(cache, length);
@@ -219,7 +220,7 @@ export async function insertBlockIdIfNotExist(plugin: MathBooster, targetFile: T
     const io = getIO(plugin, targetFile);
     await io.insertLine(sec.position.end.line + 1, "^" + id);
     await io.insertLine(sec.position.end.line + 1, "")
-    return {id, lineAdded: 2};
+    return { id, lineAdded: 2 };
 }
 
 export function isLivePreview(state: EditorState) {
@@ -456,6 +457,23 @@ export function formatTitle(plugin: MathBooster, settings: ResolvedMathSettings,
         title += settings.titleSuffix;
     }
     return title;
+}
+
+export function formatLabel(settings: ResolvedMathSettings): string | undefined {
+    if (settings.label) {
+        return settings.labelPrefix + THEOREM_LIKE_ENVs[settings.type as TheoremLikeEnvID].prefix + ":" + settings.label;
+    }
+}
+
+export async function openFileAndSelectPosition(file: TFile, position: Pos, ...leafArgs: LeafArgs) {
+    const leaf = this.app.workspace.getLeaf(...leafArgs);
+    await leaf.openFile(file);
+    if (leaf.view instanceof MarkdownView) {
+        leaf.view.editor.setSelection(
+            locToEditorPosition(position.start),
+            locToEditorPosition(position.end)
+        );
+    }
 }
 
 export function hasOverlap(range1: { from: number, to: number }, range2: { from: number, to: number }): boolean {

@@ -1,7 +1,8 @@
+import { LEAF_OPTION_TO_ARGS } from './settings/settings';
 import { getIO } from 'file_io';
 import MathBooster from 'main';
-import { App, MarkdownRenderer, MarkdownView, Modal, Pos, TFile } from 'obsidian';
-import { locToEditorPosition } from 'utils';
+import { App, MarkdownRenderer, Modal, Pos, TFile } from 'obsidian';
+import { openFileAndSelectPosition } from 'utils';
 
 
 export type Backlink = { sourcePath: string, position: Pos };
@@ -72,15 +73,7 @@ export class BacklinkModal extends Modal {
             this.plugin.registerDomEvent(
                 el, "click", async () => {
                     this.close();
-                    const newLeaf = !(file == this.app.workspace.activeEditor?.file);
-                    const leaf = this.app.workspace.getLeaf(newLeaf);
-                    await leaf.openFile(file);
-                    if (leaf.view instanceof MarkdownView) {
-                        leaf.view.editor.setSelection(
-                            locToEditorPosition(backlink.position.start),
-                            locToEditorPosition(backlink.position.end)
-                        );
-                    }
+                    await openFileAndSelectPosition(file, backlink.position, ...LEAF_OPTION_TO_ARGS[this.plugin.extraSettings.backlinkLeafOption]); // file == this.app.workspace.activeEditor?.file);
                 }
             );
         }

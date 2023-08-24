@@ -223,7 +223,7 @@ class EditProfileModal extends Modal {
         const linkedProofHeading = contentEl.createEl("h6", {text: "Linked proofs"});
         const linkedProofDesc = contentEl.createDiv({ 
             text: `For example, you can render \`${DEFAULT_SETTINGS.beginProof}\`@[[link to Theorem 1]] as "${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.linkedBeginPrefix}Theorem 1${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.linkedBeginSuffix}".`,
-            cls: "setting-item-description"
+            cls: ["setting-item-description", "math-booster-setting-item-description"],
         });
         contentEl.insertBefore(linkedProofHeading, this.settingRefs.linkedBeginPrefix.settingEl);
         contentEl.insertBefore(linkedProofDesc, this.settingRefs.linkedBeginPrefix.settingEl);

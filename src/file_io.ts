@@ -19,7 +19,7 @@ export abstract class FileIO {
      */
     abstract isSafe(lineNumber: number): boolean;
 
-    async getBlockText(blockID: string, cache?: CachedMetadata): Promise<string | undefined> {
+    async getBlockTextFromID(blockID: string, cache?: CachedMetadata): Promise<string | undefined> {
         cache = cache ?? this.plugin.app.metadataCache.getFileCache(this.file) ?? undefined;
         if (cache) {
             const sectionCache = cache.sections?.find(
@@ -50,7 +50,7 @@ export class ActiveNoteIO extends FileIO {
     }
 
     async insertLine(lineNumber: number, text: string): Promise<void> {
-        this.editor.replaceRange(text + "\n", {line: lineNumber, ch: 0});
+        this.editor.replaceRange(text + "\n", { line: lineNumber, ch: 0 });
     }
 
     async getLine(lineNumber: number): Promise<string> {

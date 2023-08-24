@@ -1,4 +1,6 @@
+import { Modifier } from "obsidian";
 import { DEFAULT_PROFILES, Profile } from "./profile";
+import { LeafArgs } from "type";
 
 
 export const NUMBER_STYLES = [
@@ -25,6 +27,20 @@ export const MATH_CALLOUT_REF_FORMATS = [
     "Only title if exists, type + number otherwise"
 ] as const;
 export type MathCalloutRefFormat = typeof MATH_CALLOUT_REF_FORMATS[number];
+
+export const LEAF_OPTIONS = [
+    "Split right",
+    "Split down", 
+    "New tab", 
+    "New window",
+] as const;
+export type LeafOption = typeof LEAF_OPTIONS[number];
+export const LEAF_OPTION_TO_ARGS: Record<LeafOption, LeafArgs> = {
+    "Split right": ["split", "vertical"],
+    "Split down": ["split", "horizontal"],
+    "New tab": ["tab"], 
+    "New window": ["window"], 
+}
 
 // Context settings are called "local settings" in the documentation and UI.
 // Sorry for confusion, this is due to a historical reason. I'll fix it later.
@@ -68,8 +84,14 @@ export interface MathCalloutPrivateFields {
 export interface ExtraSettings {
     noteTitleInLink: boolean;
     profiles: Record<string, Profile>;
-    searchTrigger: string;
-    // searchLimit: number;
+    triggerSuggest: string;
+    triggerTheoremSuggest: string;
+    triggerEquationSuggest: string;
+    searchMethod: "Fuzzy" | "Simple";
+    searchOnlyRecent: boolean;
+    modifierToJump: Modifier;
+    suggestLeafOption: LeafOption;
+    backlinkLeafOption: LeafOption;
 }
 
 export type MathSettings = Partial<MathContextSettings> & MathCalloutSettings & MathCalloutPrivateFields;
@@ -103,6 +125,12 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
 export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     noteTitleInLink: true,
     profiles: DEFAULT_PROFILES,
-    searchTrigger: "@",
-    // searchLimit: 10,
+    triggerSuggest: "@",
+    triggerTheoremSuggest: "^",
+    triggerEquationSuggest: "~",
+    searchMethod: "Fuzzy",
+    searchOnlyRecent: false,
+    modifierToJump: "Mod",
+    suggestLeafOption: "Split right", 
+    backlinkLeafOption: "Split right", 
 };

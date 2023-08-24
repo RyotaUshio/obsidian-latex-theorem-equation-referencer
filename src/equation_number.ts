@@ -63,7 +63,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         this.setId();
         if (this.id) {
             const mathLink = indexer.mathLinkBlocks[this.id];
-            const text = await indexer.io.getBlockText(this.id);
+            const text = await indexer.io.getBlockTextFromID(this.id);
             if (text) {
                 const settings = resolveSettings(undefined, this.plugin, this.file);
                 if (this.containerEl) {
@@ -139,7 +139,7 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
 
                             if (id) {
                                 const mathLink = plugin.getMathLinksAPI()?.get(io.file.path, id);
-                                const text = await io.getBlockText(id);
+                                const text = await io.getBlockTextFromID(id);
                                 if (text) {
                                     const settings = resolveSettings(undefined, plugin, io.file);
                                     replaceMathTag(mjxContainerEl, text, mathLink, settings);
