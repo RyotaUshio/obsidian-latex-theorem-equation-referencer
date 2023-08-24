@@ -260,7 +260,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         );
         this.addToggleSetting("mathCalloutFontInherit", "Don't override the app's font setting when using preset styles", "You will need to reload the note to see the changes.");
         this.addTextSetting("titleSuffix", "Title suffix", "ex) \"\" > Definition 2 (Group) / \".\" > Definition 2 (Group).");
-        this.addTextSetting("labelPrefix", "Pandoc label prefix", 'Useful for ensuring there is not label collision. Ex) When "Pandoc label prefix" = "foo:", A theorem with "Pandoc label" = "bar" is assigned "thm:foo:bar."');
+        this.addTextSetting("labelPrefix", "Pandoc label prefix", 'Useful for ensuring no label collision. Ex) When "Pandoc label prefix" = "foo:", A theorem with "Pandoc label" = "bar" is assigned "thm:foo:bar."');
         contentEl.createEl("h6", { text: "Numbering" });
         this.addTextSetting("numberPrefix", "Prefix");
         this.addTextSetting("numberSuffix", "Suffix");

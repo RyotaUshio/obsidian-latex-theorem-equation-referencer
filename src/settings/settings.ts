@@ -13,11 +13,11 @@ export const NUMBER_STYLES = [
 export type NumberStyle = typeof NUMBER_STYLES[number];
 
 export const MATH_CALLOUT_STYLES = [
-    "custom", 
-    "plain",
-    "framed",
-    "mathwiki",
-    "vivid",
+    "Custom", 
+    "Plain",
+    "Framed",
+    "MathWiki",
+    "Vivid",
 ] as const;
 export type MathCalloutStyle = typeof MATH_CALLOUT_STYLES[number];
 
@@ -115,7 +115,7 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     eqRefSuffix: "",
     labelPrefix: "",
     lineByLine: true,
-    mathCalloutStyle: "framed",
+    mathCalloutStyle: "Framed",
     mathCalloutFontInherit: false,
     beginProof: "\\begin{proof}",
     endProof: "\\end{proof}",
