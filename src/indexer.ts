@@ -183,14 +183,12 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
     blockType = "math" as BlockType;
 
     async addSection(sections: Readonly<EquationInfo>[], sectionCache: Readonly<SectionCache>): Promise<void> {
-        if (sectionCache.id && this.noteIndexer.linkedBlockIds.contains(sectionCache.id)) {
-            const text = await this.noteIndexer.io.getRange(sectionCache.position);
-            const tagMatch = text.match(/\\tag\{(.*)\}/);
-            if (tagMatch) {
-                sections.push({ cache: sectionCache, manualTag: tagMatch[1] });
-            } else {
-                sections.push({ cache: sectionCache });
-            }
+        const text = await this.noteIndexer.io.getRange(sectionCache.position);
+        const tagMatch = text.match(/\\tag\{(.*)\}/);
+        if (tagMatch) {
+            sections.push({ cache: sectionCache, manualTag: tagMatch[1] });
+        } else {
+            sections.push({ cache: sectionCache });
         }
     }
 
@@ -210,13 +208,11 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
             const id = equation.cache.id;
             let printName = "";
             let refName = "";
-            if (id) {
+            if (id && this.noteIndexer.linkedBlockIds.contains(id)) { // number only referenced equations
                 const { eqRefPrefix, eqRefSuffix } = contextSettings;
                 if (equation.manualTag) {
-                    // this.mathLinkBlocks[id] = eqRefPrefix + `(${equation.manualTag})` + eqRefSuffix;
                     printName = `(${equation.manualTag})`;
                 } else {
-                    // this.mathLinkBlocks[id] = eqRefPrefix + "(" + prefix + CONVERTER[style](equationNumber) + suffix + ")" + eqRefSuffix;
                     printName = "(" + prefix + CONVERTER[style](equationNumber) + suffix + ")";
                     equationNumber++;
                 }
