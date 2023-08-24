@@ -1,14 +1,12 @@
-import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile, prepareFuzzySearch, sortSearchResults, SearchResult, Scope, MarkdownRenderer, Modal, SectionCache } from "obsidian";
+import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile, prepareFuzzySearch, sortSearchResults, SearchResult, Scope, MarkdownRenderer, Modal, SectionCache, Notice } from "obsidian";
 
 import MathBooster from "./main";
 import { ActiveNoteIO, NonActiveNoteIO, getIO } from './file_io';
-import { resolveSettings } from './utils';
+import { findSectionCache, insertBlockIdIfNotExist, resolveSettings } from './utils';
+import { IndexItem, IndexItemType } from "indexer";
 
 
-export type MathItem = { path: string, id?: string, name: string };
-
-
-export class TheoremSuggest extends EditorSuggest<MathItem> {
+export class TheoremSuggest extends EditorSuggest<IndexItem> {
     scope: Scope;
 
     constructor(public app: App, public plugin: MathBooster) {
@@ -23,46 +21,71 @@ export class TheoremSuggest extends EditorSuggest<MathItem> {
         })
     }
 
-    renderSuggestion(value: MathItem, el: HTMLElement): void {
+    renderSuggestion(item: IndexItem, el: HTMLElement): void {
         // el.setAttribute("style", "display: inline-block;");
-        const base = el.createDiv({cls: "math-booster-search-item"});
-        base.createDiv({text: value.name});
-        base.createEl("small", {text: `${value.path}`, cls: "math-booster-search-item-description"});
+        const base = el.createDiv({ cls: "math-booster-search-item" });
+        base.createDiv({ text: item.printName });
+        base.createEl("small", { text: `${item.file.path}`, cls: "math-booster-search-item-description" });
     }
 
-    selectSuggestion(value: MathItem, evt: MouseEvent | KeyboardEvent): void {
-        if (this.context) {
+    selectSuggestion(item: IndexItem, evt: MouseEvent | KeyboardEvent): void {
+        this.selectSuggestionImpl(item);
+    }
+
+    async selectSuggestionImpl(item: IndexItem): Promise<void> {
+        const cache = this.app.metadataCache.getFileCache(item.file);
+        if (this.context && cache) {
             const { editor, start, end, file } = this.context;
             const settings = resolveSettings(undefined, this.plugin, file);
-            editor.replaceRange(
-                `[[${value.path == file.path ? "" : value.path}#^${value.id}]]${settings.insertSpace ? " " : ""}`, 
-                start, 
-                end
+            const secType = item.type == "theorem" ? "callout" : "math";
+
+            const sec = findSectionCache(
+                cache,
+                (sec) => sec.type == secType && sec.position.start.line == item.cache.position.start.line
             );
+
+            let success = false;
+
+            if (sec) {
+                const result = await insertBlockIdIfNotExist(this.plugin, item.file, cache, sec);
+                if (result) {
+                    const { id, lineAdded } = result;
+                    if (item.file == file) {
+                        editor.replaceRange(
+                            `[[#^${id}]]${settings.insertSpace ? " " : ""}`,
+                            { line: start.line + lineAdded, ch: start.ch },
+                            { line: end.line + lineAdded, ch: end.ch }
+                        );
+                    } else {
+                        editor.replaceRange(
+                            `[[${item.file.path}#^${id}]]${settings.insertSpace ? " " : ""}`,
+                            start,
+                            end
+                        );
+                    }
+                    success = true;
+                }
+            }
+            if (!success) {
+                new Notice(`${this.plugin.manifest.name}: Failed to read cache. Retry again later.`, 5000);
+            }
         }
     }
 
-    getSuggestions(context: EditorSuggestContext): MathItem[] {
-        const data = this.plugin.getMathLinksAPI()?.metadataSet;
-        if (!data) return [];
-
+    getSuggestions(context: EditorSuggestContext): IndexItem[] {
         const callback = prepareFuzzySearch(context.query);
-        const results: { match: SearchResult, item: MathItem }[] = [];
+        const results: { match: SearchResult, item: IndexItem }[] = [];
 
-        for (const path in data) {
-            if (data[path]["mathLink-blocks"]) {
-                for (const id in data[path]["mathLink-blocks"]) {
-                    const name = data[path]["mathLink-blocks"]?.[id];
-                    if (name) {
-                        const result = callback(name);
-                        if (result) {
-                            results.push({ match: result, item: { path, id, name } });
-                        }
+        for (const noteIndex of this.plugin.index.data.values()) {
+            for (const which of ["theorem", "equation"]) {
+                for (const item of noteIndex[which as IndexItemType]) {
+                    const result = callback(item.printName);
+                    if (result) {
+                        results.push({ match: result, item });
                     }
                 }
             }
         }
-
         sortSearchResults(results);
         return results.map((result) => result.item);
     }
@@ -77,26 +100,25 @@ export class TheoremSuggest extends EditorSuggest<MathItem> {
             start: { line: cursor.line, ch: index },
             end: cursor,
             query
-        } 
-        : null;
+        }
+            : null;
     }
 }
 
 
 export class SearchPreviewModal extends Modal {
-    constructor(public app: App, public plugin: MathBooster, public item: MathItem) {
+    constructor(public app: App, public plugin: MathBooster, public item: IndexItem) {
         super(app);
     }
 
     onOpen(): void {
-        const {contentEl, item} = this;
+        const { contentEl, item } = this;
         contentEl.empty();
 
-        const file = this.app.vault.getAbstractFileByPath(item.path);
-        if (! (file instanceof TFile)) return;
-
-        const io = getIO(this.plugin, file);
-        const sec = this.app.metadataCache.getFileCache(file)?.sections?.find((sec) => sec.id == item.id);
+        const io = getIO(this.plugin, this.item.file);
+        const sec = this.app.metadataCache.getFileCache(this.item.file)
+            ?.sections
+            ?.find((sec) => sec.position.start.line == item.cache.position.start.line);
 
         if (sec) {
             this.renderPreview(io, sec);
@@ -105,11 +127,11 @@ export class SearchPreviewModal extends Modal {
 
     async renderPreview(io: ActiveNoteIO | NonActiveNoteIO, sec: SectionCache) {
         const markdown = await io.getRange(sec.position)
-        await MarkdownRenderer.renderMarkdown(markdown, this.contentEl, this.item.path, this.plugin);
+        await MarkdownRenderer.renderMarkdown(markdown, this.contentEl, this.item.file.path, this.plugin);
     }
 
     onClose(): void {
-        const {contentEl} = this;
-        contentEl.empty();       
+        const { contentEl } = this;
+        contentEl.empty();
     }
 }

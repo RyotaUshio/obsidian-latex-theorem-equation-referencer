@@ -1,12 +1,13 @@
 import { App, CachedMetadata, Editor, MarkdownView, Pos, TFile } from "obsidian";
 
 import MathBooster from "./main";
-import { isEditingView, locToEditorPosition, splitIntoLines } from "./utils";
+import { insertAt, isEditingView, locToEditorPosition, splitIntoLines } from "./utils";
 
 
 export abstract class FileIO {
     constructor(public plugin: MathBooster, public file: TFile) { }
     abstract setLine(lineNumber: number, text: string): Promise<void>;
+    abstract insertLine(lineNumber: number, text: string): Promise<void>;
     abstract getLine(lineNumber: number): Promise<string>;
     abstract getRange(position: Pos): Promise<string>;
     /**
@@ -48,6 +49,10 @@ export class ActiveNoteIO extends FileIO {
         this.editor.setLine(lineNumber, text);
     }
 
+    async insertLine(lineNumber: number, text: string): Promise<void> {
+        this.editor.replaceRange(text + "\n", {line: lineNumber, ch: 0});
+    }
+
     async getLine(lineNumber: number): Promise<string> {
         return this.editor.getLine(lineNumber);
     }
@@ -76,6 +81,14 @@ export class NonActiveNoteIO extends FileIO {
         this.plugin.app.vault.process(this.file, (data: string): string => {
             const lines = splitIntoLines(data);
             lines[lineNumber] = text;
+            return lines.join('\n');
+        })
+    }
+
+    async insertLine(lineNumber: number, text: string): Promise<void> {
+        this.plugin.app.vault.process(this.file, (data: string): string => {
+            const lines = splitIntoLines(data);
+            insertAt(lines, text, lineNumber);
             return lines.join('\n');
         })
     }

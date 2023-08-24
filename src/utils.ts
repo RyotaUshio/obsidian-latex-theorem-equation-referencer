@@ -9,6 +9,7 @@ import { DEFAULT_SETTINGS, MathCalloutPrivateFields, MathCalloutSettings, MathCo
 import { MathInfoSet } from './math_live_preview_in_callouts';
 import { TheoremLikeEnvID } from './env';
 import { Backlink } from './backlinks';
+import { getIO } from 'file_io';
 
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
@@ -155,6 +156,13 @@ export function getMathCacheFromPos(cache: CachedMetadata, pos: number): Section
     return getSectionCacheFromPos(cache, pos, "math");
 }
 
+export function findSectionCache(cache: CachedMetadata, callback: (sectionCache: SectionCache, index: number, sections: SectionCache[]) => boolean): SectionCache | undefined {
+    // pos: CodeMirror offset units
+    if (cache.sections) {
+        return Object.values(cache.sections).find(callback);
+    }
+}
+
 export function getSectionCacheOfDOM(el: HTMLElement, type: string, view: EditorView, cache: CachedMetadata) {
     const pos = view.posAtDOM(el);
     return getSectionCacheFromPos(cache, pos, type);
@@ -182,6 +190,36 @@ export function getBacklinks(app: App, plugin: MathBooster, file: TFile, cache: 
         }
     }
     return backlinks;
+}
+
+export function generateBlockID(cache: CachedMetadata, length: number = 6): string {
+    let id = '';
+
+    while (true) {
+        // Reference: https://stackoverflow.com/a/58326357/13613783
+        id = [...Array(length)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+        if (cache?.blocks && id in cache.blocks) {
+            continue;
+        } else {
+            break;
+        }
+    }
+    return id;
+}
+
+export async function insertBlockIdIfNotExist(plugin: MathBooster, targetFile: TFile, cache: CachedMetadata, sec: SectionCache, length: number = 6): Promise<{id: string, lineAdded: number} | undefined> {
+    // Make sure the section cache is fresh enough!
+    if (!(cache?.sections)) return;
+
+    if (sec.id) return {id: sec.id, lineAdded: 0};
+
+    // The section has no block ID, so let's create a new one
+    const id = generateBlockID(cache, length);
+    // and insert it
+    const io = getIO(plugin, targetFile);
+    await io.insertLine(sec.position.end.line + 1, "^" + id);
+    await io.insertLine(sec.position.end.line + 1, "")
+    return {id, lineAdded: 2};
 }
 
 export function isLivePreview(state: EditorState) {
@@ -302,6 +340,10 @@ export function splitIntoLines(text: string): string[] {
 
 export function removeFrom<Type>(item: Type, array: Array<Type>) {
     return array.splice(array.indexOf(item), 1);
+}
+
+export function insertAt<Type>(array: Array<Type>, item: Type, index: number) {
+    array.splice(index, 0, item);
 }
 
 export const MATH_CALLOUT_PATTERN = /\> *\[\! *math *\|(.*)\](.*)/;
@@ -477,52 +519,3 @@ export type BooleanKeys<T> = { [k in keyof T]: T[k] extends boolean ? k : never 
 //     throw Error(`Could not get cached links in ${file.path}`);
 // }
 
-
-// export function getCurrentMarkdown(app: App): TFile {
-//     const activeView = app.workspace.getActiveViewOfType(MarkdownView);
-//     if (activeView) {
-//         return activeView.file;
-//     }
-//     throw Error(`file is not passed, and markdown view is not active`);
-// }
-
-
-
-// export function getActiveTextView(app: App): TextFileView | null {
-//     const view = app.workspace.getActiveViewOfType(TextFileView);
-//     if (!view) {
-//         return null;
-//     }
-
-//     return view;
-// }
-
-// export function generateBlockID(app: App, length: number = 6): string {
-//     // https://stackoverflow.com/a/58326357/13613783
-//     let id = '';
-//     const file = getCurrentMarkdown(app);
-//     const cache = app.metadataCache.getFileCache(file);
-
-//     while (true) {
-//         id = [...Array(length)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
-//         if (cache && cache.blocks && id in cache.blocks) {
-//             continue;
-//         } else {
-//             break;
-//         }
-//     }
-//     return id;
-// }
-
-// export function getMathTag(plugin: MathBooster, path: string, mathCache: SectionCache): string {
-//     let tag = '';
-//     if (mathCache?.id) {
-//         tag = plugin.getMathLinksAPI()?.get(path, mathCache.id) ?? '';
-//     }
-//     return tag;
-// }
-
-// export function insertAfter(referenceNode: HTMLElement, newNode: HTMLElement) {
-//     // https://stackoverflow.com/a/4793630/13613783
-//     referenceNode.parentNode?.insertBefore(newNode, referenceNode.nextSibling);
-// }
