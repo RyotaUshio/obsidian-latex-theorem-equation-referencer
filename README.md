@@ -10,13 +10,14 @@ And this is where **Math Booster** comes in!
 
 The core features of this plugin include:
 
-- [Special “math callouts” for theorems/definitions/exercises/…](https://ryotaushio.github.io/obsidian-math-booster//math-callouts)
+- [Theorem environments](https://ryotaushio.github.io/obsidian-math-booster//math-callouts)
 - [Automatic equation numbering](https://ryotaushio.github.io/obsidian-math-booster//equation-number)
+- [Proof environments](https://ryotaushio.github.io/obsidian-math-booster//proofs)
 - [Math live preview in callouts & blockquotes](https://ryotaushio.github.io/obsidian-math-booster//math-preview)
 
-Math callouts & equations can be [referenced with their title or number](https://ryotaushio.github.io/obsidian-math-booster//cleveref) similarly to the `cleveref` package in LaTeX.
+Theorem callouts & equations can be [referenced with their title or number](https://ryotaushio.github.io/obsidian-math-booster//cleveref) similarly to the `cleveref` package in LaTeX.
 
-You can also customize the appearance of math callous using CSS snippets. See the [styles gallery](#styles-gallery) for examples.
+You can also customize the appearance of theorem callous using CSS snippets. See the [styles gallery](#styles-gallery) for examples.
 
 See the [documentation](https://ryotaushio.github.io/obsidian-math-booster/) for the details and installation instructions.
 

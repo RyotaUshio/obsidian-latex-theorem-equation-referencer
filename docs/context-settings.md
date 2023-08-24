@@ -4,7 +4,7 @@ layout: page
 ---
 
 Roughly speaking, Math Booster has two types of settings:
-- Settings specific to each math callout (**Type**, **Number**, **Title**, ...)
+- Settings specific to each theorem callout (**Type**, **Number**, **Title**, ...)
 - Settings applying to a file or a folder as a whole
 
 The latter type is called **local settings**. 
@@ -35,7 +35,7 @@ There are several ways to set up the local settings.
 
 - Plugin setting tab
 - "Open local settings for the current note" command
-- "Open local settings for the current note" button in math callout settings
+- "Open local settings for the current note" button in theorem callout settings
 
 ## Description
 
