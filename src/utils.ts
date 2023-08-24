@@ -175,8 +175,8 @@ export function getSectionCacheFromMouseEvent(event: MouseEvent, type: string, v
 }
 
 export function getBacklinks(app: App, plugin: MathBooster, file: TFile, cache: CachedMetadata, pick: (block: BlockCache) => boolean): Backlink[] | null {
-    const backlinksToNote = plugin.oldLinkMap.invMap.get(file.path); // backlinks to the note containing this math callout
-    const backlinks: Backlink[] = [] // backlinks to this math callout
+    const backlinksToNote = plugin.oldLinkMap.invMap.get(file.path); // backlinks to the note containing this theorem callout
+    const backlinks: Backlink[] = [] // backlinks to this theorem callout
     if (backlinksToNote) {
         for (const backlink of backlinksToNote) {
             const sourceCache = app.metadataCache.getCache(backlink);

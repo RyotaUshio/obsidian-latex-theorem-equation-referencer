@@ -14,7 +14,7 @@ type EquationInfo = { cache: SectionCache, manualTag?: string };
 
 
 /**
- * Indexers for math callouts and equations in a note
+ * Indexers for theorem callouts and equations in a note
  */
 
 abstract class BlockIndexer<IOType extends FileIO, BlockInfo extends { cache: SectionCache }> {
@@ -163,7 +163,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
     async overwriteSettings(lineNumber: number, settings: MathCalloutSettings & MathCalloutPrivateFields, title?: string) {
         const matchResult = matchMathCallout(await this.noteIndexer.io.getLine(lineNumber));
         if (!matchResult) {
-            throw Error(`Math callout not found at line ${lineNumber}, could not overwrite`);
+            throw Error(`Theorem callout not found at line ${lineNumber}, could not overwrite`);
         }
         this.noteIndexer.io.setLine(
             lineNumber,

@@ -13,7 +13,7 @@ export abstract class FileIO {
     /**
      * Check if the line at `lineNumber` can be safely overwritten.
      * It was necessary for sure before, but I'm not sure if it is now, 
-     * because now the JSON metadata of math callouts are hidden by a view plugin.
+     * because now the JSON metadata of theorem callouts are hidden by a view plugin.
      * I'll check it later.
      * @param lineNumber 
      */

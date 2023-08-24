@@ -55,7 +55,7 @@ export class MathCallout extends MarkdownRenderChild {
         // click the title block (div.callout-title) to edit settings
         const button = new ExtraButtonComponent(this.containerEl)
             .setIcon("settings-2")
-            .setTooltip("Edit math callout settings");
+            .setTooltip("Edit theorem callout settings");
         button.extraSettingsEl.addEventListener("click", (ev) => {
             ev.stopPropagation();
             const cache = this.app.metadataCache.getFileCache(this.currentFile);
@@ -84,7 +84,7 @@ export class MathCallout extends MarkdownRenderChild {
                         }
                     },
                     "Confirm",
-                    "Edit math callout settings",
+                    "Edit theorem callout settings",
                     this.settings,
                 ).open();
             }

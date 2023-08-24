@@ -132,8 +132,8 @@ export default class MathBooster extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'insert-math-callout',
-			name: 'Insert math callout',
+			id: 'insert-theorem-callout',
+			name: 'Insert theorem callout',
 			editorCallback: async (editor, context) => {
 				if (context instanceof MarkdownView) {
 					const modal = new MathCalloutModal(
@@ -146,7 +146,7 @@ export default class MathBooster extends Plugin {
 							}
 						},
 						"Insert",
-						"Insert math callout",
+						"Insert theorem callout",
 					).open();
 				}
 			}
@@ -191,7 +191,7 @@ export default class MathBooster extends Plugin {
 
 		/** Markdown post processors */
 
-		// for math callouts
+		// for theorem callouts
 		this.registerMarkdownPostProcessor(async (element, context) => {
 			const callouts = element.querySelectorAll<HTMLElement>(".callout");
 
@@ -308,7 +308,7 @@ export default class MathBooster extends Plugin {
 		this.setOldLinkMap();
 		(new VaultIndexer(this.app, this)).run();
 		const indexEnd = Date.now();
-		console.log(`${this.manifest.name}: All math callouts and equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s.`);
+		console.log(`${this.manifest.name}: All theorem callouts and equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s.`);
 	}
 
 	getNewLinkMap(): Dataview.IndexMap | undefined {

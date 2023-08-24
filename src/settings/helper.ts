@@ -106,7 +106,7 @@ export class MathCalloutSettingsHelper {
             });
 
 
-        new Setting(contentEl).setName("Use this math callout to set this note's mathLink").addToggle((toggle) => {
+        new Setting(contentEl).setName("Use this theorem callout to set this note's mathLink").addToggle((toggle) => {
             this.settings.setAsNoteMathLink = this.defaultSettings.setAsNoteMathLink ?? false;
             toggle.setValue(this.settings.setAsNoteMathLink);
             toggle.onChange(async (value) => {
@@ -250,13 +250,13 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
     makeSettingPane() {
         const { contentEl } = this;
 
-        contentEl.createEl("h4", { text: "Math callouts" });
+        contentEl.createEl("h4", { text: "Theorem callouts" });
         this.addProfileSetting();
         const styleSetting = this.addDropdownSetting("mathCalloutStyle", MATH_CALLOUT_STYLES, "Style");
         styleSetting.descEl.replaceChildren(
             "Choose between your custom style and preset styles. You will need to reload the note to see the changes. See the ",
             createEl("a", { text: "documentation", attr: { href: "https://ryotaushio.github.io/obsidian-math-booster/style-your-theorems.html" } }),
-            " for how to customize the appearance of math callouts.",
+            " for how to customize the appearance of theorem callouts.",
         );
         this.addToggleSetting("mathCalloutFontInherit", "Don't override the app's font setting when using preset styles", "You will need to reload the note to see the changes.");
         this.addTextSetting("titleSuffix", "Title suffix", "ex) \"\" > Definition 2 (Group) / \".\" > Definition 2 (Group).");
@@ -273,7 +273,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
             "noteMathLinkFormat",
             MATH_CALLOUT_REF_FORMATS,
             "Note mathLink format",
-            "When a math callout's \"Use this math callout to set this note's mathLink\" setting is turned on, this format will be used for links to the note containing that math callout."
+            "When a theorem callout's \"Use this theorem callout to set this note's mathLink\" setting is turned on, this format will be used for links to the note containing that theorem callout."
         );
 
         contentEl.createEl("h4", { text: "Equations" });
