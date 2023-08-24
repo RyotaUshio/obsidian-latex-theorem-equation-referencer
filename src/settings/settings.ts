@@ -50,6 +50,7 @@ export interface MathContextSettings {
     mathCalloutFontInherit: boolean;
     beginProof: string;
     endProof: string;
+    insertSpace: boolean;
 }
 
 export interface MathCalloutSettings {
@@ -96,6 +97,7 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     mathCalloutFontInherit: false,
     beginProof: "\\begin{proof}",
     endProof: "\\end{proof}",
+    insertSpace: true,
 }
 
 export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {

@@ -1,7 +1,8 @@
-import { ActiveNoteIO, NonActiveNoteIO } from './file_io';
-import { getIO } from "file_io";
-import MathBooster from "main";
-import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile, prepareFuzzySearch, sortSearchResults, SearchResult, Scope, HoverPopover, MarkdownEditView, MarkdownView, MarkdownRenderer, Modal, SectionCache } from "obsidian";
+import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile, prepareFuzzySearch, sortSearchResults, SearchResult, Scope, MarkdownRenderer, Modal, SectionCache } from "obsidian";
+
+import MathBooster from "./main";
+import { ActiveNoteIO, NonActiveNoteIO, getIO } from './file_io';
+import { resolveSettings } from './utils';
 
 
 export type MathItem = { path: string, id?: string, name: string };
@@ -32,8 +33,9 @@ export class TheoremSuggest extends EditorSuggest<MathItem> {
     selectSuggestion(value: MathItem, evt: MouseEvent | KeyboardEvent): void {
         if (this.context) {
             const { editor, start, end, file } = this.context;
+            const settings = resolveSettings(undefined, this.plugin, file);
             editor.replaceRange(
-                `[[${value.path == file.path ? "" : value.path}#^${value.id}]]`, 
+                `[[${value.path == file.path ? "" : value.path}#^${value.id}]]${settings.insertSpace ? " " : ""}`, 
                 start, 
                 end
             );

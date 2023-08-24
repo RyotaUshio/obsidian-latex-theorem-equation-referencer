@@ -54,6 +54,11 @@ export class MathSettingTab extends PluginSettingTab {
             globalHelper.settingRefs.noteMathLinkFormat.settingEl
         );
 
+        this.containerEl.insertBefore(
+            extraHelper.settingRefs.searchTrigger.settingEl, 
+            globalHelper.settingRefs.insertSpace.settingEl,
+        )
+
         this.addRestoreDefaultsButton();
 
         containerEl.createEl("h3", { text: "Local" });

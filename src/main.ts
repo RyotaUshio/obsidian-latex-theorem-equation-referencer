@@ -11,7 +11,7 @@ import { ContextSettingModal, MathCalloutModal } from './modals';
 import { insertDisplayMath } from './key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote } from './math_live_preview_in_callouts';
-import { LinkedNotesIndexer, VaultIndexer } from './indexer';
+import { LinkedNotesIndexer, VaultIndex, VaultIndexer } from './indexer';
 import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
 import { iterDescendantFiles } from './utils';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
@@ -27,6 +27,7 @@ export default class MathBooster extends Plugin {
 	excludedFiles: string[];
 	oldLinkMap: Dataview.IndexMap;
 	proofPositionField: StateField<ProofPosition[]>;
+	index: VaultIndex;
 
 	async onload() {
 
@@ -45,6 +46,8 @@ export default class MathBooster extends Plugin {
 
 
 		/** Indexing */
+
+		this.index = new VaultIndex(this.app, this);
 
 		// triggered if this plugin is enabled after launching the app
 		this.app.workspace.onLayoutReady(() => {

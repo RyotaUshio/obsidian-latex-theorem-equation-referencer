@@ -77,22 +77,34 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
     }
 
     resolveSettings(callout: Readonly<CalloutInfo>): ResolvedMathSettings {
-        return resolveSettings(callout.settings, this.noteIndexer.plugin, this.noteIndexer.file);    
+        return resolveSettings(callout.settings, this.noteIndexer.plugin, this.noteIndexer.file);
     }
 
     async setMathLinks(callouts: readonly Readonly<CalloutInfo>[]): Promise<void> {
+        const note = this.noteIndexer.plugin.index.getNoteIndex(this.noteIndexer.file).clear("theorem");
+
         let index = 0;
-        for (const callout of callouts) {
+
+        for (let i = 0; i < callouts.length; i++) {
+            const callout = callouts[i];
+
+            if (note.size("theorem") > i) {
+                // avoid duplicate registeration. this method can be called multiple times almost simultaneously
+                continue;
+            }
+
             const resolvedSettings = this.resolveSettings(callout);
-            
-            if (callout.settings.number == 'auto') {
+            const autoNumber = callout.settings.number == 'auto';
+            if (autoNumber) {
                 callout.settings._index = index++;
             }
-            
+
             const newTitle = formatTitle(this.noteIndexer.plugin, resolvedSettings);
             const oldSettingsAndTitle = readMathCalloutSettingsAndTitle(
                 await this.noteIndexer.io.getLine(callout.cache.position.start.line)
             );
+
+            let refName = "";
             if (oldSettingsAndTitle) {
                 const { settings, title } = oldSettingsAndTitle;
                 const lineNumber = callout.cache.position.start.line;
@@ -100,12 +112,20 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
                 if (this.noteIndexer.io.isSafe(lineNumber) && JSON.stringify(settings) != JSON.stringify(newSettings) || title != newTitle) {
                     await this.overwriteSettings(lineNumber, newSettings, newTitle)
                 }
+
                 const id = callout.cache.id;
+                refName = this.formatMathLink(resolvedSettings, "refFormat");
                 if (id) {
-                    this.mathLinkBlocks[id] = this.formatMathLink(resolvedSettings, "refFormat");
+                    this.mathLinkBlocks[id] = refName;
                 }
             }
+
+            if (note.size("theorem") == i) {
+                // avoid duplicate registeration. this method can be called multiple times almost simultaneously
+                note.add({ type: "theorem", printName: newTitle, refName, cache: callout.cache, settings: callout.settings });
+            }
         }
+
         this.setNoteMathLink(callouts);
     }
 
@@ -116,14 +136,14 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
 
             this.noteIndexer.plugin.getMathLinksAPI()?.update(
                 this.noteIndexer.file.path, {
-                    "mathLink": this.formatMathLink(resolvedSettings, "noteMathLinkFormat")
-                }
+                "mathLink": this.formatMathLink(resolvedSettings, "noteMathLinkFormat")
+            }
             )
         } else {
             this.noteIndexer.plugin.getMathLinksAPI()?.update(
                 this.noteIndexer.file.path, {
-                    "mathLink": undefined
-                }
+                "mathLink": undefined
+            }
             )
         }
     }
@@ -175,22 +195,37 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
     }
 
     async setMathLinks(equations: readonly Readonly<EquationInfo>[]): Promise<void> {
+        const note = this.noteIndexer.plugin.index.getNoteIndex(this.noteIndexer.file).clear("equation");
+
         const contextSettings = resolveSettings(undefined, this.noteIndexer.plugin, this.noteIndexer.file);
         const style = contextSettings?.eqNumberStyle ?? DEFAULT_SETTINGS.eqNumberStyle as NumberStyle;
         let equationNumber = +(contextSettings?.eqNumberInit ?? DEFAULT_SETTINGS.eqNumberInit);
         const prefix = contextSettings?.eqNumberPrefix ?? DEFAULT_SETTINGS.eqNumberPrefix;
         const suffix = contextSettings?.eqNumberSuffix ?? DEFAULT_SETTINGS.eqNumberSuffix;
         for (let i = 0; i < equations.length; i++) {
+            if (note.size("equation") > i) {
+                continue;
+            }
             const equation = equations[i];
             const id = equation.cache.id;
+            let printName = "";
+            let refName = "";
             if (id) {
                 const { eqRefPrefix, eqRefSuffix } = contextSettings;
                 if (equation.manualTag) {
-                    this.mathLinkBlocks[id] = eqRefPrefix + `(${equation.manualTag})` + eqRefSuffix;
+                    // this.mathLinkBlocks[id] = eqRefPrefix + `(${equation.manualTag})` + eqRefSuffix;
+                    printName = `(${equation.manualTag})`;
                 } else {
-                    this.mathLinkBlocks[id] = eqRefPrefix + "(" + prefix + CONVERTER[style](equationNumber) + suffix + ")" + eqRefSuffix;
+                    // this.mathLinkBlocks[id] = eqRefPrefix + "(" + prefix + CONVERTER[style](equationNumber) + suffix + ")" + eqRefSuffix;
+                    printName = "(" + prefix + CONVERTER[style](equationNumber) + suffix + ")";
                     equationNumber++;
                 }
+                refName = eqRefPrefix + printName + eqRefSuffix;
+                this.mathLinkBlocks[id] = refName;
+            }
+
+            if (note.size("equation") == i) {
+                note.add({ type: "equation", printName, refName, cache: equation.cache });
             }
         }
     }
@@ -220,8 +255,10 @@ abstract class NoteIndexer<IOType extends FileIO> {
         cache = cache ?? this.app.metadataCache.getFileCache(this.file) ?? undefined;
         if (!cache) return;
 
-        await this.calloutIndexer.run(cache);
-        await this.equationIndexer.run(cache);
+        await Promise.all([
+            this.calloutIndexer.run(cache),
+            this.equationIndexer.run(cache),
+        ]);
         this.mathLinkBlocks = Object.assign(
             {},
             this.calloutIndexer.mathLinkBlocks,
@@ -360,5 +397,55 @@ export class VaultIndexer {
             (new AutoNoteIndexer(this.app, this.plugin, note)).run(activeMarkdownview)
         );
         await Promise.all(promises);
+    }
+}
+
+
+/** Index */
+
+
+export type IndexItemType = "theorem" | "equation";
+export type IndexItem = { type: IndexItemType, printName: string, refName: string, cache: SectionCache, settings?: MathCalloutSettings };
+
+export class NoteIndex {
+    theorem: Set<IndexItem>;
+    equation: Set<IndexItem>;
+
+    constructor(public file: TFile) {
+        this.theorem = new Set<IndexItem>();
+        this.equation = new Set<IndexItem>();
+    }
+
+    add(newItem: IndexItem): NoteIndex {
+        this[newItem.type].add(newItem);
+        return this;
+    }
+
+    clear(which: IndexItemType): NoteIndex {
+        this[which].clear();
+        return this;
+    }
+
+    size(which: IndexItemType): number {
+        return this[which].size;
+    }
+}
+
+
+export class VaultIndex {
+    data: Map<TFile, NoteIndex>;
+
+    constructor(public app: App, public plugin: MathBooster) {
+        this.data = new Map<TFile, NoteIndex>();
+    }
+
+    getNoteIndex(file: TFile): NoteIndex {
+        const note = this.data.get(file);
+        if (note) {
+            return note;
+        }
+        const newNote = new NoteIndex(file);
+        this.data.set(file, newNote);
+        return newNote;
     }
 }
