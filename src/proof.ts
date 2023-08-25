@@ -1,14 +1,12 @@
-import { RangeSetBuilder, ChangeSet } from '@codemirror/state';
-import { Transaction } from '@codemirror/state';
-import { StateField, EditorState } from '@codemirror/state';
 import { App, Editor, MarkdownFileInfo, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, editorInfoField } from 'obsidian';
+import { RangeSetBuilder, Transaction, StateField, EditorState } from '@codemirror/state';
+import { SyntaxNodeRef } from '@lezer/common';
 
 import MathBooster from './main';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
 import { foldService, syntaxTree } from '@codemirror/language';
 import { hasOverlap, nodeText, resolveSettings, renderMarkdown } from './utils';
 import { Profile } from './settings/profile';
-import { SyntaxNodeRef } from '@lezer/common';
 
 
 export const INLINE_CODE = "inline-code";

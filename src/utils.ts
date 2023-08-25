@@ -491,6 +491,8 @@ export function hasOverlap(range1: { from: number, to: number }, range2: { from:
 // https://stackoverflow.com/a/50851710/13613783
 export type BooleanKeys<T> = { [k in keyof T]: T[k] extends boolean ? k : never }[keyof T];
 
+export type NumberKeys<T> = { [k in keyof T]: T[k] extends number ? k : never }[keyof T];
+
 
 /** unused legacy utility functions */
 

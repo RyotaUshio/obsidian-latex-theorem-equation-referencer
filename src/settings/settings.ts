@@ -88,6 +88,7 @@ export interface ExtraSettings {
     triggerTheoremSuggest: string;
     triggerEquationSuggest: string;
     searchMethod: "Fuzzy" | "Simple";
+    upWeightRecent: number;
     searchOnlyRecent: boolean;
     modifierToJump: Modifier;
     suggestLeafOption: LeafOption;
@@ -125,10 +126,11 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
 export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     noteTitleInLink: true,
     profiles: DEFAULT_PROFILES,
-    triggerSuggest: "@",
-    triggerTheoremSuggest: "^",
-    triggerEquationSuggest: "~",
+    triggerSuggest: "\\ref",
+    triggerTheoremSuggest: "\\tref",
+    triggerEquationSuggest: "\\eqref",
     searchMethod: "Fuzzy",
+    upWeightRecent: 0.1, 
     searchOnlyRecent: false,
     modifierToJump: "Mod",
     suggestLeafOption: "Split right", 

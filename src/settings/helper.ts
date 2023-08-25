@@ -1,9 +1,9 @@
-import { ButtonComponent, Setting, TAbstractFile, TFile, TFolder, TextComponent, ToggleComponent } from 'obsidian';
+import { ButtonComponent, Setting, SliderComponent, TAbstractFile, TFile, TFolder, TextComponent, ToggleComponent } from 'obsidian';
 
 import MathBooster from '../main';
 import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from '../env';
 import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, NUMBER_STYLES } from './settings';
-import { BooleanKeys, formatMathCalloutType, formatTitle } from '../utils';
+import { BooleanKeys, NumberKeys, formatMathCalloutType, formatTitle } from '../utils';
 import { AutoNoteIndexer } from '../indexer';
 import { DEFAULT_PROFILES, ManageProfileModal } from './profile';
 
@@ -217,7 +217,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         setting.addToggle((toggle) => {
             toggleComponent = toggle;
             toggle.setValue(this.defaultSettings[name] as unknown as boolean);
-            if (this.settings[name] !== undefined) {
+            if (typeof this.settings[name] == "boolean") {
                 toggle.setValue(this.settings[name] as unknown as boolean);
             }
             toggle.onChange((value) => {
@@ -227,6 +227,33 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         if (this.addClear) {
             this.addClearButton(name, setting, () => {
                 toggleComponent.setValue(this.defaultSettings[name] as unknown as boolean)
+            });
+        }
+        this.settingRefs[name] = setting;
+        return setting;
+    }
+
+    addSliderSetting(name: NumberKeys<SettingsType>, prettyName: string, description?: string): Setting {
+        const setting = new Setting(this.contentEl).setName(prettyName);
+        if (description) {
+            setting.setDesc(description);
+        }
+        let sliderComponent: SliderComponent;
+        setting.addSlider((slider) => {
+            sliderComponent = slider;
+            slider.setLimits(0, 0.5, 0.01)
+                .setDynamicTooltip()
+                .setValue(this.defaultSettings[name] as unknown as number);
+            if (typeof this.settings[name] == "number") {
+                slider.setValue(this.settings[name] as unknown as number);
+            }
+            slider.onChange((value) => {
+                    Object.assign(this.settings, {[name]: value});
+                })
+        });
+        if (this.addClear) {
+            this.addClearButton(name, setting, () => {
+                sliderComponent.setValue(this.defaultSettings[name] as unknown as number);
             });
         }
         this.settingRefs[name] = setting;
@@ -320,6 +347,7 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addTextSetting("triggerTheoremSuggest", "Trigger theorem suggestion with", "Type this string to trigger suggestion for theorem callouts.");
         this.addTextSetting("triggerEquationSuggest", "Trigger equation suggestion with", "Type this string to trigger suggestion for equation blocks.");
         this.addDropdownSetting("searchMethod", ["Fuzzy", "Simple"], "Search method", "Fuzzy search is more flexible, but simple search is more light-weight.");
+        this.addSliderSetting("upWeightRecent", "Up-weight recently opened notes by", "It takes effect only if \"Search only recently opened notes\" is turned off.");
         this.addToggleSetting("searchOnlyRecent", "Search only recently opened notes", "Turning this on might speed up suggestions.");
         this.addDropdownSetting("modifierToJump", ['Mod', 'Ctrl', 'Meta', 'Shift', 'Alt'], "Modifier key for jumping to suggestion", "Press Enter and this modifier key to jump to the currently selected suggestion. Changing this option requires to reloading " + this.plugin.manifest.name + " to take effect.");
         const list = this.settingRefs.modifierToJump.descEl.createEl("ul");

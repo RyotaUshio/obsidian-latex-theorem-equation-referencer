@@ -38,9 +38,10 @@ export class Suggest extends EditorSuggest<IndexItem> {
         const callback = (this.plugin.extraSettings.searchMethod == "Fuzzy" ? prepareFuzzySearch : prepareSimpleSearch)(context.query);
         const results: { match: SearchResult, item: IndexItem }[] = [];
 
+        const recentFilePaths = this.app.workspace.getLastOpenFiles();
+
         if (this.plugin.extraSettings.searchOnlyRecent) {
-            const recentFiles = this.app.workspace.getLastOpenFiles()
-                .map((path) => this.app.vault.getAbstractFileByPath(path))
+            const recentFiles = recentFilePaths.map((path) => this.app.vault.getAbstractFileByPath(path));
             for (const file of recentFiles) {
                 if (file instanceof TFile) {
                     const noteIndex = this.plugin.index.getNoteIndex(file);
@@ -52,6 +53,13 @@ export class Suggest extends EditorSuggest<IndexItem> {
                 this.getSuggestionsImpl(noteIndex, results, callback);
             }
         }
+
+        results.forEach((result) => {
+            if (recentFilePaths.contains(result.item.file.path)) {
+                result.match.score += this.plugin.extraSettings.upWeightRecent;
+            }
+        });
+
         sortSearchResults(results);
         return results.map((result) => result.item);
     }
