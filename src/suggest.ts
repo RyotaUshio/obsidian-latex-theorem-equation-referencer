@@ -54,11 +54,13 @@ export class Suggest extends EditorSuggest<IndexItem> {
             }
         }
 
-        results.forEach((result) => {
-            if (recentFilePaths.contains(result.item.file.path)) {
-                result.match.score += this.plugin.extraSettings.upWeightRecent;
-            }
-        });
+        if (!this.plugin.extraSettings.searchOnlyRecent) {
+            results.forEach((result) => {
+                if (recentFilePaths.contains(result.item.file.path)) {
+                    result.match.score += this.plugin.extraSettings.upWeightRecent;
+                }
+            });
+        }
 
         sortSearchResults(results);
         return results.map((result) => result.item);
