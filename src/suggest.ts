@@ -96,9 +96,14 @@ export class Suggest extends EditorSuggest<IndexItem> {
             cls: "math-booster-search-item-description"
         });
         if (item.type == "equation" && item.mathText) {
-            const mjxContainerEl = renderMath(item.mathText, true);
-            baseEl.insertBefore(mjxContainerEl, smallEl);
-            finishRenderMath();
+            if (this.plugin.extraSettings.renderMathInSuggestion) {
+                const mjxContainerEl = renderMath(item.mathText, true);
+                baseEl.insertBefore(mjxContainerEl, smallEl);
+                finishRenderMath();
+            } else {
+                const mathTextEl = createDiv({ text: item.mathText });
+                baseEl.insertBefore(mathTextEl, smallEl);
+            }
         }
     }
 

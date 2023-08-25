@@ -346,6 +346,7 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addTextSetting("triggerSuggest", "Trigger suggestion with", "Type this string to trigger suggestion for theorem callouts & equation blocks.");
         this.addTextSetting("triggerTheoremSuggest", "Trigger theorem suggestion with", "Type this string to trigger suggestion for theorem callouts.");
         this.addTextSetting("triggerEquationSuggest", "Trigger equation suggestion with", "Type this string to trigger suggestion for equation blocks.");
+        this.addToggleSetting("renderMathInSuggestion", "Render math in equation suggestions", "Turn this off if you have a performance issue.");
         this.addDropdownSetting("searchMethod", ["Fuzzy", "Simple"], "Search method", "Fuzzy search is more flexible, but simple search is more light-weight.");
         this.addSliderSetting("upWeightRecent", "Up-weight recently opened notes by", "It takes effect only if \"Search only recently opened notes\" is turned off.");
         this.addToggleSetting("searchOnlyRecent", "Search only recently opened notes", "Turning this on might speed up suggestions.");
