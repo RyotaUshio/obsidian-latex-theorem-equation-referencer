@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-math-booster",
-	"version": "0.6.1",
+	"version": "0.6.2",
 	"description": "Turn your Obsidian into LaTeX on steroids.",
 	"main": "main.js",
 	"scripts": {
