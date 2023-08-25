@@ -114,18 +114,16 @@ export class Suggest extends EditorSuggest<IndexItem> {
                 const result = await insertBlockIdIfNotExist(this.plugin, item.file, cache, sec);
                 if (result) {
                     const { id, lineAdded } = result;
+                    const link = this.app.fileManager.generateMarkdownLink(item.file, file.path, `#^${id}`);
+                    const insertText = link + (settings.insertSpace ? " " : "");
                     if (item.file == file) {
                         editor.replaceRange(
-                            `[[#^${id}]]${settings.insertSpace ? " " : ""}`,
+                            insertText,
                             { line: start.line + lineAdded, ch: start.ch },
                             { line: end.line + lineAdded, ch: end.ch }
                         );
                     } else {
-                        editor.replaceRange(
-                            `[[${item.file.path}#^${id}]]${settings.insertSpace ? " " : ""}`,
-                            start,
-                            end
-                        );
+                        editor.replaceRange(insertText, start, end);
                     }
                     success = true;
                 }
