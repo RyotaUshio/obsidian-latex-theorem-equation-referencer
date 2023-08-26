@@ -3,20 +3,26 @@ layout: home
 title: Overview
 ---
 
+Turn your [Obsidian.md](https://obsidian.md/) into **LaTeX on steroids** with Math Booster. 
+
 <figure style="padding-bottom:2em;">
 <img src="fig/screenshot.png" alt="Screenshot">
 <figcaption style="text-align:center; font-size: 67%; padding-top: 0; padding-left: 6em; padding-right: 6em;">Example theorem cited from:<br><a href="https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf">Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.</a>
 </figcaption>
 </figure>
 
-**[Math Booster](https://github.com/RyotaUshio/obsidian-math-booster)** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience with several powerful features, including:
+**[Math Booster](https://github.com/RyotaUshio/obsidian-math-booster)** is a plugin that enhances your mathematical note-taking experience by several powerful features, including:
 
 - [Theorem environments](math-callouts)
-- [Automatic equation numbering](equation-number)
+- [Equation numbering](equation-number)
 - [Proof environments](proofs)
-- [Math live preview in callouts & blockquotes](math-preview)
+- [Live suggestions for theorems/equations](suggest)
+- [Showing backlinks to theorems/equations](backlinks)
+- [Live-rendering equations inside callouts & blockquotes](math-preview)
 
-Theorem callouts & equations can be [referenced with their title or number](cleveref) similarly to the `cleveref` package in LaTeX.
+Theorem callouts & equations can be **dynamically/automatically numbered**, while you can statically/manually number them if you want. 
+
+Links to theorems/equations are [displayed  with their title or number](cleveref) similarly to the `cleveref` package in LaTeX. (No need for manually typing aliases!)
 
 You can also customize the appearance of theorem callouts using CSS snippets. See the [styles gallery](style-your-theorems#styles-gallery) for examples.
 
@@ -34,7 +40,7 @@ Although this plugin is still under review by the Obsidian team, you can install
 
 The following community plugins are required to be installed and enabled.
 
-- [MathLinks](obsidian://show-plugin?id=mathlinks) version >= 0.4.3
+- [MathLinks](obsidian://show-plugin?id=mathlinks) version >= 0.4.5
 - [Dataview](obsidian://show-plugin?id=dataview) version >= 0.5.56
 
 Make sure **Enable MathLinks API** is turned on in the MathLinks plugin settings.
