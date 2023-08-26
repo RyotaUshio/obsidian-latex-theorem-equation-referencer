@@ -3,7 +3,7 @@ layout: home
 title: Overview
 ---
 
-Turn your [Obsidian.md](https://obsidian.md/) into **LaTeX on steroids** with Math Booster. 
+Turn your [Obsidian.md](https://obsidian.md/) into ***LaTeX on steroids*** with Math Booster. 
 
 <figure style="padding-bottom:2em;">
 <img src="fig/screenshot.png" alt="Screenshot">
@@ -20,9 +20,9 @@ Turn your [Obsidian.md](https://obsidian.md/) into **LaTeX on steroids** with Ma
 - [Showing backlinks to theorems/equations](backlinks)
 - [Live-rendering equations inside callouts & blockquotes](math-preview)
 
-Theorem callouts & equations can be **dynamically/automatically numbered**, while you can statically/manually number them if you want. 
+Theorems & equations can be **dynamically/automatically numbered**, while you can statically/manually number them if you want. 
 
-Links to theorems/equations are [displayed  with their title or number](cleveref) similarly to the `cleveref` package in LaTeX. (No need for manually typing aliases!)
+Thanks to the integration with [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks), links to theorems/equations are [displayed  with their title or number](cleveref) similarly to the `cleveref` package in LaTeX. (No need for manual typing of aliases!)
 
 You can also customize the appearance of theorem callouts using CSS snippets. See the [styles gallery](style-your-theorems#styles-gallery) for examples.
 
