@@ -22,9 +22,10 @@ export const MATH_CALLOUT_STYLES = [
 export type MathCalloutStyle = typeof MATH_CALLOUT_STYLES[number];
 
 export const MATH_CALLOUT_REF_FORMATS = [
-    "Type + number (+ title)", 
-    "Type + number", 
-    "Only title if exists, type + number otherwise"
+    "[type] [number] ([title])", 
+    "[type] [number]", 
+    "[title] ([type] [number]) if title exists, [type] [number] otherwise",
+    "[title] if title exists, [type] [number] otherwise",
 ] as const;
 export type MathCalloutRefFormat = typeof MATH_CALLOUT_REF_FORMATS[number];
 
@@ -107,8 +108,8 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     numberInit: 1,
     numberStyle: "arabic",
     numberDefault: "auto", 
-    refFormat: "Type + number (+ title)",
-    noteMathLinkFormat: "Type + number (+ title)",
+    refFormat: "[title] ([type] [number]) if title exists, [type] [number] otherwise",
+    noteMathLinkFormat: "[type] [number] ([title])",
     eqNumberPrefix: "",
     eqNumberSuffix: "",
     eqNumberInit: 1,

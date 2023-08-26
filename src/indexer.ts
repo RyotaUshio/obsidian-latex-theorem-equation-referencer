@@ -150,14 +150,18 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
 
     formatMathLink(resolvedSettings: ResolvedMathSettings, key: "refFormat" | "noteMathLinkFormat"): string {
         const refFormat: MathCalloutRefFormat = resolvedSettings[key];
-        if (refFormat == "Type + number (+ title)") {
+        if (refFormat == "[type] [number] ([title])") {
             return formatTitle(this.noteIndexer.plugin, resolvedSettings, true);
         }
-        if (refFormat == "Type + number") {
+        if (refFormat == "[type] [number]") {
             return formatTitleWithoutSubtitle(this.noteIndexer.plugin, resolvedSettings);
         }
-        // if (refFormat == "Only title if exists, type + number otherwise"))
-        return resolvedSettings.title ? resolvedSettings.title : formatTitleWithoutSubtitle(this.noteIndexer.plugin, resolvedSettings);
+        if (refFormat == "[title] if title exists, [type] [number] otherwise") {
+            return resolvedSettings.title ? resolvedSettings.title : formatTitleWithoutSubtitle(this.noteIndexer.plugin, resolvedSettings);
+        }
+        // if (refFormat == "[title] ([type] [number]) if title exists, [type] [number] otherwise") 
+        const typePlusNumber = formatTitleWithoutSubtitle(this.noteIndexer.plugin, resolvedSettings);
+        return resolvedSettings.title ? `${resolvedSettings.title} (${typePlusNumber})` : typePlusNumber;
     }
 
     async overwriteSettings(lineNumber: number, settings: MathCalloutSettings & MathCalloutPrivateFields, title?: string) {
