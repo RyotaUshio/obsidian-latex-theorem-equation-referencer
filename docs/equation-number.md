@@ -87,7 +87,8 @@ $$f(x)$$
 Also, note that you cannot insert a link to equations in callouts or blockquotes. 
 This is an inherent limitation of Obsidian rather than this plugin.[^1]
 
-Lastly, make sure there is an emtpy line under the block ID of the equation. Again, this is needed due to how Obsidian works.
+Lastly, make sure there is an emtpy line under the block ID of the equation. Again, this is needed due to how Obsidian works. **You can enforce this using the [Linter](obsidian://show-plugin?id=obsidian-linter) plugin's rule "[Empty Line Around Math Blocks
+](https://platers.github.io/obsidian-linter/settings/spacing-rules/#empty-line-around-math-blocks)."**
 
 [^1]: Technically, it is possible to display an equation number for an equation in callouts. However, I think there is no point in doing it if the equation cannot be referenced.
 
