@@ -4,7 +4,7 @@ import { StateField } from '@codemirror/state';
 import * as MathLinks from 'obsidian-mathlinks'
 import * as Dataview from 'obsidian-dataview';
 
-import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS } from './settings/settings';
+import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS, UNION_TYPE_MATH_CONTEXT_SETTING_KEYS, UNION_TYPE_EXTRA_SETTING_KEYS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
 import { MathCallout, insertMathCalloutCallback } from './math_callouts';
 import { ContextSettingModal, MathCalloutModal } from './modals';
@@ -34,6 +34,7 @@ export default class MathBooster extends Plugin {
 		/** Settings */
 
 		await this.loadSettings();
+		await this.saveSettings();
 		this.addSettingTab(new MathSettingTab(this.app, this));
 
 
@@ -136,17 +137,14 @@ export default class MathBooster extends Plugin {
 			name: 'Insert theorem callout',
 			editorCallback: async (editor, context) => {
 				if (context instanceof MarkdownView) {
-					const modal = new MathCalloutModal(
-						this.app,
-						this,
-						context.file,
+					new MathCalloutModal(
+						this.app, this, context.file,
 						(config) => {
 							if (context.file) {
 								insertMathCalloutCallback(this, editor, config, context.file);
 							}
-						},
-						"Insert",
-						"Insert theorem callout",
+						}, 
+						"Insert", "Insert theorem callout",
 					).open();
 				}
 			}
@@ -238,7 +236,7 @@ export default class MathBooster extends Plugin {
 			(element, context) => ProofProcessor(this.app, this, element, context),
 		);
 
-		
+
 		/** Editor suggest */
 		this.registerEditorSuggest(new Suggest(this.app, this, ["theorem", "equation"]));
 		this.registerEditorSuggest(new Suggest(this.app, this, ["theorem"]));
@@ -250,16 +248,52 @@ export default class MathBooster extends Plugin {
 	}
 
 	async loadSettings() {
+		this.settings = {[VAULT_ROOT]: JSON.parse(JSON.stringify(DEFAULT_SETTINGS))};
+		this.extraSettings = JSON.parse(JSON.stringify(DEFAULT_EXTRA_SETTINGS));
+		this.excludedFiles = [];
+
 		const loadedData = await this.loadData();
 		if (loadedData) {
 			const { settings, extraSettings, excludedFiles } = loadedData;
-			this.settings = Object.assign({}, { [VAULT_ROOT]: DEFAULT_SETTINGS }, settings);
-			this.extraSettings = Object.assign({}, DEFAULT_EXTRA_SETTINGS, extraSettings);
+			for (const path in settings) {
+				if (path != VAULT_ROOT) {
+					this.settings[path] = {};
+				}
+				for (const _key in DEFAULT_SETTINGS) {
+					const key = _key as keyof MathContextSettings;
+					let val = settings[path][key];
+					if (val !== undefined) {
+						if (key in UNION_TYPE_MATH_CONTEXT_SETTING_KEYS) {
+							const allowableValues = UNION_TYPE_MATH_CONTEXT_SETTING_KEYS[key];
+							if (!(allowableValues?.includes(val))) {
+								// invalid value encountered, substitute the default value instead
+								val = DEFAULT_SETTINGS[key];
+							}
+						}
+						if (typeof val == typeof DEFAULT_SETTINGS[key]) {
+							this.settings[path][key] = val;
+						}
+					}
+				}
+			}
+
+			for (const _key in DEFAULT_EXTRA_SETTINGS) {
+				const key = _key as keyof ExtraSettings;
+				let val = extraSettings[key];
+				if (val !== undefined) {
+					if (key in UNION_TYPE_EXTRA_SETTING_KEYS) {
+						const allowableValues = UNION_TYPE_EXTRA_SETTING_KEYS[key];
+						if (!(allowableValues?.includes(val))) {
+							val = DEFAULT_EXTRA_SETTINGS[key];
+						}
+					}
+					if (typeof val == typeof DEFAULT_EXTRA_SETTINGS[key]) {
+						(this.extraSettings[key] as ExtraSettings[keyof ExtraSettings]) = val;
+					}
+				}
+			}
+
 			this.excludedFiles = excludedFiles;
-		} else {
-			this.settings = { [VAULT_ROOT]: DEFAULT_SETTINGS };
-			this.extraSettings = DEFAULT_EXTRA_SETTINGS;
-			this.excludedFiles = [];
 		}
 	}
 

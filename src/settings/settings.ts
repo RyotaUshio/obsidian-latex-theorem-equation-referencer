@@ -3,6 +3,8 @@ import { DEFAULT_PROFILES, Profile } from "./profile";
 import { LeafArgs } from "type";
 
 
+// Types
+
 export const NUMBER_STYLES = [
     "arabic",
     "alph",
@@ -43,6 +45,13 @@ export const LEAF_OPTION_TO_ARGS: Record<LeafOption, LeafArgs> = {
     "New window": ["window"], 
 }
 
+export const SEARCH_METHODS = [
+    "Fuzzy",
+    "Simple"
+] as const;
+export type SearchMethod = typeof SEARCH_METHODS[number];
+
+
 // Context settings are called "local settings" in the documentation and UI.
 // Sorry for confusion, this is due to a historical reason. I'll fix it later.
 export interface MathContextSettings {
@@ -70,6 +79,14 @@ export interface MathContextSettings {
     insertSpace: boolean;
 }
 
+export const UNION_TYPE_MATH_CONTEXT_SETTING_KEYS: {[k in keyof Partial<MathContextSettings>]: readonly string[]} = {
+    "numberStyle": NUMBER_STYLES,
+    "refFormat": MATH_CALLOUT_REF_FORMATS,
+    "noteMathLinkFormat": MATH_CALLOUT_REF_FORMATS,
+    "eqNumberStyle": NUMBER_STYLES,
+    "mathCalloutStyle": MATH_CALLOUT_STYLES,
+};
+
 export interface MathCalloutSettings {
     type: string;
     number: string;
@@ -89,13 +106,19 @@ export interface ExtraSettings {
     triggerTheoremSuggest: string;
     triggerEquationSuggest: string;
     renderMathInSuggestion: boolean;
-    searchMethod: "Fuzzy" | "Simple";
+    searchMethod: SearchMethod;
     upWeightRecent: number;
     searchOnlyRecent: boolean;
     modifierToJump: Modifier;
     suggestLeafOption: LeafOption;
     backlinkLeafOption: LeafOption;
 }
+
+export const UNION_TYPE_EXTRA_SETTING_KEYS: {[k in keyof Partial<ExtraSettings>]: readonly string[]} = {
+    "searchMethod": SEARCH_METHODS,
+    "suggestLeafOption": LEAF_OPTIONS,
+    "backlinkLeafOption": LEAF_OPTIONS,
+};
 
 export type MathSettings = Partial<MathContextSettings> & MathCalloutSettings & MathCalloutPrivateFields;
 export type ResolvedMathSettings = Required<MathContextSettings> & MathCalloutSettings & MathCalloutPrivateFields;
