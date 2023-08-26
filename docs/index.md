@@ -3,7 +3,7 @@ layout: home
 title: Overview
 ---
 
-Turn your [Obsidian.md](https://obsidian.md/) into ***LaTeX on steroids*** with Math Booster. 
+Turn your Obsidian into ***LaTeX on steroids*** with Math Booster. 
 
 <figure style="padding-bottom:2em;">
 <img src="fig/screenshot.png" alt="Screenshot">
@@ -11,7 +11,7 @@ Turn your [Obsidian.md](https://obsidian.md/) into ***LaTeX on steroids*** with 
 </figcaption>
 </figure>
 
-**[Math Booster](https://github.com/RyotaUshio/obsidian-math-booster)** is a plugin that enhances your mathematical note-taking experience by several powerful features, including:
+**[Math Booster](https://github.com/RyotaUshio/obsidian-math-booster)** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience by several powerful features, including:
 
 - [Theorem environments](math-callouts)
 - [Equation numbering](equation-number)

@@ -1,10 +1,10 @@
 # Math Booster for Obsidian
 
-Turn your [Obsidian.md](https://obsidian.md/) into ***LaTeX on steroids*** with Math Booster. 
+Turn your Obsidian into ***LaTeX on steroids*** with Math Booster. 
 
 ![Screenshot](docs/fig/screenshot.png)
 
-**Math Booster** is a plugin that enhances your mathematical note-taking experience by several powerful features, including:
+**Math Booster** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience by several powerful features, including:
 
 - [Theorem environments](https://ryotaushio.github.io/obsidian-math-booster//math-callouts)
 - [Equation numbering](https://ryotaushio.github.io/obsidian-math-booster//equation-number)
