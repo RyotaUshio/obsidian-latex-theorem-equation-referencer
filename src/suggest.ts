@@ -1,7 +1,6 @@
-import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile, prepareFuzzySearch, sortSearchResults, SearchResult, MarkdownRenderer, Modal, SectionCache, Notice, prepareSimpleSearch, renderMath, finishRenderMath, getAllTags } from "obsidian";
+import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile, prepareFuzzySearch, sortSearchResults, SearchResult, Notice, prepareSimpleSearch, renderMath, finishRenderMath, getAllTags } from "obsidian";
 
 import MathBooster from "./main";
-import { ActiveNoteIO, NonActiveNoteIO, getIO } from './file_io';
 import { findSectionCache, formatLabel, insertBlockIdIfNotExist, openFileAndSelectPosition, resolveSettings } from './utils';
 import { IndexItem, IndexItemType, NoteIndex } from "indexer";
 import { DEFAULT_EXTRA_SETTINGS, LEAF_OPTION_TO_ARGS } from "settings/settings";
@@ -31,7 +30,7 @@ export class Suggest extends EditorSuggest<IndexItem> {
         const text = editor.getRange({ line: cursor.line, ch: 0 }, cursor);
         const index = text.lastIndexOf(trigger);
         const query = text.slice(index + trigger.length);
-        return index >= 0 && !query.startsWith("[[") ? {
+        return (index >= 0 && !query.startsWith("[[")) ? {
             start: { line: cursor.line, ch: index },
             end: cursor,
             query
@@ -154,36 +153,5 @@ export class Suggest extends EditorSuggest<IndexItem> {
                 new Notice(`${this.plugin.manifest.name}: Failed to read cache. Retry again later.`, 5000);
             }
         }
-    }
-}
-
-
-export class SearchPreviewModal extends Modal {
-    constructor(public app: App, public plugin: MathBooster, public item: IndexItem) {
-        super(app);
-    }
-
-    onOpen(): void {
-        const { contentEl, item } = this;
-        contentEl.empty();
-
-        const io = getIO(this.plugin, this.item.file);
-        const sec = this.app.metadataCache.getFileCache(this.item.file)
-            ?.sections
-            ?.find((sec) => sec.position.start.line == item.cache.position.start.line);
-
-        if (sec) {
-            this.renderPreview(io, sec);
-        }
-    }
-
-    async renderPreview(io: ActiveNoteIO | NonActiveNoteIO, sec: SectionCache) {
-        const markdown = await io.getRange(sec.position)
-        await MarkdownRenderer.renderMarkdown(markdown, this.contentEl, this.item.file.path, this.plugin);
-    }
-
-    onClose(): void {
-        const { contentEl } = this;
-        contentEl.empty();
     }
 }
