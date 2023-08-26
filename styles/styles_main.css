@@ -53,6 +53,11 @@
     cursor: text;
 }
 
+.HyperMD-quote.cm-line.math-booster-preview-container {
+    text-indent:-15px;
+    padding-inline-start:19px;
+}
+
 .cm-embed-block .math-booster-preview-edit-button {
     padding: var(--size-2-2) var(--size-2-3);
     position: absolute;

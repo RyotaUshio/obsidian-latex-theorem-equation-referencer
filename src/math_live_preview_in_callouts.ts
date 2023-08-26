@@ -24,10 +24,8 @@ class MathPreviewWidget extends WidgetType {
     toDOM(view: EditorView): HTMLElement {
         this.info.mathEl.classList.add("math-booster-preview");
         if (this.info.display) {
-            // <img class="cm-widgetBuffer" aria-hidden="true">
             const containerEl = createDiv({
-                cls: ["HyperMD-quote", "HyperMD-quote-1", "HyperMD-quote-lazy", "cm-line"],
-                attr: { style: "text-indent:-15px;padding-inline-start:19px;" }
+                cls: ["HyperMD-quote", "HyperMD-quote-1", "HyperMD-quote-lazy", "cm-line", "math-booster-preview-container"],
             });
             containerEl.createEl("img", {
                 cls: "cm-widgetBuffer",
