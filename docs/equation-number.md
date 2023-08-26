@@ -5,6 +5,8 @@ title: Equation numbering
 
 When you insert a link to a math equation block (`[[#^block-ID]]` or `[[note-title#^block-ID]]`), this plugin automatically detects it and assigns an equation number to the equation.
 
+> **Note**: [Live suggestion](suggest) that helps you insert links are introduced in the version 0.6.0. Check it out!
+
 For example, suppose you have the following note:
 
 ```latex
