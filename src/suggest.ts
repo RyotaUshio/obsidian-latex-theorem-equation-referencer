@@ -11,6 +11,10 @@ export class Suggest extends EditorSuggest<IndexItem> {
     constructor(public app: App, public plugin: MathBooster, public types: IndexItemType[]) {
         super(app);
         this.scope.register([this.plugin.extraSettings.modifierToJump], "Enter", () => {
+            if (this.context) {
+                const {editor, start, end} = this.context;
+                editor.replaceRange("", start, end);
+            }
             // Reference: https://github.com/tadashi-aikawa/obsidian-various-complements-plugin/blob/be4a12c3f861c31f2be3c0f81809cfc5ab6bb5fd/src/ui/AutoCompleteSuggest.ts#L595-L619
             const item = this.suggestions.values[this.suggestions.selectedItem];
             openFileAndSelectPosition(item.file, item.cache.position, ...LEAF_OPTION_TO_ARGS[this.plugin.extraSettings.suggestLeafOption]);
