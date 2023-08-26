@@ -54,7 +54,7 @@ Although this plugin is still under review by the Obsidian team, you can install
 
 - Feel free to create a new issue if you noticed something is not working well. Questions are also welcomed.
 - Please send a pull request if you have any ideas to improve Math Booster and our experience!
-  - **Even if you don't code, your help is still needed for improving the documentation and README.** For exampe, active update of this plugin has already made some of the images in the documentation outdated...
+  - **Even if you don't code, your help is still needed for improving the documentation and README.** For exampe, the active update of this plugin has already made some of the images in the documentation outdated...
   - Of course, programmers' contribution is extremely welcomed. (I'm pretty new to TypeScript/JavaScript/HTML/CSS. For me, making this plugin was the only purpose to start learning them. So your help is needed for real.)
 
 ## Styles gallery
