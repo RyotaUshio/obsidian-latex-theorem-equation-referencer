@@ -1,4 +1,4 @@
-import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile, prepareFuzzySearch, sortSearchResults, SearchResult, MarkdownRenderer, Modal, SectionCache, Notice, prepareSimpleSearch, renderMath, finishRenderMath } from "obsidian";
+import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile, prepareFuzzySearch, sortSearchResults, SearchResult, MarkdownRenderer, Modal, SectionCache, Notice, prepareSimpleSearch, renderMath, finishRenderMath, getAllTags } from "obsidian";
 
 import MathBooster from "./main";
 import { ActiveNoteIO, NonActiveNoteIO, getIO } from './file_io';
@@ -69,10 +69,14 @@ export class Suggest extends EditorSuggest<IndexItem> {
     getSuggestionsImpl(noteIndex: NoteIndex, results: { match: SearchResult, item: IndexItem }[], callback: (text: string) => SearchResult | null) {
         for (const which of this.types) {
             for (const item of noteIndex[which as IndexItemType]) {
-                let text = `${item.printName} ${item.file.path}`;
+                const cache = this.app.metadataCache.getFileCache(item.file);
+                const tags = cache ? (getAllTags(cache) ?? []) : [];
+
+                let text = `${item.printName} ${item.file.path} ${tags.join(" ")}`;
+
                 if (item.type == "theorem" && item.settings) {
                     const settings = resolveSettings(item.settings, this.plugin, item.file);
-                    text += ` ${formatLabel(settings) ?? ""}`
+                    text += ` ${settings.type} ${formatLabel(settings) ?? ""}`
                 } else if (item.type == "equation" && item.mathText) {
                     text += " " + item.mathText;
                 }
