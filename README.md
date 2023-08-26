@@ -8,7 +8,7 @@ Turn your Obsidian into ***LaTeX on steroids*** with Math Booster.
 
 - [Theorem environments](https://ryotaushio.github.io/obsidian-math-booster//math-callouts)
 - [Equation numbering](https://ryotaushio.github.io/obsidian-math-booster//equation-number)
-- [Proof environments](https://ryotaushio.github.io/obsidian-math-booster//proofs)
+- [Proof environments](https://ryotaushio.github.io/obsidian-math-booster//proofs) _(experimental)_
 - [Live suggestions for theorems/equations](https://ryotaushio.github.io/obsidian-math-booster//suggest)
 - [Showing backlinks to theorems/equations](https://ryotaushio.github.io/obsidian-math-booster//backlinks)
 - [Live-rendering equations inside callouts & blockquotes](https://ryotaushio.github.io/obsidian-math-booster//math-preview)
@@ -47,6 +47,15 @@ Although this plugin is still under review by the Obsidian team, you can install
 3. Copy and paste `https://github.com/RyotaUshio/obsidian-math-booster` in the pop-up prompt and click on **Add Plugin**.
 5. (Optional) Turn on **Auto-update plugins at startup** at the top of the page.
 4. Go to **Community plugins > Installed plugins**. You will find "Math Booster" in the list. Click on the toggle button to enable it.
+
+## Contributing
+
+**I need your help!!**
+
+- Feel free to create a new issue if you noticed something is not working well. Questions are also welcomed.
+- Please send a pull request if you have any ideas to improve Math Booster and our experience!
+  - **Even if you don't code, your help is still needed for improving the documentation and README, for example.**
+  - Of course, programmers' contribution is extremely welcomed. (I'm pretty new to TypeScript/JavaScript/HTML/CSS. For me, making this plugin was the only purpose to start learning them. So your help is needed for real.)
 
 ## Styles gallery
 
