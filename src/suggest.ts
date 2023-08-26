@@ -89,7 +89,6 @@ export class Suggest extends EditorSuggest<IndexItem> {
     }
 
     renderSuggestion(item: IndexItem, el: HTMLElement): void {
-        // el.setAttribute("style", "display: inline-block;");
         const baseEl = el.createDiv({ cls: "math-booster-search-item" });
         if (item.printName) {
             baseEl.createDiv({ text: item.printName });
