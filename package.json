@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-math-booster",
-	"version": "0.6.6",
+	"version": "0.6.7",
 	"description": "Turn your Obsidian into LaTeX on steroids. Dynamically numbered theorem environments & equations, theorems/equations live suggestion, showing backlinks to theorems/equations and live-rendering equations inside callouts & quotes.",
 	"main": "main.js",
 	"scripts": {
