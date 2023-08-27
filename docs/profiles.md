@@ -23,7 +23,7 @@ In these cases, tags are used to indicate the language used for the note, making
 
 Here's a list of the CSS classes generated from tags:
 
-- `.math-booster-{tag}`: (New!) Applies to an entire note. This is very powerful... It acts just like Obsidian's built-in `cssclasses` property ([see here](https://help.obsidian.md/Editing+and+formatting/Properties#Predefined+properties)), but you don't need to manually type in the YAML frontmatter. Also remember that profiles have a [cascaded structure](context-settings) determined by the folder hierarchy, just like other local settings.
+- `.math-booster-{tag}`: (New in 0.6.9) Applies to an entire note. This is very powerful... It acts just like Obsidian's built-in `cssclasses` property ([see here](https://help.obsidian.md/Editing+and+formatting/Properties#Predefined+properties)), but you don't need to manually type in the YAML frontmatter. Also remember that profiles have a [cascaded structure](context-settings) determined by the folder hierarchy, just like other local settings.
 - `.theorem-callout-{tag}`: Applies to [theorem callouts](math-callouts).
 - `.math-booster-begin-proof-{tag}`/`.math-booster-end-proof-{tag}`: Applies to [proofs](proofs).
 
