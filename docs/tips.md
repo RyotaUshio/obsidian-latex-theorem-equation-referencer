@@ -22,6 +22,12 @@ If you find them disturbing, try the following CSS snippet. This is a little bit
 The snippet in the original post makes block IDs on inactive lines completely invisible. But I don't recommend it because it may increase the danger of breaking the relationship between blocks (theorems/equations) and the IDs.
 Once this happens, it will be not easy to recover the links.
 
+## Use CSS Editor
+
+Your experience with Math Booster will be richer with [CSS snippets](https://help.obsidian.md/Extending+Obsidian/CSS+snippets), but it will be bother to switch to an external text editor (like VSCode) everytime you update your snippets.
+
+The [CSS editor](obsidian://show-plugin?id=css-editor) plugin removes this headache by enabling you to edit your snippets **inside Obsidian**.
+
 ## Preamble
 
 The [Extended MathJax](obsidian://show-plugin?id=obsidian-latex) plugin enables you to use a preamble in Obsidian.

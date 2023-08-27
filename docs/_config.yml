@@ -8,8 +8,12 @@ header_pages:
   - proofs.md
   - suggest.md
   - backlinks.md
+  - cleveref.md
   - math-preview.md
+  - context-settings.md
+  - profiles.md
   - style-your-theorems.md
+  - mathlinks.md
   - tips.md
 
 github_username: RyotaUshio

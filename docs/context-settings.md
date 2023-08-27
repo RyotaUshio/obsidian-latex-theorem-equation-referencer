@@ -3,11 +3,12 @@ title: Local settings
 layout: page
 ---
 
-Roughly speaking, Math Booster has two types of settings:
+Roughly speaking, Math Booster has three types of settings:
 - Settings specific to each theorem callout (**Type**, **Number**, **Title**, ...)
 - Settings applying to a file or a folder as a whole
+- Other settings, mainly related to [live suggestions](suggest)
 
-The latter type is called **local settings**. 
+The second type of settings is called **local settings**. 
 
 In the plugin setting tab, you can set up the **Global** settings. In other words, they are local settings for the vault root.
 They apply all the files in the vault unless overwritten by another **local** settings for a lower-level folder/file.
@@ -41,10 +42,4 @@ There are several ways to set up the local settings.
 
 ### Profile
 
-**Profiles** define the displayed name of each environment (`theorem`/`definition`/`lemma`/...).
-For example, the default "English" profile displays `exercise` as "Exercise."
-If you want to change it to "Problem" inside a certain folder, define a new profile:
-
-1. Create a new profile by copying the "English" profile.
-2. Modify the "exercise" field of the new profile to "Problem."
-3. Apply the profile to the folder.
+See [profiles](profiles) for the details.

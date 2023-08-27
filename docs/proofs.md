@@ -38,7 +38,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, ...
 
 ## Settings & styling
 
-Don't like `\begin{proof}`? You can use any string you like instead. Go to the plugin setting tab, and modify the **Beginning of proof** and **Ending of proof** fields. Also take a look at the **Proofs** section in the [profile](context-settings#profile) editing menu.
+Don't like `\begin{proof}`? You can use any string you like instead. Go to the plugin setting tab, and modify the **Beginning of proof** and **Ending of proof** fields. Also take a look at the **Proofs** section in the [profile](profiles) editing menu.
 
 Beginning/ending of proofs are given the following CSS classes.
 
