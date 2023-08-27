@@ -98,7 +98,7 @@ export class Suggest extends EditorSuggest<IndexItem> {
         }
         const smallEl = baseEl.createEl(
             "small", {
-            text: `${item.file.path.slice(0, - item.file.extension.length - 1)}`,
+            text: `${item.file.path.slice(0, - item.file.extension.length - 1)}, line ${item.cache.position.start.line + 1}`,
             cls: "math-booster-search-item-description"
         });
         if (item.type == "equation" && item.mathText) {
