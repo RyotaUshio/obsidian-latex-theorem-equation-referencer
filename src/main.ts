@@ -156,8 +156,7 @@ export default class MathBooster extends Plugin {
 			callback: () => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (view) {
-					const modal = new ContextSettingModal(this.app, this, view.file);
-					modal.open();
+					new ContextSettingModal(this.app, this, view.file).open();
 				}
 			}
 		});

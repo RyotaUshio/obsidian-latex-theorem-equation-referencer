@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownFileInfo, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, editorInfoField } from 'obsidian';
+import { App, Editor, MarkdownFileInfo, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, TFile, editorInfoField } from 'obsidian';
 import { RangeSetBuilder, Transaction, StateField, EditorState } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
 
@@ -45,21 +45,37 @@ function parseAtSignLink(codeEl: HTMLElement) {
 /** For reading view */
 
 export class ProofRenderChild extends MarkdownRenderChild {
-    constructor(public app: App, public plugin: MathBooster, containerEl: HTMLElement, public which: "begin" | "end", public profile: Profile, public display?: string, public sourcePath?: string) {
+    atSignParseResult: { atSign: ChildNode, links: HTMLElement[] } | undefined;
+
+    constructor(public app: App, public plugin: MathBooster, containerEl: HTMLElement, public which: "begin" | "end", public file: TFile, public display?: string) {
         super(containerEl);
+        this.atSignParseResult = parseAtSignLink(this.containerEl);
     }
 
     onload(): void {
-        const result = parseAtSignLink(this.containerEl);
+        this.update();
+        this.plugin.registerEvent(
+            this.app.metadataCache.on("math-booster:local-settings-updated", (file) => {
+                if (file == this.file) {
+                    this.update();
+                }
+            })
+        );        
+    }
+
+    update(): void {
+        const settings = resolveSettings(undefined, this.plugin, this.file);
+        const profile = this.plugin.extraSettings.profiles[settings.profile];
 
         /**
          * `\begin{proof}`@[[<link to Theorem 1>]] => Proof of Theorem 1.
          */
-        if (result) {
-            const { atSign, links } = result;
-            const el = createSpan({ cls: makeProofClasses(this.which, this.profile) });
-            el.replaceChildren(this.profile.body.proof.linkedBeginPrefix, ...links, this.profile.body.proof.linkedBeginSuffix);
-            this.containerEl.replaceWith(el);
+        if (this.atSignParseResult) {
+            const { atSign, links } = this.atSignParseResult;
+            const newEl = createSpan({ cls: makeProofClasses(this.which, profile) });
+            newEl.replaceChildren(profile.body.proof.linkedBeginPrefix, ...links, profile.body.proof.linkedBeginSuffix);
+            this.containerEl.replaceWith(newEl);
+            this.containerEl = newEl;
             atSign.textContent = "";
             return;
         }
@@ -67,24 +83,27 @@ export class ProofRenderChild extends MarkdownRenderChild {
         /**
          * `\begin{proof}[Foo.]` => Foo.
          */
-        if (this.display && this.sourcePath) {
-            this.renderDisplay();
+        if (this.display) {
+            this.renderDisplay(profile);
             return;
         }
 
         /**
          * `\begin{proof}` => Proof.
          */
-        this.containerEl.replaceWith(makeProofElement(this.which, this.profile));
+        const newEl = makeProofElement(this.which, profile);
+        this.containerEl.replaceWith(newEl);
+        this.containerEl = newEl;
     }
 
-    async renderDisplay() {
-        if (this.display && this.sourcePath) {
-            const children = await renderMarkdown(this.display, this.sourcePath, this.plugin);
+    async renderDisplay(profile: Profile) {
+        if (this.display) {
+            const children = await renderMarkdown(this.display, this.file.path, this.plugin);
             if (children) {
-                const el = createSpan({ cls: makeProofClasses(this.which, this.profile) });
+                const el = createSpan({ cls: makeProofClasses(this.which, profile) });
                 el.replaceChildren(...children);
                 this.containerEl.replaceWith(el);
+                this.containerEl = el;
             }
         }
     }
@@ -92,11 +111,10 @@ export class ProofRenderChild extends MarkdownRenderChild {
 
 export const ProofProcessor = (app: App, plugin: MathBooster, element: HTMLElement, context: MarkdownPostProcessorContext) => {
     const file = plugin.app.vault.getAbstractFileByPath(context.sourcePath);
-    if (!file) return;
+    if (!(file instanceof TFile)) return;
 
-    const codes = element.querySelectorAll<HTMLElement>("code");
     const settings = resolveSettings(undefined, plugin, file);
-    const profile = plugin.extraSettings.profiles[settings.profile];
+    const codes = element.querySelectorAll<HTMLElement>("code");
     for (const code of codes) {
         const text = code.textContent;
         if (!text) continue;
@@ -105,13 +123,13 @@ export const ProofProcessor = (app: App, plugin: MathBooster, element: HTMLEleme
             const rest = text.slice(settings.beginProof.length);
             let displayMatch;
             if (!rest) {
-                context.addChild(new ProofRenderChild(app, plugin, code, "begin", profile));
+                context.addChild(new ProofRenderChild(app, plugin, code, "begin", file));
             } else if (displayMatch = rest.match(/^\[(.*)\]$/)) {
                 const display = displayMatch[1];
-                context.addChild(new ProofRenderChild(app, plugin, code, "begin", profile, display, context.sourcePath));
+                context.addChild(new ProofRenderChild(app, plugin, code, "begin", file, display));
             }
         } else if (code.textContent == settings.endProof) {
-            context.addChild(new ProofRenderChild(app, plugin, code, "end", profile));
+            context.addChild(new ProofRenderChild(app, plugin, code, "end", file));
         }
     }
 };
