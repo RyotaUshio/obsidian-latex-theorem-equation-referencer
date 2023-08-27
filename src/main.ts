@@ -13,7 +13,7 @@ import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_nu
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote } from './math_live_preview_in_callouts';
 import { LinkedNotesIndexer, VaultIndex, VaultIndexer } from './indexer';
 import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
-import { iterDescendantFiles } from './utils';
+import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, iterDescendantFiles } from './utils';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
 import { Suggest } from './suggest';
 
@@ -86,12 +86,45 @@ export default class MathBooster extends Plugin {
 					"md"
 				);
 				await Promise.all(promises);
+
+				// Add profile's tags as CSS classes
+				this.app.workspace.iterateRootLeaves((leaf) => {
+					if (leaf.view instanceof MarkdownView) {
+						this.setProfileTagAsCSSClass(leaf.view);
+					}
+				});
 			})
 		);
 
 		this.registerEvent(
 			this.app.metadataCache.on("math-booster:global-settings-updated", async () => {
 				await (new VaultIndexer(this.app, this)).run();
+
+				// Add profile's tags as CSS classes
+				this.app.workspace.iterateRootLeaves((leaf) => {
+					if (leaf.view instanceof MarkdownView) {
+						this.setProfileTagAsCSSClass(leaf.view);
+					}
+				});
+			})
+		);
+
+
+		/** Add profile's tags as CSS classes */
+
+		this.app.workspace.onLayoutReady(() => {
+			this.app.workspace.iterateRootLeaves((leaf) => {
+				if (leaf.view instanceof MarkdownView) {
+					this.setProfileTagAsCSSClass(leaf.view);
+				}
+			});
+		});
+
+		this.registerEvent(
+			this.app.workspace.on("active-leaf-change", (leaf) => {
+				if (leaf?.view instanceof MarkdownView) {
+					this.setProfileTagAsCSSClass(leaf.view);
+				}
 			})
 		);
 
@@ -143,7 +176,7 @@ export default class MathBooster extends Plugin {
 							if (context.file) {
 								insertMathCalloutCallback(this, editor, config, context.file);
 							}
-						}, 
+						},
 						"Insert", "Insert theorem callout",
 					).open();
 				}
@@ -248,7 +281,7 @@ export default class MathBooster extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = {[VAULT_ROOT]: JSON.parse(JSON.stringify(DEFAULT_SETTINGS))};
+		this.settings = { [VAULT_ROOT]: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)) };
 		this.extraSettings = JSON.parse(JSON.stringify(DEFAULT_EXTRA_SETTINGS));
 		this.excludedFiles = [];
 
@@ -355,4 +388,20 @@ export default class MathBooster extends Plugin {
 			this.oldLinkMap = structuredClone(oldLinkMap);
 		}
 	}
+
+	setProfileTagAsCSSClass(view: MarkdownView) {
+		const profile = getProfile(this, view.file);
+		const classes = profile.meta.tags.map((tag) => `math-booster-${tag}`);
+		for (const el of [getMarkdownSourceViewEl(view), getMarkdownPreviewViewEl(view)]) {
+			if (el) {
+				el.classList.forEach((cls) => {
+					if (cls.startsWith("math-booster-")) {
+						el.classList.remove(cls);
+					}
+				});
+				el?.addClass(...classes);
+			}
+		}
+	}
+
 }

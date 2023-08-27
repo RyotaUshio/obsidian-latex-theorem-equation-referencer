@@ -239,6 +239,19 @@ export function isEditingView(markdownView: MarkdownView) {
     return markdownView.getMode() == "source";
 }
 
+export function getMarkdownPreviewViewEl(view: MarkdownView) {
+    return Array.from(view.previewMode.containerEl.children).find((child) => child.matches(".markdown-preview-view"));
+}
+
+export function getMarkdownSourceViewEl(view: MarkdownView) {
+    const firstCandidate = view.editor.cm?.dom.parentElement;
+    if (firstCandidate) return firstCandidate;
+    const secondCandidate = view.previewMode.containerEl.previousSibling;
+    if (secondCandidate instanceof HTMLElement && secondCandidate.matches(".markdown-source-view")) {
+        return secondCandidate;
+    }
+}
+
 
 /** CodeMirror/Lezer utilities */
 
@@ -419,6 +432,17 @@ export function resolveSettings(settings: MathCalloutSettings | undefined, plugi
     }
     Object.assign(resolvedSettings, settings);
     return resolvedSettings;
+}
+
+export function getProfile(plugin: MathBooster, file: TFile) {
+    const settings = resolveSettings(undefined, plugin, file);
+    const profile = plugin.extraSettings.profiles[settings.profile];
+    return profile;
+}
+
+export function getProfileByID(plugin: MathBooster, profileID: string) {
+    const profile = plugin.extraSettings.profiles[profileID];
+    return profile;
 }
 
 export function formatMathCalloutType(plugin: MathBooster, settings: { type: string, profile: string }): string {
