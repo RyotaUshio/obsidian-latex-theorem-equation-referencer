@@ -52,7 +52,7 @@ class MathPreviewWidget extends WidgetType {
     }
 
     ignoreEvent(event: Event): boolean {
-        // the rendered MathJax won't respond to clicks without this definition
+        // the rendered MathJax won't respond to clicks without this
         return false;
     }
 }

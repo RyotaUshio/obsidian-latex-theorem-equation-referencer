@@ -142,6 +142,11 @@ class ProofWidget extends WidgetType {
             el.replaceChildren(...children);
         }
     }
+
+    ignoreEvent(event: Event): boolean {
+        // the DOM element won't respond to clicks without this
+        return false;
+    }
 }
 
 
