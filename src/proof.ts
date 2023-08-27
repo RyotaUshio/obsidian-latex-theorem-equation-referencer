@@ -60,7 +60,12 @@ export class ProofRenderChild extends MarkdownRenderChild {
                     this.update();
                 }
             })
-        );        
+        );
+        this.plugin.registerEvent(
+            this.app.metadataCache.on("math-booster:global-settings-updated", () => {
+                this.update();
+            })
+        );
     }
 
     update(): void {
