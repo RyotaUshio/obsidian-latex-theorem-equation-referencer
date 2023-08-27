@@ -153,9 +153,10 @@ export default class MathBooster extends Plugin {
 		this.addCommand({
 			id: 'open-local-settings-for-current-note',
 			name: 'Open local settings for the current note',
-			editorCallback: (editor, context) => {
-				if (context instanceof MarkdownView) {
-					const modal = new ContextSettingModal(this.app, this, context.file);
+			callback: () => {
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (view) {
+					const modal = new ContextSettingModal(this.app, this, view.file);
 					modal.open();
 				}
 			}
