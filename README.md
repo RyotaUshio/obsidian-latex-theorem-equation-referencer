@@ -57,6 +57,12 @@ Although this plugin is still under review by the Obsidian team, you can install
   - **Even if you don't code, your help is still needed for improving the documentation and README.** For exampe, the active update of this plugin has already made some of the images in the documentation outdated...
   - Of course, programmers' contribution is extremely welcomed. (I'm pretty new to TypeScript/JavaScript/HTML/CSS. For me, making this plugin was the only purpose to start learning them. So your help is needed for real.)
 
+## Roadmaps
+
+- Import from LaTeX: ArXiv papers, research/literature notes written in LaTeX, ...
+- Export to LaTeX: Write research notes in Obsidian, and then export them into LaTeX.
+- More user-friendly UI for local settings
+
 ## Styles gallery
 
 ### Plain
