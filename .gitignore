@@ -26,3 +26,6 @@ docs/_site/
 
 # Unused
 src/callout_decoration.ts
+
+# Importer test
+importer/test/
