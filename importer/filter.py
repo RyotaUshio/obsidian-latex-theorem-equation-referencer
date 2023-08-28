@@ -193,7 +193,11 @@ def convert_proof(elem: pf.Element, doc: pf.Doc):
                     first.content = [pf.Code('\\begin{proof}'), pf.Str('@'), child, pf.Space()] + list(first.content[2:])
                     break
             else:
-                first.content = [pf.Code('\\begin{proof}'), pf.Space()] + list(first.content[2:])
+                begin_proof_text = pf.stringify(first.content[0])
+                if begin_proof_text == 'Proof.':
+                    first.content = [pf.Code('\\begin{proof}'), pf.Space()] + list(first.content[2:])
+                else:
+                    first.content = [pf.Code('\\begin{proof}[' + begin_proof_text + ']'), pf.Space()] + list(first.content[2:])
             
         if isinstance(last, pf.Para) and len(last.content) >= 2:
             last.content = list(last.content[:-1]) + [pf.Space(), pf.Code('\\end{proof}')]
