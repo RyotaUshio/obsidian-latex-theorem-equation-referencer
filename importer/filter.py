@@ -89,15 +89,16 @@ for profile in PROFILES.values():
 
 
 def strip(elem: pf.Element):
-    for i, child in enumerate(elem.content):
-        if not isinstance(child, pf.Space):
-            break
+    if elem.content:
+        for i, child in enumerate(elem.content):
+            if not isinstance(child, pf.Space):
+                break
 
-    for j, child in enumerate(elem.content[::-1]):
-        if not isinstance(child, pf.Space):
-            break
+        for j, child in enumerate(elem.content[::-1]):
+            if not isinstance(child, pf.Space):
+                break
 
-    elem.content = elem.content[i : len(elem.content) - j]
+        elem.content = elem.content[i : len(elem.content) - j]
 
 
 def is_str_st(elem: pf.Element, f: Callable):
@@ -105,7 +106,7 @@ def is_str_st(elem: pf.Element, f: Callable):
 
 
 def parseTheoremCalloutSettings(elem: pf.Element, doc: pf.Doc, auto_number: bool):
-    if isinstance(elem, pf.Para) and elem.prev is None:
+    if isinstance(elem, pf.Para) and elem.prev is None and elem.content:
         if isinstance(elem.content[0], pf.Strong):
             """
             elem.content[0]: **Theorem 1**
@@ -299,11 +300,13 @@ def preprocess_link(elem: pf.Element, doc: pf.Doc):
 
 def make_wikilink(elem: pf.Link, doc: pf.Doc):
     assert isinstance(elem, pf.Link)
-    identifier = elem.attributes['reference'].replace('\n', ' ')
-    link = doc.links.get(identifier)
-    if link is not None:
-        link = f'[[#{link}]]'
-        return pf.RawInline(link, 'markdown')
+    identifier = elem.attributes.get('reference')
+    if identifier:
+        identifier.replace('\n', ' ')
+        link = doc.links.get(identifier)
+        if link is not None:
+            link = f'[[#{link}]]'
+            return pf.RawInline(link, 'markdown')
 
             
 def process_link(elem: pf.Element, doc: pf.Doc):
@@ -345,16 +348,24 @@ def make_callout(*, content: pf.ListContainer, type: str='NOTE', title: str=None
         *content
     )
 
+def remove_soft_breaks(elem: pf.Element, doc: pf.Doc):
+    if isinstance(elem, pf.SoftBreak):
+        return pf.Space()
+    
+def bib(elem: pf.Element, doc: pf.Doc):
+    if isinstance(elem, pf.Div) and 'thebibliography' in elem.classes:
+        return [pf.Header(pf.Str('References')), *elem.content[1:]]
+
 def prepare(doc: pf.Doc):
-    abstract = doc.metadata['abstract']
-    if abstract:
-        doc.content.insert(0, make_callout(type='ABSTRACT', content=abstract.content))
+    # abstract = doc.metadata['abstract']
+    # if abstract:
+    #     doc.content.insert(0, make_callout(type='ABSTRACT', content=abstract.content))
     doc.theorem_callout_settings = []
     doc.links = {} # look-up table of the form {label/identifier: linktext, ...}
     doc.to_be_removed = []
 
 def finalize(doc: pf.Doc):
-    doc.metadata = {}
+    # doc.metadata = {}
     del doc.theorem_callout_settings
     del doc.links
     del doc.to_be_removed
@@ -363,6 +374,8 @@ def main(doc: pf.Doc=None):
     auto_number = False
     pf.run_filters(
         [
+            remove_soft_breaks,
+            bib,
             display_math_spacing,
             convert_proof,
             preprocess_link,

@@ -1,0 +1,97 @@
+import argparse
+from pathlib import Path
+import os
+import re
+
+def escape_space(path: Path):
+    return str(path).replace(' ', r'\ ')
+
+def to_string(path: Path):
+    if isinstance(path, Path):
+        return str(path.resolve())
+    if isinstance(path, str):
+        return path
+    else:
+        raise TypeError('Only Path or str is allowed')
+
+def remove_comment(line: str):
+    m = re.search(r'(?<!\\)%', line)
+    return line[:m.start()] if m else line
+
+PATTERN_CREF = re.compile(r'\\(C|c)ref\{(.*?)\}')
+def cref_to_ref(line):
+    return re.sub(PATTERN_CREF, r'\\ref{\2}', line)
+
+def ensure_newline(line):
+    if not line.endswith('\n'):
+        line += '\n'
+    return line
+
+PATTERN_INPUT = re.compile(r'\\(input|include)\{(.*?)\}')
+
+def replace_input(line: str, build_dir: Path):
+    return re.sub(
+        PATTERN_INPUT, 
+        lambda m: '\\' + m.groups()[0] + '{' + str(build_dir / m.groups()[1]) + '}', 
+        line
+    )
+
+def preprocess(root: Path, tex_path: Path, build_dir: Path):
+    build_dir = Path(build_dir)
+    preprocessed_path = build_dir / tex_path.relative_to(root)
+    preprocessed_path.parent.mkdir(exist_ok=True, parents=True)
+    lines = [f'\\#include {tex_path}' + '\n\n']
+    with open(tex_path) as f:
+        for i, line in enumerate(f):
+            line = remove_comment(line)
+            line = ensure_newline(line)
+            line = replace_input(line, build_dir)            
+            line = cref_to_ref(line)
+            lines.append(line)
+
+    with open(preprocessed_path, 'w') as f:
+        f.writelines(lines)
+
+
+def post_process(tmp_output: Path, output_dir: Path, root: Path):
+    kwd = '\\#include '
+    file_line_table = {}
+    lines = []
+    with open(tmp_output) as f:
+        for i, line in enumerate(f):
+            lines.append(line)
+            if line.startswith(kwd):
+                path = line[len(kwd):]
+                output_path = output_dir / Path(path).relative_to(root)
+                output_path.parent.mkdir(exist_ok=True, parents=True)
+                file_line_table[i] = output_path.parent / (output_path.stem + '.md')
+
+    for line_start, output_path in sorted(file_line_table.items(), key=lambda kv_pair: kv_pair[0], reverse=True):
+        with open(output_path, 'w') as f:
+            f.writelines(lines[line_start + 1:])
+
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input', type=Path)
+    parser.add_argument('build', type=Path)
+    parser.add_argument('output', type=Path)
+    parser.add_argument('filter', type=Path)
+    args = parser.parse_args()
+
+    root = args.input.parent
+    tex_paths = list(root.glob('**/*.tex'))
+    tmp_output = args.build / '__output.md'
+
+    for tex_path in tex_paths:
+        print(tex_path)
+        preprocess(root, tex_path, args.build)
+
+
+    cmd = f'pandoc {escape_space(to_string(args.build / args.input.relative_to(root)))} -s -f latex -t markdown --filter {escape_space(to_string(args.filter))} -o {escape_space(to_string(tmp_output))}'
+    print(cmd)
+    !{cmd}
+
+    post_process(tmp_output, args.output, root)
+
