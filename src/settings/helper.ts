@@ -170,7 +170,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
                 defaultValue ?? (
                     this.allowUnset
                         ? (this.settings[name] ? this.settings[name] as unknown as string : "")
-                        : this.defaultSettings[name] as unknown as string
+                        : (this.settings[name] ?? this.defaultSettings[name]) as unknown as string
                 )
             );
             dropdown.onChange(async (value: string): Promise<void> => {
