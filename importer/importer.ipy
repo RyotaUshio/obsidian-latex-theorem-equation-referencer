@@ -76,6 +76,7 @@ def post_process(tmp_output: Path, output_dir: Path, root: Path):
     include_stack = []
     path_lines_table = []
     footnote_buffer = []
+    footnote_label = None
     with open(tmp_output) as f:
         for i, line in enumerate(f):
             # de-indent theorems
@@ -109,28 +110,30 @@ def post_process(tmp_output: Path, output_dir: Path, root: Path):
                     inside_proof = False
 
             # process footnotes
-            if footnote_buffer:
-                footnote_buffer.append(line)
-
             footnote_labels = re.findall(r'\[\^[1-9][0-9]*?\]', line)
             if footnote_labels:
                 if include_stack:
                     include_stack[-1]['footnotes'].extend(footnote_labels)
                 else:
                     # stack is empty = footnote body
-                    assert len(footnote_labels) == 1
-                    label = footnote_labels[0]
-                    if footnote_buffer:
+                    if footnote_label and footnote_buffer:
                         path_lines_table_item = None
                         for item in path_lines_table:
-                            if label in item['footnotes']:
+                            if footnote_label in item['footnotes']:
                                 path_lines_table_item = item 
                                 break
                         if path_lines_table_item:
                             path_lines_table_item['lines'].extend(footnote_buffer)
-                    footnote_buffer = [line]
 
-            
+                    assert len(footnote_labels) == 1
+                    footnote_label = footnote_labels[0]
+                    footnote_buffer = []
+
+            if footnote_label:
+                footnote_buffer.append(line)
+                if footnote_label == '[^133]':
+                    print(footnote_buffer)
+
 
             # process include directive
             if line.startswith(begin):
