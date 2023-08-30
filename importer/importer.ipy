@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 import os
 import re
+from pprint import pprint
 
 def escape_space(path: Path):
     return str(path).replace(' ', r'\ ')
@@ -40,7 +41,7 @@ def preprocess(root: Path, tex_path: Path, build_dir: Path):
     build_dir = Path(build_dir)
     preprocessed_path = build_dir / tex_path.relative_to(root)
     preprocessed_path.parent.mkdir(exist_ok=True, parents=True)
-    lines = [f'\\#include {tex_path}' + '\n\n']
+    lines = ['\n', f'\\#begin {tex_path}\n' + '\n']
     with open(tex_path) as f:
         for i, line in enumerate(f):
             line = remove_comment(line)
@@ -49,26 +50,92 @@ def preprocess(root: Path, tex_path: Path, build_dir: Path):
             line = cref_to_ref(line)
             lines.append(line)
 
+    lines += ['\n', f'\\#end {tex_path}\n' + '\n']
+
     with open(preprocessed_path, 'w') as f:
         f.writelines(lines)
 
 
 def post_process(tmp_output: Path, output_dir: Path, root: Path):
-    kwd = '\\#include '
-    file_line_table = {}
-    lines = []
+    begin = '\\#begin '
+    end = '\\#end '
+    inside_div = False
+    inside_proof = False
+    inside_display_math = False
+    include_stack = []
+    path_lines_table = []
     with open(tmp_output) as f:
         for i, line in enumerate(f):
-            lines.append(line)
-            if line.startswith(kwd):
-                path = line[len(kwd):]
+            # de-indent theorems
+            if not inside_div and line.lstrip().startswith('> [!math'):
+                inside_div = True
+            if inside_div and not line.lstrip().startswith('>'):
+                inside_div = False
+
+            if inside_div:
+                line = line.lstrip()
+
+            # de-indent display math blocks
+            if not inside_display_math and (line.strip().startswith('$$') or line.strip().endswith('$$')):
+                inside_display_math = True
+            if inside_display_math and (line.strip().startswith('$$') or line.strip().endswith('$$')):
+                inside_display_math = False
+
+            if inside_display_math:
+                line = line.lstrip()
+
+            # de-indent proofs
+            if not inside_proof and '\\begin{proof}' in line:
+                inside_proof = True
+            if inside_proof:
+                line = line.lstrip()
+                if '\\end{proof}' in line:
+                    inside_proof = False
+
+            # process include directive
+            if line.startswith(begin):
+                # get info
+                path = line[len(begin):]
                 output_path = output_dir / Path(path).relative_to(root)
                 output_path.parent.mkdir(exist_ok=True, parents=True)
-                file_line_table[i] = output_path.parent / (output_path.stem + '.md')
+                include_path = output_path.parent / (output_path.stem + '.md')
 
-    for line_start, output_path in sorted(file_line_table.items(), key=lambda kv_pair: kv_pair[0], reverse=True):
-        with open(output_path, 'w') as f:
-            f.writelines(lines[line_start + 1:])
+                # update stack
+                if include_stack:
+                    include_stack[-1]['lines'].append(f'[[{include_path.relative_to(output_dir)}]]' + '\n')
+                include_stack.append({'path': include_path, 'lines': []})
+                # print("pushed:")
+                # pprint(include_stack)
+                # print()
+                continue
+            if include_stack:
+                if line.startswith(end):
+                    path_lines_table.append(include_stack.pop())
+                    # print("popped:")
+                    # pprint(include_stack)
+                    # print()
+                    continue    
+
+                include_stack[-1]['lines'].append(line)
+
+    path_lines_table += include_stack
+    # print("final:")
+    # pprint(path_lines_table)
+
+    for item in path_lines_table:
+        print(f"write {item['path']}")
+        with open(item['path'], 'w') as f:
+            # no preceeding brank line, exactly one trailing brank line
+            n_lines = len(item['lines'])
+            if ''.join(item['lines']).strip():
+                i = 0
+                j = -1
+                while not item['lines'][i].strip():
+                    i += 1
+                while not item['lines'][j].strip():
+                    j -= 1
+                lines = item['lines'][i:n_lines+j+1]
+                f.writelines(lines)
 
 
 

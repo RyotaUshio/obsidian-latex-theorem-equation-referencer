@@ -165,17 +165,30 @@ def parseTheoremCalloutSettings(elem: pf.Element, doc: pf.Doc, auto_number: bool
 def format(string: str):
     return string.replace("\u2018", "'").replace("\u2019", "'")
 
+def get_theorem_type(elem: pf.Element):
+    if isinstance(elem, pf.Div):
+        for cls in elem.classes:
+            if cls in ENVS:
+                return cls, 'auto'
+            if cls.endswith('*') and cls[:-1] in ENVS:
+                return cls[:-1], ''
 
 def convert_theorem_callout(elem: pf.Element, doc: pf.Doc, auto_number: bool):
-    if isinstance(elem, pf.Div):
-        theorem_type = [cls for cls in elem.classes if cls in ENVS]
+    theorem_type_info = get_theorem_type(elem)
+    if theorem_type_info:
+        theorem_type, number = theorem_type_info
         if theorem_type:
             doc.theorem_callout_settings.append(
-                {"type": theorem_type[0], "label": elem.identifier}
+                {"type": theorem_type, "label": elem.identifier}
             )
             content = elem.content.walk(
                 lambda elem, doc: parseTheoremCalloutSettings(elem, doc, auto_number)
             )
+
+            if auto_number:
+                doc.theorem_callout_settings[-1]["number"] = number
+            elif number == '': 
+                doc.theorem_callout_settings[-1]["number"] = ''
 
             settings = doc.theorem_callout_settings[-1]
 
@@ -183,9 +196,12 @@ def convert_theorem_callout(elem: pf.Element, doc: pf.Doc, auto_number: bool):
                 settings[k] = format(v)
             
             return make_callout(type='math', metadata=json.dumps(settings), content=content)
+        
+def is_proof(elem: pf.Element):
+    return isinstance(elem, pf.Div) and 'proof' in elem.classes
 
 def convert_proof(elem: pf.Element, doc: pf.Doc):
-    if isinstance(elem, pf.Div) and 'proof' in elem.classes:
+    if is_proof(elem):
         first = elem.content[0]
         last = elem.content[-1]
         if isinstance(first, pf.Para) and len(first.content) >= 3 and isinstance(first.content[1], pf.Space) and isinstance(first.content[0], pf.Emph):
@@ -355,17 +371,17 @@ def remove_soft_breaks(elem: pf.Element, doc: pf.Doc):
 def bib(elem: pf.Element, doc: pf.Doc):
     if isinstance(elem, pf.Div) and 'thebibliography' in elem.classes:
         return [pf.Header(pf.Str('References')), *elem.content[1:]]
-
+    
 def prepare(doc: pf.Doc):
-    # abstract = doc.metadata['abstract']
-    # if abstract:
-    #     doc.content.insert(0, make_callout(type='ABSTRACT', content=abstract.content))
+    abstract = doc.get_metadata('abstract')
+    if abstract:
+        doc.content.insert(0, make_callout(type='ABSTRACT', content=abstract.content))
     doc.theorem_callout_settings = []
     doc.links = {} # look-up table of the form {label/identifier: linktext, ...}
     doc.to_be_removed = []
 
 def finalize(doc: pf.Doc):
-    # doc.metadata = {}
+    doc.metadata = {}
     del doc.theorem_callout_settings
     del doc.links
     del doc.to_be_removed
