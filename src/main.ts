@@ -271,9 +271,25 @@ export default class MathBooster extends Plugin {
 
 
 		/** Editor suggest */
+
 		this.registerEditorSuggest(new Suggest(this.app, this, ["theorem", "equation"]));
 		this.registerEditorSuggest(new Suggest(this.app, this, ["theorem"]));
 		this.registerEditorSuggest(new Suggest(this.app, this, ["equation"]));
+
+
+		/** File menu */
+
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, file) => {
+				menu.addSeparator()
+					.addItem((item) => {
+					item.setTitle(`${this.manifest.name}: Open local settings`)
+						.onClick(() => {
+							new ContextSettingModal(this.app, this, file).open();
+						});
+				});
+			})
+		);
 	}
 
 	onunload() {
