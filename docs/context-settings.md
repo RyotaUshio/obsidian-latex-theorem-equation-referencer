@@ -34,7 +34,8 @@ vault root
 
 There are several ways to set up the local settings.
 
-- Plugin setting tab
+- File explorer: Right-click on a file/folder, and then click "Math Booster: Open local settings".
+- Plugin setting tab ("Global" for the vault root, "Local" for other files/folders)
 - "Open local settings for the current note" command
 - "Open local settings for the current note" button in theorem callout settings
 
