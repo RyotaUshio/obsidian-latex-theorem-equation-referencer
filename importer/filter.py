@@ -5,6 +5,7 @@ import json
 import re
 import random
 from typing import Callable
+from pprint import pformat
 
 ENVS = [
     "axiom",
@@ -211,7 +212,7 @@ def convert_proof(elem: pf.Element, doc: pf.Doc):
                     break
             else:
                 begin_proof_text = pf.stringify(first.content[0])
-                if begin_proof_text == 'Proof.':
+                if begin_proof_text in 'Proof.':
                     first.content = [pf.Code('\\begin{proof}'), pf.Space()] + list(first.content[2:])
                 else:
                     first.content = [pf.Code('\\begin{proof}[' + begin_proof_text + ']'), pf.Space()] + list(first.content[2:])
@@ -269,8 +270,8 @@ def remove_comment(line: str, start: int=0):
 def is_label_span(elem: pf.Element):
     if not isinstance(elem, pf.Span):
         return False
-    if elem.content:
-        return False
+    # if elem.content:
+    #     return False
     if not hasattr(elem, 'identifier') or not hasattr(elem, 'attributes'):
         return False
     return elem.identifier == elem.attributes.get('label') != None
@@ -333,13 +334,16 @@ def process_link(elem: pf.Element, doc: pf.Doc):
         neighbors = []
         added_to_be_removed = False
         while another:
-            neighbors.append(another)
-            if isinstance(another, pf.Str) and another.text in KEYWORDS:
-                doc.to_be_removed.extend(neighbors)
-                added_to_be_removed = True
+            if isinstance(another, pf.Str):
+                for kwd in KEYWORDS:
+                    if another.text.endswith(kwd):
+                        another.text = another.text[:-len(kwd)]
+                        doc.to_be_removed.extend(neighbors)
+                        added_to_be_removed = True
                 break
             if not isinstance(another, (pf.Space, pf.SoftBreak)):
                 break
+            neighbors.append(another)
             another = another.prev
 
         # case 2: ([[link]]) => [[link]]
@@ -347,6 +351,11 @@ def process_link(elem: pf.Element, doc: pf.Doc):
             if is_str_st(elem.prev, lambda s: s.endswith('(')) and is_str_st(elem.next, lambda s: s.startswith(')')):
                 elem.prev.text = elem.prev.text[:-1]
                 elem.next.text = elem.next.text[1:]
+
+        # if elem.attributes.get('reference') == "prop:pseudo_inverse_general_solution":
+            # pf.debug(elem)
+            # pf.debug(make_wikilink(elem, doc))
+            # pf.debug()
 
         return make_wikilink(elem, doc)
     

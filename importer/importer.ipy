@@ -21,7 +21,7 @@ def remove_comment(line: str):
 
 PATTERN_CREF = re.compile(r'\\(C|c)ref\{(.*?)\}')
 def cref_to_ref(line):
-    return re.sub(PATTERN_CREF, r'\\ref{\2}', line)
+    return re.sub(PATTERN_CREF, r' \\ref{\2} ', line)
 
 def ensure_newline(line):
     if not line.endswith('\n'):
@@ -157,6 +157,10 @@ if __name__ == '__main__':
 
 
     cmd = f'pandoc {escape_space(to_string(args.build / args.input.relative_to(root)))} -s -f latex -t markdown --filter {escape_space(to_string(args.filter))} -o {escape_space(to_string(tmp_output))}'
+    print(cmd)
+    !{cmd}
+
+    cmd = f'pandoc {escape_space(to_string(args.build / args.input.relative_to(root)))} -s -f latex -t json -o test/fml_build/ast_begin.json'
     print(cmd)
     !{cmd}
 
