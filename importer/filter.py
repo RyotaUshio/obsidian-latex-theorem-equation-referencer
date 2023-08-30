@@ -6,6 +6,9 @@ import re
 import random
 from typing import Callable
 from pprint import pformat
+from pathlib import Path
+
+LABELS = Path('test/fml_build/__labels.json')
 
 ENVS = [
     "axiom",
@@ -322,8 +325,12 @@ def make_wikilink(elem: pf.Link, doc: pf.Doc):
         identifier.replace('\n', ' ')
         link = doc.links.get(identifier)
         if link is not None:
-            link = f'[[#{link}]]'
-            return pf.RawInline(link, 'markdown')
+
+            # find the file where this label (identifier) is defined
+            for path, labels in doc.path_labels_table.items():
+                if identifier in labels:
+                    link = f'[[{path}#{link}]]'
+                    return pf.RawInline(link, 'markdown')
 
             
 def process_link(elem: pf.Element, doc: pf.Doc):
@@ -388,6 +395,8 @@ def prepare(doc: pf.Doc):
     doc.theorem_callout_settings = []
     doc.links = {} # look-up table of the form {label/identifier: linktext, ...}
     doc.to_be_removed = []
+    with open(LABELS) as f:
+        doc.path_labels_table = json.load(f)
 
 def finalize(doc: pf.Doc):
     doc.metadata = {}

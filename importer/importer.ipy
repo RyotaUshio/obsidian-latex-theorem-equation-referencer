@@ -1,8 +1,10 @@
 import argparse
 from pathlib import Path
-import os
+import json
 import re
 from pprint import pprint
+
+ROOT = Path('test/fml')
 
 def escape_space(path: Path):
     return str(path).replace(' ', r'\ ')
@@ -37,17 +39,26 @@ def replace_input(line: str, build_dir: Path):
         line
     )
 
-def preprocess(root: Path, tex_path: Path, build_dir: Path):
+def parse_labels(line, labels):
+    for m in re.finditer(r'\\label\{(.*?)\}', line):
+        label = m.groups()[0]
+        labels.append(label)
+
+def preprocess(root: Path, tex_path: Path, build_dir: Path, path_labels_table: dict):
     build_dir = Path(build_dir)
-    preprocessed_path = build_dir / tex_path.relative_to(root)
+    relative_path = tex_path.relative_to(root)
+    preprocessed_path = build_dir / relative_path
     preprocessed_path.parent.mkdir(exist_ok=True, parents=True)
     lines = ['\n', f'\\#begin {tex_path}\n' + '\n']
+    without_suffix = str(relative_path.parent / relative_path.stem)
     with open(tex_path) as f:
+        path_labels_table[without_suffix] = []
         for i, line in enumerate(f):
             line = remove_comment(line)
             line = ensure_newline(line)
             line = replace_input(line, build_dir)            
             line = cref_to_ref(line)
+            parse_labels(line, path_labels_table[without_suffix])
             lines.append(line)
 
     lines += ['\n', f'\\#end {tex_path}\n' + '\n']
@@ -116,7 +127,7 @@ def post_process(tmp_output: Path, output_dir: Path, root: Path):
                     # print()
                     continue    
 
-                include_stack[-1]['lines'].append(line)
+                include_stack[-1]['lines'].append(ensure_newline(line))
 
     path_lines_table += include_stack
     # print("final:")
@@ -150,11 +161,16 @@ if __name__ == '__main__':
     root = args.input.parent
     tex_paths = list(root.glob('**/*.tex'))
     tmp_output = args.build / '__output.md'
+    labels_path = args.build / '__labels.json'
+
+    path_labels_table = {}
 
     for tex_path in tex_paths:
-        print(tex_path)
-        preprocess(root, tex_path, args.build)
+        print(f'preprocess {tex_path}')
+        preprocess(root, tex_path, args.build, path_labels_table)
 
+    with open(labels_path, 'w') as f:
+        json.dump(path_labels_table, f)
 
     cmd = f'pandoc {escape_space(to_string(args.build / args.input.relative_to(root)))} -s -f latex -t markdown --filter {escape_space(to_string(args.filter))} -o {escape_space(to_string(tmp_output))}'
     print(cmd)
@@ -164,5 +180,6 @@ if __name__ == '__main__':
     print(cmd)
     !{cmd}
 
+    print('postprocessing...')
     post_process(tmp_output, args.output, root)
 

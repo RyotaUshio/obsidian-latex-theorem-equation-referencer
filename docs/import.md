@@ -5,6 +5,8 @@ title: Importing from LaTeX
 
 ## Troubleshooting
 
+### Custom proof environments
+
 Pandoc cannot recognize a proof environment if it is overwritten like this:
 
 ```latex
@@ -12,3 +14,5 @@ Pandoc cannot recognize a proof environment if it is overwritten like this:
 ```
 
 To avoid problems, this kind of line must be commented out.
+
+### Use `input` for preamble. Don't do `\usepackage{preamble}`
