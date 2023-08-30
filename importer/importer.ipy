@@ -130,10 +130,9 @@ def post_process(tmp_output: Path, output_dir: Path, root: Path):
                     footnote_buffer = []
 
             if footnote_label:
+                if line.startswith(' '):
+                    line = '  ' + line.lstrip()
                 footnote_buffer.append(line)
-                if footnote_label == '[^133]':
-                    print(footnote_buffer)
-
 
             # process include directive
             if line.startswith(begin):
