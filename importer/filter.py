@@ -111,7 +111,7 @@ def is_str_st(elem: pf.Element, f: Callable):
 
 def parseTheoremCalloutSettings(elem: pf.Element, doc: pf.Doc, auto_number: bool):
     if isinstance(elem, pf.Para) and elem.prev is None and elem.content:
-        if isinstance(elem.content[0], pf.Strong):
+        if isinstance(elem.content[0], (pf.Strong, pf.Emph)):
             """
             elem.content[0]: **Theorem 1**
             """
@@ -123,30 +123,39 @@ def parseTheoremCalloutSettings(elem: pf.Element, doc: pf.Doc, auto_number: bool
                 )
 
             if len(elem.content) >= 2:
+                n_unclosed_paren = 0
                 for i, child in enumerate(elem.content):
-                    if isinstance(child, pf.Space) and isinstance(child.next, pf.Space):
+
+                    if i == 0 or isinstance(child, pf.Space):
+                        continue
+
+                    txt = pf.stringify(child)
+                    n_unclosed_paren += txt.count('(') - txt.count(')')
+
+                    # if isinstance(child, pf.Space) and isinstance(child.next, pf.Space):
+                    if n_unclosed_paren == 0 and isinstance(child.next, pf.Space):
+
                         if isinstance(elem.content[1], pf.Space):
-                            assert i >= 3
+                            assert i >= 2
                             """
                             0             : e.g. **Theorem 1**
                             1             : Space
-                            2 , ..., i - 1: Theorem subtitle. e.g. "(Hoeffding's inequality)."
-                            i             : Space
-                            i + 1         : Space
+                            2 , ..., i: Theorem subtitle. e.g. "(Hoeffding's inequality)."
+                            i + 1           : Space
                             i + 2, ...    : Content of theorem
                             """
-                            title = pf.stringify(elem.content[2 : i + 1])
+                            title = pf.stringify(pf.Para(*list(map(lambda e: pf.RawInline('$' + e.text + '$', 'markdown') if isinstance(e, pf.Math) and e.format == 'InlineMath' else e, elem.content[2 : i + 1]))))
                             match = re.match(r"\((.*)\)\.?", title.strip())
                             if match:
                                 doc.theorem_callout_settings[-1]["title"] = match.groups()[0]
                             
                         else:
-                            assert i == 2
+                            assert i == 1
                             """
                             0              : e.g. **Theorem 1**
                             1              : "."
                             i = 2          : Space
-                            i + 1 = 3      : Space
+                            (i + 1 = 3      : Space)
                             i + 2 = 4, ... : Content of theorem
                             """
                         altered = pf.Para(*elem.content[i + 2 :])
@@ -164,6 +173,11 @@ def parseTheoremCalloutSettings(elem: pf.Element, doc: pf.Doc, auto_number: bool
                     altered = pf.Para(*altered.content[0].content)
 
             return altered
+
+
+def remove_style(elem: pf.Element, doc: pf.Doc):
+    if hasattr(elem, 'attributes') and elem.attributes.get('style'):
+        del elem.attributes['style']
 
 
 def format(string: str):
@@ -208,14 +222,15 @@ def convert_proof(elem: pf.Element, doc: pf.Doc):
     if is_proof(elem):
         first = elem.content[0]
         last = elem.content[-1]
-        if isinstance(first, pf.Para) and len(first.content) >= 3 and isinstance(first.content[1], pf.Space) and isinstance(first.content[0], pf.Emph):
+
+        if isinstance(first, pf.Para) and len(first.content) >= 2 and isinstance(first.content[1], pf.Space) and isinstance(first.content[0], (pf.Strong, pf.Emph)):
             for child in first.content[0].content:
                 if isinstance(child, pf.Link):
                     first.content = [pf.Code('\\begin{proof}'), pf.Str('@'), child, pf.Space()] + list(first.content[2:])
                     break
             else:
                 begin_proof_text = pf.stringify(first.content[0])
-                if begin_proof_text in 'Proof.':
+                if begin_proof_text == 'Proof.':
                     first.content = [pf.Code('\\begin{proof}'), pf.Space()] + list(first.content[2:])
                 else:
                     first.content = [pf.Code('\\begin{proof}[' + begin_proof_text + ']'), pf.Space()] + list(first.content[2:])
@@ -405,7 +420,7 @@ def finalize(doc: pf.Doc):
     del doc.to_be_removed
 
 def main(doc: pf.Doc=None):
-    auto_number = False
+    auto_number = True
     pf.run_filters(
         [
             remove_soft_breaks,
@@ -418,6 +433,7 @@ def main(doc: pf.Doc=None):
             lambda elem, doc: convert_theorem_callout(elem, doc, auto_number),
             display_math_spacing,
             aligned_to_align,
+            remove_style,
             cleanup
         ],
         doc=doc,

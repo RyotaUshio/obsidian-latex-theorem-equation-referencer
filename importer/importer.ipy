@@ -95,6 +95,10 @@ def post_process(tmp_output: Path, output_dir: Path, root: Path):
             if inside_display_math:
                 line = line.lstrip()
 
+            # some brute force
+            if line.lstrip().startswith('>     '):
+                line = '> ' + line[len('>     '):]
+
             # de-indent proofs
             if not inside_proof and '\\begin{proof}' in line:
                 inside_proof = True
@@ -125,9 +129,18 @@ def post_process(tmp_output: Path, output_dir: Path, root: Path):
                     # print("popped:")
                     # pprint(include_stack)
                     # print()
-                    continue    
+                    continue
 
-                include_stack[-1]['lines'].append(ensure_newline(line))
+                append_to_last_line = False
+                if inside_div and include_stack[-1]['lines']:
+                    lines = include_stack[-1]['lines']
+                    line_content = lines[-1].lstrip('> ').strip(' \n')
+
+                    if line.lstrip(' >').strip(' \n') and line_content and not line_content.startswith('[!math'):
+                        lines[-1] = lines[-1].rstrip('\n') + line.lstrip('>')
+                        append_to_last_line = True
+                if not append_to_last_line:
+                    include_stack[-1]['lines'].append(ensure_newline(line))
 
     path_lines_table += include_stack
     # print("final:")
