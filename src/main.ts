@@ -200,7 +200,6 @@ export default class MathBooster extends Plugin {
 			editorCallback: (editor, context) => insertProof(this, editor, context)
 		});
 
-
 		/** Editor Extensions */
 
 		// hide > [!math|{"type":"theorem", ...}]
@@ -217,7 +216,6 @@ export default class MathBooster extends Plugin {
 		this.registerEditorExtension(this.proofPositionField);
 		this.registerEditorExtension(proofDecorationFactory(this));
 		this.registerEditorExtension(proofFoldFactory(this));
-
 
 
 		/** Markdown post processors */
@@ -253,13 +251,10 @@ export default class MathBooster extends Plugin {
 		this.registerMarkdownPostProcessor((element, context) => {
 			const mjxElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax > mjx-math[display="true"]');
 			if (mjxElements) {
-				for (let i = 0; i < mjxElements.length; i++) {
-					const mjxContainerEl = mjxElements[i].parentElement;
-					if (mjxContainerEl) {
-						context.addChild(
-							new DisplayMathRenderChild(mjxContainerEl, this.app, this, context)
-						);
-					}
+				for (const mjxContainerEl of mjxElements) {
+					context.addChild(
+						new DisplayMathRenderChild(mjxContainerEl, this.app, this, context)
+					);
 				}
 			}
 		});
@@ -283,11 +278,11 @@ export default class MathBooster extends Plugin {
 			this.app.workspace.on("file-menu", (menu, file) => {
 				menu.addSeparator()
 					.addItem((item) => {
-					item.setTitle(`${this.manifest.name}: Open local settings`)
-						.onClick(() => {
-							new ContextSettingModal(this.app, this, file).open();
-						});
-				});
+						item.setTitle(`${this.manifest.name}: Open local settings`)
+							.onClick(() => {
+								new ContextSettingModal(this.app, this, file).open();
+							});
+					});
 			})
 		);
 	}

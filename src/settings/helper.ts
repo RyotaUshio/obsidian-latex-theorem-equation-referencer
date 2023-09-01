@@ -233,7 +233,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         return setting;
     }
 
-    addSliderSetting(name: NumberKeys<SettingsType>, prettyName: string, description?: string): Setting {
+    addSliderSetting(name: NumberKeys<SettingsType>, limits: {min: number, max: number, step: number | 'any'}, prettyName: string, description?: string): Setting {
         const setting = new Setting(this.contentEl).setName(prettyName);
         if (description) {
             setting.setDesc(description);
@@ -241,7 +241,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         let sliderComponent: SliderComponent;
         setting.addSlider((slider) => {
             sliderComponent = slider;
-            slider.setLimits(0, 0.5, 0.01)
+            slider.setLimits(limits.min, limits.max, limits.step)
                 .setDynamicTooltip()
                 .setValue(this.defaultSettings[name] as unknown as number);
             if (typeof this.settings[name] == "number") {
@@ -346,9 +346,10 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addTextSetting("triggerSuggest", "Trigger suggestion with", "Type this string to trigger suggestion for theorem callouts & equation blocks.");
         this.addTextSetting("triggerTheoremSuggest", "Trigger theorem suggestion with", "Type this string to trigger suggestion for theorem callouts.");
         this.addTextSetting("triggerEquationSuggest", "Trigger equation suggestion with", "Type this string to trigger suggestion for equation blocks.");
-        this.addToggleSetting("renderMathInSuggestion", "Render math in equation suggestions", "Turn this off if you have a performance issue.");
+        this.addSliderSetting("suggestNumber", {min: 1, max: 50, step: 1}, "Number of suggestions", "Specify how many items are suggested at one time. Set it to a smaller value if you have a performance issue when equation suggestions with math rendering on.");
+        this.addToggleSetting("renderMathInSuggestion", "Render math in equation suggestions", "Turn this off if you have a performance issue and reducing the number of suggestions doesn't fix it.");
         this.addDropdownSetting("searchMethod", ["Fuzzy", "Simple"], "Search method", "Fuzzy search is more flexible, but simple search is more light-weight.");
-        this.addSliderSetting("upWeightRecent", "Up-weight recently opened notes by", "It takes effect only if \"Search only recently opened notes\" is turned off.");
+        this.addSliderSetting("upWeightRecent", {min: 0, max: 0.5, step: 0.01}, "Up-weight recently opened notes by", "It takes effect only if \"Search only recently opened notes\" is turned off.");
         this.addToggleSetting("searchOnlyRecent", "Search only recently opened notes", "Turning this on might speed up suggestions.");
         this.addDropdownSetting("modifierToJump", ['Mod', 'Ctrl', 'Meta', 'Shift', 'Alt'], "Modifier key for jumping to suggestion", "Press Enter and this modifier key to jump to the currently selected suggestion. Changing this option requires to reloading " + this.plugin.manifest.name + " to take effect.");
         const list = this.settingRefs.modifierToJump.descEl.createEl("ul");

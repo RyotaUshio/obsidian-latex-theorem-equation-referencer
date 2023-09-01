@@ -30,6 +30,7 @@ export class Suggest extends EditorSuggest<IndexItem> {
         const text = editor.getRange({ line: cursor.line, ch: 0 }, cursor);
         const index = text.lastIndexOf(trigger);
         const query = text.slice(index + trigger.length);
+        this.limit = this.plugin.extraSettings.suggestNumber;
         return (index >= 0 && !query.startsWith("[[")) ? {
             start: { line: cursor.line, ch: index },
             end: cursor,

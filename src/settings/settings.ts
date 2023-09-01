@@ -106,6 +106,7 @@ export interface ExtraSettings {
     triggerTheoremSuggest: string;
     triggerEquationSuggest: string;
     renderMathInSuggestion: boolean;
+    suggestNumber: number;
     searchMethod: SearchMethod;
     upWeightRecent: number;
     searchOnlyRecent: boolean;
@@ -155,6 +156,7 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     triggerTheoremSuggest: "\\tref",
     triggerEquationSuggest: "\\eqref",
     renderMathInSuggestion: true,
+    suggestNumber: 20,
     searchMethod: "Fuzzy",
     upWeightRecent: 0.1, 
     searchOnlyRecent: false,
