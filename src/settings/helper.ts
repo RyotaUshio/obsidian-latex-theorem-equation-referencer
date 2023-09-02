@@ -4,7 +4,7 @@ import MathBooster from '../main';
 import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from '../env';
 import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, THEOREM_REF_FORMATS, THEOREM_CALLOUT_STYLES, TheoremCalloutSettings, MathContextSettings, NUMBER_STYLES } from './settings';
 import { BooleanKeys, NumberKeys, formatTheoremCalloutType, formatTitle } from '../utils';
-import { AutoNoteIndexer } from '../indexer';
+import { AbstractFileIndex, AutoNoteIndexer } from '../indexer';
 import { DEFAULT_PROFILES, ManageProfileModal } from './profile';
 
 
@@ -177,7 +177,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
                 if (this.allowUnset && !value) {
                     delete this.settings[name];
                 } else {
-                    Object.assign(this.settings, {[name]: value});
+                    Object.assign(this.settings, { [name]: value });
                 }
             })
         });
@@ -196,7 +196,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
             text.setPlaceholder(String(this.defaultSettings[name] ?? ""))
                 .setValue(String(this.settings[name] ?? ""))
                 .onChange((value) => {
-                    Object.assign(this.settings, {[name]: value});
+                    Object.assign(this.settings, { [name]: value });
                 })
         });
         if (this.addClear) {
@@ -221,7 +221,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
                 toggle.setValue(this.settings[name] as unknown as boolean);
             }
             toggle.onChange((value) => {
-                Object.assign(this.settings, {[name]: value});
+                Object.assign(this.settings, { [name]: value });
             });
         });
         if (this.addClear) {
@@ -233,7 +233,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         return setting;
     }
 
-    addSliderSetting(name: NumberKeys<SettingsType>, limits: {min: number, max: number, step: number | 'any'}, prettyName: string, description?: string): Setting {
+    addSliderSetting(name: NumberKeys<SettingsType>, limits: { min: number, max: number, step: number | 'any' }, prettyName: string, description?: string): Setting {
         const setting = new Setting(this.contentEl).setName(prettyName);
         if (description) {
             setting.setDesc(description);
@@ -248,8 +248,8 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
                 slider.setValue(this.settings[name] as unknown as number);
             }
             slider.onChange((value) => {
-                    Object.assign(this.settings, {[name]: value});
-                })
+                Object.assign(this.settings, { [name]: value });
+            })
         });
         if (this.addClear) {
             this.addClearButton(name, setting, () => {
@@ -263,6 +263,8 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
 
 
 export class MathContextSettingsHelper extends SettingsHelper<MathContextSettings> {
+    isRoot: boolean;
+
     constructor(
         contentEl: HTMLElement,
         settings: Partial<MathContextSettings>,
@@ -272,10 +274,15 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
     ) {
         const isRoot = file instanceof TFolder && file.isRoot();
         super(contentEl, settings, defaultSettings, plugin, !isRoot, !isRoot);
+        this.isRoot = isRoot;
     }
 
     makeSettingPane() {
         const { contentEl } = this;
+
+        if (!this.isRoot) {
+            this.addProjectRootSetting();
+        }
 
         contentEl.createEl("h4", { text: "Theorem callouts" });
         this.addProfileSetting();
@@ -322,8 +329,36 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addTextSetting("beginProof", "Beginning of a proof");
         this.addTextSetting("endProof", "End of a proof");
 
-        this.contentEl.createEl("h3", {text: "Suggestions"});
+        this.contentEl.createEl("h3", { text: "Suggestions" });
         this.addToggleSetting("insertSpace", "Insert a space after the link");
+    }
+
+    /**
+     * This setting actually is NOT related to local/context settings at all.
+     * But it makes sense to place it here from the UI perspective.
+     * @returns 
+     */
+    addProjectRootSetting(): Setting | undefined {
+        const prettyName = "Set as project root";
+        const description = this.file instanceof TFile 
+            ? "If turned on, this file itself will be treated as a project." 
+            : "If turned on, all the files under this folder will be treated as a single project.";
+        let index: AbstractFileIndex | undefined
+        if (this.file instanceof TFile) {
+            index = this.plugin.index.getNoteIndex(this.file)
+        } else if (this.file instanceof TFolder) {
+            index = this.plugin.index.getFolderIndex(this.file)
+        }
+        if (index) {
+            const setting = new Setting(this.contentEl).setName(prettyName).setDesc(description);
+            setting.addToggle((toggle) => {
+                toggle.setValue(index!.isProjectRoot)
+                    .onChange((value) => {
+                        index!.isProjectRoot = value;
+                    });
+            });
+            return setting;
+        }
     }
 
     addProfileSetting(defaultValue?: string): Setting {
@@ -346,18 +381,18 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addTextSetting("triggerSuggest", "Trigger suggestion with", "Type this string to trigger suggestion for theorem callouts & equation blocks.");
         this.addTextSetting("triggerTheoremSuggest", "Trigger theorem suggestion with", "Type this string to trigger suggestion for theorem callouts.");
         this.addTextSetting("triggerEquationSuggest", "Trigger equation suggestion with", "Type this string to trigger suggestion for equation blocks.");
-        this.addSliderSetting("suggestNumber", {min: 1, max: 50, step: 1}, "Number of suggestions", "Specify how many items are suggested at one time. Set it to a smaller value if you have a performance issue when equation suggestions with math rendering on.");
+        this.addSliderSetting("suggestNumber", { min: 1, max: 50, step: 1 }, "Number of suggestions", "Specify how many items are suggested at one time. Set it to a smaller value if you have a performance issue when equation suggestions with math rendering on.");
         this.addToggleSetting("renderMathInSuggestion", "Render math in equation suggestions", "Turn this off if you have a performance issue and reducing the number of suggestions doesn't fix it.");
         this.addDropdownSetting("searchMethod", ["Fuzzy", "Simple"], "Search method", "Fuzzy search is more flexible, but simple search is more light-weight.");
-        this.addSliderSetting("upWeightRecent", {min: 0, max: 0.5, step: 0.01}, "Up-weight recently opened notes by", "It takes effect only if \"Search only recently opened notes\" is turned off.");
+        this.addSliderSetting("upWeightRecent", { min: 0, max: 0.5, step: 0.01 }, "Up-weight recently opened notes by", "It takes effect only if \"Search only recently opened notes\" is turned off.");
         this.addToggleSetting("searchOnlyRecent", "Search only recently opened notes", "Turning this on might speed up suggestions.");
         this.addDropdownSetting("modifierToJump", ['Mod', 'Ctrl', 'Meta', 'Shift', 'Alt'], "Modifier key for jumping to suggestion", "Press Enter and this modifier key to jump to the currently selected suggestion. Changing this option requires to reloading " + this.plugin.manifest.name + " to take effect.");
         const list = this.settingRefs.modifierToJump.descEl.createEl("ul");
-        list.createEl("li", {text: "Mod is Cmd on MacOS and Ctrl on other OS."});
-        list.createEl("li", {text: "Meta is Cmd on MacOS and Win key on Windows."});
+        list.createEl("li", { text: "Mod is Cmd on MacOS and Ctrl on other OS." });
+        list.createEl("li", { text: "Meta is Cmd on MacOS and Win key on Windows." });
         this.addDropdownSetting("suggestLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected suggestion.")
         // backlinks
-        this.contentEl.createEl("h3", {text: "Backlinks"});
+        this.contentEl.createEl("h3", { text: "Backlinks" });
         this.contentEl.createDiv({
             text: `Right-click a theorem callout or an equation and select \"Show backlinks\" to see its backlinks.`,
             cls: ["setting-item-description", "math-booster-setting-item-description"],

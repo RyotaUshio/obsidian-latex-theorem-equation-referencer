@@ -1,4 +1,4 @@
-import { App, CachedMetadata, MarkdownView, SectionCache, TFile } from 'obsidian';
+import { App, CachedMetadata, MarkdownView, SectionCache, TAbstractFile, TFile, TFolder } from 'obsidian';
 
 import MathBooster from './main';
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, TheoremRefFormat, ResolvedMathSettings, TheoremCalloutSettings, TheoremCalloutPrivateFields } from './settings/settings';
@@ -11,12 +11,47 @@ import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 export type IndexItemType = "theorem" | "equation";
 export type IndexItem = { type: IndexItemType, printName: string, refName: string, cache: SectionCache, file: TFile, settings?: TheoremCalloutSettings, mathText?: string };
 
-export class NoteIndex {
+
+export abstract class AbstractFileIndex {
+    isProjectRoot: boolean;
+    constructor(public file: TAbstractFile, public plugin: MathBooster) { }
+    getProjectRoot() {
+        let file: TAbstractFile | null = this.file;
+        while (file) {
+            if (file instanceof TFile) {
+                const index = this.plugin.index.getNoteIndex(file);
+                if (index.isProjectRoot) {
+                    break;
+                }
+            } else if (file instanceof TFolder) {
+                const index = this.plugin.index.getFolderIndex(file);
+                if (index.isProjectRoot) {
+                    break;
+                }
+            }
+            file = file.parent;
+        }
+        return file;
+    }
+}
+
+
+export class FolderIndex extends AbstractFileIndex {
+    folder: TFolder; // alias for this.file
+
+    constructor(public file: TFolder, plugin: MathBooster) {
+        super(file, plugin);
+        this.folder = file;
+    }
+}
+
+export class NoteIndex extends AbstractFileIndex {
     theorem: Set<IndexItem>;
     equation: Set<IndexItem>;
     idItemMap: Record<string, IndexItem>;
 
-    constructor(public app: App, public plugin: MathBooster, public file: TFile) {
+    constructor(public file: TFile, plugin: MathBooster) {
+        super(file, plugin);
         this.theorem = new Set<IndexItem>();
         this.equation = new Set<IndexItem>();
         this.idItemMap = {};
@@ -63,26 +98,45 @@ export class NoteIndex {
                 mathLinkBlocks[id] = item.refName;
             }
         }
-        this.plugin.getMathLinksAPI()?.update(this.file.path, {'mathLink-blocks': mathLinkBlocks});
+        this.plugin.getMathLinksAPI()?.update(this.file.path, { 'mathLink-blocks': mathLinkBlocks });
     }
 }
 
 
 export class VaultIndex {
-    data: Map<TFile, NoteIndex>;
+    data: Map<TAbstractFile, AbstractFileIndex>;
 
     constructor(public app: App, public plugin: MathBooster) {
         this.data = new Map<TFile, NoteIndex>();
     }
 
-    getNoteIndex(file: TFile): NoteIndex {
+    getNoteIndex(file: TFile): NoteIndex;
+    getNoteIndex(file: TFolder): FolderIndex;
+    getNoteIndex(file: TAbstractFile): AbstractFileIndex | undefined {
         const note = this.data.get(file);
         if (note) {
             return note;
         }
-        const newNote = new NoteIndex(this.app, this.plugin, file);
-        this.data.set(file, newNote);
-        return newNote;
+        if (file instanceof TFile) {
+            const index = new NoteIndex(file, this.plugin);
+            this.data.set(file, index);
+            return index;    
+        } else if (file instanceof TFolder) {
+            const index = new FolderIndex(file, this.plugin);
+            this.data.set(file, index);
+            return index;    
+        }
+    }
+
+    getFolderIndex = (folder: TFolder): FolderIndex => this.getNoteIndex(folder);
+
+    getNoteIndexByPath(path: string): AbstractFileIndex | undefined {
+        const file = this.app.vault.getAbstractFileByPath(path);
+        if (file instanceof TFile) {
+            return this.getNoteIndex(file);
+        } else if (file instanceof TFolder) {
+            return this.getFolderIndex(file);
+        }
     }
 }
 
@@ -100,7 +154,7 @@ type EquationInfo = { cache: SectionCache, manualTag?: string };
 
 abstract class BlockIndexer<IOType extends FileIO, BlockInfo extends { cache: SectionCache }> {
 
-    constructor(public noteIndexer: NoteIndexer<IOType>) {}
+    constructor(public noteIndexer: NoteIndexer<IOType>) { }
 
     abstract readonly blockType: BlockType;
 

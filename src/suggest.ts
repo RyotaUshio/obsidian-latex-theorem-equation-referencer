@@ -54,7 +54,9 @@ export class Suggest extends EditorSuggest<IndexItem> {
             }
         } else {
             for (const noteIndex of this.plugin.index.data.values()) {
-                this.getSuggestionsImpl(noteIndex, results, callback);
+                if (noteIndex instanceof NoteIndex) {
+                    this.getSuggestionsImpl(noteIndex, results, callback);
+                }
             }
         }
 
