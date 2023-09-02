@@ -64,27 +64,24 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
             const item = this.plugin.index.getNoteIndex(this.file).getItemById(this.id);
             if (item?.type == "equation" && item.mathText) {
                 const settings = resolveSettings(undefined, this.plugin, this.file);
-                if (this.containerEl) {
-                    replaceMathTag(this.containerEl, item.mathText, item.printName, settings);
-                    this.plugin.registerDomEvent(
-                        this.containerEl, "contextmenu", (event) => {
-                            const menu = new Menu();
+                replaceMathTag(this.containerEl, item.mathText, item.printName, settings);
+                this.plugin.registerDomEvent(
+                    this.containerEl, "contextmenu", (event) => {
+                        const menu = new Menu();
 
-                            // Show backlinks
-                            menu.addItem((item) => {
-                                item.setTitle("Show backlinks");
-                                item.onClick((clickEvent) => {
-                                    if (clickEvent instanceof MouseEvent) {
-                                        const backlinks = this.getBacklinks(event);
-                                        new BacklinkModal(this.app, this.plugin, backlinks).open();
-                                    }
-                                })
-                            });
-                            menu.showAtMouseEvent(event);
-                        }
-                    );
-
-                }
+                        // Show backlinks
+                        menu.addItem((item) => {
+                            item.setTitle("Show backlinks");
+                            item.onClick((clickEvent) => {
+                                if (clickEvent instanceof MouseEvent) {
+                                    const backlinks = this.getBacklinks(event);
+                                    new BacklinkModal(this.app, this.plugin, backlinks).open();
+                                }
+                            })
+                        });
+                        menu.showAtMouseEvent(event);
+                    }
+                );
             }
         }
     }
@@ -123,10 +120,10 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
         }
 
         async callback(view: EditorView, file: TFile) {
-            const mjxElements = view.contentDOM.querySelectorAll<HTMLElement>('mjx-container.MathJax > mjx-math[display="true"]');
+            const mjxContainerElements = view.contentDOM.querySelectorAll<HTMLElement>('mjx-container.MathJax[display="true"]');
             const cache = app.metadataCache.getFileCache(file);
-            if (mjxElements && cache) {
-                for (const mjxContainerEl of mjxElements) {
+            if (cache) {
+                for (const mjxContainerEl of mjxContainerElements) {
                     try {
                         const pos = view.posAtDOM(mjxContainerEl);
                         const item = plugin.index.getNoteIndex(file).getItemByPos(pos, "equation");
@@ -151,7 +148,6 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
                                     menu.showAtMouseEvent(event);
                                 }
                             );
-
                         }
                     } catch (err) {
                         // try it again later
@@ -219,11 +215,5 @@ export function replaceMathTag(displayMathEl: HTMLElement, text: string, tag: st
         const mjxContainerEl = renderMath(taggedText, true);
         displayMathEl.replaceChildren(...mjxContainerEl.childNodes);
         finishRenderMath();
-        console.log(
-            `text = "${text}", 
-            tag = "${tag}",
-            taggedText = "${taggedText}",
-            mjxContainerEl=`, mjxContainerEl
-        );
     }
 }

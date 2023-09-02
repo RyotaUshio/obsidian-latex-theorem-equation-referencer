@@ -249,13 +249,11 @@ export default class MathBooster extends Plugin {
 
 		// for equation numbers
 		this.registerMarkdownPostProcessor((element, context) => {
-			const mjxElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax > mjx-math[display="true"]');
-			if (mjxElements) {
-				for (const mjxContainerEl of mjxElements) {
-					context.addChild(
-						new DisplayMathRenderChild(mjxContainerEl, this.app, this, context)
-					);
-				}
+			const mjxContainerElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax[display="true"]');
+			for (const mjxContainerEl of mjxContainerElements) {
+				context.addChild(
+					new DisplayMathRenderChild(mjxContainerEl, this.app, this, context)
+				);
 			}
 		});
 
