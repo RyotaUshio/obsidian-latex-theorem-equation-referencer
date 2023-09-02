@@ -311,12 +311,12 @@ export function getDataviewAPI(plugin: MathBooster): DataviewApi | undefined {
     new Notice(`${plugin.manifest.name}: Cannot load Dataview API. Make sure that Dataview is installed & enabled.`);
 }
 
-export function getBlockIdsWithBacklink(path: string, plugin: MathBooster): string[] {
+export function getBlockIdsWithBacklink(file: TFile, plugin: MathBooster): string[] {
     const dv = getDataviewAPI(plugin);
-    const cache = plugin.app.metadataCache.getCache(path);
+    const cache = plugin.app.metadataCache.getFileCache(file);
     const ids: string[] = [];
     if (dv && cache) {
-        const page = dv.page(path); // Dataview page object
+        const page = dv.page(file.path); // Dataview page object
         if (page) {
             for (const inlink of page.file.inlinks) {
                 // cache of the source of this link (source --link--> target)
@@ -330,7 +330,7 @@ export function getBlockIdsWithBacklink(path: string, plugin: MathBooster): stri
                             const linkpath = parseResult.path;
                             const subpath = parseResult.subpath;
                             const targetFile = plugin.app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
-                            if (targetFile && targetFile.path == path) {
+                            if (targetFile && targetFile.path == file.path) {
                                 const subpathResult = resolveSubpath(cache as CachedMetadata, subpath);
                                 if (subpathResult && subpathResult.type == "block") {
                                     const blockCache = subpathResult.block;

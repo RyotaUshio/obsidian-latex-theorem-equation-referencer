@@ -16,7 +16,7 @@ export class NoteIndex {
     equation: Set<IndexItem>;
     idItemMap: Record<string, IndexItem>;
 
-    constructor(public file: TFile) {
+    constructor(public app: App, public plugin: MathBooster, public file: TFile) {
         this.theorem = new Set<IndexItem>();
         this.equation = new Set<IndexItem>();
         this.idItemMap = {};
@@ -54,6 +54,17 @@ export class NoteIndex {
         }
         return this.getItemByPos(pos, "theorem") ?? this.getItemByPos(pos, "equation");
     }
+
+    setMathLink() {
+        const mathLinkBlocks: MathLinkBlocks = {};
+        for (const id in this.idItemMap) {
+            const item = this.idItemMap[id];
+            if (item.refName) {
+                mathLinkBlocks[id] = item.refName;
+            }
+        }
+        this.plugin.getMathLinksAPI()?.update(this.file.path, {'mathLink-blocks': mathLinkBlocks});
+    }
 }
 
 
@@ -69,7 +80,7 @@ export class VaultIndex {
         if (note) {
             return note;
         }
-        const newNote = new NoteIndex(file);
+        const newNote = new NoteIndex(this.app, this.plugin, file);
         this.data.set(file, newNote);
         return newNote;
     }
@@ -88,16 +99,13 @@ type EquationInfo = { cache: SectionCache, manualTag?: string };
  */
 
 abstract class BlockIndexer<IOType extends FileIO, BlockInfo extends { cache: SectionCache }> {
-    mathLinkBlocks: MathLinkBlocks;
 
-    constructor(public noteIndexer: NoteIndexer<IOType>) {
-        this.mathLinkBlocks = {};
-    }
+    constructor(public noteIndexer: NoteIndexer<IOType>) {}
 
     abstract readonly blockType: BlockType;
 
     abstract addSection(sections: Readonly<BlockInfo>[], sectionCache: Readonly<SectionCache>): Promise<void>;
-    abstract setMathLinks(blocks: readonly Readonly<BlockInfo>[]): Promise<void>;
+    abstract runImpl(blocks: readonly Readonly<BlockInfo>[]): Promise<void>;
 
     async getBlocks(cache: Readonly<CachedMetadata>): Promise<BlockInfo[]> {
         const sectionCaches = cache.sections?.filter(
@@ -128,7 +136,7 @@ abstract class BlockIndexer<IOType extends FileIO, BlockInfo extends { cache: Se
 
     async run(cache: Readonly<CachedMetadata>): Promise<void> {
         const blocks = await this.sorted(cache);
-        await this.setMathLinks(blocks);
+        await this.runImpl(blocks);
     }
 }
 
@@ -150,7 +158,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
         return resolveSettings(callout.settings, this.noteIndexer.plugin, this.noteIndexer.file);
     }
 
-    async setMathLinks(callouts: readonly Readonly<CalloutInfo>[]): Promise<void> {
+    async runImpl(callouts: readonly Readonly<CalloutInfo>[]): Promise<void> {
         const note = this.noteIndexer.plugin.index.getNoteIndex(this.noteIndexer.file).clear("theorem");
 
         let index = 0;
@@ -185,9 +193,6 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
 
                 const id = callout.cache.id;
                 refName = this.formatMathLink(resolvedSettings, "refFormat");
-                if (id) {
-                    this.mathLinkBlocks[id] = refName;
-                }
             }
 
             if (note.size("theorem") == i) {
@@ -266,7 +271,7 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
         }
     }
 
-    async setMathLinks(equations: readonly Readonly<EquationInfo>[]): Promise<void> {
+    async runImpl(equations: readonly Readonly<EquationInfo>[]): Promise<void> {
         const note = this.noteIndexer.plugin.index.getNoteIndex(this.noteIndexer.file).clear("equation");
 
         const contextSettings = resolveSettings(undefined, this.noteIndexer.plugin, this.noteIndexer.file);
@@ -291,7 +296,6 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
                     equationNumber++;
                 }
                 refName = eqRefPrefix + printName + eqRefSuffix;
-                this.mathLinkBlocks[id] = refName;
             }
 
             const mathText = (await this.noteIndexer.io.getRange(equation.cache.position)).match(/\$\$([\s\S]*)\$\$/)?.[1].trim();
@@ -312,13 +316,12 @@ abstract class NoteIndexer<IOType extends FileIO> {
     linkedBlockIds: string[];
     calloutIndexer: MathCalloutIndexer<IOType>;
     equationIndexer: EquationIndexer<IOType>;
-    mathLinkBlocks: MathLinkBlocks;
 
     constructor(public app: App, public plugin: MathBooster, public file: TFile, public io: IOType) {
         if (file.extension != "md") {
             throw Error(`${plugin.manifest.name}: Non-markdown file was passed: "${file.path}"`);
         }
-        this.linkedBlockIds = getBlockIdsWithBacklink(this.file.path, this.plugin);
+        this.linkedBlockIds = getBlockIdsWithBacklink(this.file, this.plugin);
         this.calloutIndexer = new MathCalloutIndexer(this);
         this.equationIndexer = new EquationIndexer(this);
     }
@@ -331,15 +334,7 @@ abstract class NoteIndexer<IOType extends FileIO> {
             this.calloutIndexer.run(cache),
             this.equationIndexer.run(cache),
         ]);
-        this.mathLinkBlocks = Object.assign(
-            {},
-            this.calloutIndexer.mathLinkBlocks,
-            this.equationIndexer.mathLinkBlocks,
-        );
-        this.plugin.getMathLinksAPI()?.update(
-            this.file.path,
-            { "mathLink-blocks": this.mathLinkBlocks }
-        );
+        this.plugin.index.getNoteIndex(this.file).setMathLink();
         this.app.metadataCache.trigger(
             "math-booster:index-updated",
             this
