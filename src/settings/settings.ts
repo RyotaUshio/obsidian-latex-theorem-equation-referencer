@@ -14,22 +14,22 @@ export const NUMBER_STYLES = [
 ] as const;
 export type NumberStyle = typeof NUMBER_STYLES[number];
 
-export const MATH_CALLOUT_STYLES = [
+export const THEOREM_CALLOUT_STYLES = [
     "Custom", 
     "Plain",
     "Framed",
     "MathWiki",
     "Vivid",
 ] as const;
-export type MathCalloutStyle = typeof MATH_CALLOUT_STYLES[number];
+export type TheoremCalloutStyle = typeof THEOREM_CALLOUT_STYLES[number];
 
-export const MATH_CALLOUT_REF_FORMATS = [
+export const THEOREM_REF_FORMATS = [
     "[type] [number] ([title])", 
     "[type] [number]", 
     "[title] ([type] [number]) if title exists, [type] [number] otherwise",
     "[title] if title exists, [type] [number] otherwise",
 ] as const;
-export type MathCalloutRefFormat = typeof MATH_CALLOUT_REF_FORMATS[number];
+export type TheoremRefFormat = typeof THEOREM_REF_FORMATS[number];
 
 export const LEAF_OPTIONS = [
     "Split right",
@@ -62,8 +62,8 @@ export interface MathContextSettings {
     numberInit: number;
     numberStyle: NumberStyle;
     numberDefault: string;
-    refFormat: MathCalloutRefFormat;
-    noteMathLinkFormat: MathCalloutRefFormat;
+    refFormat: TheoremRefFormat;
+    noteMathLinkFormat: TheoremRefFormat;
     eqNumberPrefix: string;
     eqNumberSuffix: string;
     eqNumberInit: number;
@@ -72,8 +72,8 @@ export interface MathContextSettings {
     eqRefSuffix: string;
     labelPrefix: string;
     lineByLine: boolean;
-    mathCalloutStyle: MathCalloutStyle;
-    mathCalloutFontInherit: boolean;
+    theoremCalloutStyle: TheoremCalloutStyle;
+    theoremCalloutFontInherit: boolean;
     beginProof: string;
     endProof: string;
     insertSpace: boolean;
@@ -81,13 +81,13 @@ export interface MathContextSettings {
 
 export const UNION_TYPE_MATH_CONTEXT_SETTING_KEYS: {[k in keyof Partial<MathContextSettings>]: readonly string[]} = {
     "numberStyle": NUMBER_STYLES,
-    "refFormat": MATH_CALLOUT_REF_FORMATS,
-    "noteMathLinkFormat": MATH_CALLOUT_REF_FORMATS,
+    "refFormat": THEOREM_REF_FORMATS,
+    "noteMathLinkFormat": THEOREM_REF_FORMATS,
     "eqNumberStyle": NUMBER_STYLES,
-    "mathCalloutStyle": MATH_CALLOUT_STYLES,
+    "theoremCalloutStyle": THEOREM_CALLOUT_STYLES,
 };
 
-export interface MathCalloutSettings {
+export interface TheoremCalloutSettings {
     type: string;
     number: string;
     title?: string;
@@ -95,7 +95,7 @@ export interface MathCalloutSettings {
     setAsNoteMathLink: boolean;
 }
 
-export interface MathCalloutPrivateFields {
+export interface TheoremCalloutPrivateFields {
     _index?: number;
 }
 
@@ -121,8 +121,8 @@ export const UNION_TYPE_EXTRA_SETTING_KEYS: {[k in keyof Partial<ExtraSettings>]
     "backlinkLeafOption": LEAF_OPTIONS,
 };
 
-export type MathSettings = Partial<MathContextSettings> & MathCalloutSettings & MathCalloutPrivateFields;
-export type ResolvedMathSettings = Required<MathContextSettings> & MathCalloutSettings & MathCalloutPrivateFields;
+export type MathSettings = Partial<MathContextSettings> & TheoremCalloutSettings & TheoremCalloutPrivateFields;
+export type ResolvedMathSettings = Required<MathContextSettings> & TheoremCalloutSettings & TheoremCalloutPrivateFields;
 
 export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     profile: Object.keys(DEFAULT_PROFILES)[0],
@@ -142,8 +142,8 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     eqRefSuffix: "",
     labelPrefix: "",
     lineByLine: true,
-    mathCalloutStyle: "Framed",
-    mathCalloutFontInherit: false,
+    theoremCalloutStyle: "Framed",
+    theoremCalloutFontInherit: false,
     beginProof: "\\begin{proof}",
     endProof: "\\end{proof}",
     insertSpace: true,

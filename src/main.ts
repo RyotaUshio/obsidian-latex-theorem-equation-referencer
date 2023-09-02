@@ -6,13 +6,13 @@ import * as Dataview from 'obsidian-dataview';
 
 import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS, UNION_TYPE_MATH_CONTEXT_SETTING_KEYS, UNION_TYPE_EXTRA_SETTING_KEYS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
-import { MathCallout, insertMathCalloutCallback } from './math_callouts';
-import { ContextSettingModal, MathCalloutModal } from './modals';
+import { TheoremCallout, insertTheoremCalloutCallback } from './math_callouts';
+import { ContextSettingModal, TheoremCalloutModal } from './modals';
 import { insertDisplayMath } from './key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote } from './math_live_preview_in_callouts';
 import { LinkedNotesIndexer, VaultIndex, VaultIndexer } from './indexer';
-import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
+import { theoremCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, iterDescendantFiles } from './utils';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
 import { Suggest } from './suggest';
@@ -170,11 +170,11 @@ export default class MathBooster extends Plugin {
 			name: 'Insert theorem callout',
 			editorCallback: async (editor, context) => {
 				if (context instanceof MarkdownView) {
-					new MathCalloutModal(
+					new TheoremCalloutModal(
 						this.app, this, context.file,
 						(config) => {
 							if (context.file) {
-								insertMathCalloutCallback(this, editor, config, context.file);
+								insertTheoremCalloutCallback(this, editor, config, context.file);
 							}
 						},
 						"Insert", "Insert theorem callout",
@@ -203,7 +203,7 @@ export default class MathBooster extends Plugin {
 		/** Editor Extensions */
 
 		// hide > [!math|{"type":"theorem", ...}]
-		this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
+		this.registerEditorExtension(theoremCalloutMetadataHiderPlulgin);
 		// equation number
 		this.registerEditorExtension(buildEquationNumberPlugin(this));
 		// math preview in callouts and quotes
@@ -231,16 +231,16 @@ export default class MathBooster extends Plugin {
 				const metadata = callout.getAttribute('data-callout-metadata');
 
 				if (metadata) {
-					const isMathCallout = (type?.toLowerCase() == 'math');
+					const isTheoremCallout = (type?.toLowerCase() == 'math');
 
-					if (isMathCallout) {
+					if (isTheoremCallout) {
 						const settings = JSON.parse(metadata);
 						const currentFile = this.app.vault.getAbstractFileByPath(context.sourcePath);
 
 						if (currentFile instanceof TFile) {
-							const mathCallout = new MathCallout(callout, this.app, this, settings, currentFile, context);
-							await mathCallout.setRenderedTitleElements();
-							context.addChild(mathCallout);
+							const theoremCallout = new TheoremCallout(callout, this.app, this, settings, currentFile, context);
+							await theoremCallout.setRenderedTitleElements();
+							context.addChild(theoremCallout);
 						}
 					}
 				}

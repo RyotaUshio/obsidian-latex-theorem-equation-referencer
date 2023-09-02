@@ -1,15 +1,15 @@
 import { App, CachedMetadata, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Menu, Notice, TFile } from "obsidian";
 
 import MathBooster from './main';
-import { MathCalloutModal } from './modals';
-import { MathCalloutSettings, MathSettings, ResolvedMathSettings } from './settings/settings';
+import { TheoremCalloutModal } from './modals';
+import { TheoremCalloutSettings, MathSettings, ResolvedMathSettings } from './settings/settings';
 import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, isEditingView, getSectionCacheOfDOM, getSectionCacheFromMouseEvent, getBacklinks } from './utils';
 import { AutoNoteIndexer } from './indexer';
 import { Backlink, BacklinkModal } from "backlinks";
 
 
-export class MathCallout extends MarkdownRenderChild {
-    settings: MathCalloutSettings;
+export class TheoremCallout extends MarkdownRenderChild {
+    settings: TheoremCalloutSettings;
     resolvedSettings: ResolvedMathSettings;
     renderedTitleElements: (HTMLElement | string)[];
 
@@ -49,8 +49,8 @@ export class MathCallout extends MarkdownRenderChild {
             this.containerEl.classList.add("theorem-callout-" + tag);
         }
         this.containerEl.classList.add("theorem-callout-" + this.resolvedSettings.type);
-        this.containerEl.toggleClass(`theorem-callout-${this.resolvedSettings.mathCalloutStyle.toLowerCase()}`, this.resolvedSettings.mathCalloutStyle != "Custom");
-        this.containerEl.toggleClass("theorem-callout-font-family-inherit", this.resolvedSettings.mathCalloutStyle != "Custom" && this.resolvedSettings.mathCalloutFontInherit);
+        this.containerEl.toggleClass(`theorem-callout-${this.resolvedSettings.theoremCalloutStyle.toLowerCase()}`, this.resolvedSettings.theoremCalloutStyle != "Custom");
+        this.containerEl.toggleClass("theorem-callout-font-family-inherit", this.resolvedSettings.theoremCalloutStyle != "Custom" && this.resolvedSettings.theoremCalloutFontInherit);
 
         // click the title block (div.callout-title) to edit settings
         const button = new ExtraButtonComponent(this.containerEl)
@@ -65,7 +65,7 @@ export class MathCallout extends MarkdownRenderChild {
                 // Make sure to get the line number BEFORE opening the modal!!
                 const lineNumber = this.getLineNumber(view, cache, ev);
 
-                new MathCalloutModal(
+                new TheoremCalloutModal(
                     this.app,
                     this.plugin,
                     view.file,
@@ -148,7 +148,7 @@ export class MathCallout extends MarkdownRenderChild {
 }
 
 
-export function insertMathCalloutCallback(plugin: MathBooster, editor: Editor, config: MathSettings, currentFile: TFile) {
+export function insertTheoremCalloutCallback(plugin: MathBooster, editor: Editor, config: MathSettings, currentFile: TFile) {
     const selection = editor.getSelection();
     const cursorPos = editor.getCursor();
     const resolvedSettings = resolveSettings(config, plugin, currentFile);

@@ -2,17 +2,17 @@ import { ButtonComponent, Setting, SliderComponent, TAbstractFile, TFile, TFolde
 
 import MathBooster from '../main';
 import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from '../env';
-import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, MATH_CALLOUT_REF_FORMATS, MATH_CALLOUT_STYLES, MathCalloutSettings, MathContextSettings, NUMBER_STYLES } from './settings';
-import { BooleanKeys, NumberKeys, formatMathCalloutType, formatTitle } from '../utils';
+import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, THEOREM_REF_FORMATS, THEOREM_CALLOUT_STYLES, TheoremCalloutSettings, MathContextSettings, NUMBER_STYLES } from './settings';
+import { BooleanKeys, NumberKeys, formatTheoremCalloutType, formatTitle } from '../utils';
 import { AutoNoteIndexer } from '../indexer';
 import { DEFAULT_PROFILES, ManageProfileModal } from './profile';
 
 
-export class MathCalloutSettingsHelper {
+export class TheoremCalloutSettingsHelper {
     constructor(
         public contentEl: HTMLElement,
-        public settings: MathCalloutSettings,
-        public defaultSettings: Required<MathContextSettings> & Partial<MathCalloutSettings>,
+        public settings: TheoremCalloutSettings,
+        public defaultSettings: Required<MathContextSettings> & Partial<TheoremCalloutSettings>,
         public plugin: MathBooster,
         public file: TFile,
     ) { }
@@ -23,7 +23,7 @@ export class MathCalloutSettingsHelper {
             .setName("Type")
             .addDropdown((dropdown) => {
                 for (const id of THEOREM_LIKE_ENV_IDs) {
-                    const envName = formatMathCalloutType(this.plugin, { type: id, profile: this.defaultSettings.profile })
+                    const envName = formatTheoremCalloutType(this.plugin, { type: id, profile: this.defaultSettings.profile })
                     dropdown.addOption(id, envName);
                     if (this.defaultSettings.type) {
                         dropdown.setValue(String(this.defaultSettings.type));
@@ -113,12 +113,12 @@ export class MathCalloutSettingsHelper {
                 const cache = this.plugin.app.metadataCache.getFileCache(this.file);
                 if (cache) {
                     const indexer = (new AutoNoteIndexer(this.plugin.app, this.plugin, this.file)).getIndexer().calloutIndexer;
-                    await indexer.iter(cache, async (mathCallout) => {
-                        mathCallout.settings.setAsNoteMathLink = false;
+                    await indexer.iter(cache, async (theoremCallout) => {
+                        theoremCallout.settings.setAsNoteMathLink = false;
                         await indexer.overwriteSettings(
-                            mathCallout.cache.position.start.line,
-                            mathCallout.settings,
-                            formatTitle(this.plugin, indexer.resolveSettings(mathCallout))
+                            theoremCallout.cache.position.start.line,
+                            theoremCallout.settings,
+                            formatTitle(this.plugin, indexer.resolveSettings(theoremCallout))
                         );
                     });
                     this.settings.setAsNoteMathLink = value; // no need to call indexer.overwriteSettings() here
@@ -279,13 +279,13 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
 
         contentEl.createEl("h4", { text: "Theorem callouts" });
         this.addProfileSetting();
-        const styleSetting = this.addDropdownSetting("mathCalloutStyle", MATH_CALLOUT_STYLES, "Style");
+        const styleSetting = this.addDropdownSetting("theoremCalloutStyle", THEOREM_CALLOUT_STYLES, "Style");
         styleSetting.descEl.replaceChildren(
             "Choose between your custom style and preset styles. You will need to reload the note to see the changes. See the ",
             createEl("a", { text: "documentation", attr: { href: "https://ryotaushio.github.io/obsidian-math-booster/style-your-theorems.html" } }),
             " for how to customize the appearance of theorem callouts.",
         );
-        this.addToggleSetting("mathCalloutFontInherit", "Don't override the app's font setting when using preset styles", "You will need to reload the note to see the changes.");
+        this.addToggleSetting("theoremCalloutFontInherit", "Don't override the app's font setting when using preset styles", "You will need to reload the note to see the changes.");
         this.addTextSetting("titleSuffix", "Title suffix", "ex) \"\" > Definition 2 (Group) / \".\" > Definition 2 (Group).");
         this.addTextSetting("labelPrefix", "Pandoc label prefix", 'Useful for ensuring no label collision. Ex) When "Pandoc label prefix" = "foo:", A theorem with "Pandoc label" = "bar" is assigned "thm:foo:bar."');
         contentEl.createEl("h6", { text: "Numbering" });
@@ -295,10 +295,10 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addDropdownSetting("numberStyle", NUMBER_STYLES, "Style");
         this.addTextSetting("numberDefault", "Default value for the \"Number\" field");
         contentEl.createEl("h6", { text: "Referencing" });
-        this.addDropdownSetting("refFormat", MATH_CALLOUT_REF_FORMATS, "Format");
+        this.addDropdownSetting("refFormat", THEOREM_REF_FORMATS, "Format");
         this.addDropdownSetting(
             "noteMathLinkFormat",
-            MATH_CALLOUT_REF_FORMATS,
+            THEOREM_REF_FORMATS,
             "Note mathLink format",
             "When a theorem callout's \"Use this theorem callout to set this note's mathLink\" setting is turned on, this format will be used for links to the note containing that theorem callout."
         );

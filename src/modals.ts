@@ -3,7 +3,7 @@ import { TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder }
 import MathBooster from './main';
 import { MathSettings, MathContextSettings, DEFAULT_SETTINGS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
-import { MathCalloutSettingsHelper, MathContextSettingsHelper } from "./settings/helper";
+import { TheoremCalloutSettingsHelper, MathContextSettingsHelper } from "./settings/helper";
 import { isEqualToOrChildOf, resolveSettings } from './utils';
 
 
@@ -57,7 +57,7 @@ abstract class MathSettingModal<SettingsType> extends Modal {
 }
 
 
-export class MathCalloutModal extends MathSettingModal<MathSettings> {
+export class TheoremCalloutModal extends MathSettingModal<MathSettings> {
     defaultSettings: Required<MathContextSettings>;
 
     constructor(
@@ -92,7 +92,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
             contentEl.createEl("h4", { text: this.headerText });
         }
 
-        const helper = new MathCalloutSettingsHelper(contentEl, this.settings, this.defaultSettings, this.plugin, this.file);
+        const helper = new TheoremCalloutSettingsHelper(contentEl, this.settings, this.defaultSettings, this.plugin, this.file);
         helper.makeSettingPane();
 
         new Setting(contentEl)
@@ -123,7 +123,7 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
         plugin: MathBooster,
         public file: TAbstractFile,
         callback?: (settings: MathContextSettings) => void,
-        public parent?: MathCalloutModal | undefined
+        public parent?: TheoremCalloutModal | undefined
     ) {
         super(app, plugin, callback);
     }

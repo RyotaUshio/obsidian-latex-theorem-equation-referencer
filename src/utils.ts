@@ -5,7 +5,7 @@ import { EditorView } from '@codemirror/view';
 import { SyntaxNodeRef } from '@lezer/common';
 
 import MathBooster from './main';
-import { DEFAULT_SETTINGS, MathCalloutPrivateFields, MathCalloutSettings, MathContextSettings, NumberStyle, ResolvedMathSettings } from './settings/settings';
+import { DEFAULT_SETTINGS, TheoremCalloutPrivateFields, TheoremCalloutSettings, MathContextSettings, NumberStyle, ResolvedMathSettings } from './settings/settings';
 import { MathInfoSet } from './math_live_preview_in_callouts';
 import { THEOREM_LIKE_ENVs, TheoremLikeEnvID } from './env';
 import { Backlink } from './backlinks';
@@ -362,31 +362,31 @@ export function insertAt<Type>(array: Array<Type>, item: Type, index: number) {
 
 export const MATH_CALLOUT_PATTERN = /\> *\[\! *math *\|(.*)\](.*)/;
 
-export function matchMathCallout(line: string): RegExpExecArray | null {
+export function matchTheoremCallout(line: string): RegExpExecArray | null {
     if (line) {
         return MATH_CALLOUT_PATTERN.exec(line)
     }
     return null;
 }
 
-export function readMathCalloutSettingsAndTitle(line: string): { settings: MathCalloutSettings & MathCalloutPrivateFields, title: string } | undefined {
-    const matchResult = matchMathCallout(line);
+export function readTheoremCalloutSettingsAndTitle(line: string): { settings: TheoremCalloutSettings & TheoremCalloutPrivateFields, title: string } | undefined {
+    const matchResult = matchTheoremCallout(line);
     if (matchResult) {
-        const settings = JSON.parse(matchResult[1]) as MathCalloutSettings;
+        const settings = JSON.parse(matchResult[1]) as TheoremCalloutSettings;
         const title = matchResult[2].trim();
         return { settings, title };
     }
 }
 
-export function readMathCalloutSettings(line: string): MathCalloutSettings & MathCalloutPrivateFields | undefined {
-    const result = readMathCalloutSettingsAndTitle(line);
+export function readTheoremCalloutSettings(line: string): TheoremCalloutSettings & TheoremCalloutPrivateFields | undefined {
+    const result = readTheoremCalloutSettingsAndTitle(line);
     if (result) {
         return result.settings;
     }
 }
 
-export function readMathCalloutTitle(line: string): string | undefined {
-    const result = readMathCalloutSettingsAndTitle(line);
+export function readTheoremCalloutTitle(line: string): string | undefined {
+    const result = readTheoremCalloutSettingsAndTitle(line);
     if (result) {
         return result.title;
     }
@@ -416,14 +416,14 @@ export function getAncestors(file: TAbstractFile): TAbstractFile[] {
     return ancestors;
 }
 
-export function resolveSettings(settings: MathCalloutSettings, plugin: MathBooster, currentFile: TAbstractFile): ResolvedMathSettings;
+export function resolveSettings(settings: TheoremCalloutSettings, plugin: MathBooster, currentFile: TAbstractFile): ResolvedMathSettings;
 export function resolveSettings(settings: undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings>;
 
-export function resolveSettings(settings: MathCalloutSettings | undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings> {
+export function resolveSettings(settings: TheoremCalloutSettings | undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings> {
     /** Resolves settings. Does not overwride, but returns a new settings object.
      * Returned settings can be either 
      * - ResolvedMathContextSettings or 
-     * - Required<MathContextSettings> & Partial<MathCalloutSettings>.
+     * - Required<MathContextSettings> & Partial<TheoremCalloutSettings>.
      * */
     const resolvedSettings = Object.assign({}, DEFAULT_SETTINGS);
     const ancestors = getAncestors(currentFile);
@@ -445,13 +445,13 @@ export function getProfileByID(plugin: MathBooster, profileID: string) {
     return profile;
 }
 
-export function formatMathCalloutType(plugin: MathBooster, settings: { type: string, profile: string }): string {
+export function formatTheoremCalloutType(plugin: MathBooster, settings: { type: string, profile: string }): string {
     const profile = plugin.extraSettings.profiles[settings.profile];
     return profile.body.theorem[settings.type as TheoremLikeEnvID];
 }
 
 export function formatTitleWithoutSubtitle(plugin: MathBooster, settings: ResolvedMathSettings): string {
-    let title = formatMathCalloutType(plugin, settings);
+    let title = formatTheoremCalloutType(plugin, settings);
 
     if (settings.number) {
         let numberString = '';

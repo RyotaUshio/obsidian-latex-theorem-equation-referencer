@@ -1,15 +1,15 @@
 import { App, CachedMetadata, MarkdownView, SectionCache, TFile } from 'obsidian';
 
 import MathBooster from './main';
-import { DEFAULT_SETTINGS, MathSettings, NumberStyle, MathCalloutRefFormat, ResolvedMathSettings, MathCalloutSettings, MathCalloutPrivateFields } from './settings/settings';
-import { getBlockIdsWithBacklink, readMathCalloutSettings, resolveSettings, formatTitle, readMathCalloutSettingsAndTitle, CONVERTER, matchMathCallout, formatTitleWithoutSubtitle, isEditingView } from './utils';
+import { DEFAULT_SETTINGS, MathSettings, NumberStyle, TheoremRefFormat, ResolvedMathSettings, TheoremCalloutSettings, TheoremCalloutPrivateFields } from './settings/settings';
+import { getBlockIdsWithBacklink, readTheoremCalloutSettings, resolveSettings, formatTitle, readTheoremCalloutSettingsAndTitle, CONVERTER, matchTheoremCallout, formatTitleWithoutSubtitle, isEditingView } from './utils';
 import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 
 
 /** Index content */
 
 export type IndexItemType = "theorem" | "equation";
-export type IndexItem = { type: IndexItemType, printName: string, refName: string, cache: SectionCache, file: TFile, settings?: MathCalloutSettings, mathText?: string };
+export type IndexItem = { type: IndexItemType, printName: string, refName: string, cache: SectionCache, file: TFile, settings?: TheoremCalloutSettings, mathText?: string };
 
 export class NoteIndex {
     theorem: Set<IndexItem>;
@@ -90,7 +90,7 @@ export class VaultIndex {
 type MathLinkBlocks = Record<string, string>;
 
 type BlockType = "callout" | "math";
-type CalloutInfo = { cache: SectionCache, settings: MathCalloutSettings & MathCalloutPrivateFields };
+type CalloutInfo = { cache: SectionCache, settings: TheoremCalloutSettings & TheoremCalloutPrivateFields };
 type EquationInfo = { cache: SectionCache, manualTag?: string };
 
 
@@ -141,12 +141,12 @@ abstract class BlockIndexer<IOType extends FileIO, BlockInfo extends { cache: Se
 }
 
 
-class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, CalloutInfo> {
+class TheoremCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, CalloutInfo> {
     blockType = "callout" as BlockType;
 
     async addSection(sections: Readonly<CalloutInfo>[], sectionCache: Readonly<SectionCache>): Promise<void> {
         const line = await this.noteIndexer.io.getLine(sectionCache.position.start.line);
-        const settings = readMathCalloutSettings(line);
+        const settings = readTheoremCalloutSettings(line);
         if (settings) {
             sections.push(
                 { cache: sectionCache, settings: this.removeDeprecated(settings) }
@@ -178,7 +178,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
             }
 
             const newTitle = formatTitle(this.noteIndexer.plugin, resolvedSettings);
-            const oldSettingsAndTitle = readMathCalloutSettingsAndTitle(
+            const oldSettingsAndTitle = readTheoremCalloutSettingsAndTitle(
                 await this.noteIndexer.io.getLine(callout.cache.position.start.line)
             );
 
@@ -224,7 +224,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
     }
 
     formatMathLink(resolvedSettings: ResolvedMathSettings, key: "refFormat" | "noteMathLinkFormat"): string {
-        const refFormat: MathCalloutRefFormat = resolvedSettings[key];
+        const refFormat: TheoremRefFormat = resolvedSettings[key];
         if (refFormat == "[type] [number] ([title])") {
             return formatTitle(this.noteIndexer.plugin, resolvedSettings, true);
         }
@@ -239,8 +239,8 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
         return resolvedSettings.title ? `${resolvedSettings.title} (${typePlusNumber})` : typePlusNumber;
     }
 
-    async overwriteSettings(lineNumber: number, settings: MathCalloutSettings & MathCalloutPrivateFields, title?: string) {
-        const matchResult = matchMathCallout(await this.noteIndexer.io.getLine(lineNumber));
+    async overwriteSettings(lineNumber: number, settings: TheoremCalloutSettings & TheoremCalloutPrivateFields, title?: string) {
+        const matchResult = matchTheoremCallout(await this.noteIndexer.io.getLine(lineNumber));
         if (!matchResult) {
             throw Error(`Theorem callout not found at line ${lineNumber}, could not overwrite`);
         }
@@ -250,7 +250,7 @@ class MathCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Cal
         );
     }
 
-    removeDeprecated(settings: MathSettings & { autoIndex?: string }): MathCalloutSettings & MathCalloutPrivateFields {
+    removeDeprecated(settings: MathSettings & { autoIndex?: string }): TheoremCalloutSettings & TheoremCalloutPrivateFields {
         // remove the deprecated "autoIndex" key (now it's called "_index") from settings
         const { autoIndex, ...rest } = settings;
         return rest;
@@ -314,7 +314,7 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
 
 abstract class NoteIndexer<IOType extends FileIO> {
     linkedBlockIds: string[];
-    calloutIndexer: MathCalloutIndexer<IOType>;
+    calloutIndexer: TheoremCalloutIndexer<IOType>;
     equationIndexer: EquationIndexer<IOType>;
 
     constructor(public app: App, public plugin: MathBooster, public file: TFile, public io: IOType) {
@@ -322,7 +322,7 @@ abstract class NoteIndexer<IOType extends FileIO> {
             throw Error(`${plugin.manifest.name}: Non-markdown file was passed: "${file.path}"`);
         }
         this.linkedBlockIds = getBlockIdsWithBacklink(this.file, this.plugin);
-        this.calloutIndexer = new MathCalloutIndexer(this);
+        this.calloutIndexer = new TheoremCalloutIndexer(this);
         this.equationIndexer = new EquationIndexer(this);
     }
 
