@@ -221,7 +221,7 @@ export function replaceMathTag(displayMathEl: HTMLElement, text: string, tag: st
         finishRenderMath();
         console.log(
             `text = "${text}", 
-            mathLink = "${mathLink}",
+            tag = "${tag}",
             taggedText = "${taggedText}",
             mjxContainerEl=`, mjxContainerEl
         );
