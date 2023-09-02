@@ -219,5 +219,11 @@ export function replaceMathTag(displayMathEl: HTMLElement, text: string, tag: st
         const mjxContainerEl = renderMath(taggedText, true);
         displayMathEl.replaceChildren(...mjxContainerEl.childNodes);
         finishRenderMath();
+        console.log(
+            `text = "${text}", 
+            mathLink = "${mathLink}",
+            taggedText = "${taggedText}",
+            mjxContainerEl=`, mjxContainerEl
+        );
     }
 }
