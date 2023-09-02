@@ -6,6 +6,76 @@ import { getBlockIdsWithBacklink, readMathCalloutSettings, resolveSettings, form
 import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 
 
+/** Index content */
+
+export type IndexItemType = "theorem" | "equation";
+export type IndexItem = { type: IndexItemType, printName: string, refName: string, cache: SectionCache, file: TFile, settings?: MathCalloutSettings, mathText?: string };
+
+export class NoteIndex {
+    theorem: Set<IndexItem>;
+    equation: Set<IndexItem>;
+    idItemMap: Record<string, IndexItem>;
+
+    constructor(public file: TFile) {
+        this.theorem = new Set<IndexItem>();
+        this.equation = new Set<IndexItem>();
+        this.idItemMap = {};
+    }
+
+    add(newItem: IndexItem): NoteIndex {
+        this[newItem.type].add(newItem);
+        if (newItem.cache.id) {
+            this.idItemMap[newItem.cache.id] = newItem;
+        }
+        return this;
+    }
+
+    clear(which: IndexItemType): NoteIndex {
+        this[which].clear();
+        for (const id in this.idItemMap) {
+            if (this.idItemMap[id].type == which) {
+                delete this.idItemMap[id];
+            }
+        }
+        return this;
+    }
+
+    size(which: IndexItemType): number {
+        return this[which].size;
+    }
+
+    getItemById(id: string): IndexItem | undefined {
+        return this.idItemMap[id];
+    }
+
+    getItemByPos(pos: number, which?: IndexItemType): IndexItem | undefined {
+        if (which) {
+            return Array.from(this[which]).find((item) => item.cache.position.start.offset == pos || item.cache.position.end.offset == pos);
+        }
+        return this.getItemByPos(pos, "theorem") ?? this.getItemByPos(pos, "equation");
+    }
+}
+
+
+export class VaultIndex {
+    data: Map<TFile, NoteIndex>;
+
+    constructor(public app: App, public plugin: MathBooster) {
+        this.data = new Map<TFile, NoteIndex>();
+    }
+
+    getNoteIndex(file: TFile): NoteIndex {
+        const note = this.data.get(file);
+        if (note) {
+            return note;
+        }
+        const newNote = new NoteIndex(file);
+        this.data.set(file, newNote);
+        return newNote;
+    }
+}
+
+
 type MathLinkBlocks = Record<string, string>;
 
 type BlockType = "callout" | "math";
@@ -399,55 +469,5 @@ export class VaultIndexer {
             (new AutoNoteIndexer(this.app, this.plugin, note)).run(activeMarkdownview)
         );
         await Promise.all(promises);
-    }
-}
-
-
-/** Index */
-
-
-export type IndexItemType = "theorem" | "equation";
-export type IndexItem = { type: IndexItemType, printName: string, refName: string, cache: SectionCache, file: TFile, settings?: MathCalloutSettings, mathText?: string };
-
-export class NoteIndex {
-    theorem: Set<IndexItem>;
-    equation: Set<IndexItem>;
-
-    constructor(public file: TFile) {
-        this.theorem = new Set<IndexItem>();
-        this.equation = new Set<IndexItem>();
-    }
-
-    add(newItem: IndexItem): NoteIndex {
-        this[newItem.type].add(newItem);
-        return this;
-    }
-
-    clear(which: IndexItemType): NoteIndex {
-        this[which].clear();
-        return this;
-    }
-
-    size(which: IndexItemType): number {
-        return this[which].size;
-    }
-}
-
-
-export class VaultIndex {
-    data: Map<TFile, NoteIndex>;
-
-    constructor(public app: App, public plugin: MathBooster) {
-        this.data = new Map<TFile, NoteIndex>();
-    }
-
-    getNoteIndex(file: TFile): NoteIndex {
-        const note = this.data.get(file);
-        if (note) {
-            return note;
-        }
-        const newNote = new NoteIndex(file);
-        this.data.set(file, newNote);
-        return newNote;
     }
 }
