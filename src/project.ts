@@ -59,6 +59,22 @@ export class ProjectManager {
         return null;
     }
 
+    /**
+     * Return the project that `file` belongs to, the parent-project that the project belongs to, and so on.
+     * The first element of the returned array is the project that `file` directly belongs to.
+     * @param file 
+     * @returns 
+     */
+    getNestedProjects(file: TAbstractFile): Project[] {
+        const projects = [];
+        let project = this.getProject(file);
+        while (project?.root.parent) {
+            projects.push(project);
+            project = this.getProject(project.root.parent);
+        }
+        return projects;
+    }
+
     dump() {
         const dumped: { rootPath: string, name: string }[] = [];
         for (const project of Object.values(this.projects)) {
@@ -81,12 +97,12 @@ export class ProjectManager {
 
 export const makePrefixer = (plugin: MathBooster) => (sourceFile: TFile, targetFile: TFile): string | null => {
     const sourceProject = plugin.projectManager.getProject(sourceFile);
-    const targetProject = plugin.projectManager.getProject(targetFile);
-    if (targetProject) {
-        if (sourceProject?.root == targetProject.root) {
+    const targetProjects = plugin.projectManager.getNestedProjects(targetFile);
+    if (targetProjects.length) {
+        if (sourceProject?.root == targetProjects[0].root) {
             return "";
         }
-        return targetProject.name + plugin.extraSettings.projectInfix;
+        return targetProjects.reverse().map((project) => project.name).join('/') + plugin.extraSettings.projectInfix;
     }
     // targetFile doesn't belong to any project
     return null;

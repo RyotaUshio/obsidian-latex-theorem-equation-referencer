@@ -441,7 +441,7 @@ export class ProjectSettingsHelper {
 
     addNameSetting(project: Project): Setting {
         const prettyName = "Project name";
-        const description = "A project name can contain inline math.";
+        const description = "A project name can contain inline math and doesn't have to be unique.";
         const setting = new Setting(this.contentEl).setName(prettyName).setDesc(description);
 
         setting.addText((text) => {
