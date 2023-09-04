@@ -384,24 +384,14 @@ export default class MathBooster extends Plugin {
 			account.prefixer = (sourceFile: TFile, targetFile: TFile): string | null => {
 				const sourceProject = this.projectManager.getProject(sourceFile);
 				const targetProject = this.projectManager.getProject(targetFile);
-				let ret: string | null;
-				if (sourceProject && targetProject) {
-					if (sourceProject.root == targetProject.root) {
-						// return "";
-						ret = "";
-						console.log(sourceFile.path, targetFile.path, ret);
-						return ret;
+				if (targetProject) {
+					if (sourceProject?.root == targetProject.root) {
+						return "";
 					}
-					// return targetProject.name + " > ";
-					ret = targetProject.name + " > ";
-					console.log(sourceFile.path, targetFile.path, ret);
-					return ret;
+					return targetProject.name + " > ";
 				}
-				// sourceFile or targetFile doesn't belong to a project
-				// return null;
-				ret = null;
-				console.log(sourceFile.path, targetFile.path, ret);
-				return ret;
+				// targetFile doesn't belong to any project
+				return null;
 			};
 			// account.enableFileNameBlockLinks = (sourceFile: TFile, targetFile: TFile) => this.extraSettings.noteTitleInLink;
 			return account;
