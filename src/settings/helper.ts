@@ -370,6 +370,7 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
 
         // projects
         this.addTextSetting("projectInfix", "Link infix", "Specify the infix to connect a project name and a theorem title or an equation number.");
+        this.addTextSetting("projectSep", "Separator for nested projects");
     }
 }
 

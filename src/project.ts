@@ -116,7 +116,7 @@ export const makePrefixer = (plugin: MathBooster) => (sourceFile: TFile, targetF
         if (sourceProject?.root == targetProjects[0].root) {
             return "";
         }
-        return targetProjects.reverse().map((project) => project.name).join('/') + plugin.extraSettings.projectInfix;
+        return targetProjects.reverse().map((project) => project.name).join(plugin.extraSettings.projectSep) + plugin.extraSettings.projectInfix;
     }
     // targetFile doesn't belong to any project
     return null;

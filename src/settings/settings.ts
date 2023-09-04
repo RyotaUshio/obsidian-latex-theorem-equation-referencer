@@ -114,6 +114,7 @@ export interface ExtraSettings {
     suggestLeafOption: LeafOption;
     backlinkLeafOption: LeafOption;
     projectInfix: string;
+    projectSep: string;
 }
 
 export const UNION_TYPE_EXTRA_SETTING_KEYS: {[k in keyof Partial<ExtraSettings>]: readonly string[]} = {
@@ -165,4 +166,5 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     suggestLeafOption: "Split right", 
     backlinkLeafOption: "Split right",
     projectInfix: " > ",
+    projectSep: "/",
 };

@@ -61,9 +61,9 @@ export class MathSettingTab extends PluginSettingTab {
 
         const projectHeading = containerEl.createEl("h3", { text: "Projects" });
 
-        this.containerEl.insertAfter(
-            extraHelper.settingRefs.projectInfix.settingEl,
-            projectHeading
+        this.containerEl.insertBefore(
+            projectHeading,
+            extraHelper.settingRefs.projectInfix.settingEl
         );
 
         this.addRestoreDefaultsButton();
