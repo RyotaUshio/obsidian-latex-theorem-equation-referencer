@@ -40,10 +40,6 @@ export default class MathBooster extends Plugin {
 		this.addSettingTab(new MathSettingTab(this.app, this));
 
 
-		/** Projects */
-		this.projectManager = new ProjectManager(this);
-
-
 		/** Dependencies check */
 
 		this.app.workspace.onLayoutReady(() => {
@@ -57,17 +53,20 @@ export default class MathBooster extends Plugin {
 		this.index = new VaultIndex(this.app, this);
 
 		// triggered if this plugin is enabled after launching the app
-		this.app.workspace.onLayoutReady(() => {
+		this.app.workspace.onLayoutReady(async () => {
 			if (Dataview.getAPI(this.app)?.index.initialized) {
-				this.initializeIndex()
+				await this.initializeProjectManager();
+				await this.initializeIndex();
 			}
 		})
 
 		// triggered if this plugin is already enabled when launching the app
 		this.registerEvent(
 			this.app.metadataCache.on(
-				"dataview:index-ready",
-				this.initializeIndex.bind(this)
+				"dataview:index-ready", async () => {
+					await this.initializeProjectManager();
+					await this.initializeIndex();
+				}
 			)
 		);
 
@@ -299,10 +298,11 @@ export default class MathBooster extends Plugin {
 		this.settings = { [VAULT_ROOT]: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)) };
 		this.extraSettings = JSON.parse(JSON.stringify(DEFAULT_EXTRA_SETTINGS));
 		this.excludedFiles = [];
+		this.projectManager = new ProjectManager(this);
 
 		const loadedData = await this.loadData();
 		if (loadedData) {
-			const { settings, extraSettings, excludedFiles } = loadedData;
+			const { settings, extraSettings, excludedFiles, dumpedProjects } = loadedData;
 			for (const path in settings) {
 				if (path != VAULT_ROOT) {
 					this.settings[path] = {};
@@ -342,6 +342,11 @@ export default class MathBooster extends Plugin {
 			}
 
 			this.excludedFiles = excludedFiles;
+
+			// At the time the plugin is loaded, the data vault is not ready and 
+			// vault.getAbstractFile() returns null for any path.
+			// So we have to wait for the vault to start up and store a dumped version of the projects until then.
+			this.projectManager = new ProjectManager(this, dumpedProjects);
 		}
 	}
 
@@ -351,6 +356,7 @@ export default class MathBooster extends Plugin {
 			settings: this.settings,
 			extraSettings: this.extraSettings,
 			excludedFiles: this.excludedFiles,
+			dumpedProjects: this.projectManager.dump(),
 		});
 	}
 
@@ -382,17 +388,21 @@ export default class MathBooster extends Plugin {
 			account.blockPrefix = "";
 			// @ts-expect-error
 			account.prefixer = makePrefixer(this);
-			// account.enableFileNameBlockLinks = (sourceFile: TFile, targetFile: TFile) => this.extraSettings.noteTitleInLink;
 			return account;
 		}
 	}
 
-	initializeIndex() {
+	async initializeIndex() {
 		const indexStart = Date.now();
 		this.setOldLinkMap();
-		(new VaultIndexer(this.app, this)).run();
+		await new VaultIndexer(this.app, this).run();
 		const indexEnd = Date.now();
 		console.log(`${this.manifest.name}: All theorem callouts and equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s.`);
+	}
+
+	async initializeProjectManager() {
+		this.projectManager.load();
+		await this.saveSettings();
 	}
 
 	getNewLinkMap(): Dataview.IndexMap | undefined {

@@ -16,27 +16,6 @@ export type IndexItem = { type: IndexItemType, printName: string, refName: strin
 export abstract class AbstractFileIndex {
     isProjectRoot: boolean;
     constructor(public file: TAbstractFile, public plugin: MathBooster) { }
-    // getProject(): Project | null {
-    //     let file: TAbstractFile | null = this.file;
-    //     while (file) {
-    //         if (file instanceof TFile) {
-    //             const index = this.plugin.index.getNoteIndex(file);
-    //             if (index.isProjectRoot) {
-    //                 break;
-    //             }
-    //         } else if (file instanceof TFolder) {
-    //             const index = this.plugin.index.getFolderIndex(file);
-    //             if (index.isProjectRoot) {
-    //                 break;
-    //             }
-    //         }
-    //         file = file.parent;
-    //     }
-    //     if (file) {
-    //         return this.plugin.projectManager.get(file) ?? null;
-    //     }
-    //     return null;
-    // }
 }
 
 

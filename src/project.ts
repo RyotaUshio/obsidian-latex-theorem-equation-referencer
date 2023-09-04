@@ -1,5 +1,5 @@
 import MathBooster from "main";
-import { App, TAbstractFile, TFile, TFolder } from "obsidian";
+import { TAbstractFile, TFile, TFolder } from "obsidian";
 
 export class Project {
     name: string;
@@ -9,21 +9,36 @@ export class Project {
     }
 }
 
+export type DumpedProject = { rootPath: string, name: string };
 
 export class ProjectManager {
     plugin: MathBooster;
     projects: Map<TAbstractFile, Project>;
+    dumped: DumpedProject[];
 
-    constructor(plugin: MathBooster) {
+    constructor(plugin: MathBooster, dumped?: DumpedProject[]) {
         this.plugin = plugin;
         this.projects = new Map();
+        this.dumped = dumped ?? [];
     }
 
     add(root: TAbstractFile, name?: string) {
         this.projects.set(root, new Project(root, name));
+        const index = root instanceof TFile ? this.plugin.index.getNoteIndex(root) 
+                    : root instanceof TFolder ? this.plugin.index.getNoteIndex(root) 
+                    : undefined;
+        if (index) {
+            index.isProjectRoot = true;
+        }
     }
 
     delete(root: TAbstractFile): boolean {
+        const index = root instanceof TFile ? this.plugin.index.getNoteIndex(root) 
+                    : root instanceof TFolder ? this.plugin.index.getNoteIndex(root) 
+                    : undefined;
+        if (index) {
+            index.isProjectRoot = false;
+        }
         return this.projects.delete(root);
     }
 
@@ -76,22 +91,21 @@ export class ProjectManager {
     }
 
     dump() {
-        const dumped: { rootPath: string, name: string }[] = [];
-        for (const project of Object.values(this.projects)) {
+        const dumped: DumpedProject[] = [];
+        for (const project of this.projects.values()) {
             dumped.push({ rootPath: project.root.path, name: project.name });
         }
         return dumped;
     }
 
-    static load(dumped: { rootPath: string, name: string }[], plugin: MathBooster): ProjectManager {
-        const projectManager = new ProjectManager(plugin);
+    load(dumped?: DumpedProject[]) {
+        dumped = dumped ?? this.dumped;
         for (const { rootPath, name } of dumped) {
-            const rootFile = plugin.app.vault.getAbstractFileByPath(rootPath);
+            const rootFile = this.plugin.app.vault.getAbstractFileByPath(rootPath);
             if (rootFile) {
-                projectManager.add(rootFile, name);
+                this.add(rootFile, name);
             }
         }
-        return projectManager;
     }
 }
 

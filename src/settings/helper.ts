@@ -425,8 +425,7 @@ export class ProjectSettingsHelper {
             setting.addToggle((toggle) => {
                 toggle.setValue(index!.isProjectRoot)
                     .onChange((value) => {
-                        index!.isProjectRoot = value;
-                        if (index!.isProjectRoot) {
+                        if (value) {
                             this.plugin.projectManager.add(this.file);
                         } else {
                             this.plugin.projectManager.delete(this.file);
@@ -448,7 +447,6 @@ export class ProjectSettingsHelper {
             text.setValue(project.name)
                 .onChange((value) => {
                     project.name = value;
-                    this.parent.open();
                 })
         });
         return setting;
