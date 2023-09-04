@@ -110,13 +110,20 @@ export class ProjectManager {
 }
 
 export const makePrefixer = (plugin: MathBooster) => (sourceFile: TFile, targetFile: TFile): string | null => {
-    const sourceProject = plugin.projectManager.getProject(sourceFile);
+    const sourceProjects = plugin.projectManager.getNestedProjects(sourceFile);
     const targetProjects = plugin.projectManager.getNestedProjects(targetFile);
     if (targetProjects.length) {
-        if (sourceProject?.root == targetProjects[0].root) {
-            return "";
+        let prefix = "";
+        for (let i=0; i<targetProjects.length; i++) {
+            if (sourceProjects[i]?.root == targetProjects[i].root) {
+                break;
+            }
+            prefix = targetProjects[i].name + (i ? plugin.extraSettings.projectSep : "") + prefix
         }
-        return targetProjects.reverse().map((project) => project.name).join(plugin.extraSettings.projectSep) + plugin.extraSettings.projectInfix;
+        if (prefix) {
+            prefix += plugin.extraSettings.projectInfix;
+        }
+        return prefix;
     }
     // targetFile doesn't belong to any project
     return null;
