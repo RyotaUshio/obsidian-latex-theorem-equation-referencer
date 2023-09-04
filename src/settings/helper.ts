@@ -6,6 +6,8 @@ import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, THEOREM_REF_FORMATS, THE
 import { BooleanKeys, NumberKeys, formatTheoremCalloutType, formatTitle } from '../utils';
 import { AbstractFileIndex, AutoNoteIndexer } from '../indexer';
 import { DEFAULT_PROFILES, ManageProfileModal } from './profile';
+import { Project } from 'project';
+import { ContextSettingModal } from 'modals';
 
 
 export class TheoremCalloutSettingsHelper {
@@ -60,7 +62,7 @@ export class TheoremCalloutSettingsHelper {
 
                 const titlePane = new Setting(contentEl)
                     .setName("Title")
-                    .setDesc("You can use inline math.");
+                    .setDesc("You can include inline math in the title.");
 
                 const labelPane = new Setting(contentEl).setName("Pandoc label");
                 const labelPrefixEl = labelPane.controlEl.createDiv({
@@ -263,8 +265,6 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
 
 
 export class MathContextSettingsHelper extends SettingsHelper<MathContextSettings> {
-    isRoot: boolean;
-
     constructor(
         contentEl: HTMLElement,
         settings: Partial<MathContextSettings>,
@@ -274,15 +274,10 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
     ) {
         const isRoot = file instanceof TFolder && file.isRoot();
         super(contentEl, settings, defaultSettings, plugin, !isRoot, !isRoot);
-        this.isRoot = isRoot;
     }
 
     makeSettingPane() {
         const { contentEl } = this;
-
-        if (!this.isRoot) {
-            this.addProjectRootSetting();
-        }
 
         contentEl.createEl("h4", { text: "Theorem callouts" });
         this.addProfileSetting();
@@ -333,39 +328,6 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addToggleSetting("insertSpace", "Insert a space after the link");
     }
 
-    /**
-     * This setting actually is NOT related to local/context settings at all.
-     * But it makes sense to place it here from the UI perspective.
-     * @returns 
-     */
-    addProjectRootSetting(): Setting | undefined {
-        const prettyName = "Set as project root";
-        const description = this.file instanceof TFile 
-            ? "If turned on, this file itself will be treated as a project." 
-            : "If turned on, all the files under this folder will be treated as a single project.";
-        let index: AbstractFileIndex | undefined
-        if (this.file instanceof TFile) {
-            index = this.plugin.index.getNoteIndex(this.file)
-        } else if (this.file instanceof TFolder) {
-            index = this.plugin.index.getFolderIndex(this.file)
-        }
-        if (index) {
-            const setting = new Setting(this.contentEl).setName(prettyName).setDesc(description);
-            setting.addToggle((toggle) => {
-                toggle.setValue(index!.isProjectRoot)
-                    .onChange((value) => {
-                        index!.isProjectRoot = value;
-                        if (index!.isProjectRoot) {
-                            this.plugin.projectManager.add(this.file);
-                        } else {
-                            this.plugin.projectManager.delete(this.file);
-                        }
-                    });
-            });
-            return setting;
-        }
-    }
-
     addProfileSetting(defaultValue?: string): Setting {
         const profileSetting = this.addDropdownSetting("profile", Object.keys(this.plugin.extraSettings.profiles), "Profile", "A profile defines the displayed name of each environment.", defaultValue);
         new ButtonComponent(profileSetting.controlEl)
@@ -403,5 +365,87 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
             cls: ["setting-item-description", "math-booster-setting-item-description"],
         });
         this.addDropdownSetting("backlinkLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected backlink.")
+    }
+}
+
+
+export class ProjectSettingsHelper {
+    plugin: MathBooster;
+    file: TAbstractFile;
+
+    constructor(public contentEl: HTMLElement, public parent: ContextSettingModal) {
+        this.plugin = parent.plugin;
+        this.file = parent.file;
+    }
+
+    makeSettingPane() {
+        const project = this.plugin.projectManager.getProject(this.file);
+        const noteOrFolder = this.file instanceof TFile ? "note" : "folder";
+        let status = "";
+        if (project) {
+            if (project.root == this.file) {
+                status = `This ${noteOrFolder} is a project's root.`;
+            } else {
+                status = `This ${noteOrFolder} belongs to the project "${project.name}" (root: ${project.root.path}).`;
+            }
+        } else {
+            status = `This ${noteOrFolder} doesn't belong to any project.`;
+        }
+
+        this.contentEl.createEl("h4", {text: "Project"})
+
+        this.contentEl.createDiv({
+            text: `A project is a group of notes that is treated as if it's a single note when displaying links to theorems or equations in them. ` + status,
+            cls: ["setting-item-description", "math-booster-setting-item-description"]
+        });
+        this.addRootSetting();
+        if (project) {
+            this.addNameSetting(project);
+        }
+    }
+
+    addRootSetting(): Setting | undefined {
+        const prettyName = "Set as project root";
+        const description = this.file instanceof TFile
+            ? "If turned on, this file itself will be treated as a project."
+            : "If turned on, all the files under this folder will be treated as a single project.";
+        let index: AbstractFileIndex | undefined
+        if (this.file instanceof TFile) {
+            index = this.plugin.index.getNoteIndex(this.file)
+        } else if (this.file instanceof TFolder) {
+            index = this.plugin.index.getFolderIndex(this.file)
+        }
+        if (index) {
+            const setting = new Setting(this.contentEl).setName(prettyName).setDesc(description);
+            setting.addToggle((toggle) => {
+                toggle.setValue(index!.isProjectRoot)
+                    .onChange((value) => {
+                        index!.isProjectRoot = value;
+                        if (index!.isProjectRoot) {
+                            this.plugin.projectManager.add(this.file);
+                        } else {
+                            this.plugin.projectManager.delete(this.file);
+                        }
+                        this.parent.close();
+                        this.parent.open();
+                    });
+            });
+            return setting;
+        }
+    }
+
+    addNameSetting(project: Project): Setting {
+        const prettyName = "Project name";
+        const description = "A project name can contain inline math.";
+        const setting = new Setting(this.contentEl).setName(prettyName).setDesc(description);
+
+        setting.addText((text) => {
+            text.setValue(project.name)
+                .onChange((value) => {
+                    project.name = value;
+                    this.parent.open();
+                })
+        });
+        return setting;
     }
 }

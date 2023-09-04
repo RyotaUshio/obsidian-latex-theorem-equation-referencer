@@ -3,7 +3,7 @@ import { TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder }
 import MathBooster from './main';
 import { MathSettings, MathContextSettings, DEFAULT_SETTINGS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
-import { TheoremCalloutSettingsHelper, MathContextSettingsHelper } from "./settings/helper";
+import { TheoremCalloutSettingsHelper, MathContextSettingsHelper, ProjectSettingsHelper } from "./settings/helper";
 import { isEqualToOrChildOf, resolveSettings } from './utils';
 
 
@@ -134,6 +134,10 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
 
         contentEl
             .createEl('h3', { text: 'Local settings for ' + this.file.path });
+
+        if (!(this.file instanceof TFolder && this.file.isRoot())) {
+            new ProjectSettingsHelper(contentEl, this).makeSettingPane();
+        }
 
         if (this.plugin.settings[this.file.path] === undefined) {
             this.plugin.settings[this.file.path] = {} as MathContextSettings;

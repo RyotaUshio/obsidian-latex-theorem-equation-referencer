@@ -63,7 +63,7 @@ export class MathSettingTab extends PluginSettingTab {
 
         containerEl.createEl("h3", { text: "Local" });
         new Setting(containerEl).setName("Local settings")
-            .setDesc("You can set up file-specific or folder-specific configurations, which have more precedence than the global settings.")
+            .setDesc("You can set up local (i.e. file-specific or folder-specific) settings, which have more precedence than the global settings. Local settings can be configured in various ways; here in the plugin settings, right-clicking in the file explorer, the \"Open local settings for the current file\" command, and the \"Open local settings for the current file\" button in the theorem callout settings pop-ups.")
             .addButton((btn) => {
                 btn.setButtonText("Search files & folders")
                     .onClick(() => {
