@@ -360,11 +360,11 @@ export function insertAt<Type>(array: Array<Type>, item: Type, index: number) {
     array.splice(index, 0, item);
 }
 
-export const MATH_CALLOUT_PATTERN = /\> *\[\! *math *\|(.*)\](.*)/;
+export const THEOREM_CALLOUT_PATTERN = /\> *\[\! *math *\|(.*)\](.*)/;
 
 export function matchTheoremCallout(line: string): RegExpExecArray | null {
     if (line) {
-        return MATH_CALLOUT_PATTERN.exec(line)
+        return THEOREM_CALLOUT_PATTERN.exec(line)
     }
     return null;
 }

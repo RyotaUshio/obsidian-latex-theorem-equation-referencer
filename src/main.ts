@@ -1,4 +1,4 @@
-import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
+import { MarkdownView, Notice, Plugin, TFile, TFolder } from 'obsidian';
 import { StateField } from '@codemirror/state';
 
 import * as MathLinks from 'obsidian-mathlinks'
@@ -6,16 +6,17 @@ import * as Dataview from 'obsidian-dataview';
 
 import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS, UNION_TYPE_MATH_CONTEXT_SETTING_KEYS, UNION_TYPE_EXTRA_SETTING_KEYS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
-import { TheoremCallout, insertTheoremCalloutCallback } from './math_callouts';
+import { TheoremCallout, insertTheoremCalloutCallback } from './theorem_callouts';
 import { ContextSettingModal, TheoremCalloutModal } from './modals';
 import { insertDisplayMath } from './key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote } from './math_live_preview_in_callouts';
 import { LinkedNotesIndexer, VaultIndex, VaultIndexer } from './indexer';
-import { theoremCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
+import { theoremCalloutMetadataHiderPlulgin } from './theorem_callout_metadata_hider';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, iterDescendantFiles } from './utils';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
 import { Suggest } from './suggest';
+import { ProjectManager } from 'project';
 
 
 export const VAULT_ROOT = '/';
@@ -28,6 +29,7 @@ export default class MathBooster extends Plugin {
 	oldLinkMap: Dataview.IndexMap;
 	proofPositionField: StateField<ProofPosition[]>;
 	index: VaultIndex;
+	projectManager: ProjectManager;
 
 	async onload() {
 
@@ -36,6 +38,10 @@ export default class MathBooster extends Plugin {
 		await this.loadSettings();
 		await this.saveSettings();
 		this.addSettingTab(new MathSettingTab(this.app, this));
+
+
+		/** Projects */
+		this.projectManager = new ProjectManager(this);
 
 
 		/** Dependencies check */
@@ -374,7 +380,30 @@ export default class MathBooster extends Plugin {
 		const account = MathLinks.getAPIAccount(this);
 		if (account) {
 			account.blockPrefix = "";
-			account.enableFileNameBlockLinks = this.extraSettings.noteTitleInLink;
+			// @ts-expect-error
+			account.prefixer = (sourceFile: TFile, targetFile: TFile): string | null => {
+				const sourceProject = this.projectManager.getProject(sourceFile);
+				const targetProject = this.projectManager.getProject(targetFile);
+				let ret: string | null;
+				if (sourceProject && targetProject) {
+					if (sourceProject.root == targetProject.root) {
+						// return "";
+						ret = "";
+						console.log(sourceFile.path, targetFile.path, ret);
+						return ret;
+					}
+					// return targetProject.name + " > ";
+					ret = targetProject.name + " > ";
+					console.log(sourceFile.path, targetFile.path, ret);
+					return ret;
+				}
+				// sourceFile or targetFile doesn't belong to a project
+				// return null;
+				ret = null;
+				console.log(sourceFile.path, targetFile.path, ret);
+				return ret;
+			};
+			// account.enableFileNameBlockLinks = (sourceFile: TFile, targetFile: TFile) => this.extraSettings.noteTitleInLink;
 			return account;
 		}
 	}

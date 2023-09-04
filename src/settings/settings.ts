@@ -162,5 +162,5 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     searchOnlyRecent: false,
     modifierToJump: "Mod",
     suggestLeafOption: "Split right", 
-    backlinkLeafOption: "Split right", 
+    backlinkLeafOption: "Split right",
 };

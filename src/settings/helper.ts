@@ -355,6 +355,11 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
                 toggle.setValue(index!.isProjectRoot)
                     .onChange((value) => {
                         index!.isProjectRoot = value;
+                        if (index!.isProjectRoot) {
+                            this.plugin.projectManager.add(this.file);
+                        } else {
+                            this.plugin.projectManager.delete(this.file);
+                        }
                     });
             });
             return setting;

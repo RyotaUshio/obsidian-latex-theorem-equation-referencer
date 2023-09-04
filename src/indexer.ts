@@ -4,6 +4,7 @@ import MathBooster from './main';
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, TheoremRefFormat, ResolvedMathSettings, TheoremCalloutSettings, TheoremCalloutPrivateFields } from './settings/settings';
 import { getBlockIdsWithBacklink, readTheoremCalloutSettings, resolveSettings, formatTitle, readTheoremCalloutSettingsAndTitle, CONVERTER, matchTheoremCallout, formatTitleWithoutSubtitle, isEditingView } from './utils';
 import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
+import { Project } from 'project';
 
 
 /** Index content */
@@ -15,24 +16,27 @@ export type IndexItem = { type: IndexItemType, printName: string, refName: strin
 export abstract class AbstractFileIndex {
     isProjectRoot: boolean;
     constructor(public file: TAbstractFile, public plugin: MathBooster) { }
-    getProjectRoot() {
-        let file: TAbstractFile | null = this.file;
-        while (file) {
-            if (file instanceof TFile) {
-                const index = this.plugin.index.getNoteIndex(file);
-                if (index.isProjectRoot) {
-                    break;
-                }
-            } else if (file instanceof TFolder) {
-                const index = this.plugin.index.getFolderIndex(file);
-                if (index.isProjectRoot) {
-                    break;
-                }
-            }
-            file = file.parent;
-        }
-        return file;
-    }
+    // getProject(): Project | null {
+    //     let file: TAbstractFile | null = this.file;
+    //     while (file) {
+    //         if (file instanceof TFile) {
+    //             const index = this.plugin.index.getNoteIndex(file);
+    //             if (index.isProjectRoot) {
+    //                 break;
+    //             }
+    //         } else if (file instanceof TFolder) {
+    //             const index = this.plugin.index.getFolderIndex(file);
+    //             if (index.isProjectRoot) {
+    //                 break;
+    //             }
+    //         }
+    //         file = file.parent;
+    //     }
+    //     if (file) {
+    //         return this.plugin.projectManager.get(file) ?? null;
+    //     }
+    //     return null;
+    // }
 }
 
 
@@ -98,7 +102,8 @@ export class NoteIndex extends AbstractFileIndex {
                 mathLinkBlocks[id] = item.refName;
             }
         }
-        this.plugin.getMathLinksAPI()?.update(this.file.path, { 'mathLink-blocks': mathLinkBlocks });
+        // @ts-expect-error
+        this.plugin.getMathLinksAPI()?.update(this.file, { 'mathLink-blocks': mathLinkBlocks });
     }
 }
 
@@ -264,13 +269,15 @@ class TheoremCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, 
             const resolvedSettings = this.resolveSettings(callouts[index]);
 
             this.noteIndexer.plugin.getMathLinksAPI()?.update(
-                this.noteIndexer.file.path, {
+                // @ts-expect-error
+                this.noteIndexer.file, {
                 "mathLink": this.formatMathLink(resolvedSettings, "noteMathLinkFormat")
             }
             )
         } else {
             this.noteIndexer.plugin.getMathLinksAPI()?.update(
-                this.noteIndexer.file.path, {
+                // @ts-expect-error
+                this.noteIndexer.file, {
                 "mathLink": undefined
             }
             )
