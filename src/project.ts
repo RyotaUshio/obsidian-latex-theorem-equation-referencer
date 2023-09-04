@@ -78,3 +78,16 @@ export class ProjectManager {
         return projectManager;
     }
 }
+
+export const makePrefixer = (plugin: MathBooster) => (sourceFile: TFile, targetFile: TFile): string | null => {
+    const sourceProject = plugin.projectManager.getProject(sourceFile);
+    const targetProject = plugin.projectManager.getProject(targetFile);
+    if (targetProject) {
+        if (sourceProject?.root == targetProject.root) {
+            return "";
+        }
+        return targetProject.name + plugin.extraSettings.projectInfix;
+    }
+    // targetFile doesn't belong to any project
+    return null;
+};

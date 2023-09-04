@@ -113,6 +113,7 @@ export interface ExtraSettings {
     modifierToJump: Modifier;
     suggestLeafOption: LeafOption;
     backlinkLeafOption: LeafOption;
+    projectInfix: string;
 }
 
 export const UNION_TYPE_EXTRA_SETTING_KEYS: {[k in keyof Partial<ExtraSettings>]: readonly string[]} = {
@@ -163,4 +164,5 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     modifierToJump: "Mod",
     suggestLeafOption: "Split right", 
     backlinkLeafOption: "Split right",
+    projectInfix: " > ",
 };

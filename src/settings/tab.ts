@@ -59,6 +59,13 @@ export class MathSettingTab extends PluginSettingTab {
             extraHelper.settingRefs.searchMethod.settingEl,
         );
 
+        const projectHeading = containerEl.createEl("h3", { text: "Projects" });
+
+        this.containerEl.insertAfter(
+            extraHelper.settingRefs.projectInfix.settingEl,
+            projectHeading
+        );
+
         this.addRestoreDefaultsButton();
 
         containerEl.createEl("h3", { text: "Local" });

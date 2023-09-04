@@ -1,4 +1,4 @@
-import { MarkdownView, Notice, Plugin, TFile, TFolder } from 'obsidian';
+import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
 import { StateField } from '@codemirror/state';
 
 import * as MathLinks from 'obsidian-mathlinks'
@@ -16,7 +16,7 @@ import { theoremCalloutMetadataHiderPlulgin } from './theorem_callout_metadata_h
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, iterDescendantFiles } from './utils';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
 import { Suggest } from './suggest';
-import { ProjectManager } from 'project';
+import { ProjectManager, makePrefixer } from 'project';
 
 
 export const VAULT_ROOT = '/';
@@ -381,18 +381,7 @@ export default class MathBooster extends Plugin {
 		if (account) {
 			account.blockPrefix = "";
 			// @ts-expect-error
-			account.prefixer = (sourceFile: TFile, targetFile: TFile): string | null => {
-				const sourceProject = this.projectManager.getProject(sourceFile);
-				const targetProject = this.projectManager.getProject(targetFile);
-				if (targetProject) {
-					if (sourceProject?.root == targetProject.root) {
-						return "";
-					}
-					return targetProject.name + " > ";
-				}
-				// targetFile doesn't belong to any project
-				return null;
-			};
+			account.prefixer = makePrefixer(this);
 			// account.enableFileNameBlockLinks = (sourceFile: TFile, targetFile: TFile) => this.extraSettings.noteTitleInLink;
 			return account;
 		}
