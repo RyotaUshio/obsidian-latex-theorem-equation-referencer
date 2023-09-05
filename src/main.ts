@@ -297,7 +297,8 @@ export default class MathBooster extends Plugin {
 							.onClick(() => {
 								new ContextSettingModal(this.app, this, file).open();
 							});
-					});
+					})
+					.addSeparator();
 			})
 		);
 	}

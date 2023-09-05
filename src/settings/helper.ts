@@ -426,7 +426,7 @@ export class ProjectSettingsHelper {
         this.contentEl.createEl("h4", {text: "Project"})
 
         this.contentEl.createDiv({
-            text: `A project is a group of notes that is treated as if it's a single note when displaying links to theorems or equations in them. ` + status,
+            text: `A project is a group of notes that is treated as if it were a single note when displaying links to theorems or equations in them. ` + status,
             cls: ["setting-item-description", "math-booster-setting-item-description"]
         });
         this.addRootSetting();
