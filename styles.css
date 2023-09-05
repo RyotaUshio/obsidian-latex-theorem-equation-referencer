@@ -43,7 +43,7 @@
     width: 200px;
 }
 
-.math-booster-profile-button-container {
+.math-booster-button-container {
     display: flex;
     flex-direction: row;
     justify-content: flex-end;

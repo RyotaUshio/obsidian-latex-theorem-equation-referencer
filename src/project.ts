@@ -1,11 +1,12 @@
 import MathBooster from "main";
-import { TAbstractFile, TFile, TFolder } from "obsidian";
+import { ButtonComponent, Modal, TAbstractFile, TFile, TFolder } from "obsidian";
+import { pathToBaseName } from "utils";
 
 export class Project {
     name: string;
 
     constructor(public root: TAbstractFile, name?: string) {
-        this.name = name ?? this.root.name;
+        this.name = name ?? (root instanceof TFile ? root.basename : root.name);
     }
 }
 
@@ -20,22 +21,32 @@ export class ProjectManager {
         this.plugin = plugin;
         this.projects = new Map();
         this.dumped = dumped ?? [];
+
+        this.plugin.registerEvent(
+            this.plugin.app.vault.on("rename", (file, oldPath) => {
+                const project = this.projects.get(file);
+                const basename = pathToBaseName(oldPath);
+                if (project?.name == basename) {
+                    new ProjectRootRenameModal(this.plugin, project, oldPath).open();
+                }
+            })
+        );
     }
 
     add(root: TAbstractFile, name?: string) {
         this.projects.set(root, new Project(root, name));
-        const index = root instanceof TFile ? this.plugin.index.getNoteIndex(root) 
-                    : root instanceof TFolder ? this.plugin.index.getNoteIndex(root) 
-                    : undefined;
+        const index = root instanceof TFile ? this.plugin.index.getNoteIndex(root)
+            : root instanceof TFolder ? this.plugin.index.getNoteIndex(root)
+                : undefined;
         if (index) {
             index.isProjectRoot = true;
         }
     }
 
     delete(root: TAbstractFile): boolean {
-        const index = root instanceof TFile ? this.plugin.index.getNoteIndex(root) 
-                    : root instanceof TFolder ? this.plugin.index.getNoteIndex(root) 
-                    : undefined;
+        const index = root instanceof TFile ? this.plugin.index.getNoteIndex(root)
+            : root instanceof TFolder ? this.plugin.index.getNoteIndex(root)
+                : undefined;
         if (index) {
             index.isProjectRoot = false;
         }
@@ -46,10 +57,10 @@ export class ProjectManager {
     isRoot(file: TAbstractFile): boolean | undefined {
         if (file instanceof TFile) {
             const index = this.plugin.index.getNoteIndex(file);
-            return index.isProjectRoot;    
+            return index.isProjectRoot;
         } else if (file instanceof TFolder) {
             const index = this.plugin.index.getFolderIndex(file);
-            return index.isProjectRoot;    
+            return index.isProjectRoot;
         }
     }
 
@@ -114,7 +125,7 @@ export const makePrefixer = (plugin: MathBooster) => (sourceFile: TFile, targetF
     const targetProjects = plugin.projectManager.getNestedProjects(targetFile);
     if (targetProjects.length) {
         let prefix = "";
-        for (let i=0; i<targetProjects.length; i++) {
+        for (let i = 0; i < targetProjects.length; i++) {
             if (sourceProjects[i]?.root == targetProjects[i].root) {
                 break;
             }
@@ -128,3 +139,40 @@ export const makePrefixer = (plugin: MathBooster) => (sourceFile: TFile, targetF
     // targetFile doesn't belong to any project
     return null;
 };
+
+
+export class ProjectRootRenameModal extends Modal {
+    newName: string;
+    constructor(public plugin: MathBooster, public project: Project, public oldPath: string) {
+        super(plugin.app);
+        this.newName = this.project.root instanceof TFile ? this.project.root.basename : this.project.root.name;
+    }
+
+    onOpen(): void {
+        let { contentEl } = this;
+        contentEl.createEl("h3", {text: "Rename project?"});
+        contentEl.createDiv({
+            text: `The project "${this.project.name}" was named after its root ${this.oldPath}, but the root has been renamed ${this.project.root.path}. Do you want to rename the project \"${this.newName}\" accordingly?`
+        });
+
+        const buttonContainerEl = contentEl.createDiv({ cls: "math-booster-button-container" });
+        new ButtonComponent(buttonContainerEl)
+            .setButtonText("Rename")
+            .setCta()
+            .onClick(async () => {
+                this.project.name = this.newName;
+                this.close();
+            })
+        new ButtonComponent(buttonContainerEl)
+            .setButtonText("Keep it")
+            .onClick(() => {
+                this.close();
+            });
+
+    }
+
+    onClose(): void {
+        let { contentEl } = this;
+        contentEl.empty();
+    }
+}

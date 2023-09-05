@@ -392,6 +392,19 @@ export function readTheoremCalloutTitle(line: string): string | undefined {
     }
 }
 
+export function pathToName(path: string): string {
+    return path.slice(path.lastIndexOf('/') + 1);
+}
+
+export function pathToBaseName(path: string): string {
+    const name = pathToName(path);
+    const index = name.lastIndexOf('.');
+    if (index >= 0) {
+        return name.slice(0, index);
+    }
+    return name;
+}
+
 export function iterDescendantFiles(file: TAbstractFile, callback: (descendantFile: TFile) => any, extension?: string) {
     if (file instanceof TFile && (extension === undefined ? true : file.extension == extension)) {
         callback(file);
