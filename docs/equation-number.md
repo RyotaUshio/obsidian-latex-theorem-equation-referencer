@@ -60,6 +60,8 @@ Also, if you delete all the links to an equation, ...
 
 ![Result](fig/equation_number_8.png)
 
+> **Tips**: The numbering prefix of theorem callouts or equations can be either automatically inferred from the note title or manually specified.
+
 ## Remarks
 
 You must include at least one line break between `$$ ... $$` if you want the equation to be numbered.
