@@ -467,19 +467,15 @@ export function formatTitleWithoutSubtitle(plugin: MathBooster, settings: Resolv
     let title = formatTheoremCalloutType(plugin, settings);
 
     if (settings.number) {
-        let numberString = '';
         if (settings.number == 'auto') {
             if (settings._index !== undefined) {
                 settings.numberInit = settings.numberInit ?? 1;
                 const num = +settings._index + +settings.numberInit;
                 const style = settings.numberStyle ?? DEFAULT_SETTINGS.numberStyle as NumberStyle;
-                numberString = CONVERTER[style](num);
+                title += ` ${settings.numberPrefix}${CONVERTER[style](num)}${settings.numberSuffix}`;
             }
         } else {
-            numberString = settings.number;
-        }
-        if (numberString) {
-            title += ` ${settings.numberPrefix}${numberString}${settings.numberSuffix}`;
+            title += ` ${settings.number}`;
         }
     }
     return title;
