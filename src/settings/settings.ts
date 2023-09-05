@@ -57,6 +57,10 @@ export type SearchMethod = typeof SEARCH_METHODS[number];
 export interface MathContextSettings {
     profile: string;
     titleSuffix: string;
+    inferNumberPrefix: boolean;
+    inferNumberPrefixParseSep: string;
+    inferNumberPrefixPrintSep: string;
+    inferNumberPrefixUseFirstN: number;
     numberPrefix: string;
     numberSuffix: string;
     numberInit: number;
@@ -64,6 +68,9 @@ export interface MathContextSettings {
     numberDefault: string;
     refFormat: TheoremRefFormat;
     noteMathLinkFormat: TheoremRefFormat;
+    inferEqNumberPrefix: boolean;
+    inferEqNumberPrefixPrintSep: string;
+    inferEqNumberPrefixUseFirstN: number;
     eqNumberPrefix: string;
     eqNumberSuffix: string;
     eqNumberInit: number;
@@ -129,6 +136,10 @@ export type ResolvedMathSettings = Required<MathContextSettings> & TheoremCallou
 export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     profile: Object.keys(DEFAULT_PROFILES)[0],
     titleSuffix: ".",
+    inferNumberPrefix: true,
+    inferNumberPrefixParseSep: "-.",
+    inferNumberPrefixPrintSep: ".",
+    inferNumberPrefixUseFirstN: 1,
     numberPrefix: "",
     numberSuffix: "",
     numberInit: 1,
@@ -136,6 +147,9 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     numberDefault: "auto", 
     refFormat: "[type] [number] ([title])",
     noteMathLinkFormat: "[type] [number] ([title])",
+    inferEqNumberPrefix: true,
+    inferEqNumberPrefixPrintSep: ".",
+    inferEqNumberPrefixUseFirstN: 1,
     eqNumberPrefix: "",
     eqNumberSuffix: "",
     eqNumberInit: 1,

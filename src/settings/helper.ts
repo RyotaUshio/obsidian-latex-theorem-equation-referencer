@@ -88,7 +88,7 @@ export class TheoremCalloutSettingsHelper {
                     });
 
                     text
-                        .setPlaceholder("ex) $\\sigma$-algebra")
+                        .setPlaceholder("Ex) $\\sigma$-algebra")
                         .onChange((value) => {
                             this.settings.title = value;
                             let labelInit = this.settings.title.replaceAll(' ', '-').replaceAll("'s", '').toLowerCase();
@@ -120,7 +120,7 @@ export class TheoremCalloutSettingsHelper {
                         await indexer.overwriteSettings(
                             theoremCallout.cache.position.start.line,
                             theoremCallout.settings,
-                            formatTitle(this.plugin, indexer.resolveSettings(theoremCallout))
+                            formatTitle(this.plugin, this.file, indexer.resolveSettings(theoremCallout))
                         );
                     });
                     this.settings.setAsNoteMathLink = value; // no need to call indexer.overwriteSettings() here
@@ -187,7 +187,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         return setting;
     }
 
-    addTextSetting(name: keyof SettingsType, prettyName: string, description?: string): Setting {
+    addTextSetting(name: keyof SettingsType, prettyName: string, description?: string, number: boolean = false): Setting {
         const setting = new Setting(this.contentEl).setName(prettyName);
         if (description) {
             setting.setDesc(description);
@@ -197,8 +197,12 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
             textComponent = text;
             text.setPlaceholder(String(this.defaultSettings[name] ?? ""))
                 .setValue(String(this.settings[name] ?? ""))
-                .onChange((value) => {
-                    Object.assign(this.settings, { [name]: value });
+                .onChange((value: string) => {
+                    if (number) {
+                        Object.assign(this.settings, { [name]: +value });
+                    } else {
+                        Object.assign(this.settings, { [name]: value });
+                    }
                 })
         });
         if (this.addClear) {
@@ -288,10 +292,21 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
             " for how to customize the appearance of theorem callouts.",
         );
         this.addToggleSetting("theoremCalloutFontInherit", "Don't override the app's font setting when using preset styles", "You will need to reload the note to see the changes.");
-        this.addTextSetting("titleSuffix", "Title suffix", "ex) \"\" > Definition 2 (Group) / \".\" > Definition 2 (Group).");
+        this.addTextSetting("titleSuffix", "Title suffix", "Ex) \"\" > Definition 2 (Group) / \".\" > Definition 2 (Group).");
         this.addTextSetting("labelPrefix", "Pandoc label prefix", 'Useful for ensuring no label collision. Ex) When "Pandoc label prefix" = "foo:", A theorem with "Pandoc label" = "bar" is assigned "thm:foo:bar."');
         contentEl.createEl("h6", { text: "Numbering" });
-        this.addTextSetting("numberPrefix", "Prefix");
+        this.addToggleSetting(
+            "inferNumberPrefix", 
+            "Infer prefix from note title", 
+            `Automatically infer a prefix from the note title. If the title contains whitespaces, the substring before the first whitespace will be parsed for generating a prefix. Ex) To infer a prefix \"1.2.\" from a note \"1.2-A foo.md\", set `
+            + `"Delimiter for parsing note title" = "-." (i.e. recognize "-" or "." in the note title as a delimiter), `
+            + `"Delimiter for generating prefix" = ".", `
+            + `and "Use first N" = 2.`
+        );
+        this.addTextSetting("inferNumberPrefixParseSep", "Delimiter for parsing note title", "The same applies to the inference of equation number prefixes, if turned on.");
+        this.addTextSetting("inferNumberPrefixPrintSep", "Delimiter for generating prefix");
+        this.addTextSetting("inferNumberPrefixUseFirstN", "Use first N", undefined, true);
+        this.addTextSetting("numberPrefix", "Manual prefix", "Even if \"Infer prefix from note title\" is turned on, the inferred prefix will be overwritten by the value set here.");
         this.addTextSetting("numberSuffix", "Suffix");
         this.addTextSetting("numberInit", "Initial count");
         this.addDropdownSetting("numberStyle", NUMBER_STYLES, "Style");
@@ -307,7 +322,17 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
 
         contentEl.createEl("h4", { text: "Equations" });
         contentEl.createEl("h6", { text: "Numbering" });
-        this.addTextSetting("eqNumberPrefix", "Prefix");
+        this.addToggleSetting(
+            "inferEqNumberPrefix", 
+            "Infer prefix from note title", 
+            `Automatically infer a prefix from the note title. If the title contains whitespaces, the substring before the first whitespace will be parsed for generating a prefix. Ex) To infer a prefix \"1.2.\" from a note \"1.2-A foo.md\", set `
+            + `"Delimiter for parsing note title" = "-." (i.e. recognize "-" or "." in the note title as a delimiter), `
+            + `"Delimiter for generating prefix" = ".", `
+            + `and "Use first N" = 2.`
+        );
+        this.addTextSetting("inferEqNumberPrefixPrintSep", "Delimiter for generating prefix");
+        this.addTextSetting("inferEqNumberPrefixUseFirstN", "Use first N", undefined, true);
+        this.addTextSetting("eqNumberPrefix", "Manual prefix", "Even if \"Infer prefix from note title\" is turned on, the inferred prefix will be overwritten by the value set here.");
         this.addTextSetting("eqNumberSuffix", "Suffix");
         this.addTextSetting("eqNumberInit", "Initial count");
         this.addDropdownSetting("eqNumberStyle", NUMBER_STYLES, "Style");

@@ -21,7 +21,7 @@ export class TheoremCallout extends MarkdownRenderChild {
 
     async setRenderedTitleElements() {
         // ex) "Theorem 1.1", not "Theorem 1.1 (Cauchy-Schwarz)"
-        const titleWithoutSubtitle = await renderTextWithMath(formatTitleWithoutSubtitle(this.plugin, this.resolvedSettings));
+        const titleWithoutSubtitle = await renderTextWithMath(formatTitleWithoutSubtitle(this.plugin, this.currentFile, this.resolvedSettings));
         this.renderedTitleElements = [
             ...titleWithoutSubtitle
         ];
@@ -72,7 +72,7 @@ export class TheoremCallout extends MarkdownRenderChild {
                     async (settings) => {
                         this.settings = settings;
                         this.resolvedSettings = resolveSettings(this.settings, this.plugin, this.currentFile);
-                        const title = formatTitle(this.plugin, this.resolvedSettings);
+                        const title = formatTitle(this.plugin, this.currentFile, this.resolvedSettings);
                         const indexer = (new AutoNoteIndexer(this.app, this.plugin, view.file)).getIndexer();
                         if (lineNumber !== undefined) {
                             await indexer.calloutIndexer.overwriteSettings(lineNumber, this.settings, title);
@@ -152,7 +152,7 @@ export function insertTheoremCalloutCallback(plugin: MathBooster, editor: Editor
     const selection = editor.getSelection();
     const cursorPos = editor.getCursor();
     const resolvedSettings = resolveSettings(config, plugin, currentFile);
-    const title = formatTitle(plugin, resolvedSettings);
+    const title = formatTitle(plugin, currentFile, resolvedSettings);
 
     if (selection) {
         const nLines = splitIntoLines(selection).length;

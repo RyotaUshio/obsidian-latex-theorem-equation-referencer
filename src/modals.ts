@@ -132,8 +132,11 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
         const { contentEl } = this;
         contentEl.empty();
 
-        contentEl
-            .createEl('h3', { text: 'Local settings for ' + this.file.path });
+        contentEl.createEl('h3', { text: 'Local settings for ' + this.file.path });
+        contentEl.createDiv({
+            text: "If you want the change to apply to the entire vault, go to the plugin settings.",
+            cls: ["setting-item-description", "math-booster-setting-item-description"],
+        });
 
         if (!(this.file instanceof TFolder && this.file.isRoot())) {
             new ProjectSettingsHelper(contentEl, this).makeSettingPane();

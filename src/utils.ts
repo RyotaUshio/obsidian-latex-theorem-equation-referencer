@@ -360,7 +360,7 @@ export function insertAt<Type>(array: Array<Type>, item: Type, index: number) {
     array.splice(index, 0, item);
 }
 
-export const THEOREM_CALLOUT_PATTERN = /\> *\[\! *math *\|(.*)\](.*)/;
+export const THEOREM_CALLOUT_PATTERN = /\> *\[\! *math *\|(.*?)\](.*)/;
 
 export function matchTheoremCallout(line: string): RegExpExecArray | null {
     if (line) {
@@ -463,7 +463,7 @@ export function formatTheoremCalloutType(plugin: MathBooster, settings: { type: 
     return profile.body.theorem[settings.type as TheoremLikeEnvID];
 }
 
-export function formatTitleWithoutSubtitle(plugin: MathBooster, settings: ResolvedMathSettings): string {
+export function formatTitleWithoutSubtitle(plugin: MathBooster, file: TFile, settings: ResolvedMathSettings): string {
     let title = formatTheoremCalloutType(plugin, settings);
 
     if (settings.number) {
@@ -472,7 +472,7 @@ export function formatTitleWithoutSubtitle(plugin: MathBooster, settings: Resolv
                 settings.numberInit = settings.numberInit ?? 1;
                 const num = +settings._index + +settings.numberInit;
                 const style = settings.numberStyle ?? DEFAULT_SETTINGS.numberStyle as NumberStyle;
-                title += ` ${settings.numberPrefix}${CONVERTER[style](num)}${settings.numberSuffix}`;
+                title += ` ${getNumberPrefix(file, settings)}${CONVERTER[style](num)}${settings.numberSuffix}`;
             }
         } else {
             title += ` ${settings.number}`;
@@ -481,8 +481,8 @@ export function formatTitleWithoutSubtitle(plugin: MathBooster, settings: Resolv
     return title;
 }
 
-export function formatTitle(plugin: MathBooster, settings: ResolvedMathSettings, noTitleSuffix: boolean = false): string {
-    let title = formatTitleWithoutSubtitle(plugin, settings);
+export function formatTitle(plugin: MathBooster, file: TFile, settings: ResolvedMathSettings, noTitleSuffix: boolean = false): string {
+    let title = formatTitleWithoutSubtitle(plugin, file, settings);
     if (settings.title) {
         title += ` (${settings.title})`;
     }
@@ -490,6 +490,53 @@ export function formatTitle(plugin: MathBooster, settings: ResolvedMathSettings,
         title += settings.titleSuffix;
     }
     return title;
+}
+
+export function inferNumberPrefix(filename: string, parseSep: string, printSep: string, useFirstN: number) {
+    // ex) If filename == "1-2.A foo", then head == "1-2.A"
+    const head = filename.slice(0, filename.match(/\s/)?.index ?? filename.length);
+    // ex) If parseSep = '.-', then labels == ["1", "2", "A"]
+    const labels = head.split(new RegExp(`[${parseSep}]`)).filter((str) => str);
+    // ex) If useFirstN == 1, then usedLabels == ["1"]
+    const usedLabels = labels.slice(0, useFirstN);
+    let prefix = usedLabels.join(printSep);
+    if (!prefix.endsWith(printSep)) {
+        prefix += printSep;
+    }
+    // ex) If printSep == ".", then prefix == "1."
+    return prefix;
+}
+
+/**
+ * Get an appropriate prefix for theorem callout numbering.
+ * @param file 
+ * @param settings 
+ * @returns 
+ */
+export function getNumberPrefix(file: TFile, settings: Required<MathContextSettings>): string {
+    if (settings.numberPrefix) {
+        return settings.numberPrefix;
+    }
+    if (settings.inferNumberPrefix) {
+        return inferNumberPrefix(file.basename, settings.inferNumberPrefixParseSep, settings.inferNumberPrefixPrintSep, settings.inferNumberPrefixUseFirstN);
+    }
+    return "";
+}
+
+/**
+ * Get an appropriate prefix for equation numbering.
+ * @param file 
+ * @param settings 
+ * @returns 
+ */
+export function getEqNumberPrefix(file: TFile, settings: Required<MathContextSettings>): string {
+    if (settings.eqNumberPrefix) {
+        return settings.eqNumberPrefix;
+    }
+    if (settings.inferEqNumberPrefix) {
+        return inferNumberPrefix(file.basename, settings.inferNumberPrefixParseSep, settings.inferEqNumberPrefixPrintSep, settings.inferEqNumberPrefixUseFirstN);
+    }
+    return "";
 }
 
 export function formatLabel(settings: ResolvedMathSettings): string | undefined {

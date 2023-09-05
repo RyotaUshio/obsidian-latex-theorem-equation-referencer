@@ -2,7 +2,7 @@ import { App, CachedMetadata, MarkdownView, SectionCache, TAbstractFile, TFile, 
 
 import MathBooster from './main';
 import { DEFAULT_SETTINGS, MathSettings, NumberStyle, TheoremRefFormat, ResolvedMathSettings, TheoremCalloutSettings, TheoremCalloutPrivateFields } from './settings/settings';
-import { getBlockIdsWithBacklink, readTheoremCalloutSettings, resolveSettings, formatTitle, readTheoremCalloutSettingsAndTitle, CONVERTER, matchTheoremCallout, formatTitleWithoutSubtitle, isEditingView } from './utils';
+import { getBlockIdsWithBacklink, readTheoremCalloutSettings, resolveSettings, formatTitle, readTheoremCalloutSettingsAndTitle, CONVERTER, matchTheoremCallout, formatTitleWithoutSubtitle, isEditingView, getEqNumberPrefix } from './utils';
 import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 import { Project } from 'project';
 
@@ -215,7 +215,7 @@ class TheoremCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, 
                 callout.settings._index = index++;
             }
 
-            const newTitle = formatTitle(this.noteIndexer.plugin, resolvedSettings);
+            const newTitle = formatTitle(this.noteIndexer.plugin, this.noteIndexer.file, resolvedSettings);
             const oldSettingsAndTitle = readTheoremCalloutSettingsAndTitle(
                 await this.noteIndexer.io.getLine(callout.cache.position.start.line)
             );
@@ -266,16 +266,16 @@ class TheoremCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, 
     formatMathLink(resolvedSettings: ResolvedMathSettings, key: "refFormat" | "noteMathLinkFormat"): string {
         const refFormat: TheoremRefFormat = resolvedSettings[key];
         if (refFormat == "[type] [number] ([title])") {
-            return formatTitle(this.noteIndexer.plugin, resolvedSettings, true);
+            return formatTitle(this.noteIndexer.plugin, this.noteIndexer.file, resolvedSettings, true);
         }
         if (refFormat == "[type] [number]") {
-            return formatTitleWithoutSubtitle(this.noteIndexer.plugin, resolvedSettings);
+            return formatTitleWithoutSubtitle(this.noteIndexer.plugin, this.noteIndexer.file, resolvedSettings);
         }
         if (refFormat == "[title] if title exists, [type] [number] otherwise") {
-            return resolvedSettings.title ? resolvedSettings.title : formatTitleWithoutSubtitle(this.noteIndexer.plugin, resolvedSettings);
+            return resolvedSettings.title ? resolvedSettings.title : formatTitleWithoutSubtitle(this.noteIndexer.plugin, this.noteIndexer.file, resolvedSettings);
         }
         // if (refFormat == "[title] ([type] [number]) if title exists, [type] [number] otherwise") 
-        const typePlusNumber = formatTitleWithoutSubtitle(this.noteIndexer.plugin, resolvedSettings);
+        const typePlusNumber = formatTitleWithoutSubtitle(this.noteIndexer.plugin, this.noteIndexer.file, resolvedSettings);
         return resolvedSettings.title ? `${resolvedSettings.title} (${typePlusNumber})` : typePlusNumber;
     }
 
@@ -315,10 +315,10 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
         const note = this.noteIndexer.plugin.index.getNoteIndex(this.noteIndexer.file).clear("equation");
 
         const contextSettings = resolveSettings(undefined, this.noteIndexer.plugin, this.noteIndexer.file);
-        const style = contextSettings?.eqNumberStyle ?? DEFAULT_SETTINGS.eqNumberStyle as NumberStyle;
-        let equationNumber = +(contextSettings?.eqNumberInit ?? DEFAULT_SETTINGS.eqNumberInit);
-        const prefix = contextSettings?.eqNumberPrefix ?? DEFAULT_SETTINGS.eqNumberPrefix;
-        const suffix = contextSettings?.eqNumberSuffix ?? DEFAULT_SETTINGS.eqNumberSuffix;
+        const style = contextSettings.eqNumberStyle;
+        let equationNumber = +(contextSettings.eqNumberInit);
+        const prefix = getEqNumberPrefix(this.noteIndexer.file, contextSettings);
+        const suffix = contextSettings.eqNumberSuffix;
         for (let i = 0; i < equations.length; i++) {
             if (note.size("equation") > i) {
                 continue;
