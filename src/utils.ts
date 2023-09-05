@@ -492,19 +492,34 @@ export function formatTitle(plugin: MathBooster, file: TFile, settings: Resolved
     return title;
 }
 
-export function inferNumberPrefix(filename: string, parseSep: string, printSep: string, useFirstN: number) {
+export function inferNumberPrefix(filename: string, parseSep: string, printSep: string, useFirstN: number): string | undefined {
     // ex) If filename == "1-2.A foo", then head == "1-2.A"
     const head = filename.slice(0, filename.match(/\s/)?.index ?? filename.length);
     // ex) If parseSep = '.-', then labels == ["1", "2", "A"]
     const labels = head.split(new RegExp(`[${parseSep}]`)).filter((str) => str);
-    // ex) If useFirstN == 1, then usedLabels == ["1"]
-    const usedLabels = labels.slice(0, useFirstN);
-    let prefix = usedLabels.join(printSep);
-    if (!prefix.endsWith(printSep)) {
-        prefix += printSep;
+    if (labels.every((label) => isValidLabel(label))) {
+        // ex) If useFirstN == 1, then usedLabels == ["1"]
+        const usedLabels = labels.slice(0, useFirstN);
+        let prefix = usedLabels.join(printSep);
+        if (!prefix.endsWith(printSep)) {
+            prefix += printSep;
+        }
+        // ex) If printSep == ".", then prefix == "1."
+        return prefix;
     }
-    // ex) If printSep == ".", then prefix == "1."
-    return prefix;
+}
+
+export function isValidLabel(label: string): boolean {
+    if (label.match(/^[0-9]+$/)) {
+        // Arabic numerals
+        return true;
+    }
+    if (label.toUpperCase().match(/^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/)) {
+        // Roman numerals
+        // Reference: https://stackoverflow.com/a/267405/13613783
+        return true;
+    }
+    return label.length == 1;
 }
 
 /**
@@ -518,7 +533,7 @@ export function getNumberPrefix(file: TFile, settings: Required<MathContextSetti
         return settings.numberPrefix;
     }
     if (settings.inferNumberPrefix) {
-        return inferNumberPrefix(file.basename, settings.inferNumberPrefixParseSep, settings.inferNumberPrefixPrintSep, settings.inferNumberPrefixUseFirstN);
+        return inferNumberPrefix(file.basename, settings.inferNumberPrefixParseSep, settings.inferNumberPrefixPrintSep, settings.inferNumberPrefixUseFirstN) ?? "";
     }
     return "";
 }
@@ -534,7 +549,7 @@ export function getEqNumberPrefix(file: TFile, settings: Required<MathContextSet
         return settings.eqNumberPrefix;
     }
     if (settings.inferEqNumberPrefix) {
-        return inferNumberPrefix(file.basename, settings.inferNumberPrefixParseSep, settings.inferEqNumberPrefixPrintSep, settings.inferEqNumberPrefixUseFirstN);
+        return inferNumberPrefix(file.basename, settings.inferNumberPrefixParseSep, settings.inferEqNumberPrefixPrintSep, settings.inferEqNumberPrefixUseFirstN) ?? "";
     }
     return "";
 }
