@@ -545,6 +545,20 @@ export function formatLabel(settings: ResolvedMathSettings): string | undefined 
     }
 }
 
+export function staticifyEqNumber(plugin: MathBooster, file: TFile) {
+    const index = plugin.index.getNoteIndex(file);
+    const io = getIO(plugin, file);
+    console.log(io);
+    index.equation.forEach((item) => {
+        if (item.type == "equation" && item.printName && item.mathText) {
+            io.setRange(
+                item.cache.position,
+                `$$\n${item.mathText} \\tag{${item.printName.slice(1, -1)}}\n$$`
+            );
+        }
+    })
+}
+
 export async function openFileAndSelectPosition(file: TFile, position: Pos, ...leafArgs: LeafArgs) {
     const leaf = this.app.workspace.getLeaf(...leafArgs);
     await leaf.openFile(file);
@@ -558,7 +572,7 @@ export async function openFileAndSelectPosition(file: TFile, position: Pos, ...l
             const lineCenter = Math.floor((position.start.line + position.end.line) / 2);
             const posCenter = cm.state.doc.line(lineCenter).from
             cm.dispatch({
-                effects: EditorView.scrollIntoView(posCenter, {y: "center"}),
+                effects: EditorView.scrollIntoView(posCenter, { y: "center" }),
             });
         }
     }

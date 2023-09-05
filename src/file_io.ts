@@ -7,6 +7,7 @@ import { insertAt, isEditingView, locToEditorPosition, splitIntoLines } from "./
 export abstract class FileIO {
     constructor(public plugin: MathBooster, public file: TFile) { }
     abstract setLine(lineNumber: number, text: string): Promise<void>;
+    abstract setRange(position: Pos, text: string): Promise<void>;
     abstract insertLine(lineNumber: number, text: string): Promise<void>;
     abstract getLine(lineNumber: number): Promise<string>;
     abstract getRange(position: Pos): Promise<string>;
@@ -49,6 +50,12 @@ export class ActiveNoteIO extends FileIO {
         this.editor.setLine(lineNumber, text);
     }
 
+    async setRange(position: Pos, text: string): Promise<void> {
+        const from = locToEditorPosition(position.start);
+        const to = locToEditorPosition(position.end);
+        this.editor.replaceRange(text, from, to);
+    }
+
     async insertLine(lineNumber: number, text: string): Promise<void> {
         this.editor.replaceRange(text + "\n", { line: lineNumber, ch: 0 });
     }
@@ -82,6 +89,12 @@ export class NonActiveNoteIO extends FileIO {
             const lines = splitIntoLines(data);
             lines[lineNumber] = text;
             return lines.join('\n');
+        })
+    }
+
+    async setRange(position: Pos, text: string): Promise<void> {
+        this.plugin.app.vault.process(this.file, (data: string): string => {
+            return data.slice(0, position.start.offset) + text + data.slice(position.end.offset + 1, data.length);
         })
     }
 

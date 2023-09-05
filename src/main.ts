@@ -13,7 +13,7 @@ import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_nu
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote } from './math_live_preview_in_callouts';
 import { LinkedNotesIndexer, VaultIndex, VaultIndexer } from './indexer';
 import { theoremCalloutMetadataHiderPlulgin } from './theorem_callout_metadata_hider';
-import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, iterDescendantFiles } from './utils';
+import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, iterDescendantFiles, staticifyEqNumber } from './utils';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
 import { Suggest } from './suggest';
 import { ProjectManager, makePrefixer } from 'project';
@@ -204,6 +204,18 @@ export default class MathBooster extends Plugin {
 			name: 'Insert proof',
 			editorCallback: (editor, context) => insertProof(this, editor, context)
 		});
+
+		this.addCommand({
+			id: 'convert-equation-number-to-tag',
+			name: 'Convert equation numbers in the current note to static \\tag{}',
+			callback: () => {
+				const file = this.app.workspace.getActiveFile();
+				if (file) {
+					staticifyEqNumber(this, file);
+				}
+			}
+		});
+
 
 		/** Editor Extensions */
 
