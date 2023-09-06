@@ -42,7 +42,7 @@ Also, you need to install the [CMU Serif](https://www.cufonfonts.com/font/cmu-se
 
 Although this plugin is still under review by the Obsidian team, you can install it using BRAT.
 
-1. Install the [BRAT](obsidian://show-plugin?id=obsidian42-brat) community plugin and enable it.
+1. Install the [BRAT](https://github.com/TfTHacker/obsidian42-brat) community plugin and enable it.
 2. Go to **Options**. In the **Beta Plugin List** section, click on the **Add Beta plugin** button.
 3. Copy and paste `https://github.com/RyotaUshio/obsidian-math-booster` in the pop-up prompt and click on **Add Plugin**.
 5. (Optional) Turn on **Auto-update plugins at startup** at the top of the page.
