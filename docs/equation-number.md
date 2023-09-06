@@ -64,6 +64,8 @@ Also, if you delete all the links to an equation, ...
 
 ## Remarks
 
+### Spacing
+
 You must include at least one line break between `$$ ... $$` if you want the equation to be numbered.
 Otherwise, Obsidian will not recognize it as a math block.
 
@@ -86,13 +88,23 @@ Bad
 $$f(x)$$
 ```
 
-Also, note that you cannot insert a link to equations in callouts or blockquotes. 
-This is an inherent limitation of Obsidian rather than this plugin.[^1]
-
-Lastly, make sure there is an emtpy line under the block ID of the equation. Again, this is needed due to how Obsidian works. **You can enforce this using the [Linter](obsidian://show-plugin?id=obsidian-linter) plugin's rule "[Empty Line Around Math Blocks
+Also, make sure there is an emtpy line under the block ID of the equation. Again, this is needed due to how Obsidian works. **You can enforce this using the [Linter](obsidian://show-plugin?id=obsidian-linter) plugin's rule "[Empty Line Around Math Blocks
 ](https://platers.github.io/obsidian-linter/settings/spacing-rules/#empty-line-around-math-blocks)."**
 
+### Equations in callouts/blocks
+
+You cannot insert a link to equations in callouts or blockquotes. 
+This is an inherent limitation of Obsidian rather than this plugin.[^1]
+
 [^1]: Technically, it is possible to display an equation number for an equation in callouts. However, I think there is no point in doing it if the equation cannot be referenced.
+
+### PDF export
+
+Currently, dynamic equation numbers are not rendered in exported PDFs.
+As a quick fix,[^2] you can run the command **Convert equation numbers in the current note to static \\tag{}** to explicitly insert the equation numbers as static LaTeX tags (`\tag{...}`) to avoid this issue.
+Make sure you make a backup before this command and undo the tag insertion after exporting finishes.
+
+[^2]: If you have any idea to fix this issue in a cleaner way, let me know via a GitHub issue or pull request!
 
 ## The `align` Environment
 
