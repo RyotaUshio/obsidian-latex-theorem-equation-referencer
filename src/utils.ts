@@ -496,8 +496,8 @@ export function inferNumberPrefix(filename: string, parseSep: string, printSep: 
     // ex) If filename == "1-2.A foo", then head == "1-2.A"
     const head = filename.slice(0, filename.match(/\s/)?.index ?? filename.length);
     // ex) If parseSep = '.-', then labels == ["1", "2", "A"]
-    const labels = head.split(new RegExp(`[${parseSep}]`)).filter((str) => str);
-    if (labels.every((label) => isValidLabel(label))) {
+    const labels = head.split(new RegExp(`[${parseSep}]`));
+    if (areValidLabels(labels)) {
         // ex) If useFirstN == 1, then usedLabels == ["1"]
         const usedLabels = labels.slice(0, useFirstN);
         let prefix = usedLabels.join(printSep);
@@ -509,17 +509,34 @@ export function inferNumberPrefix(filename: string, parseSep: string, printSep: 
     }
 }
 
-export function isValidLabel(label: string): boolean {
-    if (label.match(/^[0-9]+$/)) {
-        // Arabic numerals
-        return true;
+/**
+ * "A note about calculus" => The "A" at the head shouldn't be used as a prefix (indefinite article)
+ * "A. note about calculus" => The "A" at the head IS a prefix
+ */
+export function areValidLabels(labels: string[]): boolean {
+    function isValidLabel(label: string): boolean { // true if every label is an arabic or roman numeral
+        if (label.match(/^[0-9]+$/)) {
+            // Arabic numerals
+            return true;
+        }
+        if (label.match(/^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i)) {
+            // Roman numerals
+            // Reference: https://stackoverflow.com/a/267405/13613783
+            return true;
+        }
+        if (label.match(/^[a-z]$/i)) {
+            return true;
+        }
+        return false;
     }
-    if (label.toUpperCase().match(/^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/)) {
-        // Roman numerals
-        // Reference: https://stackoverflow.com/a/267405/13613783
-        return true;
+    const blankRemoved = labels.filter((label) => label);
+    if (blankRemoved.length >= 2) {
+        return blankRemoved.every((label) => isValidLabel(label));
     }
-    return label.length == 1;
+    if (blankRemoved.length == 1) {
+        return labels.length == 2 && (isValidLabel(labels[0]));
+    }
+    return false;
 }
 
 /**
