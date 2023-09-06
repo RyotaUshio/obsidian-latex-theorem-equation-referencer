@@ -22,6 +22,17 @@ If you find them disturbing, try the following CSS snippet. This is a little bit
 The snippet in the original post makes block IDs on inactive lines completely invisible. But I don't recommend it because it may increase the danger of breaking the relationship between blocks (theorems/equations) and the IDs.
 Once this happens, it will be not easy to recover the links.
 
+## Use Linter
+
+Obsidian can't recognize `$$ ... $$` as a math block if 
+1. there is no line break between two `$$`s, or
+2. there is no empty lines before & after the math block.
+
+[Linter](obsidian://show-plugin?id=obsidian-linter)'s rules
+"[Move Math Block Indicators to Their Own Line](https://platers.github.io/obsidian-linter/settings/spacing-rules/#move-math-block-indicators-to-their-own-line)" and
+"[Empty Line Around Math Blocks
+](https://platers.github.io/obsidian-linter/settings/spacing-rules/#empty-line-around-math-blocks)" help you avoid the first & second one, respectively.
+
 ## Use CSS Editor
 
 Your experience with Math Booster will be richer with [CSS snippets](https://help.obsidian.md/Extending+Obsidian/CSS+snippets), but it will be bother to switch to an external text editor (like VSCode) everytime you update your snippets.
@@ -31,15 +42,6 @@ The [CSS editor](obsidian://show-plugin?id=css-editor) plugin removes this heada
 ## Preamble
 
 The [Extended MathJax](obsidian://show-plugin?id=obsidian-latex) plugin enables you to use a preamble in Obsidian.
-
-## Use Linter
-
-Obsidian can't recognize `$$ ... $$` as a math block if 
-1. there is not line break between two `$$`s, or
-2. there is not empty line before & after the math block.
-
-[Linter](obsidian://show-plugin?id=obsidian-linter)'s rule "[Empty Line Around Math Blocks
-](https://platers.github.io/obsidian-linter/settings/spacing-rules/#empty-line-around-math-blocks)" helps you avoid the second one.
 
 ## Use No More Flickering Inline Math
 
