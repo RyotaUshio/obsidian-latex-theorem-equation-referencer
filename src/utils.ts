@@ -185,7 +185,7 @@ export function getBacklinks(app: App, plugin: MathBooster, file: TFile, cache: 
                     const { subpath } = parseLinktext(link.link);
                     const subpathResult = resolveSubpath(cache, subpath);
                     if (subpathResult?.type == "block" && pick(subpathResult.block)) {
-                        backlinks.push({ sourcePath: backlink, position: link.position });
+                        backlinks.push({ sourcePath: backlink, link: link });
                     }
                 })
         }
