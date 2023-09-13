@@ -124,6 +124,10 @@ $$
     padding-left: 5px;
 }
 
+.theorem-callout-mathwiki .theorem-callout-subtitle {
+    font-weight: 400;
+}
+
 .theorem-callout-mathwiki.theorem-callout-en .callout-content {
     font-style: italic;
 }
