@@ -149,7 +149,10 @@ export class Suggest extends EditorSuggest<IndexItem> {
                     // Markdown links are hard to deal with for the purpose of this plugin, and also
                     // MathLinks has some issues with markdown links (https://github.com/zhaoshenzhai/obsidian-mathlinks/issues/47).
                     // So we have to explicitly generate a wikilink here.
-                    let linktext = this.app.metadataCache.fileToLinktext(item.file, file.path);
+                    let linktext = ""; 
+                    if (item.file != file) {
+                        linktext += this.app.metadataCache.fileToLinktext(item.file, file.path);   
+                    }
                     if (!insertNoteLink) {
                         linktext += `#^${id}`;
                     }
