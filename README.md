@@ -16,6 +16,7 @@ Turn your Obsidian into ***LaTeX on steroids*** with Math Booster.
 - [Live-rendering equations inside callouts & blockquotes](https://ryotaushio.github.io/obsidian-math-booster//math-preview)
 
 Theorems & equations can be **dynamically/automatically numbered**, while you can statically/manually number them if you want.
+The number prefix can be either explicitly specified or automatically inferred from the note title.
 
 Thanks to the integration with [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks), links to theorems/equations are [displayed with their title or number](https://ryotaushio.github.io/obsidian-math-booster//cleveref) similarly to the `cleveref` package in LaTeX. (No need for manually typing aliases!)
 
@@ -35,20 +36,14 @@ https://ryotaushio.github.io/obsidian-math-booster/
 
 The following community plugins are required to be installed and enabled.
 
-- [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) version >= 0.4.5
-- [Dataview](https://github.com/blacksmithgu/obsidian-dataview) version >= 0.5.56
+- [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) ver. 0.4.6+
+- [Dataview](https://github.com/blacksmithgu/obsidian-dataview) ver. 0.5.56+
 
 Also, you need to install the [CMU Serif](https://www.cufonfonts.com/font/cmu-serif) font to fully enjoy some of the preset styles listed below. Additionally, the [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) font is required to correctly render proofs using the Japanese profile.
 
 ## Installation
 
-Although this plugin is still under review by the Obsidian team, you can install it using BRAT.
-
-1. Install the [BRAT](obsidian://show-plugin?id=obsidian42-brat) community plugin and enable it.
-2. Go to **Options**. In the **Beta Plugin List** section, click on the **Add Beta plugin** button.
-3. Copy and paste `https://github.com/RyotaUshio/obsidian-math-booster` in the pop-up prompt and click on **Add Plugin**.
-5. (Optional) Turn on **Auto-update plugins at startup** at the top of the page.
-4. Go to **Community plugins > Installed plugins**. You will find "Math Booster" in the list. Click on the toggle button to enable it.
+You can install this plugin inside Obsidian (https://help.obsidian.md/Extending+Obsidian/Community+plugins#Install+a+community+plugin).
 
 ## Contributing
 

@@ -2,8 +2,8 @@ import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, Edito
 
 import MathBooster from "./main";
 import { findSectionCache, formatLabel, insertBlockIdIfNotExist, openFileAndSelectPosition, resolveSettings } from './utils';
-import { IndexItem, IndexItemType, NoteIndex } from "indexer";
-import { DEFAULT_EXTRA_SETTINGS, LEAF_OPTION_TO_ARGS } from "settings/settings";
+import { IndexItem, IndexItemType, NoteIndex } from "./indexer";
+import { DEFAULT_EXTRA_SETTINGS, LEAF_OPTION_TO_ARGS } from "./settings/settings";
 
 
 export class Suggest extends EditorSuggest<IndexItem> {
@@ -19,6 +19,11 @@ export class Suggest extends EditorSuggest<IndexItem> {
             openFileAndSelectPosition(item.file, item.cache.position, ...LEAF_OPTION_TO_ARGS[this.plugin.extraSettings.suggestLeafOption]);
             return false;
         });
+        this.scope.register([this.plugin.extraSettings.modifierToNoteLink], "Enter", () => {
+            const item = this.suggestions.values[this.suggestions.selectedItem];
+            this.selectSuggestionImpl(item, true);
+            return false;
+        });        
     }
 
     onTrigger(cursor: EditorPosition, editor: Editor, file: TFile | null): EditorSuggestTriggerInfo | null {
@@ -30,6 +35,7 @@ export class Suggest extends EditorSuggest<IndexItem> {
         const text = editor.getRange({ line: cursor.line, ch: 0 }, cursor);
         const index = text.lastIndexOf(trigger);
         const query = text.slice(index + trigger.length);
+        this.limit = this.plugin.extraSettings.suggestNumber;
         return (index >= 0 && !query.startsWith("[[")) ? {
             start: { line: cursor.line, ch: index },
             end: cursor,
@@ -53,7 +59,9 @@ export class Suggest extends EditorSuggest<IndexItem> {
             }
         } else {
             for (const noteIndex of this.plugin.index.data.values()) {
-                this.getSuggestionsImpl(noteIndex, results, callback);
+                if (noteIndex instanceof NoteIndex) {
+                    this.getSuggestionsImpl(noteIndex, results, callback);
+                }
             }
         }
 
@@ -114,10 +122,10 @@ export class Suggest extends EditorSuggest<IndexItem> {
     }
 
     selectSuggestion(item: IndexItem, evt: MouseEvent | KeyboardEvent): void {
-        this.selectSuggestionImpl(item);
+        this.selectSuggestionImpl(item, false);
     }
 
-    async selectSuggestionImpl(item: IndexItem): Promise<void> {
+    async selectSuggestionImpl(item: IndexItem, insertNoteLink: boolean): Promise<void> {
         const cache = this.app.metadataCache.getFileCache(item.file);
         if (this.context && cache) {
             const { editor, start, end, file } = this.context;
@@ -135,7 +143,20 @@ export class Suggest extends EditorSuggest<IndexItem> {
                 const result = await insertBlockIdIfNotExist(this.plugin, item.file, cache, sec);
                 if (result) {
                     const { id, lineAdded } = result;
-                    const link = this.app.fileManager.generateMarkdownLink(item.file, file.path, `#^${id}`);
+                    // We can't use FileManager.generateMarkdownLink here.
+                    // This is because, when the user is turning off "Use [[Wikilinks]]", 
+                    // FileManager.generateMarkdownLink inserts a markdown link [](), not a wikilink [[]].
+                    // Markdown links are hard to deal with for the purpose of this plugin, and also
+                    // MathLinks has some issues with markdown links (https://github.com/zhaoshenzhai/obsidian-mathlinks/issues/47).
+                    // So we have to explicitly generate a wikilink here.
+                    let linktext = ""; 
+                    if (item.file != file) {
+                        linktext += this.app.metadataCache.fileToLinktext(item.file, file.path);   
+                    }
+                    if (!insertNoteLink) {
+                        linktext += `#^${id}`;
+                    }
+                    const link = `[[${linktext}]]`
                     const insertText = link + (settings.insertSpace ? " " : "");
                     if (item.file == file) {
                         editor.replaceRange(

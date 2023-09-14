@@ -1,11 +1,12 @@
+import { App, LinkCache, MarkdownRenderer, Modal, TFile } from 'obsidian';
+
 import { LEAF_OPTION_TO_ARGS } from './settings/settings';
-import { getIO } from 'file_io';
-import MathBooster from 'main';
-import { App, MarkdownRenderer, Modal, Pos, TFile } from 'obsidian';
-import { openFileAndSelectPosition } from 'utils';
+import { getIO } from './file_io';
+import MathBooster from './main';
+import { openFileAndSelectPosition } from './utils';
 
 
-export type Backlink = { sourcePath: string, position: Pos };
+export type Backlink = { sourcePath: string, link: LinkCache };
 
 export interface BacklinkProvider {
     getBacklinks: () => Backlink[] | null;
@@ -54,7 +55,7 @@ export class BacklinkModal extends Modal {
             const io = getIO(this.plugin, file);
             const index = cache.sections.findIndex((secCache) => {
                 const { start: secStart, end: secEnd } = secCache.position;
-                const { start: linkStart, end: linkEnd } = backlink.position;
+                const { start: linkStart, end: linkEnd } = backlink.link.position;
                 return secStart.offset <= linkStart.offset && linkEnd.offset <= secEnd.offset;
             });
             el.createEl("h6", {
@@ -73,7 +74,7 @@ export class BacklinkModal extends Modal {
             this.plugin.registerDomEvent(
                 el, "click", async () => {
                     this.close();
-                    await openFileAndSelectPosition(file, backlink.position, ...LEAF_OPTION_TO_ARGS[this.plugin.extraSettings.backlinkLeafOption]); // file == this.app.workspace.activeEditor?.file);
+                    await openFileAndSelectPosition(file, backlink.link.position, ...LEAF_OPTION_TO_ARGS[this.plugin.extraSettings.backlinkLeafOption]);
                 }
             );
         }

@@ -4,6 +4,7 @@ import MathBooster, { VAULT_ROOT } from "../main";
 import { DEFAULT_EXTRA_SETTINGS, DEFAULT_SETTINGS } from "./settings";
 import { ExtraSettingsHelper, MathContextSettingsHelper } from "./helper";
 import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "../modals";
+import { PROJECT_DESCRIPTION } from "project";
 
 
 export class MathSettingTab extends PluginSettingTab {
@@ -59,11 +60,26 @@ export class MathSettingTab extends PluginSettingTab {
             extraHelper.settingRefs.searchMethod.settingEl,
         );
 
+        const projectHeading = containerEl.createEl("h3", { text: "Projects (experimental)" });
+        const projectDesc = containerEl.createDiv({
+            text: PROJECT_DESCRIPTION,
+            cls: ["setting-item-description", "math-booster-setting-item-description"]
+        });
+
+        this.containerEl.insertBefore(
+            projectHeading,
+            extraHelper.settingRefs.projectInfix.settingEl
+        );
+        this.containerEl.insertAfter(
+            projectDesc,
+            projectHeading,
+        );
+
         this.addRestoreDefaultsButton();
 
         containerEl.createEl("h3", { text: "Local" });
         new Setting(containerEl).setName("Local settings")
-            .setDesc("You can set up file-specific or folder-specific configurations, which have more precedence than the global settings.")
+            .setDesc("You can set up local (i.e. file-specific or folder-specific) settings, which have more precedence than the global settings. Local settings can be configured in various ways; here in the plugin settings, right-clicking in the file explorer, the \"Open local settings for the current file\" command, and the \"Open local settings for the current file\" button in the theorem callout settings pop-ups.")
             .addButton((btn) => {
                 btn.setButtonText("Search files & folders")
                     .onClick(() => {

@@ -20,7 +20,8 @@ Turn your Obsidian into ***LaTeX on steroids*** with Math Booster.
 - [Showing backlinks to theorems/equations](backlinks)
 - [Live-rendering equations inside callouts & blockquotes](math-preview)
 
-Theorems & equations can be **dynamically/automatically numbered**, while you can statically/manually number them if you want. 
+Theorems & equations can be **dynamically/automatically numbered**, while you can statically/manually number them if you want.
+The number prefix can be either explicitly specified or automatically inferred from the note title.
 
 Thanks to the integration with [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks), links to theorems/equations are [displayed  with their title or number](cleveref) similarly to the `cleveref` package in LaTeX. (No need for manual typing of aliases!)
 

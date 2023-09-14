@@ -1,16 +1,16 @@
-import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView, Component, MarkdownRenderer, LinkCache, BlockCache, App, Pos } from 'obsidian';
+import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView, Component, MarkdownRenderer, LinkCache, BlockCache, App, Pos, Plugin } from 'obsidian';
 import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState, ChangeSet, RangeValue, RangeSet } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { SyntaxNodeRef } from '@lezer/common';
 
 import MathBooster from './main';
-import { DEFAULT_SETTINGS, MathCalloutPrivateFields, MathCalloutSettings, MathContextSettings, NumberStyle, ResolvedMathSettings } from './settings/settings';
+import { DEFAULT_SETTINGS, TheoremCalloutPrivateFields, TheoremCalloutSettings, MathContextSettings, NumberStyle, ResolvedMathSettings } from './settings/settings';
 import { MathInfoSet } from './math_live_preview_in_callouts';
 import { THEOREM_LIKE_ENVs, TheoremLikeEnvID } from './env';
 import { Backlink } from './backlinks';
-import { getIO } from 'file_io';
-import { LeafArgs } from 'type';
+import { getIO } from './file_io';
+import { LeafArgs } from './type';
 
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
@@ -185,7 +185,7 @@ export function getBacklinks(app: App, plugin: MathBooster, file: TFile, cache: 
                     const { subpath } = parseLinktext(link.link);
                     const subpathResult = resolveSubpath(cache, subpath);
                     if (subpathResult?.type == "block" && pick(subpathResult.block)) {
-                        backlinks.push({ sourcePath: backlink, position: link.position });
+                        backlinks.push({ sourcePath: backlink, link: link });
                     }
                 })
         }
@@ -311,12 +311,12 @@ export function getDataviewAPI(plugin: MathBooster): DataviewApi | undefined {
     new Notice(`${plugin.manifest.name}: Cannot load Dataview API. Make sure that Dataview is installed & enabled.`);
 }
 
-export function getBlockIdsWithBacklink(path: string, plugin: MathBooster): string[] {
+export function getBlockIdsWithBacklink(file: TFile, plugin: MathBooster): string[] {
     const dv = getDataviewAPI(plugin);
-    const cache = plugin.app.metadataCache.getCache(path);
+    const cache = plugin.app.metadataCache.getFileCache(file);
     const ids: string[] = [];
     if (dv && cache) {
-        const page = dv.page(path); // Dataview page object
+        const page = dv.page(file.path); // Dataview page object
         if (page) {
             for (const inlink of page.file.inlinks) {
                 // cache of the source of this link (source --link--> target)
@@ -330,7 +330,7 @@ export function getBlockIdsWithBacklink(path: string, plugin: MathBooster): stri
                             const linkpath = parseResult.path;
                             const subpath = parseResult.subpath;
                             const targetFile = plugin.app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
-                            if (targetFile && targetFile.path == path) {
+                            if (targetFile && targetFile.path == file.path) {
                                 const subpathResult = resolveSubpath(cache as CachedMetadata, subpath);
                                 if (subpathResult && subpathResult.type == "block") {
                                     const blockCache = subpathResult.block;
@@ -360,36 +360,49 @@ export function insertAt<Type>(array: Array<Type>, item: Type, index: number) {
     array.splice(index, 0, item);
 }
 
-export const MATH_CALLOUT_PATTERN = /\> *\[\! *math *\|(.*)\](.*)/;
+export const THEOREM_CALLOUT_PATTERN = /\> *\[\! *math *\|(.*?)\](.*)/;
 
-export function matchMathCallout(line: string): RegExpExecArray | null {
+export function matchTheoremCallout(line: string): RegExpExecArray | null {
     if (line) {
-        return MATH_CALLOUT_PATTERN.exec(line)
+        return THEOREM_CALLOUT_PATTERN.exec(line)
     }
     return null;
 }
 
-export function readMathCalloutSettingsAndTitle(line: string): { settings: MathCalloutSettings & MathCalloutPrivateFields, title: string } | undefined {
-    const matchResult = matchMathCallout(line);
+export function readTheoremCalloutSettingsAndTitle(line: string): { settings: TheoremCalloutSettings & TheoremCalloutPrivateFields, title: string } | undefined {
+    const matchResult = matchTheoremCallout(line);
     if (matchResult) {
-        const settings = JSON.parse(matchResult[1]) as MathCalloutSettings;
+        const settings = JSON.parse(matchResult[1]) as TheoremCalloutSettings;
         const title = matchResult[2].trim();
         return { settings, title };
     }
 }
 
-export function readMathCalloutSettings(line: string): MathCalloutSettings & MathCalloutPrivateFields | undefined {
-    const result = readMathCalloutSettingsAndTitle(line);
+export function readTheoremCalloutSettings(line: string): TheoremCalloutSettings & TheoremCalloutPrivateFields | undefined {
+    const result = readTheoremCalloutSettingsAndTitle(line);
     if (result) {
         return result.settings;
     }
 }
 
-export function readMathCalloutTitle(line: string): string | undefined {
-    const result = readMathCalloutSettingsAndTitle(line);
+export function readTheoremCalloutTitle(line: string): string | undefined {
+    const result = readTheoremCalloutSettingsAndTitle(line);
     if (result) {
         return result.title;
     }
+}
+
+export function pathToName(path: string): string {
+    return path.slice(path.lastIndexOf('/') + 1);
+}
+
+export function pathToBaseName(path: string): string {
+    const name = pathToName(path);
+    const index = name.lastIndexOf('.');
+    if (index >= 0) {
+        return name.slice(0, index);
+    }
+    return name;
 }
 
 export function iterDescendantFiles(file: TAbstractFile, callback: (descendantFile: TFile) => any, extension?: string) {
@@ -416,14 +429,14 @@ export function getAncestors(file: TAbstractFile): TAbstractFile[] {
     return ancestors;
 }
 
-export function resolveSettings(settings: MathCalloutSettings, plugin: MathBooster, currentFile: TAbstractFile): ResolvedMathSettings;
+export function resolveSettings(settings: TheoremCalloutSettings, plugin: MathBooster, currentFile: TAbstractFile): ResolvedMathSettings;
 export function resolveSettings(settings: undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings>;
 
-export function resolveSettings(settings: MathCalloutSettings | undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings> {
+export function resolveSettings(settings: TheoremCalloutSettings | undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings> {
     /** Resolves settings. Does not overwride, but returns a new settings object.
      * Returned settings can be either 
      * - ResolvedMathContextSettings or 
-     * - Required<MathContextSettings> & Partial<MathCalloutSettings>.
+     * - Required<MathContextSettings> & Partial<TheoremCalloutSettings>.
      * */
     const resolvedSettings = Object.assign({}, DEFAULT_SETTINGS);
     const ancestors = getAncestors(currentFile);
@@ -445,35 +458,31 @@ export function getProfileByID(plugin: MathBooster, profileID: string) {
     return profile;
 }
 
-export function formatMathCalloutType(plugin: MathBooster, settings: { type: string, profile: string }): string {
+export function formatTheoremCalloutType(plugin: MathBooster, settings: { type: string, profile: string }): string {
     const profile = plugin.extraSettings.profiles[settings.profile];
     return profile.body.theorem[settings.type as TheoremLikeEnvID];
 }
 
-export function formatTitleWithoutSubtitle(plugin: MathBooster, settings: ResolvedMathSettings): string {
-    let title = formatMathCalloutType(plugin, settings);
+export function formatTitleWithoutSubtitle(plugin: MathBooster, file: TFile, settings: ResolvedMathSettings): string {
+    let title = formatTheoremCalloutType(plugin, settings);
 
     if (settings.number) {
-        let numberString = '';
         if (settings.number == 'auto') {
             if (settings._index !== undefined) {
                 settings.numberInit = settings.numberInit ?? 1;
                 const num = +settings._index + +settings.numberInit;
                 const style = settings.numberStyle ?? DEFAULT_SETTINGS.numberStyle as NumberStyle;
-                numberString = CONVERTER[style](num);
+                title += ` ${getNumberPrefix(plugin.app, file, settings)}${CONVERTER[style](num)}${settings.numberSuffix}`;
             }
         } else {
-            numberString = settings.number;
-        }
-        if (numberString) {
-            title += ` ${settings.numberPrefix}${numberString}${settings.numberSuffix}`;
+            title += ` ${settings.number}`;
         }
     }
     return title;
 }
 
-export function formatTitle(plugin: MathBooster, settings: ResolvedMathSettings, noTitleSuffix: boolean = false): string {
-    let title = formatTitleWithoutSubtitle(plugin, settings);
+export function formatTitle(plugin: MathBooster, file: TFile, settings: ResolvedMathSettings, noTitleSuffix: boolean = false): string {
+    let title = formatTitleWithoutSubtitle(plugin, file, settings);
     if (settings.title) {
         title += ` (${settings.title})`;
     }
@@ -483,10 +492,135 @@ export function formatTitle(plugin: MathBooster, settings: ResolvedMathSettings,
     return title;
 }
 
+export function getProperty(app: App, file: TFile, name: string) {
+    return app.metadataCache.getFileCache(file)?.frontmatter?.[name];
+}
+
+export function getPropertyLink(app: App, file: TFile, name: string) {
+    const cache = app.metadataCache.getFileCache(file);
+    if (cache?.frontmatterLinks) {
+        for (const link of cache.frontmatterLinks) {
+            if (link.key == name) {
+                return link;
+            }
+        }    
+    }   
+}
+
+export function getPropertyOrLinkTextInProperty(app: App, file: TFile, name: string) {
+    return getPropertyLink(app, file, name)?.link ?? getProperty(app, file, name);
+}
+
+
+export function inferNumberPrefix(source: string, parseSep: string, printSep: string, useFirstN: number): string | undefined {
+    // ex) If filename == "1-2.A foo", then head == "1-2.A"
+    const head = source.slice(0, source.match(/\s/)?.index ?? source.length);
+    // ex) If parseSep = '.-', then labels == ["1", "2", "A"]
+    const labels = head.split(new RegExp(`[${parseSep}]`));
+    if (areValidLabels(labels)) {
+        // ex) If useFirstN == 1, then usedLabels == ["1"]
+        const usedLabels = labels.slice(0, useFirstN);
+        let prefix = usedLabels.join(printSep);
+        if (!prefix.endsWith(printSep)) {
+            prefix += printSep;
+        }
+        // ex) If printSep == ".", then prefix == "1."
+        return prefix;
+    }
+}
+
+/**
+ * "A note about calculus" => The "A" at the head shouldn't be used as a prefix (indefinite article)
+ * "A. note about calculus" => The "A" at the head IS a prefix
+ */
+export function areValidLabels(labels: string[]): boolean {
+    function isValidLabel(label: string): boolean { // true if every label is an arabic or roman numeral
+        if (label.match(/^[0-9]+$/)) {
+            // Arabic numerals
+            return true;
+        }
+        if (label.match(/^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i)) {
+            // Roman numerals
+            // Reference: https://stackoverflow.com/a/267405/13613783
+            return true;
+        }
+        if (label.match(/^[a-z]$/i)) {
+            return true;
+        }
+        return false;
+    }
+    const blankRemoved = labels.filter((label) => label);
+    if (blankRemoved.length >= 2) {
+        return blankRemoved.every((label) => isValidLabel(label));
+    }
+    if (blankRemoved.length == 1) {
+        return labels.length == 2 && (isValidLabel(labels[0]));
+    }
+    return false;
+}
+
+/**
+ * Get an appropriate prefix for theorem callout numbering.
+ * @param file 
+ * @param settings 
+ * @returns 
+ */
+export function getNumberPrefix(app: App, file: TFile, settings: Required<MathContextSettings>): string {
+    if (settings.numberPrefix) {
+        return settings.numberPrefix;
+    }
+    const source = settings.inferNumberPrefixFromProperty ? getPropertyOrLinkTextInProperty(app, file, settings.inferNumberPrefixFromProperty) : file.basename;
+    if (settings.inferNumberPrefix && source) {
+        return inferNumberPrefix(
+            source,
+            settings.inferNumberPrefixParseSep, 
+            settings.inferNumberPrefixPrintSep, 
+            settings.inferNumberPrefixUseFirstN
+        ) ?? "";
+    }
+    return "";
+}
+
+/**
+ * Get an appropriate prefix for equation numbering.
+ * @param file 
+ * @param settings 
+ * @returns 
+ */
+export function getEqNumberPrefix(app: App, file: TFile, settings: Required<MathContextSettings>): string {
+    if (settings.eqNumberPrefix) {
+        return settings.eqNumberPrefix;
+    }
+    const source = settings.inferEqNumberPrefixFromProperty ? getPropertyOrLinkTextInProperty(app, file, settings.inferEqNumberPrefixFromProperty) : file.basename;
+    if (settings.inferEqNumberPrefix && source) {
+        return inferNumberPrefix(
+            source, 
+            settings.inferEqNumberPrefixParseSep, 
+            settings.inferEqNumberPrefixPrintSep, 
+            settings.inferEqNumberPrefixUseFirstN
+        ) ?? "";
+    }
+    return "";
+}
+
 export function formatLabel(settings: ResolvedMathSettings): string | undefined {
     if (settings.label) {
         return settings.labelPrefix + THEOREM_LIKE_ENVs[settings.type as TheoremLikeEnvID].prefix + ":" + settings.label;
     }
+}
+
+export function staticifyEqNumber(plugin: MathBooster, file: TFile) {
+    const index = plugin.index.getNoteIndex(file);
+    const io = getIO(plugin, file);
+    console.log(io);
+    index.equation.forEach((item) => {
+        if (item.type == "equation" && item.printName && item.mathText) {
+            io.setRange(
+                item.cache.position,
+                `$$\n${item.mathText} \\tag{${item.printName.slice(1, -1)}}\n$$`
+            );
+        }
+    })
 }
 
 export async function openFileAndSelectPosition(file: TFile, position: Pos, ...leafArgs: LeafArgs) {
@@ -502,7 +636,7 @@ export async function openFileAndSelectPosition(file: TFile, position: Pos, ...l
             const lineCenter = Math.floor((position.start.line + position.end.line) / 2);
             const posCenter = cm.state.doc.line(lineCenter).from
             cm.dispatch({
-                effects: EditorView.scrollIntoView(posCenter, {y: "center"}),
+                effects: EditorView.scrollIntoView(posCenter, { y: "center" }),
             });
         }
     }
@@ -510,6 +644,11 @@ export async function openFileAndSelectPosition(file: TFile, position: Pos, ...l
 
 export function hasOverlap(range1: { from: number, to: number }, range2: { from: number, to: number }): boolean {
     return range1.from <= range2.to && range2.from <= range1.to;
+}
+
+// compare the version of given plugin and the required version
+export function isPluginOlderThan(plugin: Plugin, version: string): boolean {
+    return plugin.manifest.version.localeCompare(version, undefined, { numeric: true }) < 0;
 }
 
 // https://stackoverflow.com/a/50851710/13613783

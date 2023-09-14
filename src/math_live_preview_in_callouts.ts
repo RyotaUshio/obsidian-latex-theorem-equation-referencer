@@ -4,7 +4,7 @@ import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpd
 import { syntaxTree } from '@codemirror/language';
 
 import { hasOverlap, isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed, printMathInfoSet, rangeSetSome } from './utils';
-import { CALLOUT } from "./math_callout_metadata_hider";
+import { CALLOUT } from "./theorem_callout_metadata_hider";
 
 
 const DISPLAY_MATH_BEGIN = "formatting_formatting-math_formatting-math-begin_keyword_math_math-block";

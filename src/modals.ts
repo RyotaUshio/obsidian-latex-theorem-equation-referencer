@@ -3,8 +3,8 @@ import { TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder }
 import MathBooster from './main';
 import { MathSettings, MathContextSettings, DEFAULT_SETTINGS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
-import { MathCalloutSettingsHelper, MathContextSettingsHelper } from "./settings/helper";
-import { isEqualToOrChildOf, resolveSettings } from './utils';
+import { TheoremCalloutSettingsHelper, MathContextSettingsHelper, ProjectSettingsHelper } from "./settings/helper";
+import { isEqualToOrChildOf, isPluginOlderThan, resolveSettings } from './utils';
 
 
 abstract class MathSettingModal<SettingsType> extends Modal {
@@ -57,7 +57,7 @@ abstract class MathSettingModal<SettingsType> extends Modal {
 }
 
 
-export class MathCalloutModal extends MathSettingModal<MathSettings> {
+export class TheoremCalloutModal extends MathSettingModal<MathSettings> {
     defaultSettings: Required<MathContextSettings>;
 
     constructor(
@@ -92,7 +92,7 @@ export class MathCalloutModal extends MathSettingModal<MathSettings> {
             contentEl.createEl("h4", { text: this.headerText });
         }
 
-        const helper = new MathCalloutSettingsHelper(contentEl, this.settings, this.defaultSettings, this.plugin, this.file);
+        const helper = new TheoremCalloutSettingsHelper(contentEl, this.settings, this.defaultSettings, this.plugin, this.file);
         helper.makeSettingPane();
 
         new Setting(contentEl)
@@ -123,7 +123,7 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
         plugin: MathBooster,
         public file: TAbstractFile,
         callback?: (settings: MathContextSettings) => void,
-        public parent?: MathCalloutModal | undefined
+        public parent?: TheoremCalloutModal | undefined
     ) {
         super(app, plugin, callback);
     }
@@ -132,8 +132,11 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
         const { contentEl } = this;
         contentEl.empty();
 
-        contentEl
-            .createEl('h3', { text: 'Local settings for ' + this.file.path });
+        contentEl.createEl('h3', { text: 'Local settings for ' + this.file.path });
+        contentEl.createDiv({
+            text: "If you want the change to apply to the entire vault, go to the plugin settings.",
+            cls: ["setting-item-description", "math-booster-setting-item-description"],
+        });
 
         if (this.plugin.settings[this.file.path] === undefined) {
             this.plugin.settings[this.file.path] = {} as MathContextSettings;
@@ -143,6 +146,11 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
 
         const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.file.path], defaultSettings, this.plugin, this.file);
         contextSettingsHelper.makeSettingPane();
+
+        if (!(this.file instanceof TFolder && this.file.isRoot())) {
+            new ProjectSettingsHelper(contentEl, this).makeSettingPane();
+        }
+
         this.addButton('Save');
     }
 
@@ -274,3 +282,54 @@ export class ExcludedFileManageModal extends Modal {
     }
 }
 
+
+export class DependencyNotificationModal extends Modal {
+    constructor(public plugin: MathBooster) {
+        super(plugin.app);
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.empty();
+
+        contentEl.createEl('h3', { 
+            text: `Welcome to ${this.plugin.manifest.name}`
+        });
+
+        contentEl.createDiv({
+            text: `${this.plugin.manifest.name} requires the following plugins to work properly. Disable it once, install/update & enable the dependencies and enable it again.`,
+            attr: { style: "margin-bottom: 1em;"}
+        });
+
+        // Validity indicator is taken from the Latex Suite plugin (https://github.com/artisticat1/obsidian-latex-suite/blob/a5914c70c16d5763a182ec51d9716110b40965cf/src/settings.ts)
+        for (const depenedency of [
+            {id: "mathlinks", name: "MathLinks"}, 
+            {id: "dataview", name: "Dataview"}
+        ]) {
+            const depPlugin = this.app.plugins.getPlugin(depenedency.id);
+            const requiredVersion = this.plugin.dependencies[depenedency.id];
+            const isValid = depPlugin && !isPluginOlderThan(depPlugin, requiredVersion);
+            const setting = new Setting(contentEl)
+                .setName(depenedency.name)
+                .addExtraButton((button) => {
+                    button.setIcon(isValid ? "checkmark" : "cross");
+                    const el = button.extraSettingsEl;
+                    el.addClass("math-booster-dependency-validation");
+                    el.removeClass(isValid ? "invalid" : "valid");
+                    el.addClass(isValid ? "valid" : "invalid");
+                });
+            setting.descEl.createDiv(
+                {text: 
+                    `Required version: ${requiredVersion}+ / `
+                    + (depPlugin ? `Currently installed: ${depPlugin.manifest.version}`
+                    : `Not installed or enabled`)
+                }
+            );
+        }
+    }
+
+    onClose() {
+        const { contentEl } = this;
+        contentEl.empty();
+    }
+}

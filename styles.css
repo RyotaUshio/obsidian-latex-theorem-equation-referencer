@@ -43,7 +43,7 @@
     width: 200px;
 }
 
-.math-booster-profile-button-container {
+.math-booster-button-container {
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
@@ -77,8 +77,14 @@
                 
 /* Unlike in callouts, Obsidian natively renders MathJax in blockquotes. But it is rather buggy 
 (see https://forum.obsidian.md/t/live-preview-support-math-block-in-quotes/32564/2), 
-so we need to replace it with this plugin's editor extension. */
-.cm-line:has( .math.math-block.cm-embed-block > mjx-container.MathJax:not(.math-booster-preview) > mjx-math[display="true"]) {
+so we need to replace it with this plugin's editor extension. 
+Note that :not(.cm-active) is required because display math equations like below get (undesirably) hidden without it:
+
+$$
+\tag{$$}
+$$
+*/
+.cm-line:not(.cm-active):has( .math.math-block.cm-embed-block > mjx-container.MathJax:not(.math-booster-preview) > mjx-math[display="true"]) {
     display: none;
 }
 
@@ -109,6 +115,36 @@ so we need to replace it with this plugin's editor extension. */
     width: 300px;
 }
 
+
+/* Taken from the Latex Suite plugin (https://github.com/artisticat1/obsidian-latex-suite/blob/a5914c70c16d5763a182ec51d9716110b40965cf/styles.css) */
+.math-booster-dependency-validation {
+    color: white;
+    display: inline-block;
+    border-radius: 1em;
+    margin-right: var(--size-3);
+    cursor: default;
+    pointer-events: none;
+}
+
+.math-booster-dependency-validation svg {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+.math-booster-dependency-validation.valid {
+    background-color: #7dc535;
+    visibility: visible;
+}
+
+.theme-dark .math-booster-dependency-validation.valid {
+    background-color: #588b24;
+}
+
+.math-booster-dependency-validation.invalid {
+    background-color: #ea5555;
+    visibility: visible;
+}
+
 .theorem-callout-mathwiki.theorem-callout {
     --callout-color: 248, 248, 255;
     font-family: CMU Serif;
@@ -116,6 +152,10 @@ so we need to replace it with this plugin's editor extension. */
 
 .theorem-callout-mathwiki.theorem-callout .callout-title-inner {
     padding-left: 5px;
+}
+
+.theorem-callout-mathwiki .theorem-callout-subtitle {
+    font-weight: 400;
 }
 
 .theorem-callout-mathwiki.theorem-callout-en .callout-content {

@@ -259,7 +259,7 @@ class ConfirmProfileDeletionModal extends Modal {
 
         contentEl.createEl("h3", { text: "Delete profile" });
         contentEl.createDiv({ text: `Are you sure you want to delete the profile "${this.id}"?` });
-        const buttonContainerEl = contentEl.createDiv({ cls: "math-booster-profile-button-container" });
+        const buttonContainerEl = contentEl.createDiv({ cls: "math-booster-button-container" });
         new ButtonComponent(buttonContainerEl)
             .setButtonText("Delete")
             .setCta()
@@ -307,7 +307,7 @@ class AddProfileModal extends Modal {
                 id = value;
             });
 
-        const buttonContainerEl = addProfileEl.createDiv({ cls: "math-booster-profile-button-container" });
+        const buttonContainerEl = addProfileEl.createDiv({ cls: "math-booster-button-container" });
         new ButtonComponent(buttonContainerEl)
             .setButtonText("Add")
             .setCta()
@@ -355,7 +355,7 @@ class UpdateProfileModal extends Modal {
         const ids = Object.keys(profiles);
         let newProfileID: string | undefined;
 
-        const buttonContainerEl = contentEl.createDiv({ cls: "math-booster-profile-button-container" });
+        const buttonContainerEl = contentEl.createDiv({ cls: "math-booster-button-container" });
         const dropdown = new DropdownComponent(buttonContainerEl);
         dropdown.addOption("", "");
         for (const id of ids) {

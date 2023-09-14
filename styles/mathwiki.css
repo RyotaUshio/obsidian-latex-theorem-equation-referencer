@@ -7,6 +7,10 @@
     padding-left: 5px;
 }
 
+.theorem-callout-subtitle {
+    font-weight: 400;
+}
+
 .theorem-callout-en .callout-content {
     font-style: italic;
 }

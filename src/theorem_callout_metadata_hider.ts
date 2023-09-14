@@ -1,12 +1,11 @@
-import { App, MarkdownView, Plugin } from 'obsidian';
-import { RangeSetBuilder, RangeSet, RangeValue, EditorState } from '@codemirror/state';
+import { RangeSetBuilder, RangeSet, RangeValue } from '@codemirror/state';
 import { syntaxTree } from "@codemirror/language";
-import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view"
+import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate } from "@codemirror/view"
 
-import { nodeText, MATH_CALLOUT_PATTERN, matchMathCallout, printNode, nodeTextQuoteSymbolTrimmed } from './utils';
+import { nodeText, matchTheoremCallout } from './utils';
 
 
-export const MATH_CALLOUT_PATTERN_GLOBAL = new RegExp(MATH_CALLOUT_PATTERN.source, "g");
+
 
 export const CALLOUT = /HyperMD-callout_HyperMD-quote_HyperMD-quote-([1-9][0-9]*)/;
 const CALLOUT_PRE_TITLE = (level: number) => new RegExp(`formatting_formatting-quote_formatting-quote-${level}_hmd-callout_quote_quote-${level}`);
@@ -16,7 +15,7 @@ export const BLOCKQUOTE = (level: number) => `HyperMD-quote_HyperMD-quote-${leve
 class DummyRangeValue extends RangeValue { } // only for creating atomic ranges, so don't care the actual value
 
 
-export const mathCalloutMetadataHiderPlulgin = ViewPlugin.fromClass(
+export const theoremCalloutMetadataHiderPlulgin = ViewPlugin.fromClass(
     class implements PluginValue {
         decorations: DecorationSet;
         atomicRanges: RangeSet<DummyRangeValue>;
@@ -45,7 +44,7 @@ export const mathCalloutMetadataHiderPlulgin = ViewPlugin.fromClass(
                             const calloutPreTitleNode = node.node.firstChild;
                             if (calloutPreTitleNode?.name.match(CALLOUT_PRE_TITLE(level))) {
                                 const text = nodeText(calloutPreTitleNode, view.state);
-                                if (matchMathCallout(text)) {
+                                if (matchTheoremCallout(text)) {
                                     decorationBuilder.add(
                                         calloutPreTitleNode.from + 2,
                                         calloutPreTitleNode.to,

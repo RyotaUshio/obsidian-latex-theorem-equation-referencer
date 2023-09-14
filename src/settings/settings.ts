@@ -1,6 +1,7 @@
 import { Modifier } from "obsidian";
+
 import { DEFAULT_PROFILES, Profile } from "./profile";
-import { LeafArgs } from "type";
+import { LeafArgs } from "../type";
 
 
 // Types
@@ -14,22 +15,22 @@ export const NUMBER_STYLES = [
 ] as const;
 export type NumberStyle = typeof NUMBER_STYLES[number];
 
-export const MATH_CALLOUT_STYLES = [
+export const THEOREM_CALLOUT_STYLES = [
     "Custom", 
     "Plain",
     "Framed",
     "MathWiki",
     "Vivid",
 ] as const;
-export type MathCalloutStyle = typeof MATH_CALLOUT_STYLES[number];
+export type TheoremCalloutStyle = typeof THEOREM_CALLOUT_STYLES[number];
 
-export const MATH_CALLOUT_REF_FORMATS = [
+export const THEOREM_REF_FORMATS = [
     "[type] [number] ([title])", 
     "[type] [number]", 
     "[title] ([type] [number]) if title exists, [type] [number] otherwise",
     "[title] if title exists, [type] [number] otherwise",
 ] as const;
-export type MathCalloutRefFormat = typeof MATH_CALLOUT_REF_FORMATS[number];
+export type TheoremRefFormat = typeof THEOREM_REF_FORMATS[number];
 
 export const LEAF_OPTIONS = [
     "Split right",
@@ -57,13 +58,23 @@ export type SearchMethod = typeof SEARCH_METHODS[number];
 export interface MathContextSettings {
     profile: string;
     titleSuffix: string;
+    inferNumberPrefix: boolean;
+    inferNumberPrefixFromProperty: string;
+    inferNumberPrefixParseSep: string;
+    inferNumberPrefixPrintSep: string;
+    inferNumberPrefixUseFirstN: number;
     numberPrefix: string;
     numberSuffix: string;
     numberInit: number;
     numberStyle: NumberStyle;
     numberDefault: string;
-    refFormat: MathCalloutRefFormat;
-    noteMathLinkFormat: MathCalloutRefFormat;
+    refFormat: TheoremRefFormat;
+    noteMathLinkFormat: TheoremRefFormat;
+    inferEqNumberPrefix: boolean;
+    inferEqNumberPrefixFromProperty: string;
+    inferEqNumberPrefixParseSep: string;
+    inferEqNumberPrefixPrintSep: string;
+    inferEqNumberPrefixUseFirstN: number;
     eqNumberPrefix: string;
     eqNumberSuffix: string;
     eqNumberInit: number;
@@ -72,8 +83,8 @@ export interface MathContextSettings {
     eqRefSuffix: string;
     labelPrefix: string;
     lineByLine: boolean;
-    mathCalloutStyle: MathCalloutStyle;
-    mathCalloutFontInherit: boolean;
+    theoremCalloutStyle: TheoremCalloutStyle;
+    theoremCalloutFontInherit: boolean;
     beginProof: string;
     endProof: string;
     insertSpace: boolean;
@@ -81,13 +92,13 @@ export interface MathContextSettings {
 
 export const UNION_TYPE_MATH_CONTEXT_SETTING_KEYS: {[k in keyof Partial<MathContextSettings>]: readonly string[]} = {
     "numberStyle": NUMBER_STYLES,
-    "refFormat": MATH_CALLOUT_REF_FORMATS,
-    "noteMathLinkFormat": MATH_CALLOUT_REF_FORMATS,
+    "refFormat": THEOREM_REF_FORMATS,
+    "noteMathLinkFormat": THEOREM_REF_FORMATS,
     "eqNumberStyle": NUMBER_STYLES,
-    "mathCalloutStyle": MATH_CALLOUT_STYLES,
+    "theoremCalloutStyle": THEOREM_CALLOUT_STYLES,
 };
 
-export interface MathCalloutSettings {
+export interface TheoremCalloutSettings {
     type: string;
     number: string;
     title?: string;
@@ -95,7 +106,7 @@ export interface MathCalloutSettings {
     setAsNoteMathLink: boolean;
 }
 
-export interface MathCalloutPrivateFields {
+export interface TheoremCalloutPrivateFields {
     _index?: number;
 }
 
@@ -106,12 +117,16 @@ export interface ExtraSettings {
     triggerTheoremSuggest: string;
     triggerEquationSuggest: string;
     renderMathInSuggestion: boolean;
+    suggestNumber: number;
     searchMethod: SearchMethod;
     upWeightRecent: number;
     searchOnlyRecent: boolean;
     modifierToJump: Modifier;
+    modifierToNoteLink: Modifier;
     suggestLeafOption: LeafOption;
     backlinkLeafOption: LeafOption;
+    projectInfix: string;
+    projectSep: string;
 }
 
 export const UNION_TYPE_EXTRA_SETTING_KEYS: {[k in keyof Partial<ExtraSettings>]: readonly string[]} = {
@@ -120,19 +135,29 @@ export const UNION_TYPE_EXTRA_SETTING_KEYS: {[k in keyof Partial<ExtraSettings>]
     "backlinkLeafOption": LEAF_OPTIONS,
 };
 
-export type MathSettings = Partial<MathContextSettings> & MathCalloutSettings & MathCalloutPrivateFields;
-export type ResolvedMathSettings = Required<MathContextSettings> & MathCalloutSettings & MathCalloutPrivateFields;
+export type MathSettings = Partial<MathContextSettings> & TheoremCalloutSettings & TheoremCalloutPrivateFields;
+export type ResolvedMathSettings = Required<MathContextSettings> & TheoremCalloutSettings & TheoremCalloutPrivateFields;
 
 export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     profile: Object.keys(DEFAULT_PROFILES)[0],
     titleSuffix: ".",
+    inferNumberPrefix: true,
+    inferNumberPrefixFromProperty: "",
+    inferNumberPrefixParseSep: "-.",
+    inferNumberPrefixPrintSep: ".",
+    inferNumberPrefixUseFirstN: 1,
     numberPrefix: "",
     numberSuffix: "",
     numberInit: 1,
     numberStyle: "arabic",
     numberDefault: "auto", 
-    refFormat: "[title] ([type] [number]) if title exists, [type] [number] otherwise",
+    refFormat: "[type] [number] ([title])",
     noteMathLinkFormat: "[type] [number] ([title])",
+    inferEqNumberPrefix: true,
+    inferEqNumberPrefixFromProperty: "",
+    inferEqNumberPrefixParseSep: "-.",
+    inferEqNumberPrefixPrintSep: ".",
+    inferEqNumberPrefixUseFirstN: 1,
     eqNumberPrefix: "",
     eqNumberSuffix: "",
     eqNumberInit: 1,
@@ -141,8 +166,8 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     eqRefSuffix: "",
     labelPrefix: "",
     lineByLine: true,
-    mathCalloutStyle: "Framed",
-    mathCalloutFontInherit: false,
+    theoremCalloutStyle: "Framed",
+    theoremCalloutFontInherit: false,
     beginProof: "\\begin{proof}",
     endProof: "\\end{proof}",
     insertSpace: true,
@@ -155,10 +180,14 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     triggerTheoremSuggest: "\\tref",
     triggerEquationSuggest: "\\eqref",
     renderMathInSuggestion: true,
+    suggestNumber: 20,
     searchMethod: "Fuzzy",
     upWeightRecent: 0.1, 
     searchOnlyRecent: false,
     modifierToJump: "Mod",
+    modifierToNoteLink: "Shift",
     suggestLeafOption: "Split right", 
-    backlinkLeafOption: "Split right", 
+    backlinkLeafOption: "Split right",
+    projectInfix: " > ",
+    projectSep: "/",
 };

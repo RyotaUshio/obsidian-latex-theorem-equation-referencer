@@ -1,21 +1,22 @@
-import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
+import { MarkdownView, Plugin, TFile } from 'obsidian';
 import { StateField } from '@codemirror/state';
 
-import * as MathLinks from 'obsidian-mathlinks'
+import * as MathLinks from 'obsidian-mathlinks';
 import * as Dataview from 'obsidian-dataview';
 
 import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS, UNION_TYPE_MATH_CONTEXT_SETTING_KEYS, UNION_TYPE_EXTRA_SETTING_KEYS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
-import { MathCallout, insertMathCalloutCallback } from './math_callouts';
-import { ContextSettingModal, MathCalloutModal } from './modals';
+import { TheoremCallout, insertTheoremCalloutCallback } from './theorem_callouts';
+import { ContextSettingModal, DependencyNotificationModal, TheoremCalloutModal } from './modals';
 import { insertDisplayMath } from './key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote } from './math_live_preview_in_callouts';
 import { LinkedNotesIndexer, VaultIndex, VaultIndexer } from './indexer';
-import { mathCalloutMetadataHiderPlulgin } from './math_callout_metadata_hider';
-import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, iterDescendantFiles } from './utils';
+import { theoremCalloutMetadataHiderPlulgin } from './theorem_callout_metadata_hider';
+import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, isPluginOlderThan, iterDescendantFiles, staticifyEqNumber } from './utils';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
 import { Suggest } from './suggest';
+import { ProjectManager, makePrefixer } from './project';
 
 
 export const VAULT_ROOT = '/';
@@ -28,6 +29,11 @@ export default class MathBooster extends Plugin {
 	oldLinkMap: Dataview.IndexMap;
 	proofPositionField: StateField<ProofPosition[]>;
 	index: VaultIndex;
+	projectManager: ProjectManager;
+	dependencies: Record<string, string> = {
+		"mathlinks": "0.4.6",
+		"dataview": "0.5.56",
+	};
 
 	async onload() {
 
@@ -41,8 +47,9 @@ export default class MathBooster extends Plugin {
 		/** Dependencies check */
 
 		this.app.workspace.onLayoutReady(() => {
-			this.assertDataview();
-			this.assertMathLinks();
+			if (!Object.keys(this.dependencies).every((id) => this.checkDependency(id))) {
+				new DependencyNotificationModal(this).open();
+			}
 		});
 
 
@@ -51,17 +58,20 @@ export default class MathBooster extends Plugin {
 		this.index = new VaultIndex(this.app, this);
 
 		// triggered if this plugin is enabled after launching the app
-		this.app.workspace.onLayoutReady(() => {
+		this.app.workspace.onLayoutReady(async () => {
 			if (Dataview.getAPI(this.app)?.index.initialized) {
-				this.initializeIndex()
+				await this.initializeProjectManager();
+				await this.initializeIndex();
 			}
 		})
 
 		// triggered if this plugin is already enabled when launching the app
 		this.registerEvent(
 			this.app.metadataCache.on(
-				"dataview:index-ready",
-				this.initializeIndex.bind(this)
+				"dataview:index-ready", async () => {
+					await this.initializeProjectManager();
+					await this.initializeIndex();
+				}
 			)
 		);
 
@@ -169,12 +179,12 @@ export default class MathBooster extends Plugin {
 			id: 'insert-theorem-callout',
 			name: 'Insert theorem callout',
 			editorCallback: async (editor, context) => {
-				if (context instanceof MarkdownView) {
-					new MathCalloutModal(
+				if (context.file) {
+					new TheoremCalloutModal(
 						this.app, this, context.file,
 						(config) => {
 							if (context.file) {
-								insertMathCalloutCallback(this, editor, config, context.file);
+								insertTheoremCalloutCallback(this, editor, config, context.file);
 							}
 						},
 						"Insert", "Insert theorem callout",
@@ -188,7 +198,7 @@ export default class MathBooster extends Plugin {
 			name: 'Open local settings for the current note',
 			callback: () => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (view) {
+				if (view?.file) {
 					new ContextSettingModal(this.app, this, view.file).open();
 				}
 			}
@@ -200,11 +210,22 @@ export default class MathBooster extends Plugin {
 			editorCallback: (editor, context) => insertProof(this, editor, context)
 		});
 
+		this.addCommand({
+			id: 'convert-equation-number-to-tag',
+			name: 'Convert equation numbers in the current note to static \\tag{}',
+			callback: () => {
+				const file = this.app.workspace.getActiveFile();
+				if (file) {
+					staticifyEqNumber(this, file);
+				}
+			}
+		});
+
 
 		/** Editor Extensions */
 
 		// hide > [!math|{"type":"theorem", ...}]
-		this.registerEditorExtension(mathCalloutMetadataHiderPlulgin);
+		this.registerEditorExtension(theoremCalloutMetadataHiderPlulgin);
 		// equation number
 		this.registerEditorExtension(buildEquationNumberPlugin(this));
 		// math preview in callouts and quotes
@@ -217,7 +238,6 @@ export default class MathBooster extends Plugin {
 		this.registerEditorExtension(this.proofPositionField);
 		this.registerEditorExtension(proofDecorationFactory(this));
 		this.registerEditorExtension(proofFoldFactory(this));
-
 
 
 		/** Markdown post processors */
@@ -233,16 +253,16 @@ export default class MathBooster extends Plugin {
 				const metadata = callout.getAttribute('data-callout-metadata');
 
 				if (metadata) {
-					const isMathCallout = (type?.toLowerCase() == 'math');
+					const isTheoremCallout = (type?.toLowerCase() == 'math');
 
-					if (isMathCallout) {
+					if (isTheoremCallout) {
 						const settings = JSON.parse(metadata);
 						const currentFile = this.app.vault.getAbstractFileByPath(context.sourcePath);
 
 						if (currentFile instanceof TFile) {
-							const mathCallout = new MathCallout(callout, this.app, this, settings, currentFile, context);
-							await mathCallout.setRenderedTitleElements();
-							context.addChild(mathCallout);
+							const theoremCallout = new TheoremCallout(callout, this.app, this, settings, currentFile, context);
+							await theoremCallout.setRenderedTitleElements();
+							context.addChild(theoremCallout);
 						}
 					}
 				}
@@ -251,16 +271,11 @@ export default class MathBooster extends Plugin {
 
 		// for equation numbers
 		this.registerMarkdownPostProcessor((element, context) => {
-			const mjxElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax > mjx-math[display="true"]');
-			if (mjxElements) {
-				for (let i = 0; i < mjxElements.length; i++) {
-					const mjxContainerEl = mjxElements[i].parentElement;
-					if (mjxContainerEl) {
-						context.addChild(
-							new DisplayMathRenderChild(mjxContainerEl, this.app, this, context)
-						);
-					}
-				}
+			const mjxContainerElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax[display="true"]');
+			for (const mjxContainerEl of mjxContainerElements) {
+				context.addChild(
+					new DisplayMathRenderChild(mjxContainerEl, this.app, this, context)
+				);
 			}
 		});
 
@@ -283,11 +298,12 @@ export default class MathBooster extends Plugin {
 			this.app.workspace.on("file-menu", (menu, file) => {
 				menu.addSeparator()
 					.addItem((item) => {
-					item.setTitle(`${this.manifest.name}: Open local settings`)
-						.onClick(() => {
-							new ContextSettingModal(this.app, this, file).open();
-						});
-				});
+						item.setTitle(`${this.manifest.name}: Open local settings`)
+							.onClick(() => {
+								new ContextSettingModal(this.app, this, file).open();
+							});
+					})
+					.addSeparator();
 			})
 		);
 	}
@@ -300,10 +316,11 @@ export default class MathBooster extends Plugin {
 		this.settings = { [VAULT_ROOT]: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)) };
 		this.extraSettings = JSON.parse(JSON.stringify(DEFAULT_EXTRA_SETTINGS));
 		this.excludedFiles = [];
+		this.projectManager = new ProjectManager(this);
 
 		const loadedData = await this.loadData();
 		if (loadedData) {
-			const { settings, extraSettings, excludedFiles } = loadedData;
+			const { settings, extraSettings, excludedFiles, dumpedProjects } = loadedData;
 			for (const path in settings) {
 				if (path != VAULT_ROOT) {
 					this.settings[path] = {};
@@ -320,6 +337,7 @@ export default class MathBooster extends Plugin {
 							}
 						}
 						if (typeof val == typeof DEFAULT_SETTINGS[key]) {
+							// @ts-ignore
 							this.settings[path][key] = val;
 						}
 					}
@@ -343,6 +361,11 @@ export default class MathBooster extends Plugin {
 			}
 
 			this.excludedFiles = excludedFiles;
+
+			// At the time the plugin is loaded, the data vault is not ready and 
+			// vault.getAbstractFile() returns null for any path.
+			// So we have to wait for the vault to start up and store a dumped version of the projects until then.
+			this.projectManager = new ProjectManager(this, dumpedProjects);
 		}
 	}
 
@@ -352,46 +375,46 @@ export default class MathBooster extends Plugin {
 			settings: this.settings,
 			extraSettings: this.extraSettings,
 			excludedFiles: this.excludedFiles,
+			dumpedProjects: this.projectManager.dump(),
 		});
 	}
 
-	assertDataview(): boolean {
-		if (!Dataview.isPluginEnabled(this.app)) {
-			new Notice(
-				`${this.manifest.name}: Make sure Dataview is installed & enabled.`,
-				10000
-			);
+	/**
+	 * Return true if the required plugin with the specified id is enabled and its version matches the requriement.
+	 * @param id 
+	 * @returns 
+	 */
+	checkDependency(id: string): boolean {
+		if (!this.app.plugins.enabledPlugins.has(id)) {
 			return false;
 		}
-		return true;
-	}
-
-	assertMathLinks(): boolean {
-		if (!MathLinks.isPluginEnabled(this.app)) {
-			new Notice(
-				`${this.manifest.name}: Make sure MathLinks is installed & enabled.`,
-				10000
-			);
-			return false;
+		const depPlugin = this.app.plugins.getPlugin(id);
+		if (depPlugin) {
+			return !isPluginOlderThan(depPlugin, this.dependencies[id])
 		}
-		return true;
-	}
+		return false;
+	} 
 
 	getMathLinksAPI(): MathLinks.MathLinksAPIAccount | undefined {
 		const account = MathLinks.getAPIAccount(this);
 		if (account) {
 			account.blockPrefix = "";
-			account.enableFileNameBlockLinks = this.extraSettings.noteTitleInLink;
+			account.prefixer = makePrefixer(this);
 			return account;
 		}
 	}
 
-	initializeIndex() {
+	async initializeIndex() {
 		const indexStart = Date.now();
 		this.setOldLinkMap();
-		(new VaultIndexer(this.app, this)).run();
+		await new VaultIndexer(this.app, this).run();
 		const indexEnd = Date.now();
 		console.log(`${this.manifest.name}: All theorem callouts and equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s.`);
+	}
+
+	async initializeProjectManager() {
+		this.projectManager.load();
+		await this.saveSettings();
 	}
 
 	getNewLinkMap(): Dataview.IndexMap | undefined {
@@ -406,6 +429,7 @@ export default class MathBooster extends Plugin {
 	}
 
 	setProfileTagAsCSSClass(view: MarkdownView) {
+		if (!view.file) return;
 		const profile = getProfile(this, view.file);
 		const classes = profile.meta.tags.map((tag) => `math-booster-${tag}`);
 		for (const el of [getMarkdownSourceViewEl(view), getMarkdownPreviewViewEl(view)]) {
@@ -419,5 +443,4 @@ export default class MathBooster extends Plugin {
 			}
 		}
 	}
-
 }

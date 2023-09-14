@@ -1,12 +1,11 @@
-import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, CachedMetadata, SectionCache, MarkdownSectionInformation, TFile, editorInfoField, Menu } from "obsidian";
+import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, CachedMetadata, MarkdownSectionInformation, TFile, editorInfoField, Menu } from "obsidian";
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
 import MathBooster from './main';
-import { getBacklinks, getMathCache, getMathCacheFromPos, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveSettings } from './utils';
-import { ActiveNoteIndexer, AutoNoteIndexer, NonActiveNoteIndexer } from './indexer';
+import { getBacklinks, getMathCache, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveSettings } from './utils';
 import { MathContextSettings } from "./settings/settings";
-import { ActiveNoteIO } from "./file_io";
-import { Backlink, BacklinkModal } from "backlinks";
+import { Backlink, BacklinkModal } from "./backlinks";
+import { AutoNoteIndexer } from "./indexer";
 
 
 /** For reading view */
@@ -51,7 +50,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
                 "math-booster:index-updated",
                 (indexer) => {
                     if (indexer.file == this.file) {
-                        this.impl(indexer)
+                        this.impl()
                     }
                 }
             )
@@ -59,35 +58,30 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         (new AutoNoteIndexer(this.app, this.plugin, this.file)).run();
     }
 
-    async impl(indexer: ActiveNoteIndexer | NonActiveNoteIndexer) {
+    async impl() {
         this.setId();
         if (this.id) {
-            const mathLink = indexer.mathLinkBlocks[this.id];
-            const text = await indexer.io.getBlockTextFromID(this.id);
-            if (text) {
+            const item = this.plugin.index.getNoteIndex(this.file).getItemById(this.id);
+            if (item?.type == "equation" && item.mathText) {
                 const settings = resolveSettings(undefined, this.plugin, this.file);
-                if (this.containerEl) {
-                    replaceMathTag(this.containerEl, text, mathLink, settings);
-                    this.plugin.registerDomEvent(
-                        this.containerEl, "contextmenu", (event) => {
-                            const menu = new Menu();
+                replaceMathTag(this.containerEl, item.mathText, item.printName, settings);
+                this.plugin.registerDomEvent(
+                    this.containerEl, "contextmenu", (event) => {
+                        const menu = new Menu();
 
-                            // Show backlinks
-                            menu.addItem((item) => {
-                                item.setTitle("Show backlinks");
-                                item.onClick((clickEvent) => {
-                                    if (clickEvent instanceof MouseEvent) {
-                                        const backlinks = this.getBacklinks(event);
-                                        new BacklinkModal(this.app, this.plugin, backlinks).open();
-                                    }
-                                })
-                            });
-
-                            menu.showAtMouseEvent(event);
-                        }
-                    );
-
-                }
+                        // Show backlinks
+                        menu.addItem((item) => {
+                            item.setTitle("Show backlinks");
+                            item.onClick((clickEvent) => {
+                                if (clickEvent instanceof MouseEvent) {
+                                    const backlinks = this.getBacklinks(event);
+                                    new BacklinkModal(this.app, this.plugin, backlinks).open();
+                                }
+                            })
+                        });
+                        menu.showAtMouseEvent(event);
+                    }
+                );
             }
         }
     }
@@ -120,53 +114,43 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
 
         impl(view: EditorView) {
             const info = view.state.field(editorInfoField);
-            if (info.file && info.editor) {
-                const io = new ActiveNoteIO(plugin, info.file, info.editor);
-                this.callback(view, io);
+            if (info.file) {
+                this.callback(view, info.file);
             }
         }
 
-        async callback(view: EditorView, io: ActiveNoteIO) {
-            const mjxElements = view.contentDOM.querySelectorAll<HTMLElement>('mjx-container.MathJax > mjx-math[display="true"]');
-            const cache = app.metadataCache.getFileCache(io.file);
-            if (mjxElements && cache) {
-                for (let i = 0; i < mjxElements.length; i++) {
-                    const mjxContainerEl = mjxElements[i].parentElement;
-                    if (mjxContainerEl) {
-                        try {
-                            const pos = view.posAtDOM(mjxContainerEl);
-                            const id = getMathCacheFromPos(cache, pos)?.id;
+        async callback(view: EditorView, file: TFile) {
+            const mjxContainerElements = view.contentDOM.querySelectorAll<HTMLElement>('mjx-container.MathJax[display="true"]');
+            const cache = app.metadataCache.getFileCache(file);
+            if (cache) {
+                for (const mjxContainerEl of mjxContainerElements) {
+                    try {
+                        const pos = view.posAtDOM(mjxContainerEl);
+                        const item = plugin.index.getNoteIndex(file).getItemByPos(pos, "equation");
+                        if (item?.mathText) {
+                            const settings = resolveSettings(undefined, plugin, file);
+                            replaceMathTag(mjxContainerEl, item.mathText, item.printName, settings);
+                            plugin.registerDomEvent(
+                                mjxContainerEl, "contextmenu", (event) => {
+                                    const menu = new Menu();
 
-                            if (id) {
-                                const mathLink = plugin.getMathLinksAPI()?.get(io.file.path, id);
-                                const text = await io.getBlockTextFromID(id);
-                                if (text) {
-                                    const settings = resolveSettings(undefined, plugin, io.file);
-                                    replaceMathTag(mjxContainerEl, text, mathLink, settings);
-                                    plugin.registerDomEvent(
-                                        mjxContainerEl, "contextmenu", (event) => {
-                                            const menu = new Menu();
+                                    // Show backlinks
+                                    menu.addItem((item) => {
+                                        item.setTitle("Show backlinks");
+                                        item.onClick((clickEvent) => {
+                                            if (clickEvent instanceof MouseEvent) {
+                                                const backlinks = this.getBacklinks(mjxContainerEl, event, file, view);
+                                                new BacklinkModal(plugin.app, plugin, backlinks).open();
+                                            }
+                                        })
+                                    });
 
-                                            // Show backlinks
-                                            menu.addItem((item) => {
-                                                item.setTitle("Show backlinks");
-                                                item.onClick((clickEvent) => {
-                                                    if (clickEvent instanceof MouseEvent) {
-                                                        const backlinks = this.getBacklinks(mjxContainerEl, event, io.file, view);
-                                                        new BacklinkModal(plugin.app, plugin, backlinks).open();
-                                                    }
-                                                })
-                                            });
-
-                                            menu.showAtMouseEvent(event);
-                                        }
-                                    );
-
+                                    menu.showAtMouseEvent(event);
                                 }
-                            }
-                        } catch (err) {
-                            // try it again later
+                            );
                         }
+                    } catch (err) {
+                        // try it again later
                     }
                 }
             }
@@ -189,31 +173,20 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
     });
 }
 
-
-export function getMathText(view: EditorView, mathCache: SectionCache) {
-    const from = mathCache.position.start.offset;
-    const to = mathCache.position.end.offset;
-    const text = view.state.sliceDoc(from, to);
+export function getMathTextWithTag(text: string, tag: string | undefined, lineByLine?: boolean): string | undefined {
+    if (tag) {
+        const tagResult = tag.match(/^\((.*)\)$/);
+        if (tagResult) {
+            const tagContent = tagResult[1];
+            return insertTagInMathText(text, tagContent, lineByLine);
+        }
+    }
     return text;
 }
 
-
-export function getMathTextWithTag(text: string, tag: string | undefined, lineByLine?: boolean): string | undefined {
-    const textResult = text.match(/^\$\$([\s\S]*)\$\$/);
-    if (tag) {
-        const tagResult = tag.match(/^\((.*)\)$/);
-        if (textResult && tagResult) {
-            const textContent = textResult[1];
-            const tagContent = tagResult[1];
-            return insertTagInMathText(textContent, tagContent, lineByLine);
-        }
-    }
-    return textResult?.[1];
-}
-
-export function insertTagInMathText(textContent: string, tagContent: string, lineByLine?: boolean): string {
+export function insertTagInMathText(text: string, tagContent: string, lineByLine?: boolean): string {
     if (lineByLine) {
-        const alignResult = textContent.match(/^\s*\\begin\{align\}([\s\S]*)\\end\{align\}\s*$/);
+        const alignResult = text.match(/^\s*\\begin\{align\}([\s\S]*)\\end\{align\}\s*$/);
         if (alignResult) {
             let taggedText = "";
             let index = 1;
@@ -228,18 +201,14 @@ export function insertTagInMathText(textContent: string, tagContent: string, lin
             return "\\begin{align}" + taggedText + "\\end{align}";
         }
     }
-    return textContent.replace(/[\n\r]/g, ' ') + `\\tag{${tagContent}}`;
+    return text.replace(/[\n\r]/g, ' ') + `\\tag{${tagContent}}`;
 }
 
 
-export function replaceMathTag(displayMathEl: HTMLElement, text: string, mathLink: string | undefined, settings: Required<MathContextSettings>) {
+export function replaceMathTag(displayMathEl: HTMLElement, text: string, tag: string | undefined, settings: Required<MathContextSettings>) {
     const tagMatch = text.match(/\\tag\{.*\}/);
     if (tagMatch) {
         return;
-    }
-    let tag = mathLink;
-    if (mathLink) {
-        tag = mathLink.slice(settings.eqRefPrefix.length, mathLink.length - settings.eqRefSuffix.length)
     }
     const taggedText = getMathTextWithTag(text, tag, settings.lineByLine);
     if (taggedText) {

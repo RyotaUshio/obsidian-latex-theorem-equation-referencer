@@ -15,3 +15,5 @@ Example:
 ![Clevered example](fig/screenshot.png)
 
 You can configure the format of link texts in **Theorem callouts > Referencing > Format** in the plugins's settings.
+
+See [projects](projects) for further control over how links are displayed.
