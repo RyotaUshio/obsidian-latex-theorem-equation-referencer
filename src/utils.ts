@@ -1,3 +1,4 @@
+import { Modifier, Platform } from 'obsidian';
 import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView, Component, MarkdownRenderer, LinkCache, BlockCache, App, Pos, Plugin } from 'obsidian';
 import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState, ChangeSet, RangeValue, RangeSet } from '@codemirror/state';
@@ -11,6 +12,7 @@ import { THEOREM_LIKE_ENVs, TheoremLikeEnvID } from './env';
 import { Backlink } from './backlinks';
 import { getIO } from './file_io';
 import { LeafArgs } from './type';
+import { platform } from 'os';
 
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
@@ -649,6 +651,22 @@ export function hasOverlap(range1: { from: number, to: number }, range2: { from:
 // compare the version of given plugin and the required version
 export function isPluginOlderThan(plugin: Plugin, version: string): boolean {
     return plugin.manifest.version.localeCompare(version, undefined, { numeric: true }) < 0;
+}
+
+export function getModifierNameInPlatform(mod: Modifier): string {
+    if (mod == "Mod") {
+        return Platform.isMacOS || Platform.isIosApp ? "⌘" : "ctrl";
+    }
+    if (mod == "Shift") {
+        return "shift";
+    }
+    if (mod == "Alt") {
+        return Platform.isMacOS || Platform.isIosApp ? "⌥" : "alt";
+    }
+    if (mod == "Meta") {
+        return Platform.isMacOS || Platform.isIosApp ? "⌘" : Platform.isWin ? "win" : "meta";
+    }
+    return "ctrl";
 }
 
 // https://stackoverflow.com/a/50851710/13613783

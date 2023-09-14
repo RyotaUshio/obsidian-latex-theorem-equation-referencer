@@ -1,7 +1,7 @@
 import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile, prepareFuzzySearch, sortSearchResults, SearchResult, Notice, prepareSimpleSearch, renderMath, finishRenderMath, getAllTags } from "obsidian";
 
 import MathBooster from "./main";
-import { findSectionCache, formatLabel, insertBlockIdIfNotExist, openFileAndSelectPosition, resolveSettings } from './utils';
+import { findSectionCache, formatLabel, getModifierNameInPlatform, insertBlockIdIfNotExist, openFileAndSelectPosition, resolveSettings } from './utils';
 import { IndexItem, IndexItemType, NoteIndex } from "./indexer";
 import { DEFAULT_EXTRA_SETTINGS, LEAF_OPTION_TO_ARGS } from "./settings/settings";
 
@@ -9,6 +9,8 @@ import { DEFAULT_EXTRA_SETTINGS, LEAF_OPTION_TO_ARGS } from "./settings/settings
 export class Suggest extends EditorSuggest<IndexItem> {
     constructor(public app: App, public plugin: MathBooster, public types: IndexItemType[]) {
         super(app);
+
+        // Mod (by default) + Enter to jump to the selected item
         this.scope.register([this.plugin.extraSettings.modifierToJump], "Enter", () => {
             if (this.context) {
                 const {editor, start, end} = this.context;
@@ -19,11 +21,22 @@ export class Suggest extends EditorSuggest<IndexItem> {
             openFileAndSelectPosition(item.file, item.cache.position, ...LEAF_OPTION_TO_ARGS[this.plugin.extraSettings.suggestLeafOption]);
             return false;
         });
+
+        // Shift (by default) + Enter to insert a link to the note containing the selected item
         this.scope.register([this.plugin.extraSettings.modifierToNoteLink], "Enter", () => {
             const item = this.suggestions.values[this.suggestions.selectedItem];
             this.selectSuggestionImpl(item, true);
             return false;
-        });        
+        });
+
+        if (this.plugin.extraSettings.showModifierInstruction) {
+            this.setInstructions([
+                { command: "↑↓", purpose: "to navigate" },
+                { command: "↵", purpose: "to insert link" },
+                { command: `${getModifierNameInPlatform(this.plugin.extraSettings.modifierToNoteLink)} + ↵`, purpose: "to insert link to note"},
+                { command: `${getModifierNameInPlatform(this.plugin.extraSettings.modifierToJump)} + ↵`, purpose: "to jump"},
+            ]);    
+        }
     }
 
     onTrigger(cursor: EditorPosition, editor: Editor, file: TFile | null): EditorSuggestTriggerInfo | null {

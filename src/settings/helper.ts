@@ -375,9 +375,9 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addToggleSetting("noteTitleInLink", "Show note title at link's head", "If turned on, a link to \"Theorem 1\" will look like \"Note title > Theorem 1.\" The same applies to equations.")
 
         // Suggest
-        this.addTextSetting("triggerSuggest", "Trigger suggestion with", "Type this string to trigger suggestion for theorem callouts & equation blocks.");
-        this.addTextSetting("triggerTheoremSuggest", "Trigger theorem suggestion with", "Type this string to trigger suggestion for theorem callouts.");
-        this.addTextSetting("triggerEquationSuggest", "Trigger equation suggestion with", "Type this string to trigger suggestion for equation blocks.");
+        this.addTextSetting("triggerSuggest", "Trigger suggestion with", "Type this string to trigger suggestion for theorem callouts & equation blocks. " + `Changing this option requires to reloading ${this.plugin.manifest.name} to take effect.`);
+        this.addTextSetting("triggerTheoremSuggest", "Trigger theorem suggestion with", "Type this string to trigger suggestion for theorem callouts. " + `Changing this option requires to reloading ${this.plugin.manifest.name} to take effect.`);
+        this.addTextSetting("triggerEquationSuggest", "Trigger equation suggestion with", "Type this string to trigger suggestion for equation blocks. " + `Changing this option requires to reloading ${this.plugin.manifest.name} to take effect.`);
         this.addSliderSetting("suggestNumber", { min: 1, max: 50, step: 1 }, "Number of suggestions", "Specify how many items are suggested at one time. Set it to a smaller value if you have a performance issue when equation suggestions with math rendering on.");
         this.addToggleSetting("renderMathInSuggestion", "Render math in equation suggestions", "Turn this off if you have a performance issue and reducing the number of suggestions doesn't fix it.");
         this.addDropdownSetting("searchMethod", ["Fuzzy", "Simple"], "Search method", "Fuzzy search is more flexible, but simple search is more light-weight.");
@@ -385,6 +385,7 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addToggleSetting("searchOnlyRecent", "Search only recently opened notes", "Turning this on might speed up suggestions.");
         this.addDropdownSetting("modifierToJump", ['Mod', 'Ctrl', 'Meta', 'Shift', 'Alt'], "Modifier key for jumping to suggestion", "Press Enter and this modifier key to jump to the currently selected suggestion. Changing this option requires to reloading " + this.plugin.manifest.name + " to take effect.");
         this.addDropdownSetting("modifierToNoteLink", ['Mod', 'Ctrl', 'Meta', 'Shift', 'Alt'], "Modifier key for insert link to note", "Press Enter and this modifier key to insert a link to the note containing the currently selected item. Changing this option requires to reloading " + this.plugin.manifest.name + " to take effect.");
+        this.addToggleSetting("showModifierInstruction", "Show modifier key instruction", "Show the instruction for the modifier key at the bottom of suggestion box. " + `Changing this option requires to reloading ${this.plugin.manifest.name} to take effect.`);
         const list = this.settingRefs.modifierToJump.descEl.createEl("ul");
         list.createEl("li", { text: "Mod is Cmd on MacOS and Ctrl on other OS." });
         list.createEl("li", { text: "Meta is Cmd on MacOS and Win key on Windows." });

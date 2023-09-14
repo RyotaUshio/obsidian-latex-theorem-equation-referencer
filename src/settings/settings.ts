@@ -123,6 +123,7 @@ export interface ExtraSettings {
     searchOnlyRecent: boolean;
     modifierToJump: Modifier;
     modifierToNoteLink: Modifier;
+    showModifierInstruction: boolean;
     suggestLeafOption: LeafOption;
     backlinkLeafOption: LeafOption;
     projectInfix: string;
@@ -186,6 +187,7 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     searchOnlyRecent: false,
     modifierToJump: "Mod",
     modifierToNoteLink: "Shift",
+    showModifierInstruction: true,
     suggestLeafOption: "Split right", 
     backlinkLeafOption: "Split right",
     projectInfix: " > ",
