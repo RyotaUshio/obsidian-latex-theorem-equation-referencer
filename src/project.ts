@@ -1,6 +1,10 @@
 import MathBooster from "main";
-import { ButtonComponent, Modal, TAbstractFile, TFile, TFolder } from "obsidian";
+import { BlockSubpathResult, ButtonComponent, HeadingSubpathResult, Modal, TAbstractFile, TFile, TFolder } from "obsidian";
 import { pathToBaseName } from "utils";
+
+
+export const PROJECT_DESCRIPTION = `A project is a group of notes that is treated as if it were a single note when displaying links to theorems in them.`;
+
 
 export class Project {
     name: string;
@@ -120,7 +124,14 @@ export class ProjectManager {
     }
 }
 
-export const makePrefixer = (plugin: MathBooster) => (sourceFile: TFile, targetFile: TFile): string | null => {
+export const makePrefixer = (plugin: MathBooster) => (sourceFile: TFile, targetFile: TFile, subpathResult: HeadingSubpathResult | BlockSubpathResult): string | null => {
+    if (subpathResult.type == "heading") {
+        return null;
+    }
+    const item = plugin.index.getNoteIndex(targetFile).getItemById(subpathResult.block.id);
+    if (item?.type != "theorem") {
+        return null;
+    }
     const sourceProjects = plugin.projectManager.getNestedProjects(sourceFile);
     const targetProjects = plugin.projectManager.getNestedProjects(targetFile);
     if (targetProjects.length) {

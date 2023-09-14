@@ -4,6 +4,7 @@ import MathBooster, { VAULT_ROOT } from "../main";
 import { DEFAULT_EXTRA_SETTINGS, DEFAULT_SETTINGS } from "./settings";
 import { ExtraSettingsHelper, MathContextSettingsHelper } from "./helper";
 import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "../modals";
+import { PROJECT_DESCRIPTION } from "project";
 
 
 export class MathSettingTab extends PluginSettingTab {
@@ -59,11 +60,19 @@ export class MathSettingTab extends PluginSettingTab {
             extraHelper.settingRefs.searchMethod.settingEl,
         );
 
-        const projectHeading = containerEl.createEl("h3", { text: "Projects" });
+        const projectHeading = containerEl.createEl("h3", { text: "Projects (experimental)" });
+        const projectDesc = containerEl.createDiv({
+            text: PROJECT_DESCRIPTION,
+            cls: ["setting-item-description", "math-booster-setting-item-description"]
+        });
 
         this.containerEl.insertBefore(
             projectHeading,
             extraHelper.settingRefs.projectInfix.settingEl
+        );
+        this.containerEl.insertAfter(
+            projectDesc,
+            projectHeading,
         );
 
         this.addRestoreDefaultsButton();

@@ -3,7 +3,7 @@ layout: page
 title: Projects
 ---
 
-A **project** is a group of notes that is treated as if it were a single note when displaying links to theorems or equations in them.
+A **project** is a group of notes that is treated as if it were a single note when displaying links to theorems in them.
 
 Suppose your vault looks like below. 
 There are two folders (`Calculus` & `Linear algebra`), each corresponding to a class.

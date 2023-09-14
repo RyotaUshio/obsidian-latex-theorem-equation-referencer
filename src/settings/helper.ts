@@ -6,7 +6,7 @@ import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, THEOREM_REF_FORMATS, THE
 import { BooleanKeys, NumberKeys, formatTheoremCalloutType, formatTitle } from '../utils';
 import { AbstractFileIndex, AutoNoteIndexer } from '../indexer';
 import { DEFAULT_PROFILES, ManageProfileModal } from './profile';
-import { Project } from '../project';
+import { PROJECT_DESCRIPTION, Project } from '../project';
 import { ContextSettingModal } from '../modals';
 
 
@@ -384,7 +384,7 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addSliderSetting("upWeightRecent", { min: 0, max: 0.5, step: 0.01 }, "Up-weight recently opened notes by", "It takes effect only if \"Search only recently opened notes\" is turned off.");
         this.addToggleSetting("searchOnlyRecent", "Search only recently opened notes", "Turning this on might speed up suggestions.");
         this.addDropdownSetting("modifierToJump", ['Mod', 'Ctrl', 'Meta', 'Shift', 'Alt'], "Modifier key for jumping to suggestion", "Press Enter and this modifier key to jump to the currently selected suggestion. Changing this option requires to reloading " + this.plugin.manifest.name + " to take effect.");
-        this.addDropdownSetting("modifierToJump", ['Mod', 'Ctrl', 'Meta', 'Shift', 'Alt'], "Modifier key for insert link to note", "Press Enter and this modifier key to insert a link to the note containing the currently selected item. Changing this option requires to reloading " + this.plugin.manifest.name + " to take effect.");
+        this.addDropdownSetting("modifierToNoteLink", ['Mod', 'Ctrl', 'Meta', 'Shift', 'Alt'], "Modifier key for insert link to note", "Press Enter and this modifier key to insert a link to the note containing the currently selected item. Changing this option requires to reloading " + this.plugin.manifest.name + " to take effect.");
         const list = this.settingRefs.modifierToJump.descEl.createEl("ul");
         list.createEl("li", { text: "Mod is Cmd on MacOS and Ctrl on other OS." });
         list.createEl("li", { text: "Meta is Cmd on MacOS and Win key on Windows." });
@@ -401,7 +401,6 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         // projects
         this.addTextSetting("projectInfix", "Link infix", "Specify the infix to connect a project name and a theorem title or an equation number.");
         this.addTextSetting("projectSep", "Separator for nested projects");
-        this.addToggleSetting("projectOmitNoteTitleForTheorem", "Omit note title in link to theorem", `If turned on, theorem link will be displayed as [project name][link infix][theorem name] rather than [project name][link infix][note title] > [theorem name]`);
     }
 }
 
@@ -429,10 +428,10 @@ export class ProjectSettingsHelper {
             status = `This ${noteOrFolder} doesn't belong to any project.`;
         }
 
-        this.contentEl.createEl("h4", {text: "Project"})
+        this.contentEl.createEl("h4", {text: "Project (experimental)"})
 
         this.contentEl.createDiv({
-            text: `A project is a group of notes that is treated as if it were a single note when displaying links to theorems or equations in them. ` + status,
+            text: PROJECT_DESCRIPTION + " " + status,
             cls: ["setting-item-description", "math-booster-setting-item-description"]
         });
         this.addRootSetting();
