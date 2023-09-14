@@ -59,6 +59,7 @@ export interface MathContextSettings {
     profile: string;
     titleSuffix: string;
     inferNumberPrefix: boolean;
+    inferNumberPrefixFromProperty: string;
     inferNumberPrefixParseSep: string;
     inferNumberPrefixPrintSep: string;
     inferNumberPrefixUseFirstN: number;
@@ -70,6 +71,8 @@ export interface MathContextSettings {
     refFormat: TheoremRefFormat;
     noteMathLinkFormat: TheoremRefFormat;
     inferEqNumberPrefix: boolean;
+    inferEqNumberPrefixFromProperty: string;
+    inferEqNumberPrefixParseSep: string;
     inferEqNumberPrefixPrintSep: string;
     inferEqNumberPrefixUseFirstN: number;
     eqNumberPrefix: string;
@@ -140,6 +143,7 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     profile: Object.keys(DEFAULT_PROFILES)[0],
     titleSuffix: ".",
     inferNumberPrefix: true,
+    inferNumberPrefixFromProperty: "",
     inferNumberPrefixParseSep: "-.",
     inferNumberPrefixPrintSep: ".",
     inferNumberPrefixUseFirstN: 1,
@@ -151,6 +155,8 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     refFormat: "[type] [number] ([title])",
     noteMathLinkFormat: "[type] [number] ([title])",
     inferEqNumberPrefix: true,
+    inferEqNumberPrefixFromProperty: "",
+    inferEqNumberPrefixParseSep: "-.",
     inferEqNumberPrefixPrintSep: ".",
     inferEqNumberPrefixUseFirstN: 1,
     eqNumberPrefix: "",

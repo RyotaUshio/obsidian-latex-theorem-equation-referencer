@@ -313,7 +313,7 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
         const contextSettings = resolveSettings(undefined, this.noteIndexer.plugin, this.noteIndexer.file);
         const style = contextSettings.eqNumberStyle;
         let equationNumber = +(contextSettings.eqNumberInit);
-        const prefix = getEqNumberPrefix(this.noteIndexer.file, contextSettings);
+        const prefix = getEqNumberPrefix(this.noteIndexer.app, this.noteIndexer.file, contextSettings);
         const suffix = contextSettings.eqNumberSuffix;
         for (let i = 0; i < equations.length; i++) {
             if (note.size("equation") > i) {

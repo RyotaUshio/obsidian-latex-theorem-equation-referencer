@@ -472,7 +472,7 @@ export function formatTitleWithoutSubtitle(plugin: MathBooster, file: TFile, set
                 settings.numberInit = settings.numberInit ?? 1;
                 const num = +settings._index + +settings.numberInit;
                 const style = settings.numberStyle ?? DEFAULT_SETTINGS.numberStyle as NumberStyle;
-                title += ` ${getNumberPrefix(file, settings)}${CONVERTER[style](num)}${settings.numberSuffix}`;
+                title += ` ${getNumberPrefix(plugin.app, file, settings)}${CONVERTER[style](num)}${settings.numberSuffix}`;
             }
         } else {
             title += ` ${settings.number}`;
@@ -492,9 +492,29 @@ export function formatTitle(plugin: MathBooster, file: TFile, settings: Resolved
     return title;
 }
 
-export function inferNumberPrefix(filename: string, parseSep: string, printSep: string, useFirstN: number): string | undefined {
+export function getProperty(app: App, file: TFile, name: string) {
+    return app.metadataCache.getFileCache(file)?.frontmatter?.[name];
+}
+
+export function getPropertyLink(app: App, file: TFile, name: string) {
+    const cache = app.metadataCache.getFileCache(file);
+    if (cache?.frontmatterLinks) {
+        for (const link of cache.frontmatterLinks) {
+            if (link.key == name) {
+                return link;
+            }
+        }    
+    }   
+}
+
+export function getPropertyOrLinkTextInProperty(app: App, file: TFile, name: string) {
+    return getPropertyLink(app, file, name)?.link ?? getProperty(app, file, name);
+}
+
+
+export function inferNumberPrefix(source: string, parseSep: string, printSep: string, useFirstN: number): string | undefined {
     // ex) If filename == "1-2.A foo", then head == "1-2.A"
-    const head = filename.slice(0, filename.match(/\s/)?.index ?? filename.length);
+    const head = source.slice(0, source.match(/\s/)?.index ?? source.length);
     // ex) If parseSep = '.-', then labels == ["1", "2", "A"]
     const labels = head.split(new RegExp(`[${parseSep}]`));
     if (areValidLabels(labels)) {
@@ -545,12 +565,18 @@ export function areValidLabels(labels: string[]): boolean {
  * @param settings 
  * @returns 
  */
-export function getNumberPrefix(file: TFile, settings: Required<MathContextSettings>): string {
+export function getNumberPrefix(app: App, file: TFile, settings: Required<MathContextSettings>): string {
     if (settings.numberPrefix) {
         return settings.numberPrefix;
     }
-    if (settings.inferNumberPrefix) {
-        return inferNumberPrefix(file.basename, settings.inferNumberPrefixParseSep, settings.inferNumberPrefixPrintSep, settings.inferNumberPrefixUseFirstN) ?? "";
+    const source = settings.inferNumberPrefixFromProperty ? getPropertyOrLinkTextInProperty(app, file, settings.inferNumberPrefixFromProperty) : file.basename;
+    if (settings.inferNumberPrefix && source) {
+        return inferNumberPrefix(
+            source,
+            settings.inferNumberPrefixParseSep, 
+            settings.inferNumberPrefixPrintSep, 
+            settings.inferNumberPrefixUseFirstN
+        ) ?? "";
     }
     return "";
 }
@@ -561,12 +587,18 @@ export function getNumberPrefix(file: TFile, settings: Required<MathContextSetti
  * @param settings 
  * @returns 
  */
-export function getEqNumberPrefix(file: TFile, settings: Required<MathContextSettings>): string {
+export function getEqNumberPrefix(app: App, file: TFile, settings: Required<MathContextSettings>): string {
     if (settings.eqNumberPrefix) {
         return settings.eqNumberPrefix;
     }
-    if (settings.inferEqNumberPrefix) {
-        return inferNumberPrefix(file.basename, settings.inferNumberPrefixParseSep, settings.inferEqNumberPrefixPrintSep, settings.inferEqNumberPrefixUseFirstN) ?? "";
+    const source = settings.inferEqNumberPrefixFromProperty ? getPropertyOrLinkTextInProperty(app, file, settings.inferEqNumberPrefixFromProperty) : file.basename;
+    if (settings.inferEqNumberPrefix && source) {
+        return inferNumberPrefix(
+            source, 
+            settings.inferEqNumberPrefixParseSep, 
+            settings.inferEqNumberPrefixPrintSep, 
+            settings.inferEqNumberPrefixUseFirstN
+        ) ?? "";
     }
     return "";
 }

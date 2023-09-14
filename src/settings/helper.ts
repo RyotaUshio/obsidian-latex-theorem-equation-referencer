@@ -297,16 +297,18 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         contentEl.createEl("h6", { text: "Numbering" });
         this.addToggleSetting(
             "inferNumberPrefix", 
-            "Infer prefix from note title", 
-            `Automatically infer a prefix from the note title. If the title contains whitespaces, the substring before the first whitespace will be parsed for generating a prefix. Ex) To infer a prefix \"1.2.\" from a note \"1.2-A foo.md\", set `
-            + `"Delimiter for parsing note title" = "-." (i.e. recognize "-" or "." in the note title as a delimiter), `
+            "Infer prefix from note title or properties", 
+            `Automatically infer a prefix from the note title or properties. If the inference source (title or property) contains whitespaces, the substring before the first whitespace will be parsed for generating a prefix. Ex) To infer a prefix \"1.2.\" from a property "section" with value "1.2-A", set `
+            + `"Use property as source" = "section", `
+            + `"Delimiter for parsing" = "-." (i.e. recognize "-" or "." in the note title as a delimiter), `
             + `"Delimiter for generating prefix" = ".", `
             + `and "Use first N" = 2.`
         );
-        this.addTextSetting("inferNumberPrefixParseSep", "Delimiter for parsing note title", "The same applies to the inference of equation number prefixes, if turned on.");
+        this.addTextSetting("inferNumberPrefixFromProperty", "Use property as source", "If set, use this property as the source of prefix inference. If not set, the note title will be used as the source.")
+        this.addTextSetting("inferNumberPrefixParseSep", "Delimiter for parsing");
         this.addTextSetting("inferNumberPrefixPrintSep", "Delimiter for generating prefix");
         this.addTextSetting("inferNumberPrefixUseFirstN", "Use first N", undefined, true);
-        this.addTextSetting("numberPrefix", "Manual prefix", "Even if \"Infer prefix from note title\" is turned on, the inferred prefix will be overwritten by the value set here.");
+        this.addTextSetting("numberPrefix", "Manual prefix", "Even if \"Infer prefix from note title or properties\" is turned on, the inferred prefix will be overwritten by the value set here.");
         this.addTextSetting("numberSuffix", "Suffix");
         this.addTextSetting("numberInit", "Initial count");
         this.addDropdownSetting("numberStyle", NUMBER_STYLES, "Style");
@@ -330,6 +332,8 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
             + `"Delimiter for generating prefix" = ".", `
             + `and "Use first N" = 2.`
         );
+        this.addTextSetting("inferEqNumberPrefixFromProperty", "Use property as source", "If set, use this property as the source of prefix inference. If not set, the note title will be used as the source.")
+        this.addTextSetting("inferEqNumberPrefixParseSep", "Delimiter for parsing");
         this.addTextSetting("inferEqNumberPrefixPrintSep", "Delimiter for generating prefix");
         this.addTextSetting("inferEqNumberPrefixUseFirstN", "Use first N", undefined, true);
         this.addTextSetting("eqNumberPrefix", "Manual prefix", "Even if \"Infer prefix from note title\" is turned on, the inferred prefix will be overwritten by the value set here.");
