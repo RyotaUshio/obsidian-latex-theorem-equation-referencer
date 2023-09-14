@@ -2,8 +2,8 @@ import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, Edito
 
 import MathBooster from "./main";
 import { findSectionCache, formatLabel, insertBlockIdIfNotExist, openFileAndSelectPosition, resolveSettings } from './utils';
-import { IndexItem, IndexItemType, NoteIndex } from "indexer";
-import { DEFAULT_EXTRA_SETTINGS, LEAF_OPTION_TO_ARGS } from "settings/settings";
+import { IndexItem, IndexItemType, NoteIndex } from "./indexer";
+import { DEFAULT_EXTRA_SETTINGS, LEAF_OPTION_TO_ARGS } from "./settings/settings";
 
 
 export class Suggest extends EditorSuggest<IndexItem> {

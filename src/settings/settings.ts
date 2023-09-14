@@ -1,6 +1,7 @@
 import { Modifier } from "obsidian";
+
 import { DEFAULT_PROFILES, Profile } from "./profile";
-import { LeafArgs } from "type";
+import { LeafArgs } from "../type";
 
 
 // Types
@@ -122,6 +123,7 @@ export interface ExtraSettings {
     backlinkLeafOption: LeafOption;
     projectInfix: string;
     projectSep: string;
+    projectOmitNoteTitleForTheorem: boolean;
 }
 
 export const UNION_TYPE_EXTRA_SETTING_KEYS: {[k in keyof Partial<ExtraSettings>]: readonly string[]} = {
@@ -181,4 +183,5 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     backlinkLeafOption: "Split right",
     projectInfix: " > ",
     projectSep: "/",
+    projectOmitNoteTitleForTheorem: false,
 };

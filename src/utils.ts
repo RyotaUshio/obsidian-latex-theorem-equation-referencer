@@ -1,4 +1,4 @@
-import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView, Component, MarkdownRenderer, LinkCache, BlockCache, App, Pos } from 'obsidian';
+import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView, Component, MarkdownRenderer, LinkCache, BlockCache, App, Pos, Plugin } from 'obsidian';
 import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState, ChangeSet, RangeValue, RangeSet } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
@@ -9,8 +9,8 @@ import { DEFAULT_SETTINGS, TheoremCalloutPrivateFields, TheoremCalloutSettings, 
 import { MathInfoSet } from './math_live_preview_in_callouts';
 import { THEOREM_LIKE_ENVs, TheoremLikeEnvID } from './env';
 import { Backlink } from './backlinks';
-import { getIO } from 'file_io';
-import { LeafArgs } from 'type';
+import { getIO } from './file_io';
+import { LeafArgs } from './type';
 
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
@@ -612,6 +612,11 @@ export async function openFileAndSelectPosition(file: TFile, position: Pos, ...l
 
 export function hasOverlap(range1: { from: number, to: number }, range2: { from: number, to: number }): boolean {
     return range1.from <= range2.to && range2.from <= range1.to;
+}
+
+// compare the version of given plugin and the required version
+export function isOlderThan(plugin: Plugin, version: string): boolean {
+    return plugin.manifest.version.localeCompare(version, undefined, { numeric: true }) < 0;
 }
 
 // https://stackoverflow.com/a/50851710/13613783

@@ -4,8 +4,8 @@ import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/vie
 import MathBooster from './main';
 import { getBacklinks, getMathCache, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveSettings } from './utils';
 import { MathContextSettings } from "./settings/settings";
-import { Backlink, BacklinkModal } from "backlinks";
-import { AutoNoteIndexer } from "indexer";
+import { Backlink, BacklinkModal } from "./backlinks";
+import { AutoNoteIndexer } from "./indexer";
 
 
 /** For reading view */

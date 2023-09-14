@@ -6,8 +6,8 @@ import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, THEOREM_REF_FORMATS, THE
 import { BooleanKeys, NumberKeys, formatTheoremCalloutType, formatTitle } from '../utils';
 import { AbstractFileIndex, AutoNoteIndexer } from '../indexer';
 import { DEFAULT_PROFILES, ManageProfileModal } from './profile';
-import { Project } from 'project';
-import { ContextSettingModal } from 'modals';
+import { Project } from '../project';
+import { ContextSettingModal } from '../modals';
 
 
 export class TheoremCalloutSettingsHelper {
@@ -396,6 +396,7 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         // projects
         this.addTextSetting("projectInfix", "Link infix", "Specify the infix to connect a project name and a theorem title or an equation number.");
         this.addTextSetting("projectSep", "Separator for nested projects");
+        this.addToggleSetting("projectOmitNoteTitleForTheorem", "Omit note title in link to theorem", `If turned on, theorem link will be displayed as [project name][link infix][theorem name] rather than [project name][link infix][note title] > [theorem name]`);
     }
 }
 

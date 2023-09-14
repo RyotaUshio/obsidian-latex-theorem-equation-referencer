@@ -10,10 +10,11 @@ declare module "obsidian" {
             enabledPlugins: Set<string>;
             plugins: {
                 [id: string]: any;
-                dataview?: {
-                    api?: DataviewApi;
-                };
+                // dataview?: {
+                //     api?: DataviewApi;
+                // };
             };
+            getPlugin: (id: string) => Plugin | null;
         };
     }
     interface MetadataCache {

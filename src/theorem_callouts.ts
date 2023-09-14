@@ -5,7 +5,7 @@ import { TheoremCalloutModal } from './modals';
 import { TheoremCalloutSettings, MathSettings, ResolvedMathSettings } from './settings/settings';
 import { increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, isEditingView, getSectionCacheOfDOM, getSectionCacheFromMouseEvent, getBacklinks } from './utils';
 import { AutoNoteIndexer } from './indexer';
-import { Backlink, BacklinkModal } from "backlinks";
+import { Backlink, BacklinkModal } from "./backlinks";
 
 
 export class TheoremCallout extends MarkdownRenderChild {

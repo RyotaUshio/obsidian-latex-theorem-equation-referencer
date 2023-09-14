@@ -4,7 +4,7 @@ import MathBooster from './main';
 import { MathSettings, MathContextSettings, DEFAULT_SETTINGS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
 import { TheoremCalloutSettingsHelper, MathContextSettingsHelper, ProjectSettingsHelper } from "./settings/helper";
-import { isEqualToOrChildOf, resolveSettings } from './utils';
+import { isEqualToOrChildOf, isOlderThan, resolveSettings } from './utils';
 
 
 abstract class MathSettingModal<SettingsType> extends Modal {
@@ -138,10 +138,6 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
             cls: ["setting-item-description", "math-booster-setting-item-description"],
         });
 
-        if (!(this.file instanceof TFolder && this.file.isRoot())) {
-            new ProjectSettingsHelper(contentEl, this).makeSettingPane();
-        }
-
         if (this.plugin.settings[this.file.path] === undefined) {
             this.plugin.settings[this.file.path] = {} as MathContextSettings;
         }
@@ -150,6 +146,11 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
 
         const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.file.path], defaultSettings, this.plugin, this.file);
         contextSettingsHelper.makeSettingPane();
+
+        if (!(this.file instanceof TFolder && this.file.isRoot())) {
+            new ProjectSettingsHelper(contentEl, this).makeSettingPane();
+        }
+
         this.addButton('Save');
     }
 
@@ -281,3 +282,70 @@ export class ExcludedFileManageModal extends Modal {
     }
 }
 
+
+export class DependencyNotificationModal extends Modal {
+    constructor(public plugin: MathBooster) {
+        super(plugin.app);
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.empty();
+
+        contentEl.createEl('h3', { text: `${this.plugin.manifest.name}` });
+
+        for (const depenedency of [
+            {id: "mathlinks", name: "MathLinks", version: "0.4.6"}, 
+            {id: "dataview", name: "Dataview", version: "0.5.56"}
+        ]) {
+            const depPlugin = this.app.plugins.getPlugin(depenedency.id);
+            const isValid = depPlugin && !isOlderThan(depPlugin, depenedency.version);
+            const setting = new Setting(contentEl)
+                .setName(depenedency.name)
+                .addExtraButton((button) => {
+                    button.setIcon(isValid ? "checkmark" : "cross")
+                })
+            setting.descEl.createDiv(
+                {text: `Required version: ${depenedency.version}+`}
+            );
+            if (depPlugin) {
+                setting.descEl.createDiv(
+                    {text: `Currently installed: ${depPlugin.manifest.version}+`}
+                );       
+            } else {
+                setting.descEl.createDiv(
+                    {text: `Currently not installed or enabled`}
+                );        
+            }
+        }
+
+
+        // const validity = snippetsFooter.createDiv("snippets-editor-validity");
+
+        // const validityIndicator = new ExtraButtonComponent(validity);
+        // validityIndicator.setIcon("checkmark")
+        // .extraSettingsEl.addClass("snippets-editor-validity-indicator");
+
+        // const validityText = validity.createDiv("snippets-editor-validity-text");
+        // validityText.addClass("setting-item-description");
+        // validityText.style.padding = "0";
+
+
+        // function updateValidityIndicator(success: boolean) {
+        //     validityIndicator.setIcon(success ? "checkmark" : "cross");
+        //     validityIndicator.extraSettingsEl.removeClass(success ? "invalid" : "valid");
+        //     validityIndicator.extraSettingsEl.addClass(success ? "valid" : "invalid");
+        //     validityText.setText(success ? "Saved" : "Invalid syntax. Changes not saved");
+        // }
+
+
+        // const baseEl = contentEl.createDiv();
+        // baseEl.createDiv({text: `${this.plugin.manifest.name} requires the following plugins to work properly. Please re-enable ${this.plugin.manifest.name} after installing/updating them and enabling them.`});
+        // const list = baseEl.createEl("ul");
+        // list.createEl("li")
+        //     .createDiv({text: "MathLinks 0.4.6+"})
+            
+        // list.createEl("li")
+        //     .createDiv({text: "Dataview 0.5.56+"})
+    }
+}

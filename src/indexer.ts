@@ -1,10 +1,9 @@
 import { App, CachedMetadata, MarkdownView, SectionCache, TAbstractFile, TFile, TFolder } from 'obsidian';
 
 import MathBooster from './main';
-import { DEFAULT_SETTINGS, MathSettings, NumberStyle, TheoremRefFormat, ResolvedMathSettings, TheoremCalloutSettings, TheoremCalloutPrivateFields } from './settings/settings';
+import { MathSettings, TheoremRefFormat, ResolvedMathSettings, TheoremCalloutSettings, TheoremCalloutPrivateFields } from './settings/settings';
 import { getBlockIdsWithBacklink, readTheoremCalloutSettings, resolveSettings, formatTitle, readTheoremCalloutSettingsAndTitle, CONVERTER, matchTheoremCallout, formatTitleWithoutSubtitle, isEditingView, getEqNumberPrefix } from './utils';
 import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
-import { Project } from 'project';
 
 
 /** Index content */
@@ -81,7 +80,6 @@ export class NoteIndex extends AbstractFileIndex {
                 mathLinkBlocks[id] = item.refName;
             }
         }
-        // @ts-expect-error
         this.plugin.getMathLinksAPI()?.update(this.file, { 'mathLink-blocks': mathLinkBlocks });
     }
 }
@@ -248,14 +246,12 @@ class TheoremCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, 
             const resolvedSettings = this.resolveSettings(callouts[index]);
 
             this.noteIndexer.plugin.getMathLinksAPI()?.update(
-                // @ts-expect-error
                 this.noteIndexer.file, {
                 "mathLink": this.formatMathLink(resolvedSettings, "noteMathLinkFormat")
             }
             )
         } else {
             this.noteIndexer.plugin.getMathLinksAPI()?.update(
-                // @ts-expect-error
                 this.noteIndexer.file, {
                 "mathLink": undefined
             }

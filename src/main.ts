@@ -1,13 +1,13 @@
 import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
 import { StateField } from '@codemirror/state';
 
-import * as MathLinks from 'obsidian-mathlinks'
+import * as MathLinks from 'obsidian-mathlinks';
 import * as Dataview from 'obsidian-dataview';
-
+// src/backlinks.ts src/equation_number.ts src/indexer.ts src/main.ts src/modal.ts src/proof.ts src/settings/settings.ts src/settings/helper.ts src/suggest.ts src/theorem_callouts.ts src/type.d.ts src/utils.ts
 import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS, UNION_TYPE_MATH_CONTEXT_SETTING_KEYS, UNION_TYPE_EXTRA_SETTING_KEYS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
 import { TheoremCallout, insertTheoremCalloutCallback } from './theorem_callouts';
-import { ContextSettingModal, TheoremCalloutModal } from './modals';
+import { ContextSettingModal, DependencyNotificationModal, TheoremCalloutModal } from './modals';
 import { insertDisplayMath } from './key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote } from './math_live_preview_in_callouts';
@@ -16,7 +16,7 @@ import { theoremCalloutMetadataHiderPlulgin } from './theorem_callout_metadata_h
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, iterDescendantFiles, staticifyEqNumber } from './utils';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
 import { Suggest } from './suggest';
-import { ProjectManager, makePrefixer } from 'project';
+import { ProjectManager, makePrefixer } from './project';
 
 
 export const VAULT_ROOT = '/';
@@ -45,6 +45,8 @@ export default class MathBooster extends Plugin {
 		this.app.workspace.onLayoutReady(() => {
 			this.assertDataview();
 			this.assertMathLinks();
+
+			new DependencyNotificationModal(this).open();
 		});
 
 
@@ -373,8 +375,8 @@ export default class MathBooster extends Plugin {
 		});
 	}
 
-	assertDataview(): boolean {
-		if (!Dataview.isPluginEnabled(this.app)) {
+	assertDataview(notice: boolean=false): boolean {
+		if (notice && !Dataview.isPluginEnabled(this.app)) {
 			new Notice(
 				`${this.manifest.name}: Make sure Dataview is installed & enabled.`,
 				10000
@@ -384,8 +386,8 @@ export default class MathBooster extends Plugin {
 		return true;
 	}
 
-	assertMathLinks(): boolean {
-		if (!MathLinks.isPluginEnabled(this.app)) {
+	assertMathLinks(notice: boolean=false): boolean {
+		if (notice && !MathLinks.isPluginEnabled(this.app)) {
 			new Notice(
 				`${this.manifest.name}: Make sure MathLinks is installed & enabled.`,
 				10000
@@ -399,7 +401,6 @@ export default class MathBooster extends Plugin {
 		const account = MathLinks.getAPIAccount(this);
 		if (account) {
 			account.blockPrefix = "";
-			// @ts-expect-error
 			account.prefixer = makePrefixer(this);
 			return account;
 		}
@@ -443,5 +444,4 @@ export default class MathBooster extends Plugin {
 			}
 		}
 	}
-
 }

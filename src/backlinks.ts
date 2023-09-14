@@ -1,8 +1,9 @@
-import { LEAF_OPTION_TO_ARGS } from './settings/settings';
-import { getIO } from 'file_io';
-import MathBooster from 'main';
 import { App, LinkCache, MarkdownRenderer, Modal, TFile } from 'obsidian';
-import { openFileAndSelectPosition } from 'utils';
+
+import { LEAF_OPTION_TO_ARGS } from './settings/settings';
+import { getIO } from './file_io';
+import MathBooster from './main';
+import { openFileAndSelectPosition } from './utils';
 
 
 export type Backlink = { sourcePath: string, link: LinkCache };
