@@ -112,3 +112,33 @@ $$
 .math-booster-label-form {
     width: 300px;
 }
+
+
+/* Taken from the Latex Suite plugin (https://github.com/artisticat1/obsidian-latex-suite/blob/a5914c70c16d5763a182ec51d9716110b40965cf/styles.css) */
+.math-booster-dependency-validation {
+    color: white;
+    display: inline-block;
+    border-radius: 1em;
+    margin-right: var(--size-3);
+    cursor: default;
+    pointer-events: none;
+}
+
+.math-booster-dependency-validation svg {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+.math-booster-dependency-validation.valid {
+    background-color: #7dc535;
+    visibility: visible;
+}
+
+.theme-dark .math-booster-dependency-validation.valid {
+    background-color: #588b24;
+}
+
+.math-booster-dependency-validation.invalid {
+    background-color: #ea5555;
+    visibility: visible;
+}

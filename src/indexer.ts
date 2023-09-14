@@ -1,4 +1,4 @@
-import { App, CachedMetadata, MarkdownView, SectionCache, TAbstractFile, TFile, TFolder } from 'obsidian';
+import { App, CachedMetadata, Editor, MarkdownView, SectionCache, TAbstractFile, TFile, TFolder } from 'obsidian';
 
 import MathBooster from './main';
 import { MathSettings, TheoremRefFormat, ResolvedMathSettings, TheoremCalloutSettings, TheoremCalloutPrivateFields } from './settings/settings';
@@ -386,8 +386,8 @@ export class ActiveNoteIndexer extends NoteIndexer<ActiveNoteIO> {
      * @param plugin 
      * @param view 
      */
-    constructor(public app: App, public plugin: MathBooster, view: MarkdownView) {
-        super(app, plugin, view.file, new ActiveNoteIO(plugin, view.file, view.editor));
+    constructor(app: App, plugin: MathBooster, file: TFile, editor: Editor) {
+        super(app, plugin, file, new ActiveNoteIO(plugin, file, editor));
     }
 }
 
@@ -427,7 +427,7 @@ export class AutoNoteIndexer {
     getIndexer(activeMarkdownView?: MarkdownView | null): ActiveNoteIndexer | NonActiveNoteIndexer {
         activeMarkdownView = activeMarkdownView ?? this.app.workspace.getActiveViewOfType(MarkdownView);
         if (activeMarkdownView?.file == this.file && isEditingView(activeMarkdownView)) {
-            return new ActiveNoteIndexer(this.app, this.plugin, activeMarkdownView);
+            return new ActiveNoteIndexer(this.app, this.plugin, activeMarkdownView.file, activeMarkdownView.editor);
         } else {
             return new NonActiveNoteIndexer(this.app, this.plugin, this.file);
         }
@@ -470,8 +470,8 @@ export class LinkedNotesIndexer {
         if (links) {
             await Promise.all(
                 Array.from(links).map((link) => {
-                    if (activeMarkdownView?.file.path == link) {
-                        return (new ActiveNoteIndexer(this.app, this.plugin, activeMarkdownView)).run();
+                    if (activeMarkdownView?.file?.path == link) {
+                        return (new ActiveNoteIndexer(this.app, this.plugin, activeMarkdownView.file, activeMarkdownView.editor)).run();
                     } else {
                         const file = this.app.vault.getAbstractFileByPath(link);
                         if (file instanceof TFile && file.extension == "md") {

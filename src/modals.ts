@@ -4,7 +4,7 @@ import MathBooster from './main';
 import { MathSettings, MathContextSettings, DEFAULT_SETTINGS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
 import { TheoremCalloutSettingsHelper, MathContextSettingsHelper, ProjectSettingsHelper } from "./settings/helper";
-import { isEqualToOrChildOf, isOlderThan, resolveSettings } from './utils';
+import { isEqualToOrChildOf, isPluginOlderThan, resolveSettings } from './utils';
 
 
 abstract class MathSettingModal<SettingsType> extends Modal {
@@ -292,60 +292,44 @@ export class DependencyNotificationModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
 
-        contentEl.createEl('h3', { text: `${this.plugin.manifest.name}` });
+        contentEl.createEl('h3', { 
+            text: `Welcome to ${this.plugin.manifest.name}`
+        });
 
+        contentEl.createDiv({
+            text: `${this.plugin.manifest.name} requires the following plugins to work properly. Disable it once, install/update & enable the dependencies and enable it again.`,
+            attr: { style: "margin-bottom: 1em;"}
+        });
+
+        // Validity indicator is taken from the Latex Suite plugin (https://github.com/artisticat1/obsidian-latex-suite/blob/a5914c70c16d5763a182ec51d9716110b40965cf/src/settings.ts)
         for (const depenedency of [
-            {id: "mathlinks", name: "MathLinks", version: "0.4.6"}, 
-            {id: "dataview", name: "Dataview", version: "0.5.56"}
+            {id: "mathlinks", name: "MathLinks"}, 
+            {id: "dataview", name: "Dataview"}
         ]) {
             const depPlugin = this.app.plugins.getPlugin(depenedency.id);
-            const isValid = depPlugin && !isOlderThan(depPlugin, depenedency.version);
+            const requiredVersion = this.plugin.dependencies[depenedency.id];
+            const isValid = depPlugin && !isPluginOlderThan(depPlugin, requiredVersion);
             const setting = new Setting(contentEl)
                 .setName(depenedency.name)
                 .addExtraButton((button) => {
-                    button.setIcon(isValid ? "checkmark" : "cross")
-                })
+                    button.setIcon(isValid ? "checkmark" : "cross");
+                    const el = button.extraSettingsEl;
+                    el.addClass("math-booster-dependency-validation");
+                    el.removeClass(isValid ? "invalid" : "valid");
+                    el.addClass(isValid ? "valid" : "invalid");
+                });
             setting.descEl.createDiv(
-                {text: `Required version: ${depenedency.version}+`}
+                {text: 
+                    `Required version: ${requiredVersion}+ / `
+                    + (depPlugin ? `Currently installed: ${depPlugin.manifest.version}`
+                    : `Not installed or enabled`)
+                }
             );
-            if (depPlugin) {
-                setting.descEl.createDiv(
-                    {text: `Currently installed: ${depPlugin.manifest.version}+`}
-                );       
-            } else {
-                setting.descEl.createDiv(
-                    {text: `Currently not installed or enabled`}
-                );        
-            }
         }
+    }
 
-
-        // const validity = snippetsFooter.createDiv("snippets-editor-validity");
-
-        // const validityIndicator = new ExtraButtonComponent(validity);
-        // validityIndicator.setIcon("checkmark")
-        // .extraSettingsEl.addClass("snippets-editor-validity-indicator");
-
-        // const validityText = validity.createDiv("snippets-editor-validity-text");
-        // validityText.addClass("setting-item-description");
-        // validityText.style.padding = "0";
-
-
-        // function updateValidityIndicator(success: boolean) {
-        //     validityIndicator.setIcon(success ? "checkmark" : "cross");
-        //     validityIndicator.extraSettingsEl.removeClass(success ? "invalid" : "valid");
-        //     validityIndicator.extraSettingsEl.addClass(success ? "valid" : "invalid");
-        //     validityText.setText(success ? "Saved" : "Invalid syntax. Changes not saved");
-        // }
-
-
-        // const baseEl = contentEl.createDiv();
-        // baseEl.createDiv({text: `${this.plugin.manifest.name} requires the following plugins to work properly. Please re-enable ${this.plugin.manifest.name} after installing/updating them and enabling them.`});
-        // const list = baseEl.createEl("ul");
-        // list.createEl("li")
-        //     .createDiv({text: "MathLinks 0.4.6+"})
-            
-        // list.createEl("li")
-        //     .createDiv({text: "Dataview 0.5.56+"})
+    onClose() {
+        const { contentEl } = this;
+        contentEl.empty();
     }
 }

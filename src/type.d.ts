@@ -15,6 +15,7 @@ declare module "obsidian" {
                 // };
             };
             getPlugin: (id: string) => Plugin | null;
+            disablePlugin: (id: string) => Promise<void>;
         };
     }
     interface MetadataCache {

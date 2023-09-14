@@ -60,8 +60,7 @@ export class TheoremCallout extends MarkdownRenderChild {
             ev.stopPropagation();
             const cache = this.app.metadataCache.getFileCache(this.currentFile);
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-            const editor = view?.editor;
-            if (editor) {
+            if (view?.file) {
                 // Make sure to get the line number BEFORE opening the modal!!
                 const lineNumber = this.getLineNumber(view, cache, ev);
 
@@ -73,7 +72,7 @@ export class TheoremCallout extends MarkdownRenderChild {
                         this.settings = settings;
                         this.resolvedSettings = resolveSettings(this.settings, this.plugin, this.currentFile);
                         const title = formatTitle(this.plugin, this.currentFile, this.resolvedSettings);
-                        const indexer = (new AutoNoteIndexer(this.app, this.plugin, view.file)).getIndexer();
+                        const indexer = (new AutoNoteIndexer(this.app, this.plugin, view.file!)).getIndexer();
                         if (lineNumber !== undefined) {
                             await indexer.calloutIndexer.overwriteSettings(lineNumber, this.settings, title);
                         } else {

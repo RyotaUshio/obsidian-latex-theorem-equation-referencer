@@ -615,7 +615,7 @@ export function hasOverlap(range1: { from: number, to: number }, range2: { from:
 }
 
 // compare the version of given plugin and the required version
-export function isOlderThan(plugin: Plugin, version: string): boolean {
+export function isPluginOlderThan(plugin: Plugin, version: string): boolean {
     return plugin.manifest.version.localeCompare(version, undefined, { numeric: true }) < 0;
 }
 
