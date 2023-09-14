@@ -13,12 +13,12 @@ Turn your Obsidian into ***LaTeX on steroids*** with Math Booster.
 
 **[Math Booster](https://github.com/RyotaUshio/obsidian-math-booster)** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience with several powerful features, including:
 
-- [Theorem environments](math-callouts)
 - [Equation numbering](equation-number)
-- [Proof environments](proofs)
-- [Live suggestions for theorems/equations](suggest)
+- [Theorem environments](math-callouts)
+- [Live suggestions (auto-completion) for theorem/equation links](suggest)
+- [Rendering equations inside callouts & blockquote in live preview](math-preview)
 - [Showing backlinks to theorems/equations](backlinks)
-- [Live-rendering equations inside callouts & blockquotes](math-preview)
+- [Proof environments](proofs) _(experimental)_
 
 Theorems & equations can be **dynamically/automatically numbered**, while you can statically/manually number them if you want.
 The number prefix can be either explicitly specified or automatically inferred from the note title.
@@ -27,21 +27,21 @@ Thanks to the integration with [MathLinks](https://github.com/zhaoshenzhai/obsid
 
 You can also customize the appearance of theorem callouts using CSS snippets. See the [styles gallery](style-your-theorems#styles-gallery) for examples.
 
+## Support development
+
+If you find this plugin useful, please support my work by buying me a coffee!
+
+<a href="https://www.buymeacoffee.com/ryotaushio" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 ## Installation
 
-Although this plugin is still under review by the Obsidian team, you can install it using BRAT.
-
-1. Install the [BRAT](obsidian://show-plugin?id=obsidian42-brat) community plugin and enable it.
-2. Go to **Options**. In the **Beta Plugin List** section, click on the **Add Beta plugin** button.
-3. Copy and paste `https://github.com/RyotaUshio/obsidian-math-booster` in the pop-up prompt and click on **Add Plugin**.
-5. (Optional) Turn on **Auto-update plugins at startup** at the top of the page.
-4. Go to **Community plugins > Installed plugins**. You will find "Math Booster" in the list. Click on the toggle button to enable it.
+You can install this plugin inside Obsidian (see [here](https://help.obsidian.md/Extending+Obsidian/Community+plugins#Install+a+community+plugin) for instructions).
 
 ## Dependencies
 
 The following community plugins are required to be installed and enabled.
 
-- [MathLinks](obsidian://show-plugin?id=mathlinks) version >= 0.4.5
+- [MathLinks](obsidian://show-plugin?id=mathlinks) version >= 0.4.6
 - [Dataview](obsidian://show-plugin?id=dataview) version >= 0.5.56
 
 Make sure **Enable MathLinks API** is turned on in the MathLinks plugin settings.

@@ -45,7 +45,7 @@ Also, you need to install the [CMU Serif](https://www.cufonfonts.com/font/cmu-se
 
 ## Installation
 
-You can install this plugin inside Obsidian (https://help.obsidian.md/Extending+Obsidian/Community+plugins#Install+a+community+plugin).
+You can install this plugin inside Obsidian (see [here](https://help.obsidian.md/Extending+Obsidian/Community+plugins#Install+a+community+plugin) for instructions).
 
 ## Contributing
 

@@ -53,3 +53,7 @@ Use `\tref` or `\eqref` (by default) instead of `\ref` to suggest only theorems 
 | Tags                        | #measure-theory      |
 
 ![Equation suggestion example](fig/suggest-equation-ex.png)
+
+## Remark
+
+This feature inserts wikilinks (i.e. `[[]]`) even if you are turning off **Use [[Wikilinks]]** in the app settings because markdown links are not suitable for dynamically updating the displayed text.

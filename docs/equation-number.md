@@ -64,6 +64,10 @@ Also, if you delete all the links to an equation, ...
 
 ## Remarks
 
+### Markdown links
+
+If you are turning off **Use [[Wikilinks]]** in the app settings, you will have to the [live suggestion](suggest) feature provided by this plugin instead of Obsidian's built-in `[[` suggestion. This is because the built-in suggestion generates markdown links (i.e. `[]()`) in this case, but they are not suitable for dynamically updating the displayed text.
+
 ### Spacing
 
 You must include at least one line break between `$$ ... $$` if you want the equation to be numbered.
