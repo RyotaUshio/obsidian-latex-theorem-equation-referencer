@@ -119,6 +119,7 @@ export interface ExtraSettings {
     upWeightRecent: number;
     searchOnlyRecent: boolean;
     modifierToJump: Modifier;
+    modifierToNoteLink: Modifier;
     suggestLeafOption: LeafOption;
     backlinkLeafOption: LeafOption;
     projectInfix: string;
@@ -179,6 +180,7 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     upWeightRecent: 0.1, 
     searchOnlyRecent: false,
     modifierToJump: "Mod",
+    modifierToNoteLink: "Shift",
     suggestLeafOption: "Split right", 
     backlinkLeafOption: "Split right",
     projectInfix: " > ",
