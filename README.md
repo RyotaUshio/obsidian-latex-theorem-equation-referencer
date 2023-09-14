@@ -4,8 +4,6 @@ Turn your Obsidian into ***LaTeX on steroids*** with Math Booster.
 
 ![Screenshot](docs/fig/screenshot.png)
 
-(The theorem in the screenshot is cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
-
 **Math Booster** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience with several powerful features, including:
 
 - [Equation numbering](https://ryotaushio.github.io/obsidian-math-booster//equation-number)
@@ -23,6 +21,8 @@ Thanks to the integration with [MathLinks](https://github.com/zhaoshenzhai/obsid
 You can also customize the appearance of theorem callouts using CSS snippets. See the [styles gallery](#styles-gallery) for examples.
 
 Also check out the [No More Flickering Inline Math](https://github.com/RyotaUshio/obsidian-inline-math) plugin that lets you work with inline math much more comfortably.
+
+(The theorem in the screenshot is cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
 
 ## Support development
 
