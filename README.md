@@ -1,19 +1,19 @@
 # Math Booster for Obsidian
 
-<a href="https://www.buymeacoffee.com/ryotaushio" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
 Turn your Obsidian into ***LaTeX on steroids*** with Math Booster. 
 
 ![Screenshot](docs/fig/screenshot.png)
 
+(The theorem in the screenshot is cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
+
 **Math Booster** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience with several powerful features, including:
 
-- [Theorem environments](https://ryotaushio.github.io/obsidian-math-booster//math-callouts)
 - [Equation numbering](https://ryotaushio.github.io/obsidian-math-booster//equation-number)
-- [Proof environments](https://ryotaushio.github.io/obsidian-math-booster//proofs) _(experimental)_
-- [Live suggestions for theorems/equations](https://ryotaushio.github.io/obsidian-math-booster//suggest)
+- [Theorem environments](https://ryotaushio.github.io/obsidian-math-booster//math-callouts)
+- [Live suggestions (auto-completion) for theorem/equation links](https://ryotaushio.github.io/obsidian-math-booster//suggest)
+- [Rendering equations inside callouts & blockquote in live preview](https://ryotaushio.github.io/obsidian-math-booster//math-preview)
 - [Showing backlinks to theorems/equations](https://ryotaushio.github.io/obsidian-math-booster//backlinks)
-- [Live-rendering equations inside callouts & blockquotes](https://ryotaushio.github.io/obsidian-math-booster//math-preview)
+- [Proof environments](https://ryotaushio.github.io/obsidian-math-booster//proofs) _(experimental)_
 
 Theorems & equations can be **dynamically/automatically numbered**, while you can statically/manually number them if you want.
 The number prefix can be either explicitly specified or automatically inferred from the note title.
@@ -22,11 +22,13 @@ Thanks to the integration with [MathLinks](https://github.com/zhaoshenzhai/obsid
 
 You can also customize the appearance of theorem callouts using CSS snippets. See the [styles gallery](#styles-gallery) for examples.
 
-See the [documentation](https://ryotaushio.github.io/obsidian-math-booster/) for the details.
-
 Also check out the [No More Flickering Inline Math](https://github.com/RyotaUshio/obsidian-inline-math) plugin that lets you work with inline math much more comfortably.
 
-(The theorem in the screenshot is cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
+## Support development
+
+If you find this plugin useful, please support my work by buying me a coffee!
+
+<a href="https://www.buymeacoffee.com/ryotaushio" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 ## Documentation
 
