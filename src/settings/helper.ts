@@ -289,7 +289,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         styleSetting.descEl.replaceChildren(
             "Choose between your custom style and preset styles. You will need to reload the note to see the changes. See the ",
             createEl("a", { text: "documentation", attr: { href: "https://ryotaushio.github.io/obsidian-math-booster/style-your-theorems.html" } }),
-            " for how to customize the appearance of theorem callouts.",
+            " for how to customize the appearance of theorem callouts. \"Custom\" is recommended, since it will give you the most control. You can view the CSS snippets for all the preset styles in the documentation or README on GitHub. The preset styles are only for a trial purpose, and they might not work well with some non-default themes.",
         );
         this.addToggleSetting("theoremCalloutFontInherit", "Don't override the app's font setting when using preset styles", "You will need to reload the note to see the changes.");
         this.addTextSetting("titleSuffix", "Title suffix", "Ex) \"\" > Definition 2 (Group) / \".\" > Definition 2 (Group).");

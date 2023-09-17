@@ -1,4 +1,4 @@
-import { App, CachedMetadata, Editor, MarkdownView, Pos, TFile } from "obsidian";
+import { CachedMetadata, Editor, MarkdownView, Pos, TFile } from "obsidian";
 
 import MathBooster from "./main";
 import { insertAt, isEditingView, locToEditorPosition, splitIntoLines } from "./utils";
@@ -107,13 +107,13 @@ export class NonActiveNoteIO extends FileIO {
     }
 
     async getLine(lineNumber: number): Promise<string> {
-        const data = await this.plugin.app.vault.read(this.file);
+        const data = await this.plugin.app.vault.cachedRead(this.file);
         const lines = splitIntoLines(data);
         return lines[lineNumber];
     }
 
     async getRange(position: Pos): Promise<string> {
-        const content = await this.plugin.app.vault.read(this.file);
+        const content = await this.plugin.app.vault.cachedRead(this.file);
         return content.slice(position.start.offset, position.end.offset);
     }
 
