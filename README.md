@@ -41,7 +41,7 @@ The following community plugins are required to be installed and enabled.
 - [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) ver. 0.4.6+
 - [Dataview](https://github.com/blacksmithgu/obsidian-dataview) ver. 0.5.56+
 
-Also, you need to install the [CMU Serif](https://www.cufonfonts.com/font/cmu-serif) font to fully enjoy some of the preset styles listed below. Additionally, the [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) font is required to correctly render proofs using the Japanese profile.
+Also, you must install the [CMU Serif](https://www.cufonfonts.com/font/cmu-serif) font to fully enjoy some of the preset styles listed below. Additionally, the [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) font is required to render proofs using the Japanese profile correctly.
 
 ## Installation
 
@@ -51,10 +51,10 @@ You can install this plugin inside Obsidian (see [here](https://help.obsidian.md
 
 **I need your help!!**
 
-- Feel free to create a new issue if you noticed something is not working well. Questions are also welcomed.
+- Feel free to create a new issue if something is not working well. Questions are also welcomed.
 - Please send a pull request if you have any ideas to improve Math Booster and our experience!
-  - **Even if you don't code, your help is still needed for improving the documentation and README.** For exampe, the active update of this plugin has already made some of the images in the documentation outdated...
-  - Of course, programmers' contribution is extremely welcomed. (I'm pretty new to TypeScript/JavaScript/HTML/CSS. For me, making this plugin was the only purpose to start learning them. So your help is needed for real.)
+  - **Even if you don't code, your help is still needed to improve the documentation and README.** For example, the active update of this plugin has already made some of the images in the documentation outdated...
+  - Of course, programmers' contribution is highly welcomed. (I'm pretty new to TypeScript/JavaScript/HTML/CSS. Making this plugin was the only purpose for me to start learning them. So your help is needed for real.)
 
 ## Roadmaps
 
