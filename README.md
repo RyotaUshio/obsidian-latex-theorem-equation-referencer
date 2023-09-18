@@ -47,6 +47,8 @@ Also, you must install the [CMU Serif](https://www.cufonfonts.com/font/cmu-serif
 
 You can install this plugin inside Obsidian (see [here](https://help.obsidian.md/Extending+Obsidian/Community+plugins#Install+a+community+plugin) for instructions).
 
+Also, you can test the latest beta release using the [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin.
+
 ## Contributing
 
 **I need your help!!**
