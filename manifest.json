@@ -1,7 +1,7 @@
 {
 	"id": "math-booster",
 	"name": "Math Booster",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"minAppVersion": "1.3.5",
 	"description": "Turn your Obsidian into LaTeX on steroids. Dynamically numbered theorem environments & equations, theorems/equations live suggestion, showing backlinks to theorems/equations and live-rendering equations inside callouts & quotes.",
 	"author": "Ryota Ushio",
