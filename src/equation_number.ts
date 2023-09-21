@@ -62,6 +62,26 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
     }
 
     async impl() {
+        /**
+         * https://github.com/RyotaUshio/obsidian-math-booster/issues/179
+         * 
+         * In the case of embeds or hover popovers, the line numbers contained 
+         * in the result of MarkdownPostProcessorContext.getSectionInfo() is 
+         * relative to the content included in the embed.
+         * In other words, they does not always represent the offset from the beginning of the file.
+         * For this reason, DisplayMathRenderChild.setId() doesn't work properly for embeds or hover popovers,
+         * and we have to exclude them from the target of DisplayMathRenderChild.
+         */
+        if (this.containerEl.closest('.popover.hover-popover')) {
+            // ignore HoverPopover
+            return;
+        }
+
+        if (this.containerEl.closest('.markdown-embed')) {
+            // ignore embeds
+            return;
+        }
+
         const item = this.getItem();
         if (item?.type != 'equation' || !item.mathText) {
             return;
