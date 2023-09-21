@@ -134,6 +134,10 @@ export function locToEditorPosition(loc: Loc): EditorPosition {
     return { ch: loc.col, line: loc.line };
 }
 
+export function trimMathText(text: string) {
+    return text.match(/\$\$([\s\S]*)\$\$/)?.[1].trim() ?? text;
+}
+
 export function getMathCache(cache: CachedMetadata, lineStart: number): SectionCache | undefined {
     if (cache.sections) {
         const sectionCache = Object.values(cache.sections).find((sectionCache) =>

@@ -2,7 +2,7 @@ import { App, CachedMetadata, Editor, MarkdownView, SectionCache, TAbstractFile,
 
 import MathBooster from './main';
 import { MathSettings, TheoremRefFormat, ResolvedMathSettings, TheoremCalloutSettings, TheoremCalloutPrivateFields } from './settings/settings';
-import { getBlockIdsWithBacklink, readTheoremCalloutSettings, resolveSettings, formatTitle, readTheoremCalloutSettingsAndTitle, CONVERTER, matchTheoremCallout, formatTitleWithoutSubtitle, isEditingView, getEqNumberPrefix } from './utils';
+import { getBlockIdsWithBacklink, readTheoremCalloutSettings, resolveSettings, formatTitle, readTheoremCalloutSettingsAndTitle, CONVERTER, matchTheoremCallout, formatTitleWithoutSubtitle, isEditingView, getEqNumberPrefix, trimMathText } from './utils';
 import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 
 
@@ -334,7 +334,7 @@ class EquationIndexer<IOType extends FileIO> extends BlockIndexer<IOType, Equati
                 refName = eqRefPrefix + printName + eqRefSuffix;
             }
 
-            const mathText = (await this.noteIndexer.io.getRange(equation.cache.position)).match(/\$\$([\s\S]*)\$\$/)?.[1].trim();
+            const mathText = trimMathText(await this.noteIndexer.io.getRange(equation.cache.position));
 
             if (note.size("equation") == i) {
                 note.add({ type: "equation", printName, refName, cache: equation.cache, file: this.noteIndexer.file, mathText });

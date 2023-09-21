@@ -2,17 +2,16 @@ import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostPro
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
 import MathBooster from './main';
-import { getBacklinks, getMathCache, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveSettings } from './utils';
+import { getBacklinks, getMathCache, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveSettings, trimMathText } from './utils';
 import { MathContextSettings } from "./settings/settings";
 import { Backlink, BacklinkModal } from "./backlinks";
-import { AutoNoteIndexer } from "./indexer";
+import { AutoNoteIndexer, IndexItem } from "./indexer";
 
 
 /** For reading view */
 
 export class DisplayMathRenderChild extends MarkdownRenderChild {
     file: TFile;
-    id: string | undefined;
 
     constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, public context: MarkdownPostProcessorContext) {
         // containerEl, currentEL are mjx-container.MathJax elements
@@ -23,17 +22,21 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         }
     }
 
-    setId() {
-        if (this.id === undefined) {
-            const info = this.getInfo();
-            const cache = this.getCache();
-            if (cache && info) {
-                const mathCache = getMathCache(cache, info.lineStart);
-                if (mathCache && mathCache.id) {
-                    this.id = mathCache.id;
-                }
-            }
+    getItem(): IndexItem | null {
+        const info = this.getInfo();
+        const cache = this.getCache();
+        if (!info || !cache) return null;
+
+        // get block ID
+        const id = getMathCache(cache, info.lineStart)?.id;
+
+        // get IndexItem from block ID
+        if (id) {
+            const item = this.plugin.index.getNoteIndex(this.file).getItemById(id);
+            return item ?? null;
         }
+
+        return null;
     }
 
     getCache(): CachedMetadata | null {
@@ -59,31 +62,30 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
     }
 
     async impl() {
-        this.setId();
-        if (this.id) {
-            const item = this.plugin.index.getNoteIndex(this.file).getItemById(this.id);
-            if (item?.type == "equation" && item.mathText) {
-                const settings = resolveSettings(undefined, this.plugin, this.file);
-                replaceMathTag(this.containerEl, item.mathText, item.printName, settings);
-                this.plugin.registerDomEvent(
-                    this.containerEl, "contextmenu", (event) => {
-                        const menu = new Menu();
-
-                        // Show backlinks
-                        menu.addItem((item) => {
-                            item.setTitle("Show backlinks");
-                            item.onClick((clickEvent) => {
-                                if (clickEvent instanceof MouseEvent) {
-                                    const backlinks = this.getBacklinks(event);
-                                    new BacklinkModal(this.app, this.plugin, backlinks).open();
-                                }
-                            })
-                        });
-                        menu.showAtMouseEvent(event);
-                    }
-                );
-            }
+        const item = this.getItem();
+        if (item?.type != 'equation' || !item.mathText) {
+            return;
         }
+
+        const settings = resolveSettings(undefined, this.plugin, this.file);
+        replaceMathTag(this.containerEl, item.mathText, item.printName, settings);
+        this.plugin.registerDomEvent(
+            this.containerEl, "contextmenu", (event) => {
+                const menu = new Menu();
+
+                // Show backlinks
+                menu.addItem((item) => {
+                    item.setTitle("Show backlinks");
+                    item.onClick((clickEvent) => {
+                        if (clickEvent instanceof MouseEvent) {
+                            const backlinks = this.getBacklinks(event);
+                            new BacklinkModal(this.app, this.plugin, backlinks).open();
+                        }
+                    })
+                });
+                menu.showAtMouseEvent(event);
+            }
+        );
     }
 
     getBacklinks(event: MouseEvent): Backlink[] | null {

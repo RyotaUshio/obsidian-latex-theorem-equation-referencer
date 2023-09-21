@@ -273,6 +273,26 @@ export default class MathBooster extends Plugin {
 		this.registerMarkdownPostProcessor((element, context) => {
 			const mjxContainerElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax[display="true"]');
 			for (const mjxContainerEl of mjxContainerElements) {
+
+				/**
+				 * https://github.com/RyotaUshio/obsidian-math-booster/issues/179
+				 * 
+				 * In the case of embeds or hover popovers, the line numbers contained 
+				 * in the result of MarkdownPostProcessorContext.getSectionInfo() is 
+				 * relative to the content included in the embed.
+				 * In other words, they does not always represent the offset from the beginning of the file.
+				 * For this reason, DisplayMathRenderChild.setId() doesn't work properly for embeds or hover popovers,
+				 * and we have to exclude them from the target of DisplayMathRenderChild.
+				 */
+				if (mjxContainerEl.closest('.popover.hover-popover')) {
+					// ignore HoverPopover
+					return;
+				}
+				if (mjxContainerEl.closest('.markdown-embed')) {
+					// ignore embeds
+					return;
+				}
+
 				context.addChild(
 					new DisplayMathRenderChild(mjxContainerEl, this.app, this, context)
 				);
