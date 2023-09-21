@@ -9,18 +9,18 @@ Turn your Obsidian into ***LaTeX on steroids*** with Math Booster.
 - [Equation numbering](https://ryotaushio.github.io/obsidian-math-booster//equation-number)
 - [Theorem environments](https://ryotaushio.github.io/obsidian-math-booster//math-callouts)
 - [Live suggestions (auto-completion) for theorem/equation links](https://ryotaushio.github.io/obsidian-math-booster//suggest)
-- [Rendering equations inside callouts & blockquote in live preview](https://ryotaushio.github.io/obsidian-math-booster//math-preview)
+- [Rendering equations inside callouts & blockquotes in live preview](https://ryotaushio.github.io/obsidian-math-booster//math-preview)
 - [Showing backlinks to theorems/equations](https://ryotaushio.github.io/obsidian-math-booster//backlinks)
 - [Proof environments](https://ryotaushio.github.io/obsidian-math-booster//proofs) _(experimental)_
 
 Theorems & equations can be **dynamically/automatically numbered**, while you can statically/manually number them if you want.
 The number prefix can be either explicitly specified or automatically inferred from the note title.
 
-Thanks to the integration with [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks), links to theorems/equations are [displayed with their title or number](https://ryotaushio.github.io/obsidian-math-booster//cleveref) similarly to the `cleveref` package in LaTeX. (No need for manually typing aliases!)
+Thanks to the integration with [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks), links to theorems/equations are [displayed with their title or number](https://ryotaushio.github.io/obsidian-math-booster//cleveref), similarly to the `cleveref` package in LaTeX. (No need for manually typing aliases!)
 
 You can also customize the appearance of theorem callouts using CSS snippets. See the [styles gallery](#styles-gallery) for examples.
 
-Also check out the [No More Flickering Inline Math](https://github.com/RyotaUshio/obsidian-inline-math) plugin that lets you work with inline math much more comfortably.
+Also check out the [No More Flickering Inline Math](https://github.com/RyotaUshio/obsidian-inline-math) plugin, which lets you work with inline math much more comfortably.
 
 (The theorem in the screenshot is cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
 
@@ -36,7 +36,7 @@ https://ryotaushio.github.io/obsidian-math-booster/
 
 ## Dependencies
 
-The following community plugins are required to be installed and enabled.
+The following community plugins are required to be installed and enabled:
 
 - [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) ver. 0.4.6+
 - [Dataview](https://github.com/blacksmithgu/obsidian-dataview) ver. 0.5.56+
@@ -56,7 +56,7 @@ Also, you can test the latest beta release using the [BRAT](https://github.com/T
 - Feel free to create a new issue if something is not working well. Questions are also welcomed.
 - Please send a pull request if you have any ideas to improve Math Booster and our experience!
   - **Even if you don't code, your help is still needed to improve the documentation and README.** For example, the active update of this plugin has already made some of the images in the documentation outdated...
-  - Of course, programmers' contribution is highly welcomed. (I'm pretty new to TypeScript/JavaScript/HTML/CSS. Making this plugin was the only purpose for me to start learning them. So your help is needed for real.)
+  - Of course, programmers' contributions are highly welcomed. (I'm pretty new to TypeScript/JavaScript/HTML/CSS. Making this plugin was the only purpose for me to start learning them. So your help is needed for real.)
 
 ## Roadmaps
 
