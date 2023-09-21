@@ -2,7 +2,7 @@ import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostPro
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
 import MathBooster from './main';
-import { getBacklinks, getMathCache, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveSettings, trimMathText } from './utils';
+import { getBacklinks, getMathCache, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveSettings } from './utils';
 import { MathContextSettings } from "./settings/settings";
 import { Backlink, BacklinkModal } from "./backlinks";
 import { AutoNoteIndexer, IndexItem } from "./indexer";
