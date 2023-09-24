@@ -82,7 +82,7 @@ $$
 \tag{$$}
 $$
 */
-.cm-line:not(.cm-active):has( .math.math-block.cm-embed-block > mjx-container.MathJax:not(.math-booster-preview) > mjx-math[display="true"]) {
+.HyperMD-quote.cm-line .math.math-block.cm-embed-block:has(> mjx-container.MathJax[display="true"]:not(.math-booster-preview)) {
     display: none;
 }
 
