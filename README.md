@@ -47,7 +47,13 @@ Also, you must install the [CMU Serif](https://www.cufonfonts.com/font/cmu-serif
 
 You can install this plugin inside Obsidian (see [here](https://help.obsidian.md/Extending+Obsidian/Community+plugins#Install+a+community+plugin) for instructions).
 
-Also, you can test the latest beta release using the [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin.
+Also, you can test the latest beta release using [BRAT](https://github.com/TfTHacker/obsidian42-brat):
+
+1.  Install BRAT and enable it.
+2.  Go to **Options**. In the **Beta Plugin List** section, click on the **Add Beta plugin** button.
+3.  Copy and paste `RyotaUshio/obsidian-math-booster` in the pop-up prompt and click on **Add Plugin**.
+4.  _(Optional)_ Turn on **Auto-update plugins at startup** at the top of the page.
+5.  Go to **Community plugins > Installed plugins**. You will find "Math Booster" in the list. Click on the toggle button to enable it.
 
 ## Contributing
 
