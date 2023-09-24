@@ -76,11 +76,6 @@
 /* Unlike in callouts, Obsidian natively renders MathJax in blockquotes. But it is rather buggy 
 (see https://forum.obsidian.md/t/live-preview-support-math-block-in-quotes/32564/2), 
 so we need to replace it with this plugin's editor extension. 
-Note that :not(.cm-active) is required because display math equations like below get (undesirably) hidden without it:
-
-$$
-\tag{$$}
-$$
 */
 .HyperMD-quote.cm-line .math.math-block.cm-embed-block:has(> mjx-container.MathJax[display="true"]:not(.math-booster-preview)) {
     display: none;
