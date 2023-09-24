@@ -80,6 +80,7 @@ class MathInfo extends RangeValue {
         return Decoration[which]({
             widget: this.toWidget(),
             block: this.display,
+            side: which == "widget" ? 1 : undefined, // To fix https://github.com/RyotaUshio/obsidian-math-booster/issues/173
         })
     }
 }
@@ -299,7 +300,7 @@ export const inlineMathPreview = ViewPlugin.fromClass(
 
             if (!field.isInCalloutsOrQuotes) {
                 this.decorations = Decoration.none;
-                return;                
+                return;
             }
 
             const range = view.state.selection.main;
@@ -310,18 +311,16 @@ export const inlineMathPreview = ViewPlugin.fromClass(
                     from,
                     to,
                     (from, to, value) => {
-                        // if (to < range.from || from > range.to) {
-                            if (value.insideCallout && !value.display && !hasOverlap(range, {from, to})) {
-                                /**
-                                 * Inline math that is not overlapping with the current selection or cursor
-                                 */
-                                builder.add(
-                                    from,
-                                    to,
-                                    value.toDecoration("replace")
-                                );
-                            } 
-                        // }
+                        if (value.insideCallout && !value.display && !hasOverlap(range, { from, to })) {
+                            /**
+                             * Inline math that is not overlapping with the current selection or cursor
+                             */
+                            builder.add(
+                                from,
+                                to,
+                                value.toDecoration("replace")
+                            );
+                        }
                     }
                 );
             }
@@ -355,7 +354,7 @@ export const displayMathPreviewForCallout = StateField.define<DecorationSet>({
             transaction.state.doc.length,
             (from, to, value) => {
                 if (value.display) {
-                    if (!hasOverlap(range, {from, to})) {
+                    if (!hasOverlap(range, { from, to })) {
                         if (value.insideCallout && field.isInCalloutsOrQuotes) {
                             builder.add(from, to, value.toDecoration("replace"));
                         }
@@ -443,7 +442,7 @@ export const displayMathPreviewForQuote = ViewPlugin.fromClass(
                     from,
                     to,
                     (from, to, value) => {
-                        if (!hasOverlap(range, {from, to})) {
+                        if (!hasOverlap(range, { from, to })) {
                             if (value.display && !value.insideCallout) {
                                 /**
                                  * Display math inside blockquote (not callout) that is not overlapping with the current selection or cursor
