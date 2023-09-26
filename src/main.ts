@@ -10,7 +10,7 @@ import { TheoremCallout, insertTheoremCalloutCallback } from './theorem_callouts
 import { ContextSettingModal, DependencyNotificationModal, TheoremCalloutModal } from './modals';
 import { insertDisplayMath } from './key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
-import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote } from './math_live_preview_in_callouts';
+import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote, hideDisplayMathPreviewInQuote } from './math_live_preview_in_callouts';
 import { LinkedNotesIndexer, VaultIndex, VaultIndexer } from './indexer';
 import { theoremCalloutMetadataHiderPlulgin } from './theorem_callout_metadata_hider';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, isPluginOlderThan, iterDescendantFiles, staticifyEqNumber } from './utils';
@@ -233,6 +233,7 @@ export default class MathBooster extends Plugin {
 		this.registerEditorExtension(inlineMathPreview);
 		this.registerEditorExtension(displayMathPreviewForCallout);
 		this.registerEditorExtension(displayMathPreviewForQuote);
+		this.registerEditorExtension(hideDisplayMathPreviewInQuote);
 		// proofs
 		this.proofPositionField = proofPositionFieldFactory(this);
 		this.registerEditorExtension(this.proofPositionField);

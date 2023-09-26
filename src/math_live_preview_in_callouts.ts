@@ -1,9 +1,9 @@
-import { ExtraButtonComponent, finishRenderMath, renderMath } from "obsidian";
+import { ExtraButtonComponent, editorEditorField, finishRenderMath, renderMath } from "obsidian";
 import { Extension, Transaction, StateField, RangeSetBuilder, EditorState, RangeValue, RangeSet } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { syntaxTree } from '@codemirror/language';
 
-import { hasOverlap, isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed, printMathInfoSet, rangeSetSome } from './utils';
+import { hasOverlap, isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed, printMathInfoSet, printNode, rangeSetSome } from './utils';
 import { CALLOUT } from "./theorem_callout_metadata_hider";
 
 
@@ -116,7 +116,7 @@ function buildMathInfoSet(state: EditorState): MathInfoSet {
                 }
             }
 
-            if (node.from < quoteContentStart) {
+            if (nodeText(node, state).trim() == '>' && node.from < quoteContentStart) {
                 return;
             }
             if (insideMath) {
@@ -337,6 +337,10 @@ export const displayMathPreviewForCallout = StateField.define<DecorationSet>({
     },
 
     update(value: DecorationSet, transaction: Transaction): DecorationSet {
+        const builder = new RangeSetBuilder<Decoration>();
+        const range = transaction.state.selection.main;
+        const field = transaction.state.field(mathPreviewInfoField);
+
         if (isSourceMode(transaction.state)) {
             return Decoration.none;
         }
@@ -344,10 +348,6 @@ export const displayMathPreviewForCallout = StateField.define<DecorationSet>({
         if (!transaction.docChanged && !overlapStateChanged(transaction.state)) {
             return value;
         }
-
-        const builder = new RangeSetBuilder<Decoration>();
-        const range = transaction.state.selection.main;
-        const field = transaction.state.field(mathPreviewInfoField);
 
         field.mathInfoSet.between(
             0,
@@ -371,6 +371,37 @@ export const displayMathPreviewForCallout = StateField.define<DecorationSet>({
         return EditorView.decorations.from(field);
     },
 });
+
+
+export const hideDisplayMathPreviewInQuote = ViewPlugin.fromClass(
+    class implements PluginValue {
+        constructor(view: EditorView) {
+            this.impl(view);
+        }
+
+        update(update: ViewUpdate) {
+            this.impl(update.view);
+        }
+
+        impl(view: EditorView) {
+            const field = view.state.field(mathPreviewInfoField);
+
+            for (const vanillaObsidianMathPreview of view.contentDOM.querySelectorAll<HTMLElement>(
+                `.cm-line:not(.HyperMD-quote) .math.math-block.cm-embed-block > mjx-container.MathJax[display="true"]:not(.math-booster-preview)`
+            )) {
+                const pos = view.posAtDOM(vanillaObsidianMathPreview);
+                if (rangeSetSome(field.mathInfoSet, (info) => info.from - 1 <= pos && pos <= info.to)) {
+                    const cmWidgetBuffer = vanillaObsidianMathPreview.previousSibling;
+                    if (cmWidgetBuffer instanceof HTMLElement && cmWidgetBuffer.matches(".cm-widget-buffer")) {
+                        cmWidgetBuffer.remove();
+                    }
+                    vanillaObsidianMathPreview.remove();
+                }
+            }            
+        }
+    }
+);
+
 
 
 function isInBlockquoteOrCallout(state: EditorState): boolean {
