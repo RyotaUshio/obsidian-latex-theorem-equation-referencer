@@ -13,6 +13,8 @@ When **Don't override the app's font setting when using sample styles** is turne
 
 ![Style setting](fig/style_setting.png)
 
+> **Note**: The preset styles might not work well with some community themes. In that case, I recommend you using a CSS snippet and costomizing it so that it fits your theme.
+
 
 ## CSS classes
 
