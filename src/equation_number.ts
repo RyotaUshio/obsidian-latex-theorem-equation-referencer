@@ -210,20 +210,26 @@ export function insertTagInMathText(text: string, tagContent: string, lineByLine
     if (lineByLine) {
         const alignResult = text.match(/^\s*\\begin\{align\}([\s\S]*)\\end\{align\}\s*$/);
         if (alignResult) {
-            let taggedText = "";
+            // remove comments
+            let alignContent = alignResult[1]
+                .split('\n')
+                .map(line => {
+                    const commentMatch = line.match(/(?<!\\)\%/);
+                    return commentMatch?.index !== undefined
+                        ? line.substring(0, commentMatch.index)
+                        : line;
+                }).join('\n');
+            // add tags
             let index = 1;
-            for (const line of alignResult[1].split("\\\\")) {
-                if (line.trim()) {
-                    taggedText += line.contains("\\nonumber") ?
-                        line :
-                        line.trim() + `\\tag{${tagContent}-${index++}}`;
-                    taggedText += "\\\\";
-                }
-            }
-            return "\\begin{align}" + taggedText + "\\end{align}";
+            alignContent = alignContent.split("\\\\").map(alignLine => {
+                return (!alignLine.trim() || alignLine.contains("\\nonumber"))
+                    ? alignLine
+                    : (alignLine + `\\tag{${tagContent}-${index++}}`);
+            }).join("\\\\");
+            return "\\begin{align}" + alignContent + "\\end{align}";
         }
     }
-    return text.replace(/[\n\r]/g, ' ') + `\\tag{${tagContent}}`;
+    return text + `\\tag{${tagContent}}`;
 }
 
 
