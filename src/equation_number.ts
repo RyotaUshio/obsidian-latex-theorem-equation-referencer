@@ -221,11 +221,12 @@ export function insertTagInMathText(text: string, tagContent: string, lineByLine
                 }).join('\n');
             // add tags
             let index = 1;
-            alignContent = alignContent.split("\\\\").map(alignLine => {
-                return (!alignLine.trim() || alignLine.contains("\\nonumber"))
+            alignContent = alignContent
+                .split("\\\\")
+                .map(alignLine => (!alignLine.trim() || alignLine.contains("\\nonumber"))
                     ? alignLine
-                    : (alignLine + `\\tag{${tagContent}-${index++}}`);
-            }).join("\\\\");
+                    : (alignLine + `\\tag{${tagContent}-${index++}}`)
+                ).join("\\\\");
             return "\\begin{align}" + alignContent + "\\end{align}";
         }
     }
