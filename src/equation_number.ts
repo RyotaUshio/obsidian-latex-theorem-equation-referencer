@@ -223,7 +223,7 @@ export function insertTagInMathText(text: string, tagContent: string, lineByLine
             return "\\begin{align}" + taggedText + "\\end{align}";
         }
     }
-    return text.replace(/[\n\r]/g, ' ') + `\\tag{${tagContent}}`;
+    return text.replace(/(?<!%)([\n\r])/g, ' ') + `\\tag{${tagContent}}`;
 }
 
 
