@@ -92,7 +92,7 @@ Bad
 $$f(x)$$
 ```
 
-Also, make sure there is an emtpy line under the block ID of the equation. Again, this is needed due to how Obsidian works. **You can enforce this using the [Linter](obsidian://show-plugin?id=obsidian-linter) plugin's rule "[Empty Line Around Math Blocks
+Also, make sure there is an empty line under the block ID of the equation. Again, this is needed due to how Obsidian works. **You can enforce this using the [Linter](obsidian://show-plugin?id=obsidian-linter) plugin's rule "[Empty Line Around Math Blocks
 ](https://platers.github.io/obsidian-linter/settings/spacing-rules/#empty-line-around-math-blocks)."**
 
 ### Equations in callouts/blocks
