@@ -201,7 +201,6 @@ function makeField(state: EditorState, plugin: MathBooster) {
     if (!file) return [];
 
     const settings = resolveSettings(undefined, plugin, file);
-    const range = state.selection.main;
 
     const field: ProofPosition[] = [];
     const tree = syntaxTree(state);

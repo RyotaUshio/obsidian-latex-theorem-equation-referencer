@@ -79,10 +79,19 @@ export class ActiveNoteIO extends FileIO {
 
 
 export class NonActiveNoteIO extends FileIO {
+    _data: string | null = null;
+
     /**
      * File IO for non-active (= currently not opened / currently opened but not focused) notes.
      * Uses the Vault interface instead of Editor.
      */
+    constructor(plugin: MathBooster, file: TFile) {
+        super(plugin, file);
+    }
+
+    async getData(): Promise<string> {
+        return this._data ?? (this._data = await this.plugin.app.vault.cachedRead(this.file));
+    }
 
     async setLine(lineNumber: number, text: string): Promise<void> {
         this.plugin.app.vault.process(this.file, (data: string): string => {

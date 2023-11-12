@@ -17,6 +17,7 @@ import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, isPlugin
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
 import { Suggest } from './suggest';
 import { ProjectManager, makePrefixer } from './project';
+import { MathIndexManager } from './index/manager';
 
 
 export const VAULT_ROOT = '/';
@@ -34,6 +35,7 @@ export default class MathBooster extends Plugin {
 		"mathlinks": "0.4.6",
 		"dataview": "0.5.56",
 	};
+	indexManager: MathIndexManager;
 
 	async onload() {
 
@@ -307,6 +309,9 @@ export default class MathBooster extends Plugin {
 					.addSeparator();
 			})
 		);
+
+		this.addChild((this.indexManager = new MathIndexManager(this, this.extraSettings)));
+		this.app.workspace.onLayoutReady(async () => this.indexManager.initialize());
 	}
 
 	onunload() {
@@ -394,7 +399,7 @@ export default class MathBooster extends Plugin {
 			return !isPluginOlderThan(depPlugin, this.dependencies[id])
 		}
 		return false;
-	} 
+	}
 
 	getMathLinksAPI(): MathLinks.MathLinksAPIAccount | undefined {
 		const account = MathLinks.getAPIAccount(this);

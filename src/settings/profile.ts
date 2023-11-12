@@ -176,7 +176,7 @@ class EditProfileModal extends Modal {
                     });
             });
 
-        const tagSetting = new Setting(contentEl)
+        new Setting(contentEl)
             .setName("Tags")
             .setDesc("Comma-separated list of tags. Only lower-case alphabets or hyphens are allowed. Each tag is converted into a CSS class \".theorem-callout-<tag>\".")
             .addText((text) => {
@@ -382,7 +382,7 @@ class UpdateProfileModal extends Modal {
 
         const listEl = contentEl.createEl("ul");
         for (const path of this.affected) {
-            const itemEl = listEl.createEl("li", { text: path == VAULT_ROOT ? "(Vault root)" : path });
+            listEl.createEl("li", { text: path == VAULT_ROOT ? "(Vault root)" : path });
         }
     }
 

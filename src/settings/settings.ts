@@ -1,8 +1,7 @@
 import { Modifier } from "obsidian";
 
 import { DEFAULT_PROFILES, Profile } from "./profile";
-import { LeafArgs } from "../type";
-
+import { LeafArgs } from "../typings/type";
 
 // Types
 
@@ -110,7 +109,12 @@ export interface TheoremCalloutPrivateFields {
     _index?: number;
 }
 
-export interface ExtraSettings {
+export interface ImporterSettings {
+    importerNumThreads: number;
+    importerUtilization: number;
+}
+
+export type ExtraSettings = ImporterSettings & {
     noteTitleInLink: boolean;
     profiles: Record<string, Profile>;
     triggerSuggest: string;
@@ -192,4 +196,6 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     backlinkLeafOption: "Split right",
     projectInfix: " > ",
     projectSep: "/",
+    importerNumThreads: 2,
+    importerUtilization: 0.75,
 };

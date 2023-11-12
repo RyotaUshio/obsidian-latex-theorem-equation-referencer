@@ -1,9 +1,9 @@
-import { ExtraButtonComponent, editorEditorField, finishRenderMath, renderMath } from "obsidian";
+import { ExtraButtonComponent, finishRenderMath, renderMath } from "obsidian";
 import { Extension, Transaction, StateField, RangeSetBuilder, EditorState, RangeValue, RangeSet } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { syntaxTree } from '@codemirror/language';
 
-import { hasOverlap, isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed, printMathInfoSet, printNode, rangeSetSome } from './utils';
+import { hasOverlap, isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed, rangeSetSome } from './utils';
 import { CALLOUT } from "./theorem_callout_metadata_hider";
 
 

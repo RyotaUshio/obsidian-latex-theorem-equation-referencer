@@ -1,0 +1,64 @@
+import { Link } from "../expression/link";
+// import { DateTime } from "luxon";
+
+/** The names of all index fields that are present on ALL indexed types. */
+export const INDEX_FIELDS = new Set([
+    "$types", 
+    // "$typename", 
+    "$id", 
+    "$revision"
+]);
+
+/** Any indexable field, which must have a few index-relevant properties. */
+export interface Indexable {
+    /** The object types that this indexable is. */
+    $types: string[];
+    // /** Textual description of the object, such as `Page` or `Section`. Used in visualizations. */
+    // $typename: string;
+    /** The unique index ID for this object. */
+    $id: string;
+    /**
+     * The indexable object that is the parent of this object. Only set after the object is actually indexed.
+     */
+    $parent?: Indexable;
+    /** If present, the revision in the index of this object. */
+    $revision?: number;
+    /** The file that this indexable was derived from, if file-backed. */
+    $file?: string;
+}
+
+/** Metadata for objects which support linking. */
+export const LINKABLE_TYPE = "linkable";
+export interface Linkable {
+    /** A link to this linkable object. */
+    $link: Link;
+}
+
+/** General metadata for any file. */
+export const FILE_TYPE = "file";
+export interface File extends Linkable {
+    /** The path this file exists at. */
+    $path: string;
+    // /** Obsidian-provided date this page was created. */
+    // $ctime: DateTime;
+    // /** Obsidian-provided date this page was modified. */
+    // $mtime: DateTime;
+    // /** Obsidian-provided size of this page in bytes. */
+    // $size: number;
+    /** The extension of the file. */
+    $extension: string;
+}
+
+// /** Metadata for taggable objects. */
+// export const TAGGABLE_TYPE = "taggable";
+// export interface Taggable {
+//     /** The exact tags on this object. (#a/b/c or #foo/bar). */
+//     $tags: string[];
+// }
+
+/** Metadata for objects which can link to other things. */
+export const LINKBEARING_TYPE = "links";
+export interface Linkbearing {
+    /** The links in this file. */
+    $links: Link[];
+}

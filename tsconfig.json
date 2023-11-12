@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": "src",
+    "baseUrl": "./src",
     "inlineSourceMap": true,
     "inlineSources": true,
     "module": "ESNext",
@@ -15,10 +15,9 @@
       "DOM",
       "ES5",
       "ES6",
-      "ES7", 
+      "ES7",
       "ES2021.String",
-      "dom",
-      "dom.iterable"
+      "DOM.Iterable"
     ]
   },
   "include": [

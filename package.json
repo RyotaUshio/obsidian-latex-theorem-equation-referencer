@@ -25,6 +25,9 @@
 	},
 	"dependencies": {
 		"@codemirror/language": "^6.0.0",
-		"@lezer/common": "^1.0.3"
+		"@lezer/common": "^1.0.3",
+		"esbuild-plugin-inline-worker": "^0.1.1",
+		"flatqueue": "^2.0.3",
+		"sorted-btree": "^1.8.1"
 	}
 }

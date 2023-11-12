@@ -11,8 +11,7 @@ import { MathInfoSet } from './math_live_preview_in_callouts';
 import { THEOREM_LIKE_ENVs, TheoremLikeEnvID } from './env';
 import { Backlink } from './backlinks';
 import { getIO } from './file_io';
-import { LeafArgs } from './type';
-import { platform } from 'os';
+import { LeafArgs } from './typings/type';
 
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
@@ -324,7 +323,8 @@ export function getBlockIdsWithBacklink(file: TFile, plugin: MathBooster): strin
     if (dv && cache) {
         const page = dv.page(file.path); // Dataview page object
         if (page) {
-            for (const inlink of page.file.inlinks) {
+            // @ts-ignore
+            for (const inlink of page.file?.inlinks) {
                 // cache of the source of this link (source --link--> target)
                 const sourcePath = inlink.path;
                 const sourceCache = plugin.app.metadataCache.getCache(sourcePath);

@@ -227,7 +227,6 @@ class TheoremCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, 
                     await this.overwriteSettings(lineNumber, newSettings, newTitle)
                 }
 
-                const id = callout.cache.id;
                 refName = this.formatMathLink(resolvedSettings, "refFormat");
             }
 
