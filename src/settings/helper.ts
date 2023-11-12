@@ -402,6 +402,11 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         // projects
         this.addTextSetting("projectInfix", "Link infix", "Specify the infix to connect a project name and a theorem title or an equation number.");
         this.addTextSetting("projectSep", "Separator for nested projects");
+
+        // indexer/importer
+        this.contentEl.createEl("h3", { text: "Indexing" });
+        this.addSliderSetting('importerNumThreads', {min: 1, max: 10, step: 1}, "Indexer threads", "The maximum number of thread used for indexing.");
+        this.addSliderSetting('importerUtilization', {min: 0.1, max: 1.0, step: 0.01}, 'Indexer CPU utilization', "The CPU utilization that indexer threads should use.");
     }
 }
 
