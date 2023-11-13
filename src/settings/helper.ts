@@ -4,10 +4,9 @@ import MathBooster from '../main';
 import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from '../env';
 import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, THEOREM_REF_FORMATS, THEOREM_CALLOUT_STYLES, TheoremCalloutSettings, MathContextSettings, NUMBER_STYLES } from './settings';
 import { BooleanKeys, NumberKeys, formatTheoremCalloutType, formatTitle } from '../utils';
-import { AbstractFileIndex, AutoNoteIndexer } from '../indexer';
+import { AutoNoteIndexer } from '../indexer';
 import { DEFAULT_PROFILES, ManageProfileModal } from './profile';
-import { PROJECT_DESCRIPTION, Project } from '../project';
-import { ContextSettingModal } from '../modals';
+// import { PROJECT_DESCRIPTION, Project } from '../project';
 
 
 export class TheoremCalloutSettingsHelper {
@@ -400,8 +399,8 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addDropdownSetting("backlinkLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected backlink.")
 
         // projects
-        this.addTextSetting("projectInfix", "Link infix", "Specify the infix to connect a project name and a theorem title or an equation number.");
-        this.addTextSetting("projectSep", "Separator for nested projects");
+        // this.addTextSetting("projectInfix", "Link infix", "Specify the infix to connect a project name and a theorem title or an equation number.");
+        // this.addTextSetting("projectSep", "Separator for nested projects");
 
         // indexer/importer
         this.contentEl.createEl("h3", { text: "Indexing" });
@@ -411,81 +410,81 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
 }
 
 
-export class ProjectSettingsHelper {
-    plugin: MathBooster;
-    file: TAbstractFile;
+// export class ProjectSettingsHelper {
+//     plugin: MathBooster;
+//     file: TAbstractFile;
 
-    constructor(public contentEl: HTMLElement, public parent: ContextSettingModal) {
-        this.plugin = parent.plugin;
-        this.file = parent.file;
-    }
+//     constructor(public contentEl: HTMLElement, public parent: ContextSettingModal) {
+//         this.plugin = parent.plugin;
+//         this.file = parent.file;
+//     }
 
-    makeSettingPane() {
-        const project = this.plugin.projectManager.getProject(this.file);
-        const noteOrFolder = this.file instanceof TFile ? "note" : "folder";
-        let status = "";
-        if (project) {
-            if (project.root == this.file) {
-                status = `This ${noteOrFolder} is a project's root.`;
-            } else {
-                status = `This ${noteOrFolder} belongs to the project "${project.name}" (root: ${project.root.path}).`;
-            }
-        } else {
-            status = `This ${noteOrFolder} doesn't belong to any project.`;
-        }
+//     makeSettingPane() {
+//         const project = this.plugin.projectManager.getProject(this.file);
+//         const noteOrFolder = this.file instanceof TFile ? "note" : "folder";
+//         let status = "";
+//         if (project) {
+//             if (project.root == this.file) {
+//                 status = `This ${noteOrFolder} is a project's root.`;
+//             } else {
+//                 status = `This ${noteOrFolder} belongs to the project "${project.name}" (root: ${project.root.path}).`;
+//             }
+//         } else {
+//             status = `This ${noteOrFolder} doesn't belong to any project.`;
+//         }
 
-        this.contentEl.createEl("h4", {text: "Project (experimental)"})
+//         this.contentEl.createEl("h4", {text: "Project (experimental)"})
 
-        this.contentEl.createDiv({
-            text: PROJECT_DESCRIPTION + " " + status,
-            cls: ["setting-item-description", "math-booster-setting-item-description"]
-        });
-        this.addRootSetting();
-        if (project) {
-            this.addNameSetting(project);
-        }
-    }
+//         this.contentEl.createDiv({
+//             text: PROJECT_DESCRIPTION + " " + status,
+//             cls: ["setting-item-description", "math-booster-setting-item-description"]
+//         });
+//         this.addRootSetting();
+//         if (project) {
+//             this.addNameSetting(project);
+//         }
+//     }
 
-    addRootSetting(): Setting | undefined {
-        const prettyName = "Set as project root";
-        const description = this.file instanceof TFile
-            ? "If turned on, this file itself will be treated as a project."
-            : "If turned on, all the files under this folder will be treated as a single project.";
-        let index: AbstractFileIndex | undefined
-        if (this.file instanceof TFile) {
-            index = this.plugin.index.getNoteIndex(this.file)
-        } else if (this.file instanceof TFolder) {
-            index = this.plugin.index.getFolderIndex(this.file)
-        }
-        if (index) {
-            const setting = new Setting(this.contentEl).setName(prettyName).setDesc(description);
-            setting.addToggle((toggle) => {
-                toggle.setValue(index!.isProjectRoot)
-                    .onChange((value) => {
-                        if (value) {
-                            this.plugin.projectManager.add(this.file);
-                        } else {
-                            this.plugin.projectManager.delete(this.file);
-                        }
-                        this.parent.close();
-                        this.parent.open();
-                    });
-            });
-            return setting;
-        }
-    }
+//     addRootSetting(): Setting | undefined {
+//         const prettyName = "Set as project root";
+//         const description = this.file instanceof TFile
+//             ? "If turned on, this file itself will be treated as a project."
+//             : "If turned on, all the files under this folder will be treated as a single project.";
+//         let index: AbstractFileIndex | undefined
+//         if (this.file instanceof TFile) {
+//             index = this.plugin.index.getNoteIndex(this.file)
+//         } else if (this.file instanceof TFolder) {
+//             index = this.plugin.index.getFolderIndex(this.file)
+//         }
+//         if (index) {
+//             const setting = new Setting(this.contentEl).setName(prettyName).setDesc(description);
+//             setting.addToggle((toggle) => {
+//                 toggle.setValue(index!.isProjectRoot)
+//                     .onChange((value) => {
+//                         if (value) {
+//                             this.plugin.projectManager.add(this.file);
+//                         } else {
+//                             this.plugin.projectManager.delete(this.file);
+//                         }
+//                         this.parent.close();
+//                         this.parent.open();
+//                     });
+//             });
+//             return setting;
+//         }
+//     }
 
-    addNameSetting(project: Project): Setting {
-        const prettyName = "Project name";
-        const description = "A project name can contain inline math and doesn't have to be unique.";
-        const setting = new Setting(this.contentEl).setName(prettyName).setDesc(description);
+//     addNameSetting(project: Project): Setting {
+//         const prettyName = "Project name";
+//         const description = "A project name can contain inline math and doesn't have to be unique.";
+//         const setting = new Setting(this.contentEl).setName(prettyName).setDesc(description);
 
-        setting.addText((text) => {
-            text.setValue(project.name)
-                .onChange((value) => {
-                    project.name = value;
-                })
-        });
-        return setting;
-    }
-}
+//         setting.addText((text) => {
+//             text.setValue(project.name)
+//                 .onChange((value) => {
+//                     project.name = value;
+//                 })
+//         });
+//         return setting;
+//     }
+// }

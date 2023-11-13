@@ -1,3 +1,7 @@
+/**
+ * Currently unsed. I will re-implement it in a better way using Dataview query in the future.
+ */
+
 import MathBooster from "main";
 import { BlockSubpathResult, ButtonComponent, HeadingSubpathResult, Modal, TAbstractFile, TFile, TFolder } from "obsidian";
 import { pathToBaseName } from "utils";

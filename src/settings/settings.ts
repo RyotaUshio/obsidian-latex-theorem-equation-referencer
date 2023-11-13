@@ -130,8 +130,8 @@ export type ExtraSettings = ImporterSettings & {
     showModifierInstruction: boolean;
     suggestLeafOption: LeafOption;
     backlinkLeafOption: LeafOption;
-    projectInfix: string;
-    projectSep: string;
+    // projectInfix: string;
+    // projectSep: string;
 }
 
 export const UNION_TYPE_EXTRA_SETTING_KEYS: {[k in keyof Partial<ExtraSettings>]: readonly string[]} = {
@@ -194,8 +194,8 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     showModifierInstruction: true,
     suggestLeafOption: "Split right", 
     backlinkLeafOption: "Split right",
-    projectInfix: " > ",
-    projectSep: "/",
+    // projectInfix: " > ",
+    // projectSep: "/",
     importerNumThreads: 2,
     importerUtilization: 0.75,
 };

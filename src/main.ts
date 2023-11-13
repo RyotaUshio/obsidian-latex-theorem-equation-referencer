@@ -16,8 +16,8 @@ import { LinkedNotesIndexer, VaultIndex, VaultIndexer } from './indexer';
 import { theoremCalloutMetadataHiderPlulgin } from './theorem_callout_metadata_hider';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, isPluginOlderThan, iterDescendantFiles, staticifyEqNumber } from './utils';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
-import { Suggest } from './suggest';
-import { ProjectManager, makePrefixer } from './project';
+// import { Suggest } from './suggest';
+// import { ProjectManager, makePrefixer } from './project';
 import { MathIndexManager } from './index/manager';
 
 
@@ -31,7 +31,7 @@ export default class MathBooster extends Plugin {
 	oldLinkMap: Dataview.IndexMap;
 	proofPositionField: StateField<ProofPosition[]>;
 	index: VaultIndex;
-	projectManager: ProjectManager;
+	// projectManager: ProjectManager;
 	dependencies: Record<string, string> = {
 		"mathlinks": "0.5.0",
 		"dataview": "0.5.56",
@@ -74,7 +74,7 @@ export default class MathBooster extends Plugin {
 		// triggered if this plugin is enabled after launching the app
 		this.app.workspace.onLayoutReady(async () => {
 			if (Dataview.getAPI(this.app)?.index.initialized) {
-				await this.initializeProjectManager();
+				// await this.initializeProjectManager();
 				await this.initializeIndex();
 			}
 		})
@@ -83,7 +83,7 @@ export default class MathBooster extends Plugin {
 		this.registerEvent(
 			this.app.metadataCache.on(
 				"dataview:index-ready", async () => {
-					await this.initializeProjectManager();
+					// await this.initializeProjectManager();
 					await this.initializeIndex();
 				}
 			)
@@ -333,11 +333,13 @@ export default class MathBooster extends Plugin {
 		this.settings = { [VAULT_ROOT]: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)) };
 		this.extraSettings = JSON.parse(JSON.stringify(DEFAULT_EXTRA_SETTINGS));
 		this.excludedFiles = [];
-		this.projectManager = new ProjectManager(this);
+		// this.projectManager = new ProjectManager(this);
 
 		const loadedData = await this.loadData();
 		if (loadedData) {
-			const { settings, extraSettings, excludedFiles, dumpedProjects } = loadedData;
+			const { settings, extraSettings, excludedFiles, 
+				// dumpedProjects 
+			} = loadedData;
 			for (const path in settings) {
 				if (path != VAULT_ROOT) {
 					this.settings[path] = {};
@@ -382,7 +384,7 @@ export default class MathBooster extends Plugin {
 			// At the time the plugin is loaded, the data vault is not ready and 
 			// vault.getAbstractFile() returns null for any path.
 			// So we have to wait for the vault to start up and store a dumped version of the projects until then.
-			this.projectManager = new ProjectManager(this, dumpedProjects);
+			// this.projectManager = new ProjectManager(this, dumpedProjects);
 		}
 	}
 
@@ -392,7 +394,7 @@ export default class MathBooster extends Plugin {
 			settings: this.settings,
 			extraSettings: this.extraSettings,
 			excludedFiles: this.excludedFiles,
-			dumpedProjects: this.projectManager.dump(),
+			// dumpedProjects: this.projectManager.dump(),
 		});
 	}
 
@@ -429,10 +431,10 @@ export default class MathBooster extends Plugin {
 		console.log(`${this.manifest.name}: All theorem callouts and equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s.`);
 	}
 
-	async initializeProjectManager() {
-		this.projectManager.load();
-		await this.saveSettings();
-	}
+	// async initializeProjectManager() {
+	// 	this.projectManager.load();
+	// 	await this.saveSettings();
+	// }
 
 	getNewLinkMap(): Dataview.IndexMap | undefined {
 		return Dataview.getAPI(this.app)?.index.links;

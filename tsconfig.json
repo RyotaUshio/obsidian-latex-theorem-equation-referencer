@@ -22,5 +22,8 @@
   },
   "include": [
     "**/*.ts"
+  ],
+  "exclude": [
+    "./src/project.ts"
   ]
 }
