@@ -25,7 +25,7 @@ export class CleverRefProvider extends MathLinks.Provider {
 
         if (targetFile === null) return null;
         const page = this.index.load(targetFile.path);
-        if (!(page instanceof MarkdownPage)) return null
+        if (!MarkdownPage.isMarkdownPage(page)) return null
 
         const block = page.$blocks.get(targetSubpathResult.block.id);
         

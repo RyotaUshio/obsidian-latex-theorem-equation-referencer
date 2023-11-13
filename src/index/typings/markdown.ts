@@ -116,6 +116,10 @@ export class MarkdownPage implements File, Linkbearing, Indexable {
         const block = section?.$blocks.find((block) => block.$position.start <= line && line <= block.$position.end);
         return block;
     }
+
+    static isMarkdownPage(object: Indexable | undefined): object is MarkdownPage {
+        return object !== undefined && '$typename' in object && (object as any).$typename === 'Page';
+    }
 }
 
 export class MarkdownSection implements Indexable, Linkable, Linkbearing {
@@ -194,6 +198,10 @@ export class MarkdownSection implements Indexable, Linkable, Linkbearing {
 
         return `${file}/section${ordinal}/${first8}`;
     }
+
+    static isMarkdownSection(object: Indexable | undefined): object is MarkdownSection {
+        return object !== undefined && '$typename' in object && (object as any).$typename === 'Section';
+    }
 }
 
 /** Base class for all markdown blocks. */
@@ -260,6 +268,10 @@ export class MarkdownBlock implements Indexable, Linkbearing {
     static readableId(file: string, ordinal: number): string {
         return `${file}/block${ordinal}`;
     }
+
+    static isMarkdownBlock(object: Indexable | undefined): object is MarkdownSection {
+        return object !== undefined && object.$types.includes('block');
+    }
 }
 
 
@@ -268,6 +280,10 @@ export abstract class MathBoosterBlock extends MarkdownBlock {
     // only set after backlinks are ready
     $printName: string | null;
     $refName: string | null;
+
+    static isMathBoosterBlock(object: Indexable | undefined): object is MathBoosterBlock {
+        return object !== undefined && object.$types.includes('block-math-booster');
+    }
 }
 
 export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing {
@@ -310,6 +326,10 @@ export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing
 
     public constructor(init: Partial<TheoremCalloutBlock>) {
         super(init);
+    }
+
+    static isTheoremCalloutBlock(object: Indexable | undefined): object is TheoremCalloutBlock {
+        return object !== undefined && object.$types.includes('block-theorem');
     }
 }
 
@@ -356,5 +376,9 @@ export class EquationBlock extends MathBoosterBlock {
 
     public constructor(init: Partial<EquationBlock>) {
         super(init);
+    }
+
+    static isEquationBlock(object: Indexable | undefined): object is EquationBlock {
+        return object !== undefined && object.$types.includes('block-equation');
     }
 }

@@ -12,7 +12,7 @@ import { THEOREM_LIKE_ENVs, TheoremLikeEnvID } from './env';
 import { Backlink } from './backlinks';
 import { getIO } from './file_io';
 import { LeafArgs } from './typings/type';
-import { EquationBlock, MarkdownPage } from 'index/typings/markdown';
+import { EquationBlock, MarkdownBlock, MarkdownPage } from 'index/typings/markdown';
 
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
@@ -214,18 +214,18 @@ export function generateBlockID(cache: CachedMetadata, length: number = 6): stri
     return id;
 }
 
-export async function insertBlockIdIfNotExist(plugin: MathBooster, targetFile: TFile, cache: CachedMetadata, sec: SectionCache, length: number = 6): Promise<{ id: string, lineAdded: number } | undefined> {
+export async function insertBlockIdIfNotExist(plugin: MathBooster, targetFile: TFile, cache: CachedMetadata, block: MarkdownBlock, length: number = 6): Promise<{ id: string, lineAdded: number } | undefined> {
     // Make sure the section cache is fresh enough!
     if (!(cache?.sections)) return;
 
-    if (sec.id) return { id: sec.id, lineAdded: 0 };
+    if (block.$blockId) return { id: block.$blockId, lineAdded: 0 };
 
     // The section has no block ID, so let's create a new one
     const id = generateBlockID(cache, length);
     // and insert it
     const io = getIO(plugin, targetFile);
-    await io.insertLine(sec.position.end.line + 1, "^" + id);
-    await io.insertLine(sec.position.end.line + 1, "")
+    await io.insertLine(block.$position.end + 1, "^" + id);
+    await io.insertLine(block.$position.end + 1, "")
     return { id, lineAdded: 2 };
 }
 
@@ -622,7 +622,7 @@ export function formatLabel(settings: ResolvedMathSettings): string | undefined 
 
 export function staticifyEqNumber(plugin: MathBooster, file: TFile) {
     const page = plugin.indexManager.index.load(file.path);
-    if (!(page instanceof MarkdownPage)) {
+    if (!MarkdownPage.isMarkdownPage(page)) {
         new Notice(`Failed to fetch the metadata of file ${file.path}.`);
         return;
     }

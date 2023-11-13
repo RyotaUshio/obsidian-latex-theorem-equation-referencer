@@ -175,7 +175,7 @@ export class MathIndexManager extends Component {
         const reloadPromises: Promise<Indexable>[] = [];
         for (const file of new Set(files)) {
             const oldPage = this.index.load(file.path);
-            if (oldPage instanceof MarkdownPage) {
+            if (MarkdownPage.isMarkdownPage(oldPage)) {
                 for (const link of oldPage.$links) {
                     if (link.type === "block") {
                         const linkedFile = this.vault.getAbstractFileByPath(link.path);

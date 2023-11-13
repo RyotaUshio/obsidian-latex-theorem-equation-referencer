@@ -36,9 +36,9 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         // get IndexItem from block ID
         if (id) {
             const page = this.plugin.indexManager.index.load(this.file.path);
-            if (!(page instanceof MarkdownPage)) return null
+            if (!MarkdownPage.isMarkdownPage(page)) return null
             const block = page.$blocks.get(id);
-            if (block instanceof EquationBlock) return block;
+            if (EquationBlock.isEquationBlock(block)) return block;
         }
 
         return null;
@@ -156,7 +156,7 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
             const mjxContainerElements = view.contentDOM.querySelectorAll<HTMLElement>('mjx-container.MathJax[display="true"]');
             const settings = resolveSettings(undefined, plugin, file);
             const page = plugin.indexManager.index.load(file.path);
-            if (!(page instanceof MarkdownPage)) return;
+            if (!MarkdownPage.isMarkdownPage(page)) return;
 
             for (const mjxContainerEl of mjxContainerElements) {
                 try {
