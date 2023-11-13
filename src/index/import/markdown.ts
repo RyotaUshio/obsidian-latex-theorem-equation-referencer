@@ -117,7 +117,7 @@ export function markdownImport(
             const mathText = trimMathText(getBlockText(markdown, block));
             const tagMatch = mathText.match(/\\tag\{(.*)\}/);
             blocks.set(start, {
-                $ordinal: blockOrdinal,
+                $ordinal: blockOrdinal++,
                 $position: { start, end },
                 $links: [],
                 $blockId: block.id,
@@ -127,7 +127,7 @@ export function markdownImport(
             } as JsonEquationBlock);
         } else if (theoremCalloutSettings) {
             blocks.set(start, {
-                $ordinal: blockOrdinal,
+                $ordinal: blockOrdinal++,
                 $position: { start, end },
                 $links: [],
                 $blockId: block.id,
@@ -136,7 +136,7 @@ export function markdownImport(
             } as JsonTheoremCalloutBlock);
         } else {
             blocks.set(start, {
-                $ordinal: blockOrdinal,
+                $ordinal: blockOrdinal++,
                 $position: { start, end },
                 $links: [],
                 $blockId: block.id,

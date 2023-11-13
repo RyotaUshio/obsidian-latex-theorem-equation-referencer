@@ -7,6 +7,7 @@ import { Indexable } from "./typings/indexable";
 import { ImportResult } from "./web-worker/message";
 import { MarkdownPage } from "./typings/markdown";
 import MathBooster from "../main";
+import { iterDescendantFiles } from "utils";
 
 
 export class MathIndexManager extends Component {
@@ -30,7 +31,7 @@ export class MathIndexManager extends Component {
     initialized: boolean;
 
     constructor(
-        public plugin: MathBooster, 
+        public plugin: MathBooster,
         // public version: string, 
         public settings: ImporterSettings
     ) {
@@ -43,7 +44,7 @@ export class MathIndexManager extends Component {
         // this.persister = new LocalStorageCache("primary", version);
         this.events = new Events();
 
-        this.index = new MathIndex(app.vault, app.metadataCache);
+        this.index = new MathIndex(plugin, app.vault, app.metadataCache);
         this.initialized = false;
 
         this.addChild(
@@ -64,8 +65,7 @@ export class MathIndexManager extends Component {
     /** Initialize datacore by scanning persisted caches and all available files, and queueing parses as needed. */
     initialize() {
         // The metadata cache is updated on initial file index and file loads.
-        this.registerEvent(this.metadataCache.on("resolve", (file) => this.reload(file)));
-
+        this.registerEvent(this.metadataCache.on("resolve", (file) => this.updateLinked([file])));
         // Renames do not set off the metadata cache; catch these explicitly.
         this.registerEvent(this.vault.on("rename", this.rename, this));
 
@@ -75,6 +75,28 @@ export class MathIndexManager extends Component {
                 if (file instanceof TFile) {
                     this.index.delete(file.path);
                 }
+            })
+        );
+
+        this.registerEvent(
+            this.app.metadataCache.on("math-booster:local-settings-updated", async (file) => {
+                const files: TFile[] = [];
+                iterDescendantFiles(file, (descendantFile) => {
+                    if (descendantFile.extension == "md") files.push(descendantFile)
+                });
+                await this.updateLinked(files);
+            })
+        );
+
+        this.registerEvent(
+            this.app.metadataCache.on("math-booster:global-settings-updated", () => {
+                // re-index the whole vault
+                const init = new MathIndexInitializer(this);
+                init.finished().then(() => {
+                    this.removeChild(init);
+                    this.index.touch();
+                    this.trigger("update", this.revision);
+                });
             })
         );
 
@@ -134,6 +156,39 @@ export class MathIndexManager extends Component {
         }
 
         throw new Error("Encountered unrecognized import result type: " + (result as any).type);
+    }
+
+    /** Given an array of TFiles, this function does two things:
+     * 1. It reloads (re-imports) each file in the array.
+     * 2. It re-computes the theorem/equation numbers for all the files containing blocks 
+     *    that each file in the array previously linked to.
+     */
+    public async updateLinked(files: TFile[]) {
+        // Use Set, not Array, to avoid updating the same file multiple times.
+        const toBeUpdated = new Set<TFile>(files);
+
+        // Since only linked/referenced equations are numbered, we need to recompute 
+        // the equation numbers for all the files containing blocks 
+        // that this file previously linked to.
+        const reloadPromises: Promise<Indexable>[] = [];
+        for (const file of new Set(files)) {
+            const oldPage = this.index.load(file.path);
+            if (oldPage instanceof MarkdownPage) {
+                for (const link of oldPage.$links) {
+                    if (link.type === "block") {
+                        const linkedFile = this.vault.getAbstractFileByPath(link.path);
+                        if (linkedFile instanceof TFile) {
+                            toBeUpdated.add(linkedFile);
+                        }
+                    }
+                }
+            }
+            reloadPromises.push(this.reload(file));
+        }
+        await Promise.all(reloadPromises);
+        // recompute theorem/equation numbers for linked files
+        toBeUpdated.forEach((fileToBeUpdated) => this.index.updateNames(fileToBeUpdated));
+        this.trigger("update", this.revision);
     }
 
     // Event propogation.
@@ -243,7 +298,7 @@ export class MathIndexInitializer extends Component {
         } else if (!next && this.current.length == 0) {
             this.active = false;
 
-            // TODO: set printName & refName
+            this.manager.vault.getMarkdownFiles().forEach((file) => this.manager.index.updateNames(file));
 
             // All work is done, resolve.
             this.done.resolve({

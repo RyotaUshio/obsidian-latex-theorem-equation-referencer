@@ -411,12 +411,16 @@ export function pathToBaseName(path: string): string {
     return name;
 }
 
-export function iterDescendantFiles(file: TAbstractFile, callback: (descendantFile: TFile) => any, extension?: string) {
-    if (file instanceof TFile && (extension === undefined ? true : file.extension == extension)) {
+/**
+ * Similar to Vault.recurseChildren, but this function can be also called for TFile, not just TFolder.
+ * Also, the callback is only called for TFile.
+ */
+export function iterDescendantFiles(file: TAbstractFile, callback: (descendantFile: TFile) => any) {
+    if (file instanceof TFile) {
         callback(file);
     } else if (file instanceof TFolder) {
         for (const child of file.children) {
-            iterDescendantFiles(child, callback, extension);
+            iterDescendantFiles(child, callback);
         }
     }
 }

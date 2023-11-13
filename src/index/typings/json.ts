@@ -66,7 +66,7 @@ export interface JsonMathBoosterBlock extends JsonMarkdownBlock {
 
 export interface JsonTheoremCalloutBlock extends JsonMathBoosterBlock {
     $type: "theorem";
-    $settings: TheoremCalloutSettings;   
+    $settings: TheoremCalloutSettings;
 }
 
 export interface JsonEquationBlock extends JsonMathBoosterBlock {

@@ -1,7 +1,11 @@
-import { MetadataCache, Vault } from 'obsidian';
+import { MetadataCache, TFile, Vault } from 'obsidian';
 import { InvertedIndex } from './storage/inverted';
-import { Indexable, LINKABLE_TYPE, LINKBEARING_TYPE } from './typings/indexable';
+import { Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, Linkable } from './typings/indexable';
 import { Link } from 'index/expression/literal';
+import { EquationBlock, TheoremCalloutBlock } from './typings/markdown';
+import { CONVERTER, formatTitle, formatTitleWithoutSubtitle, getEqNumberPrefix, resolveSettings } from 'utils';
+import MathBooster from 'main';
+import { ResolvedMathSettings, TheoremRefFormat } from 'settings/settings';
 
 
 export class MathIndex {
@@ -34,7 +38,7 @@ export class MathIndex {
      */
     // private folder: FolderIndex; // irrelevant because we are not going to search/query
 
-    public constructor(public vault: Vault, public metadataCache: MetadataCache,
+    public constructor(public plugin: MathBooster, public vault: Vault, public metadataCache: MetadataCache,
         // public settings: Settings // irrelevant because we are not going to search/query
     ) {
         this.revision = 0;
@@ -197,7 +201,7 @@ export class MathIndex {
         //     this.tags.delete(object.$id, extractSubtags(tags));
         // }
 
-        if (object.$types.contains(LINKABLE_TYPE) && iterableExists(object, "$links")) {
+        if (object.$types.contains(LINKBEARING_TYPE) && iterableExists(object, "$links")) {
             // Assume links are normalized when deleting them. Could be broken but I hope not. We can always use a 2-way index to
             // fix this if we encounter non-normalized links.
             this.links.delete(
@@ -233,6 +237,80 @@ export class MathIndex {
 
         this.revision++;
     }
+
+    /** Get all the backlinks to the given linkable. */
+    public getBacklinks(object: Linkable) {
+        const normalizedLink = object.$link.obsidianLink();
+        return this.links.get(normalizedLink);
+    }
+
+    /** Check if the given linkable object has any backlinks. */
+    public isLinked(object: Linkable): boolean {
+        return this.getBacklinks(object).size > 0;
+    }
+
+    /**
+     * Update $printName and $refName of theorems and equations.
+     */
+    public updateNames(file: TFile) {
+        console.log(`update names for ${file.path}`);
+        const settings = resolveSettings(undefined, this.plugin, file);
+        let blockOrdinal = 1;
+        let block: Indexable | undefined;
+        let theoremCount = 0;
+        let equationNumber = +(settings.eqNumberInit);
+        const eqPrefix = getEqNumberPrefix(this.plugin.app, file, settings);
+        const eqSuffix = settings.eqNumberSuffix;
+
+        while (block = this.load(`${file.path}/block${blockOrdinal++}`)) {
+            if (block instanceof TheoremCalloutBlock) {
+                // Theorem numbers start at 1, and are incremented by 1 
+                // for each theorem callout.
+                // They may be additionally formatted according to the settings.
+                const resolvedSettings = Object.assign({}, settings, block.$settings);
+                if (block.$settings.number == 'auto') (resolvedSettings as ResolvedMathSettings)._index = theoremCount++;
+                const printName = formatTitle(this.plugin, file, resolvedSettings);
+                const refName = this.formatMathLink(file, resolvedSettings, "refFormat");
+                block.$printName = printName;
+                block.$refName = refName;
+            } else if (block instanceof EquationBlock) {
+                // Equation numbers start at settings.eqNumberInit, and are incremented by 1
+                // for eqch equation block that doesn't have a manual tag (i.e. \tag{...}) but
+                // has any backlinks.
+                // If an equation block has a manual tag, it is used as printNames & refNames.
+                let printName: string | null = null;
+                let refName: string | null = null;
+                if (block.$manualTag) {
+                    printName = `(${block.$manualTag})`;
+                } else if (block.$link && this.isLinked(block as Linkable)) {
+                    printName = "(" + eqPrefix + CONVERTER[settings.eqNumberStyle](equationNumber) + eqSuffix + ")";
+                    equationNumber++;
+                }
+                if (printName !== null) {
+                    refName = settings.eqRefPrefix + printName + settings.eqRefSuffix;
+                    block.$printName = printName;
+                    block.$refName = refName;
+                }
+            }
+        }
+    }
+
+    formatMathLink(file: TFile, resolvedSettings: ResolvedMathSettings, key: "refFormat" | "noteMathLinkFormat"): string {
+        const refFormat: TheoremRefFormat = resolvedSettings[key];
+        if (refFormat == "[type] [number] ([title])") {
+            return formatTitle(this.plugin, file, resolvedSettings, true);
+        }
+        if (refFormat == "[type] [number]") {
+            return formatTitleWithoutSubtitle(this.plugin, file, resolvedSettings);
+        }
+        if (refFormat == "[title] if title exists, [type] [number] otherwise") {
+            return resolvedSettings.title ? resolvedSettings.title : formatTitleWithoutSubtitle(this.plugin, file, resolvedSettings);
+        }
+        // if (refFormat == "[title] ([type] [number]) if title exists, [type] [number] otherwise") 
+        const typePlusNumber = formatTitleWithoutSubtitle(this.plugin, file, resolvedSettings);
+        return resolvedSettings.title ? `${resolvedSettings.title} (${typePlusNumber})` : typePlusNumber;
+    }
+
 }
 
 /** A general function for storing sub-objects in a given object. */

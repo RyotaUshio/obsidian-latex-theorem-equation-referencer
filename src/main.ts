@@ -93,9 +93,9 @@ export default class MathBooster extends Plugin {
 				iterDescendantFiles(
 					file,
 					(descendantFile) => {
+						if (descendantFile.extension == "md")
 						promises.push((new LinkedNotesIndexer(this.app, this, descendantFile)).run());
-					},
-					"md"
+					}
 				);
 				await Promise.all(promises);
 
