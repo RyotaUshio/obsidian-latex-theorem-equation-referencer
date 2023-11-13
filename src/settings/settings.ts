@@ -120,11 +120,28 @@ export type ExtraSettings = ImporterSettings & {
     triggerSuggest: string;
     triggerTheoremSuggest: string;
     triggerEquationSuggest: string;
+    triggerSuggestActiveNote: string;
+    triggerTheoremSuggestActiveNote: string;
+    triggerEquationSuggestActiveNote: string;
+    triggerSuggestRecentNotes: string;
+    triggerTheoremSuggestRecentNotes: string;
+    triggerEquationSuggestRecentNotes: string;
+    enableSuggest: boolean;
+    enableTheoremSuggest: boolean;
+    enableEquationSuggest: boolean;
+    enableSuggestActiveNote: boolean;
+    enableTheoremSuggestActiveNote: boolean;
+    enableEquationSuggestActiveNote: boolean;
+    enableSuggestRecentNotes: boolean;
+    enableTheoremSuggestRecentNotes: boolean;
+    enableEquationSuggestRecentNotes: boolean;
     renderMathInSuggestion: boolean;
     suggestNumber: number;
     searchMethod: SearchMethod;
     upWeightRecent: number;
-    searchOnlyRecent: boolean;
+    // searchOnlyRecent: boolean;
+    searchTags: boolean;
+    searchLabel: boolean;
     modifierToJump: Modifier;
     modifierToNoteLink: Modifier;
     showModifierInstruction: boolean;
@@ -184,11 +201,28 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     triggerSuggest: "\\ref",
     triggerTheoremSuggest: "\\tref",
     triggerEquationSuggest: "\\eqref",
+    triggerSuggestActiveNote: "\\rea",
+    triggerTheoremSuggestActiveNote: "\\eqrea",
+    triggerEquationSuggestActiveNote: "\\trea",
+    triggerSuggestRecentNotes: "\\rer",
+    triggerTheoremSuggestRecentNotes: "\\eqrer",
+    triggerEquationSuggestRecentNotes: "\\trer",
+    enableSuggest: true,
+    enableTheoremSuggest: true,
+    enableEquationSuggest: true,
+    enableSuggestActiveNote: true,
+    enableTheoremSuggestActiveNote: true,
+    enableEquationSuggestActiveNote: true,
+    enableSuggestRecentNotes: true,
+    enableTheoremSuggestRecentNotes: true,
+    enableEquationSuggestRecentNotes: true,
     renderMathInSuggestion: true,
     suggestNumber: 20,
     searchMethod: "Fuzzy",
     upWeightRecent: 0.1, 
-    searchOnlyRecent: false,
+    // searchOnlyRecent: false,
+    searchTags: false,
+    searchLabel: false,
     modifierToJump: "Mod",
     modifierToNoteLink: "Shift",
     showModifierInstruction: true,

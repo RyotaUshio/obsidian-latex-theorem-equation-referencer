@@ -16,9 +16,9 @@ import { LinkedNotesIndexer, VaultIndex, VaultIndexer } from './indexer';
 import { theoremCalloutMetadataHiderPlulgin } from './theorem_callout_metadata_hider';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, isPluginOlderThan, iterDescendantFiles, staticifyEqNumber } from './utils';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
-// import { Suggest } from './suggest';
 // import { ProjectManager, makePrefixer } from './project';
 import { MathIndexManager } from './index/manager';
+import { ActiveNoteEquationLinkAutocomplete, ActiveNoteTheoremEquationLinkAutocomplete, ActiveNoteTheoremLinkAutocomplete, RecentNotesEquationLinkAutocomplete, RecentNotesTheoremEquationLinkAutocomplete, RecentNotesTheoremLinkAutocomplete, WholeVaultEquationLinkAutocomplete, WholeVaultTheoremEquationLinkAutocomplete, WholeVaultTheoremLinkAutocomplete } from 'suggest';
 
 
 export const VAULT_ROOT = '/';
@@ -33,7 +33,7 @@ export default class MathBooster extends Plugin {
 	index: VaultIndex;
 	// projectManager: ProjectManager;
 	dependencies: Record<string, string> = {
-		"mathlinks": "0.5.0",
+		"mathlinks": "0.5.1",
 		"dataview": "0.5.56",
 	};
 	indexManager: MathIndexManager;
@@ -63,7 +63,7 @@ export default class MathBooster extends Plugin {
 
 		this.addChild(
 			MathLinks.addProvider(
-				this.app, 
+				this.app,
 				(mathLinks) => new CleverRefProvider(mathLinks, this)
 			)
 		);
@@ -106,7 +106,7 @@ export default class MathBooster extends Plugin {
 					file,
 					(descendantFile) => {
 						if (descendantFile.extension == "md")
-						promises.push((new LinkedNotesIndexer(this.app, this, descendantFile)).run());
+							promises.push((new LinkedNotesIndexer(this.app, this, descendantFile)).run());
 					}
 				);
 				await Promise.all(promises);
@@ -302,12 +302,8 @@ export default class MathBooster extends Plugin {
 		);
 
 
-		/** Editor suggest */
-
-		this.registerEditorSuggest(new Suggest(this.app, this, ["theorem", "equation"]));
-		this.registerEditorSuggest(new Suggest(this.app, this, ["theorem"]));
-		this.registerEditorSuggest(new Suggest(this.app, this, ["equation"]));
-
+		/** Theorem/equation link autocompletion */
+		this.registerLinkAutocomplete();
 
 		/** File menu */
 
@@ -337,7 +333,7 @@ export default class MathBooster extends Plugin {
 
 		const loadedData = await this.loadData();
 		if (loadedData) {
-			const { settings, extraSettings, excludedFiles, 
+			const { settings, extraSettings, excludedFiles,
 				// dumpedProjects 
 			} = loadedData;
 			for (const path in settings) {
@@ -398,6 +394,45 @@ export default class MathBooster extends Plugin {
 		});
 	}
 
+	registerLinkAutocomplete() {
+		this.registerEditorSuggest(new WholeVaultTheoremEquationLinkAutocomplete(
+			this,
+			() => this.extraSettings.triggerSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerSuggest
+		));
+		this.registerEditorSuggest(new WholeVaultTheoremLinkAutocomplete(
+			this,
+			() => this.extraSettings.triggerTheoremSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggest
+		));
+		this.registerEditorSuggest(new WholeVaultEquationLinkAutocomplete(
+			this,
+			() => this.extraSettings.triggerEquationSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggest
+		));
+		this.registerEditorSuggest(new RecentNotesTheoremEquationLinkAutocomplete(
+			this,
+			() => this.extraSettings.triggerSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerSuggestRecentNotes
+		));
+		this.registerEditorSuggest(new RecentNotesTheoremLinkAutocomplete(
+			this,
+			() => this.extraSettings.triggerTheoremSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggestRecentNotes
+		));
+		this.registerEditorSuggest(new RecentNotesEquationLinkAutocomplete(
+			this,
+			() => this.extraSettings.triggerEquationSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggestRecentNotes
+		));
+		this.registerEditorSuggest(new ActiveNoteTheoremEquationLinkAutocomplete(
+			this,
+			() => this.extraSettings.triggerSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerSuggestActiveNote
+		));
+		this.registerEditorSuggest(new ActiveNoteTheoremLinkAutocomplete(
+			this,
+			() => this.extraSettings.triggerTheoremSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggestActiveNote
+		));
+		this.registerEditorSuggest(new ActiveNoteEquationLinkAutocomplete(
+			this,
+			() => this.extraSettings.triggerEquationSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggestActiveNote
+		));
+	}
+
 	/**
 	 * Return true if the required plugin with the specified id is enabled and its version matches the requriement.
 	 * @param id 
@@ -415,12 +450,13 @@ export default class MathBooster extends Plugin {
 	}
 
 	getMathLinksAPI(): MathLinks.MathLinksAPIAccount | undefined {
-		const account = MathLinks.getAPIAccount(this);
-		if (account) {
-			account.blockPrefix = "";
-			account.prefixer = makePrefixer(this);
-			return account;
-		}
+		return undefined;
+		// const account = MathLinks.getAPIAccount(this);
+		// if (account) {
+		// 	account.blockPrefix = "";
+		// 	account.prefixer = makePrefixer(this);
+		// 	return account;
+		// }
 	}
 
 	async initializeIndex() {
