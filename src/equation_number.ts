@@ -1,42 +1,20 @@
-import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, CachedMetadata, MarkdownSectionInformation, TFile, editorInfoField, Menu } from "obsidian";
+import { StateEffect } from '@codemirror/state';
+import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, CachedMetadata, MarkdownSectionInformation, TFile, editorInfoField, Menu, MarkdownView } from "obsidian";
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
 import MathBooster from './main';
 import { getBacklinks, getMathCache, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveSettings } from './utils';
 import { MathContextSettings } from "./settings/settings";
 import { Backlink, BacklinkModal } from "./backlinks";
-import { AutoNoteIndexer, IndexItem } from "./indexer";
+import { EquationBlock, MarkdownPage } from "index/typings/markdown";
 
 
 /** For reading view */
 
 export class DisplayMathRenderChild extends MarkdownRenderChild {
-    file: TFile;
-
-    constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, public context: MarkdownPostProcessorContext) {
+    constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, public file: TFile, public context: MarkdownPostProcessorContext) {
         // containerEl, currentEL are mjx-container.MathJax elements
         super(containerEl);
-        const file = this.app.vault.getAbstractFileByPath(context.sourcePath);
-        if (file instanceof TFile) {
-            this.file = file;
-        }
-    }
-
-    getItem(): IndexItem | null {
-        const info = this.getInfo();
-        const cache = this.getCache();
-        if (!info || !cache) return null;
-
-        // get block ID
-        const id = getMathCache(cache, info.lineStart)?.id;
-
-        // get IndexItem from block ID
-        if (id) {
-            const item = this.plugin.index.getNoteIndex(this.file).getItemById(id);
-            return item ?? null;
-        }
-
-        return null;
     }
 
     getCache(): CachedMetadata | null {
@@ -47,18 +25,31 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         return this.context.getSectionInfo(this.containerEl);
     }
 
-    onload(): void {
-        this.plugin.registerEvent(
-            this.app.metadataCache.on(
-                "math-booster:index-updated",
-                (indexer) => {
-                    if (indexer.file == this.file) {
-                        this.impl()
-                    }
-                }
-            )
-        );
-        (new AutoNoteIndexer(this.app, this.plugin, this.file)).run();
+    getEquationCache(): EquationBlock | null {
+        const info = this.getInfo();
+        const cache = this.getCache();
+        if (!info || !cache) return null;
+
+        // get block ID
+        const id = getMathCache(cache, info.lineStart)?.id;
+
+        // get IndexItem from block ID
+        if (id) {
+            const page = this.plugin.indexManager.index.load(this.file.path);
+            if (!(page instanceof MarkdownPage)) return null
+            const block = page.$blocks.get(id);
+            if (block instanceof EquationBlock) return block;
+        }
+
+        return null;
+    }
+
+    async onload(): Promise<void> {
+        this.registerEvent(this.app.metadataCache.on("math-booster:index-updated", (file) => {
+            if (file == this.file) this.impl()
+        }));
+        await this.impl();
+        // (new AutoNoteIndexer(this.app, this.plugin, this.file)).run();
     }
 
     async impl() {
@@ -82,14 +73,13 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
             return;
         }
 
-        const item = this.getItem();
-        if (item?.type != 'equation' || !item.mathText) {
-            return;
-        }
+        const equation = this.getEquationCache();
+
+        if (!equation) return;
 
         const settings = resolveSettings(undefined, this.plugin, this.file);
-        replaceMathTag(this.containerEl, item.mathText, item.printName, settings);
-        this.plugin.registerDomEvent(
+        replaceMathTag(this.containerEl, equation.$mathText, equation.$printName, settings);
+        this.registerDomEvent(
             this.containerEl, "contextmenu", (event) => {
                 const menu = new Menu();
 
@@ -114,7 +104,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
 
         const info = this.context.getSectionInfo(this.containerEl);
         let lineNumber = info?.lineStart;
-        if (typeof lineNumber != "number") return null;
+        if (typeof lineNumber !== "number") return null;
 
         return getBacklinks(this.app, this.plugin, this.file, cache, (block) => block.position.start.line == lineNumber);
     }
@@ -125,13 +115,34 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
 
 export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBooster): ViewPlugin<V> {
 
+    const { app, indexManager: { index } } = plugin;
+
+    const forceUpdateEffect = StateEffect.define<null>();
+
+    plugin.registerEvent(app.metadataCache.on('math-booster:index-updated', (file) => {
+        // const page = index.load(file.path);
+        // if (!(page instanceof MarkdownPage)) return;
+        // const backlinks = index.getBacklinks(page);
+        app.workspace.iterateAllLeaves((leaf) => {
+            if (
+                leaf.view instanceof MarkdownView
+                && leaf.view.getMode() === 'source'
+                // && backlinks.has(leaf.view.file.path) // TODO: auto-register file link from block link so that we can get backlinks properly
+            ) {
+                leaf.view.editor.cm?.dispatch({ effects: forceUpdateEffect.of(null) });
+            }
+        });
+    }));
+
     return ViewPlugin.fromClass(class implements PluginValue {
         constructor(view: EditorView) {
             this.impl(view);
         }
 
         update(update: ViewUpdate) {
-            this.impl(update.view);
+            if (update.docChanged || update.transactions.some(tr => tr.effects.some(effect => effect.is(forceUpdateEffect)))) {
+                this.impl(update.view);
+            }
         }
 
         impl(view: EditorView) {
@@ -143,60 +154,63 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
 
         async callback(view: EditorView, file: TFile) {
             const mjxContainerElements = view.contentDOM.querySelectorAll<HTMLElement>('mjx-container.MathJax[display="true"]');
-            const cache = app.metadataCache.getFileCache(file);
-            if (cache) {
-                for (const mjxContainerEl of mjxContainerElements) {
-                    try {
-                        const pos = view.posAtDOM(mjxContainerEl);
-                        const item = plugin.index.getNoteIndex(file).getItemByPos(pos, "equation");
-                        if (item?.mathText) {
-                            const settings = resolveSettings(undefined, plugin, file);
-                            replaceMathTag(mjxContainerEl, item.mathText, item.printName, settings);
-                            plugin.registerDomEvent(
-                                mjxContainerEl, "contextmenu", (event) => {
-                                    const menu = new Menu();
+            const settings = resolveSettings(undefined, plugin, file);
+            const page = plugin.indexManager.index.load(file.path);
+            if (!(page instanceof MarkdownPage)) return;
 
-                                    // Show backlinks
-                                    menu.addItem((item) => {
-                                        item.setTitle("Show backlinks");
-                                        item.onClick((clickEvent) => {
-                                            if (clickEvent instanceof MouseEvent) {
-                                                const backlinks = this.getBacklinks(mjxContainerEl, event, file, view);
-                                                new BacklinkModal(plugin.app, plugin, backlinks).open();
-                                            }
-                                        })
-                                    });
+            for (const mjxContainerEl of mjxContainerElements) {
+                try {
+                    const pos = view.posAtDOM(mjxContainerEl);
+                    const line = view.state.doc.lineAt(pos).number - 1;
+                    const block = page.getBlockByLineNumber(line);
+                    if (!(block instanceof EquationBlock)) return;
 
-                                    menu.showAtMouseEvent(event);
-                                }
-                            );
+                    replaceMathTag(mjxContainerEl, block.$mathText, block.$printName, settings);
+                    plugin.registerDomEvent(
+                        mjxContainerEl, "contextmenu", (event) => {
+                            const menu = new Menu();
+
+                            // Show backlinks
+                            menu.addItem((item) => {
+                                item.setTitle("Show backlinks");
+                                item.onClick((clickEvent) => {
+                                    if (clickEvent instanceof MouseEvent) {
+                                        const backlinks = this.getBacklinks(mjxContainerEl, event, file, view);
+                                        new BacklinkModal(app, plugin, backlinks).open();
+                                    }
+                                })
+                            });
+
+                            menu.showAtMouseEvent(event);
                         }
-                    } catch (err) {
-                        // try it again later
-                    }
+                    );
+
+                } catch (err) {
+                    // try it again later
                 }
             }
+
 
         }
 
         destroy() { }
 
         getBacklinks(mjxContainerEl: HTMLElement, event: MouseEvent, file: TFile, view: EditorView): Backlink[] | null {
-            const cache = plugin.app.metadataCache.getFileCache(file);
+            const cache = app.metadataCache.getFileCache(file);
             if (!cache) return null;
 
             const sec = getSectionCacheOfDOM(mjxContainerEl, "math", view, cache) ?? getSectionCacheFromMouseEvent(event, "math", view, cache);
             if (sec === undefined) return null;
 
-            return getBacklinks(plugin.app, plugin, file, cache, (block) =>
+            return getBacklinks(app, plugin, file, cache, (block) =>
                 block.position.start.line == sec.position.start.line || block.position.end.line == sec.position.end.line || block.id == sec.id
             );
         }
     });
 }
 
-export function getMathTextWithTag(text: string, tag: string | undefined, lineByLine?: boolean): string | undefined {
-    if (tag) {
+export function getMathTextWithTag(text: string, tag: string | null, lineByLine?: boolean): string | undefined {
+    if (tag !== null) {
         const tagResult = tag.match(/^\((.*)\)$/);
         if (tagResult) {
             const tagContent = tagResult[1];
@@ -234,7 +248,7 @@ export function insertTagInMathText(text: string, tagContent: string, lineByLine
 }
 
 
-export function replaceMathTag(displayMathEl: HTMLElement, text: string, tag: string | undefined, settings: Required<MathContextSettings>) {
+export function replaceMathTag(displayMathEl: HTMLElement, text: string, tag: string | null, settings: Required<MathContextSettings>) {
     const tagMatch = text.match(/\\tag\{.*\}/);
     if (tagMatch) {
         return;

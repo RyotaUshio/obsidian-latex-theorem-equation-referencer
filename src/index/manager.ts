@@ -8,6 +8,7 @@ import { ImportResult } from "./web-worker/message";
 import { MarkdownPage } from "./typings/markdown";
 import MathBooster from "../main";
 import { iterDescendantFiles } from "utils";
+import * as MathLinks from "obsidian-mathlinks";
 
 
 export class MathIndexManager extends Component {
@@ -115,6 +116,7 @@ export class MathIndexManager extends Component {
 
             this.index.touch();
             this.trigger("update", this.revision);
+            MathLinks.update(this.app);
         });
 
         this.addChild(init);
@@ -187,7 +189,10 @@ export class MathIndexManager extends Component {
         }
         await Promise.all(reloadPromises);
         // recompute theorem/equation numbers for linked files
-        toBeUpdated.forEach((fileToBeUpdated) => this.index.updateNames(fileToBeUpdated));
+        toBeUpdated.forEach((fileToBeUpdated) => {
+            this.index.updateNames(fileToBeUpdated);
+            MathLinks.update(this.app, fileToBeUpdated);
+        });
         this.trigger("update", this.revision);
     }
 
@@ -299,6 +304,7 @@ export class MathIndexInitializer extends Component {
             this.active = false;
 
             this.manager.vault.getMarkdownFiles().forEach((file) => this.manager.index.updateNames(file));
+            MathLinks.update(this.manager.app);
 
             // All work is done, resolve.
             this.done.resolve({

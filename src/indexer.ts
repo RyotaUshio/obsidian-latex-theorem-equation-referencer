@@ -80,7 +80,7 @@ export class NoteIndex extends AbstractFileIndex {
                 mathLinkBlocks[id] = item.refName;
             }
         }
-        this.plugin.getMathLinksAPI()?.update(this.file, { 'mathLink-blocks': mathLinkBlocks });
+        // this.plugin.getMathLinksAPI()?.update(this.file, { 'mathLink-blocks': mathLinkBlocks });
     }
 }
 
@@ -236,7 +236,7 @@ class TheoremCalloutIndexer<IOType extends FileIO> extends BlockIndexer<IOType, 
             }
         }
 
-        this.setNoteMathLink(callouts);
+        // this.setNoteMathLink(callouts);
     }
 
     setNoteMathLink(callouts: readonly CalloutInfo[]) {
@@ -370,10 +370,10 @@ abstract class NoteIndexer<IOType extends FileIO> {
             this.equationIndexer.run(cache),
         ]);
         this.plugin.index.getNoteIndex(this.file).setMathLink();
-        this.app.metadataCache.trigger(
-            "math-booster:index-updated",
-            this
-        );
+        // this.app.metadataCache.trigger(
+        //     "math-booster:index-updated",
+        //     this.file
+        // );
     }
 }
 

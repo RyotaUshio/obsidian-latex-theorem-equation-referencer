@@ -1,6 +1,6 @@
 import { MetadataCache, TFile, Vault } from 'obsidian';
 import { InvertedIndex } from './storage/inverted';
-import { Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, Linkable } from './typings/indexable';
+import { Indexable, LINKBEARING_TYPE, Linkable } from './typings/indexable';
 import { Link } from 'index/expression/literal';
 import { EquationBlock, TheoremCalloutBlock } from './typings/markdown';
 import { CONVERTER, formatTitle, formatTitleWithoutSubtitle, getEqNumberPrefix, resolveSettings } from 'utils';
@@ -22,8 +22,8 @@ export class MathIndex {
     private children: Map<string, Set<string>>;
 
     // Indices for the various accepted query types. These will probably be moved to a different type later.
-    /** Global map of object type -> list of all objects of that type. */
-    private types: InvertedIndex<string>;
+    // /** Global map of object type -> list of all objects of that type. */
+    // private types: InvertedIndex<string>;
     // /** Tracks exact tag occurence in objects. */
     // private etags: InvertedIndex<string>;
     // /** Tracks tag occurence in objects. */
@@ -46,7 +46,7 @@ export class MathIndex {
         this.objects = new Map();
         this.children = new Map();
 
-        this.types = new InvertedIndex();
+        // this.types = new InvertedIndex();
         // this.etags = new InvertedIndex();
         // this.tags = new InvertedIndex();
         this.links = new InvertedIndex();
@@ -158,7 +158,7 @@ export class MathIndex {
 
     /** Add the given indexable to the appropriate indices. */
     private _index(object: Indexable) {
-        this.types.set(object.$id, object.$types);
+        // this.types.set(object.$id, object.$types);
 
         // // Exact and derived tags.
         // if (object.$types.contains(TAGGABLE_TYPE) && iterableExists(object, "$tags")) {
@@ -192,7 +192,7 @@ export class MathIndex {
 
     /** Remove the given indexable from all indices. */
     private _unindex(object: Indexable) {
-        this.types.delete(object.$id, object.$types);
+        // this.types.delete(object.$id, object.$types);
 
         // if (object.$types.contains(TAGGABLE_TYPE) && iterableExists(object, "$tags")) {
         //     const tags = object.$tags as Set<string>;
@@ -229,7 +229,7 @@ export class MathIndex {
         this.objects.clear();
         this.children.clear();
 
-        this.types.clear();
+        // this.types.clear();
         // this.tags.clear();
         // this.etags.clear();
         this.links.clear();
@@ -253,7 +253,6 @@ export class MathIndex {
      * Update $printName and $refName of theorems and equations.
      */
     public updateNames(file: TFile) {
-        console.log(`update names for ${file.path}`);
         const settings = resolveSettings(undefined, this.plugin, file);
         let blockOrdinal = 1;
         let block: Indexable | undefined;
@@ -286,13 +285,12 @@ export class MathIndex {
                     printName = "(" + eqPrefix + CONVERTER[settings.eqNumberStyle](equationNumber) + eqSuffix + ")";
                     equationNumber++;
                 }
-                if (printName !== null) {
-                    refName = settings.eqRefPrefix + printName + settings.eqRefSuffix;
-                    block.$printName = printName;
-                    block.$refName = refName;
-                }
+                if (printName !== null) refName = settings.eqRefPrefix + printName + settings.eqRefSuffix;
+                block.$printName = printName;
+                block.$refName = refName;
             }
         }
+        this.plugin.app.metadataCache.trigger("math-booster:index-updated", file);
     }
 
     formatMathLink(file: TFile, resolvedSettings: ResolvedMathSettings, key: "refFormat" | "noteMathLinkFormat"): string {

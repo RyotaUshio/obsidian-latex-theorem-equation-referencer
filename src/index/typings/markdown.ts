@@ -109,6 +109,12 @@ export class MarkdownPage implements File, Linkbearing, Indexable {
             $sections: this.$sections.map((sect) => sect.partial()),
         };
     }
+
+    public getBlockByLineNumber(line: number) {
+        const section = this.$sections.find((section) => section.$position.start <= line && line <= section.$position.end);
+        const block = section?.$blocks.find((block) => block.$position.start <= line && line <= block.$position.end);
+        return block;
+    }
 }
 
 export class MarkdownSection implements Indexable, Linkable, Linkbearing {
@@ -256,8 +262,8 @@ export class MarkdownBlock implements Indexable, Linkbearing {
 
 export abstract class MathBoosterBlock extends MarkdownBlock {
     // only set after backlinks are ready
-    $printName?: string;
-    $refName?: string;
+    $printName: string | null;
+    $refName: string | null;
 }
 
 export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing {

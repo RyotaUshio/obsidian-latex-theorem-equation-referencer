@@ -1,7 +1,7 @@
 import "obsidian";
 import { PaneType, SplitDirection } from "obsidian";
 import { EditorView } from "@codemirror/view";
-import { ActiveNoteIndexer, NonActiveNoteIndexer } from "./indexer";
+import { ActiveNoteIndexer, NonActiveNoteIndexer } from "../indexer";
 
 declare module "obsidian" {
     interface App {
@@ -21,7 +21,7 @@ declare module "obsidian" {
         // Custom Events
         on(
             name: "math-booster:index-updated", 
-            callback: (indexer: ActiveNoteIndexer | NonActiveNoteIndexer) => any
+            callback: (file: TFile) => any
         ): EventRef;
         on(
             name: "math-booster:local-settings-updated", 

@@ -1,3 +1,4 @@
+import { CleverRefProvider } from './cleverref';
 import { MarkdownView, Plugin, TFile } from 'obsidian';
 import { StateField } from '@codemirror/state';
 
@@ -32,7 +33,7 @@ export default class MathBooster extends Plugin {
 	index: VaultIndex;
 	projectManager: ProjectManager;
 	dependencies: Record<string, string> = {
-		"mathlinks": "0.4.6",
+		"mathlinks": "0.5.0",
 		"dataview": "0.5.56",
 	};
 	indexManager: MathIndexManager;
@@ -56,6 +57,17 @@ export default class MathBooster extends Plugin {
 
 
 		/** Indexing */
+
+		this.addChild((this.indexManager = new MathIndexManager(this, this.extraSettings)));
+		this.app.workspace.onLayoutReady(async () => this.indexManager.initialize());
+
+		this.addChild(
+			MathLinks.addProvider(
+				this.app, 
+				(mathLinks) => new CleverRefProvider(mathLinks, this)
+			)
+		);
+
 
 		this.index = new VaultIndex(this.app, this);
 
@@ -274,10 +286,12 @@ export default class MathBooster extends Plugin {
 
 		// for equation numbers
 		this.registerMarkdownPostProcessor((element, context) => {
+			const sourceFile = this.app.vault.getAbstractFileByPath(context.sourcePath);
+			if (!(sourceFile instanceof TFile)) return;
 			const mjxContainerElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax[display="true"]');
 			for (const mjxContainerEl of mjxContainerElements) {
 				context.addChild(
-					new DisplayMathRenderChild(mjxContainerEl, this.app, this, context)
+					new DisplayMathRenderChild(mjxContainerEl, this.app, this, sourceFile, context)
 				);
 			}
 		});
@@ -309,9 +323,6 @@ export default class MathBooster extends Plugin {
 					.addSeparator();
 			})
 		);
-
-		this.addChild((this.indexManager = new MathIndexManager(this, this.extraSettings)));
-		this.app.workspace.onLayoutReady(async () => this.indexManager.initialize());
 	}
 
 	onunload() {
