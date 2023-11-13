@@ -18,6 +18,7 @@ import {
     JsonEquationBlock,
 } from "./json";
 import { TheoremCalloutSettings } from "settings/settings";
+import { Pos } from "obsidian";
 
 /** A link normalizer which takes in a raw link and produces a normalized link. */
 export type LinkNormalizer = (link: Link) => Link;
@@ -208,6 +209,7 @@ export class MarkdownBlock implements Indexable, Linkbearing {
     $ordinal: number;
     /** The position/extent of the block. */
     $position: LineSpan;
+    $pos: Pos;
     /** All links in the file. */
     $links: Link[];
     /** If present, the distinct block ID for this block. */
@@ -227,6 +229,7 @@ export class MarkdownBlock implements Indexable, Linkbearing {
             $id: MarkdownBlock.readableId(file, object.$ordinal),
             $ordinal: object.$ordinal,
             $position: object.$position,
+            $pos: object.$pos,
             $links: object.$links.map(normalizer),
             $blockId: object.$blockId,
             $type: object.$type,
@@ -246,6 +249,7 @@ export class MarkdownBlock implements Indexable, Linkbearing {
         return {
             $ordinal: this.$ordinal,
             $position: this.$position,
+            $pos: this.$pos,
             $links: this.$links,
             $blockId: this.$blockId,
             $type: this.$type,
@@ -267,7 +271,7 @@ export abstract class MathBoosterBlock extends MarkdownBlock {
 }
 
 export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing {
-    static TYPES = ["markdown", "block", "block-theorem", LINKBEARING_TYPE];
+    static TYPES = ["markdown", "block", "block-math-booster", "block-theorem", LINKBEARING_TYPE];
 
     $types: string[] = TheoremCalloutBlock.TYPES;
     $typename: string = "Theorem Callout Block";
@@ -290,6 +294,7 @@ export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing
             $id: MarkdownBlock.readableId(file, object.$ordinal),
             $ordinal: object.$ordinal,
             $position: object.$position,
+            $pos: object.$pos,
             $links: object.$links.map(normalizer),
             $blockId: object.$blockId,
             $type: object.$type,
@@ -309,7 +314,7 @@ export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing
 }
 
 export class EquationBlock extends MathBoosterBlock {
-    static TYPES = ["markdown", "block", "block-equation"];
+    static TYPES = ["markdown", "block", "block-math-booster", "block-equation"];
 
     $types: string[] = EquationBlock.TYPES;
     $typename: string = "Equation Block";
@@ -317,7 +322,7 @@ export class EquationBlock extends MathBoosterBlock {
 
     /** The math text of this equation. */
     $mathText: string;
-    $manualTag?: string;
+    $manualTag: string | null = null;
 
     static from(
         object: JsonEquationBlock,
@@ -333,6 +338,7 @@ export class EquationBlock extends MathBoosterBlock {
             $id: MarkdownBlock.readableId(file, object.$ordinal),
             $ordinal: object.$ordinal,
             $position: object.$position,
+            $pos: object.$pos,
             $links: object.$links.map(normalizer),
             $blockId: object.$blockId,
             $type: object.$type,

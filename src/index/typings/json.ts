@@ -2,6 +2,7 @@
 // the absolute minimum information needed to save and load data.
 
 import { Link } from "index/expression/literal";
+import { Pos } from "obsidian";
 import { TheoremCalloutSettings } from "settings/settings";
 
 /** A span of contiguous lines. */
@@ -52,6 +53,7 @@ export interface JsonMarkdownBlock {
     $ordinal: number;
     /** The position/extent of the block. */
     $position: LineSpan;
+    $pos: Pos;
     /** All links in the file. */
     $links: Link[];
     /** If present, the distinct block ID for this block. */
@@ -71,6 +73,6 @@ export interface JsonTheoremCalloutBlock extends JsonMathBoosterBlock {
 
 export interface JsonEquationBlock extends JsonMathBoosterBlock {
     $type: "equation";
-    $manualTag?: string;
+    $manualTag: string | null;
     $mathText: string;
 }

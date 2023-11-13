@@ -119,9 +119,10 @@ export function markdownImport(
             blocks.set(start, {
                 $ordinal: blockOrdinal++,
                 $position: { start, end },
+                $pos: block.position,
                 $links: [],
                 $blockId: block.id,
-                $manualTag: tagMatch?.[1],
+                $manualTag: tagMatch?.[1] ?? null,
                 $mathText: mathText,
                 $type: "equation",
             } as JsonEquationBlock);
@@ -129,6 +130,7 @@ export function markdownImport(
             blocks.set(start, {
                 $ordinal: blockOrdinal++,
                 $position: { start, end },
+                $pos: block.position,
                 $links: [],
                 $blockId: block.id,
                 $settings: theoremCalloutSettings,
@@ -138,6 +140,7 @@ export function markdownImport(
             blocks.set(start, {
                 $ordinal: blockOrdinal++,
                 $position: { start, end },
+                $pos: block.position,
                 $links: [],
                 $blockId: block.id,
                 $type: block.type,
