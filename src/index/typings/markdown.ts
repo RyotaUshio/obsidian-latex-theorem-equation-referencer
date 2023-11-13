@@ -55,9 +55,20 @@ export class MarkdownPage implements File, Linkbearing, Indexable {
      */
     $sections: MarkdownSection[] = [];
 
+    /**
+     * Maps a block ID to the corresponding markdown block in this page.
+     */
+    $blocks: Map<string, MarkdownBlock>;
+
     /** Create a markdown file from the given raw values. */
     static from(raw: JsonMarkdownPage, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownPage {
         const sections = raw.$sections.map((sect) => MarkdownSection.from(sect, raw.$path, normalizer));
+        const blocks = new Map<string, MarkdownBlock>();
+        for (const section of sections) {
+            for (const block of section.$blocks) {
+                if (block.$blockId) blocks.set(block.$blockId, block);
+            }
+        }
 
         return new MarkdownPage({
             $path: raw.$path,
@@ -65,6 +76,7 @@ export class MarkdownPage implements File, Linkbearing, Indexable {
             $position: raw.$position,
             $links: raw.$links.map(normalizer),
             $sections: sections,
+            $blocks: blocks,
         });
     }
 
