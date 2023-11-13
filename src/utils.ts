@@ -12,6 +12,7 @@ import { THEOREM_LIKE_ENVs, TheoremLikeEnvID } from './env';
 import { Backlink } from './backlinks';
 import { getIO } from './file_io';
 import { LeafArgs } from './typings/type';
+import { EquationBlock, MarkdownPage } from 'index/typings/markdown';
 
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
@@ -620,17 +621,20 @@ export function formatLabel(settings: ResolvedMathSettings): string | undefined 
 }
 
 export function staticifyEqNumber(plugin: MathBooster, file: TFile) {
-    const index = plugin.index.getNoteIndex(file);
+    const page = plugin.indexManager.index.load(file.path);
+    if (!(page instanceof MarkdownPage)) {
+        new Notice(`Failed to fetch the metadata of file ${file.path}.`);
+        return;
+    }
     const io = getIO(plugin, file);
-    console.log(io);
-    index.equation.forEach((item) => {
-        if (item.type == "equation" && item.printName && item.mathText) {
+    for (const block of page.$blocks.values()) {
+        if (block instanceof EquationBlock && block.$printName !== null) {
             io.setRange(
-                item.cache.position,
-                `$$\n${item.mathText} \\tag{${item.printName.slice(1, -1)}}\n$$`
+                block.$pos,
+                `$$\n${block.$mathText} \\tag{${block.$printName.slice(1, -1)}}\n$$`
             );
         }
-    })
+    }
 }
 
 export async function openFileAndSelectPosition(file: TFile, position: Pos, ...leafArgs: LeafArgs) {
