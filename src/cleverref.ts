@@ -18,7 +18,6 @@ export class CleverRefProvider extends MathLinks.Provider {
         parsedLinktext: { path: string; subpath: string; },
         targetFile: TFile | null, 
         targetSubpathResult: HeadingSubpathResult | BlockSubpathResult | null, 
-        sourceFile: TFile | null
     ): string | null {
         // Only care about block references
         if (targetSubpathResult?.type !== 'block') return null;
@@ -30,8 +29,8 @@ export class CleverRefProvider extends MathLinks.Provider {
         const block = page.$blocks.get(targetSubpathResult.block.id);
         
         if (block instanceof MathBoosterBlock && block.$refName !== null) {
-            const linktext = this.app.metadataCache.fileToLinktext(targetFile, sourceFile?.path ?? '');
-            return linktext + ' > ' + block.$refName
+            const linkpath = parsedLinktext.path;
+            return linkpath ? linkpath + ' > ' + block.$refName : block.$refName;
         }
 
         return null;
