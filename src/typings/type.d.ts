@@ -1,7 +1,6 @@
 import "obsidian";
 import { PaneType, SplitDirection } from "obsidian";
 import { EditorView } from "@codemirror/view";
-import { ActiveNoteIndexer, NonActiveNoteIndexer } from "../indexer";
 
 declare module "obsidian" {
     interface App {

@@ -3,8 +3,6 @@ import { Editor } from 'obsidian';
 
 /**
  * Correctly insert a display math even inside callouts or quotes.
- * @param editor 
- * @param app 
  */
 export function insertDisplayMath(editor: Editor) {
     const cursorPos = editor.getCursor();
