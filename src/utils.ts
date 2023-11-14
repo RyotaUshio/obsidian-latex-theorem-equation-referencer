@@ -59,7 +59,7 @@ export function increaseQuoteLevel(content: string): string {
     return lines.join("\n");
 }
 
-export async function renderTextWithMath(source: string): Promise<(HTMLElement | string)[]> {
+export function renderTextWithMath(source: string): (HTMLElement | string)[] {
     // Obsidian API's renderMath only can render math itself, but not a text with math in it.
     // e.g., it can handle "\\sqrt{x}", but cannot "$\\sqrt{x}$ is a square root"
 
@@ -78,7 +78,6 @@ export async function renderTextWithMath(source: string): Promise<(HTMLElement |
         textFrom = mathPattern.lastIndex;
 
         const mathJaxEl = renderMath(mathString, false);
-        await finishRenderMath();
 
         const mathSpan = createSpan({ cls: ["math", "math-inline", "is-loaded"] });
         mathSpan.replaceChildren(mathJaxEl);
@@ -88,6 +87,8 @@ export async function renderTextWithMath(source: string): Promise<(HTMLElement |
     if (textFrom < source.length) {
         elements.push(source.slice(textFrom));
     }
+
+    // finishRenderMath();
 
     return elements;
 }
@@ -180,24 +181,24 @@ export function getSectionCacheFromMouseEvent(event: MouseEvent, type: string, v
     return getSectionCacheFromPos(cache, pos, type);
 }
 
-export function getBacklinks(app: App, plugin: MathBooster, file: TFile, cache: CachedMetadata, pick: (block: BlockCache) => boolean): Backlink[] | null {
-    const backlinksToNote = plugin.oldLinkMap.invMap.get(file.path); // backlinks to the note containing this theorem callout
-    const backlinks: Backlink[] = [] // backlinks to this theorem callout
-    if (backlinksToNote) {
-        for (const backlink of backlinksToNote) {
-            const sourceCache = app.metadataCache.getCache(backlink);
-            sourceCache?.links
-                ?.forEach((link: LinkCache) => {
-                    const { subpath } = parseLinktext(link.link);
-                    const subpathResult = resolveSubpath(cache, subpath);
-                    if (subpathResult?.type == "block" && pick(subpathResult.block)) {
-                        backlinks.push({ sourcePath: backlink, link: link });
-                    }
-                })
-        }
-    }
-    return backlinks;
-}
+// export function getBacklinks(app: App, plugin: MathBooster, file: TFile, cache: CachedMetadata, pick: (block: BlockCache) => boolean): Backlink[] | null {
+//     const backlinksToNote = plugin.oldLinkMap.invMap.get(file.path); // backlinks to the note containing this theorem callout
+//     const backlinks: Backlink[] = [] // backlinks to this theorem callout
+//     if (backlinksToNote) {
+//         for (const backlink of backlinksToNote) {
+//             const sourceCache = app.metadataCache.getCache(backlink);
+//             sourceCache?.links
+//                 ?.forEach((link: LinkCache) => {
+//                     const { subpath } = parseLinktext(link.link);
+//                     const subpathResult = resolveSubpath(cache, subpath);
+//                     if (subpathResult?.type == "block" && pick(subpathResult.block)) {
+//                         backlinks.push({ sourcePath: backlink, link: link });
+//                     }
+//                 })
+//         }
+//     }
+//     return backlinks;
+// }
 
 export function generateBlockID(cache: CachedMetadata, length: number = 6): string {
     let id = '';
@@ -494,6 +495,11 @@ export function formatTitleWithoutSubtitle(plugin: MathBooster, file: TFile, set
 
 export function formatTitle(plugin: MathBooster, file: TFile, settings: ResolvedMathSettings, noTitleSuffix: boolean = false): string {
     let title = formatTitleWithoutSubtitle(plugin, file, settings);
+    return addSubTitle(title, settings, noTitleSuffix);
+}
+
+export function addSubTitle(mainTitle: string, settings: ResolvedMathSettings, noTitleSuffix: boolean = false) {
+    let title = mainTitle;
     if (settings.title) {
         title += ` (${settings.title})`;
     }

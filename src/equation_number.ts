@@ -3,7 +3,9 @@ import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostPro
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
 import MathBooster from './main';
-import { getBacklinks, getMathCache, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveSettings } from './utils';
+import { 
+    // getBacklinks, 
+    getMathCache, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveSettings } from './utils';
 import { MathContextSettings } from "./settings/settings";
 import { Backlink, BacklinkModal } from "./backlinks";
 import { EquationBlock, MarkdownPage } from "index/typings/markdown";
@@ -79,35 +81,35 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
 
         const settings = resolveSettings(undefined, this.plugin, this.file);
         replaceMathTag(this.containerEl, equation.$mathText, equation.$printName, settings);
-        this.registerDomEvent(
-            this.containerEl, "contextmenu", (event) => {
-                const menu = new Menu();
+        // this.registerDomEvent(
+        //     this.containerEl, "contextmenu", (event) => {
+        //         const menu = new Menu();
 
-                // Show backlinks
-                menu.addItem((item) => {
-                    item.setTitle("Show backlinks");
-                    item.onClick((clickEvent) => {
-                        if (clickEvent instanceof MouseEvent) {
-                            const backlinks = this.getBacklinks(event);
-                            new BacklinkModal(this.app, this.plugin, backlinks).open();
-                        }
-                    })
-                });
-                menu.showAtMouseEvent(event);
-            }
-        );
+        //         // Show backlinks
+        //         menu.addItem((item) => {
+        //             item.setTitle("Show backlinks");
+        //             item.onClick((clickEvent) => {
+        //                 if (clickEvent instanceof MouseEvent) {
+        //                     const backlinks = this.getBacklinks(event);
+        //                     new BacklinkModal(this.app, this.plugin, backlinks).open();
+        //                 }
+        //             })
+        //         });
+        //         menu.showAtMouseEvent(event);
+        //     }
+        // );
     }
 
-    getBacklinks(event: MouseEvent): Backlink[] | null {
-        const cache = this.app.metadataCache.getFileCache(this.file);
-        if (!cache) return null;
+    // getBacklinks(event: MouseEvent): Backlink[] | null {
+    //     const cache = this.app.metadataCache.getFileCache(this.file);
+    //     if (!cache) return null;
 
-        const info = this.context.getSectionInfo(this.containerEl);
-        let lineNumber = info?.lineStart;
-        if (typeof lineNumber !== "number") return null;
+    //     const info = this.context.getSectionInfo(this.containerEl);
+    //     let lineNumber = info?.lineStart;
+    //     if (typeof lineNumber !== "number") return null;
 
-        return getBacklinks(this.app, this.plugin, this.file, cache, (block) => block.position.start.line == lineNumber);
-    }
+    //     return getBacklinks(this.app, this.plugin, this.file, cache, (block) => block.position.start.line == lineNumber);
+    // }
 }
 
 
@@ -166,24 +168,24 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
                     if (!(block instanceof EquationBlock)) return;
 
                     replaceMathTag(mjxContainerEl, block.$mathText, block.$printName, settings);
-                    plugin.registerDomEvent(
-                        mjxContainerEl, "contextmenu", (event) => {
-                            const menu = new Menu();
+                    // plugin.registerDomEvent(
+                    //     mjxContainerEl, "contextmenu", (event) => {
+                    //         const menu = new Menu();
 
-                            // Show backlinks
-                            menu.addItem((item) => {
-                                item.setTitle("Show backlinks");
-                                item.onClick((clickEvent) => {
-                                    if (clickEvent instanceof MouseEvent) {
-                                        const backlinks = this.getBacklinks(mjxContainerEl, event, file, view);
-                                        new BacklinkModal(app, plugin, backlinks).open();
-                                    }
-                                })
-                            });
+                    //         // Show backlinks
+                    //         menu.addItem((item) => {
+                    //             item.setTitle("Show backlinks");
+                    //             item.onClick((clickEvent) => {
+                    //                 if (clickEvent instanceof MouseEvent) {
+                    //                     const backlinks = this.getBacklinks(mjxContainerEl, event, file, view);
+                    //                     new BacklinkModal(app, plugin, backlinks).open();
+                    //                 }
+                    //             })
+                    //         });
 
-                            menu.showAtMouseEvent(event);
-                        }
-                    );
+                    //         menu.showAtMouseEvent(event);
+                    //     }
+                    // );
 
                 } catch (err) {
                     // try it again later
@@ -195,17 +197,17 @@ export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBoo
 
         destroy() { }
 
-        getBacklinks(mjxContainerEl: HTMLElement, event: MouseEvent, file: TFile, view: EditorView): Backlink[] | null {
-            const cache = app.metadataCache.getFileCache(file);
-            if (!cache) return null;
+        // getBacklinks(mjxContainerEl: HTMLElement, event: MouseEvent, file: TFile, view: EditorView): Backlink[] | null {
+        //     const cache = app.metadataCache.getFileCache(file);
+        //     if (!cache) return null;
 
-            const sec = getSectionCacheOfDOM(mjxContainerEl, "math", view, cache) ?? getSectionCacheFromMouseEvent(event, "math", view, cache);
-            if (sec === undefined) return null;
+        //     const sec = getSectionCacheOfDOM(mjxContainerEl, "math", view, cache) ?? getSectionCacheFromMouseEvent(event, "math", view, cache);
+        //     if (sec === undefined) return null;
 
-            return getBacklinks(app, plugin, file, cache, (block) =>
-                block.position.start.line == sec.position.start.line || block.position.end.line == sec.position.end.line || block.id == sec.id
-            );
-        }
+        //     return getBacklinks(app, plugin, file, cache, (block) =>
+        //         block.position.start.line == sec.position.start.line || block.position.end.line == sec.position.end.line || block.id == sec.id
+        //     );
+        // }
     });
 }
 

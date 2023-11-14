@@ -1,4 +1,4 @@
-import { MathIndex } from 'index';
+import { MathIndex } from 'index/index';
 import { MarkdownPage, MathBoosterBlock } from 'index/typings/markdown';
 import MathBooster from 'main';
 import { TFile, HeadingSubpathResult, BlockSubpathResult, App } from 'obsidian';
