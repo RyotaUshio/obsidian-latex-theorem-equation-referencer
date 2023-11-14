@@ -262,17 +262,19 @@ export class MathIndex {
         const eqSuffix = settings.eqNumberSuffix;
 
         while (block = this.load(`${file.path}/block${blockOrdinal++}`)) {
-            if (block instanceof TheoremCalloutBlock) {
+            if (TheoremCalloutBlock.isTheoremCalloutBlock(block)) {
                 // Theorem numbers start at 1, and are incremented by 1 
                 // for each theorem callout.
                 // They may be additionally formatted according to the settings.
                 const resolvedSettings = Object.assign({}, settings, block.$settings);
                 if (block.$settings.number == 'auto') (resolvedSettings as ResolvedMathSettings)._index = theoremCount++;
-                const printName = formatTitle(this.plugin, file, resolvedSettings);
+                // const printName = formatTitle(this.plugin, file, resolvedSettings);
+                const mainTitle = formatTitleWithoutSubtitle(this.plugin, file, resolvedSettings);
                 const refName = this.formatMathLink(file, resolvedSettings, "refFormat");
-                block.$printName = printName;
+                block.$theoremMainTitle = mainTitle;
                 block.$refName = refName;
-            } else if (block instanceof EquationBlock) {
+                block.$titleSuffix = settings.titleSuffix;
+            } else if (EquationBlock.isEquationBlock(block)) {
                 // Equation numbers start at settings.eqNumberInit, and are incremented by 1
                 // for eqch equation block that doesn't have a manual tag (i.e. \tag{...}) but
                 // has any backlinks.

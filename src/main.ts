@@ -3,22 +3,23 @@ import { MarkdownView, Plugin, TFile } from 'obsidian';
 import { StateField } from '@codemirror/state';
 
 import * as MathLinks from 'obsidian-mathlinks';
-import * as Dataview from 'obsidian-dataview';
+// import * as Dataview from 'obsidian-dataview';
 
 import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS, UNION_TYPE_MATH_CONTEXT_SETTING_KEYS, UNION_TYPE_EXTRA_SETTING_KEYS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
-import { TheoremCallout, insertTheoremCalloutCallback } from './theorem_callouts';
+import { insertTheoremCalloutCallback, theoremCalloutNumberingViewPlugin, theoremCalloutPostProcessor } from './theorem_callouts';
 import { ContextSettingModal, DependencyNotificationModal, TheoremCalloutModal } from './modals';
 import { insertDisplayMath } from './key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote, hideDisplayMathPreviewInQuote } from './math_live_preview_in_callouts';
-import { LinkedNotesIndexer, VaultIndex, VaultIndexer } from './indexer';
+// import { LinkedNotesIndexer, VaultIndex, VaultIndexer } from './indexer';
 import { theoremCalloutMetadataHiderPlulgin } from './theorem_callout_metadata_hider';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, isPluginOlderThan, iterDescendantFiles, staticifyEqNumber } from './utils';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
 // import { ProjectManager, makePrefixer } from './project';
 import { MathIndexManager } from './index/manager';
 import { ActiveNoteEquationLinkAutocomplete, ActiveNoteTheoremEquationLinkAutocomplete, ActiveNoteTheoremLinkAutocomplete, RecentNotesEquationLinkAutocomplete, RecentNotesTheoremEquationLinkAutocomplete, RecentNotesTheoremLinkAutocomplete, WholeVaultEquationLinkAutocomplete, WholeVaultTheoremEquationLinkAutocomplete, WholeVaultTheoremLinkAutocomplete } from 'suggest';
+import { MarkdownPage } from 'index/typings/markdown';
 
 
 export const VAULT_ROOT = '/';
@@ -28,9 +29,9 @@ export default class MathBooster extends Plugin {
 	settings: Record<string, Partial<MathContextSettings>>;
 	extraSettings: ExtraSettings;
 	excludedFiles: string[];
-	oldLinkMap: Dataview.IndexMap;
+	// oldLinkMap: Dataview.IndexMap;
 	proofPositionField: StateField<ProofPosition[]>;
-	index: VaultIndex;
+	// index: VaultIndex;
 	// projectManager: ProjectManager;
 	dependencies: Record<string, string> = {
 		"mathlinks": "0.5.1",
@@ -69,47 +70,47 @@ export default class MathBooster extends Plugin {
 		);
 
 
-		this.index = new VaultIndex(this.app, this);
+		// this.index = new VaultIndex(this.app, this);
 
 		// triggered if this plugin is enabled after launching the app
-		this.app.workspace.onLayoutReady(async () => {
-			if (Dataview.getAPI(this.app)?.index.initialized) {
-				// await this.initializeProjectManager();
-				await this.initializeIndex();
-			}
-		})
+		// this.app.workspace.onLayoutReady(async () => {
+		// 	if (Dataview.getAPI(this.app)?.index.initialized) {
+		// 		// await this.initializeProjectManager();
+		// 		await this.initializeIndex();
+		// 	}
+		// })
 
 		// triggered if this plugin is already enabled when launching the app
-		this.registerEvent(
-			this.app.metadataCache.on(
-				"dataview:index-ready", async () => {
-					// await this.initializeProjectManager();
-					await this.initializeIndex();
-				}
-			)
-		);
+		// this.registerEvent(
+		// 	this.app.metadataCache.on(
+		// 		"dataview:index-ready", async () => {
+		// 			// await this.initializeProjectManager();
+		// 			await this.initializeIndex();
+		// 		}
+		// 	)
+		// );
 
-		this.registerEvent(
-			this.app.metadataCache.on("dataview:metadata-change", async (...args) => {
-				const changedFile = args[1];
-				if (changedFile instanceof TFile) {
-					await (new LinkedNotesIndexer(this.app, this, changedFile)).run();
-				}
-				this.setOldLinkMap();
-			})
-		);
+		// this.registerEvent(
+		// 	this.app.metadataCache.on("dataview:metadata-change", async (...args) => {
+		// 		const changedFile = args[1];
+		// 		if (changedFile instanceof TFile) {
+		// 			await (new LinkedNotesIndexer(this.app, this, changedFile)).run();
+		// 		}
+		// 		this.setOldLinkMap();
+		// 	})
+		// );
 
 		this.registerEvent(
 			this.app.metadataCache.on("math-booster:local-settings-updated", async (file) => {
-				const promises: Promise<void>[] = [];
-				iterDescendantFiles(
-					file,
-					(descendantFile) => {
-						if (descendantFile.extension == "md")
-							promises.push((new LinkedNotesIndexer(this.app, this, descendantFile)).run());
-					}
-				);
-				await Promise.all(promises);
+				// const promises: Promise<void>[] = [];
+				// iterDescendantFiles(
+				// 	file,
+				// 	(descendantFile) => {
+				// 		if (descendantFile.extension == "md")
+				// 			promises.push((new LinkedNotesIndexer(this.app, this, descendantFile)).run());
+				// 	}
+				// );
+				// await Promise.all(promises);
 
 				// Add profile's tags as CSS classes
 				this.app.workspace.iterateRootLeaves((leaf) => {
@@ -122,7 +123,7 @@ export default class MathBooster extends Plugin {
 
 		this.registerEvent(
 			this.app.metadataCache.on("math-booster:global-settings-updated", async () => {
-				await (new VaultIndexer(this.app, this)).run();
+				// await (new VaultIndexer(this.app, this)).run();
 
 				// Add profile's tags as CSS classes
 				this.app.workspace.iterateRootLeaves((leaf) => {
@@ -258,31 +259,9 @@ export default class MathBooster extends Plugin {
 		/** Markdown post processors */
 
 		// for theorem callouts
-		this.registerMarkdownPostProcessor(async (element, context) => {
-			const callouts = element.querySelectorAll<HTMLElement>(".callout");
+		this.registerMarkdownPostProcessor(async (element, context) => theoremCalloutPostProcessor(this, element, context));
 
-			for (let index = 0; index < callouts.length; index++) {
-				const callout = callouts[index];
-
-				const type = callout.getAttribute('data-callout');
-				const metadata = callout.getAttribute('data-callout-metadata');
-
-				if (metadata) {
-					const isTheoremCallout = (type?.toLowerCase() == 'math');
-
-					if (isTheoremCallout) {
-						const settings = JSON.parse(metadata);
-						const currentFile = this.app.vault.getAbstractFileByPath(context.sourcePath);
-
-						if (currentFile instanceof TFile) {
-							const theoremCallout = new TheoremCallout(callout, this.app, this, settings, currentFile, context);
-							await theoremCallout.setRenderedTitleElements();
-							context.addChild(theoremCallout);
-						}
-					}
-				}
-			}
-		});
+		this.registerEditorExtension(theoremCalloutNumberingViewPlugin(this));
 
 		// for equation numbers
 		this.registerMarkdownPostProcessor((element, context) => {
@@ -459,29 +438,29 @@ export default class MathBooster extends Plugin {
 		// }
 	}
 
-	async initializeIndex() {
-		const indexStart = Date.now();
-		this.setOldLinkMap();
-		await new VaultIndexer(this.app, this).run();
-		const indexEnd = Date.now();
-		console.log(`${this.manifest.name}: All theorem callouts and equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s.`);
-	}
+	// async initializeIndex() {
+	// 	const indexStart = Date.now();
+	// 	this.setOldLinkMap();
+	// 	await new VaultIndexer(this.app, this).run();
+	// 	const indexEnd = Date.now();
+	// 	console.log(`${this.manifest.name}: All theorem callouts and equations in the vault have been indexed in ${(indexEnd - indexStart) / 1000}s.`);
+	// }
 
 	// async initializeProjectManager() {
 	// 	this.projectManager.load();
 	// 	await this.saveSettings();
 	// }
 
-	getNewLinkMap(): Dataview.IndexMap | undefined {
-		return Dataview.getAPI(this.app)?.index.links;
-	}
+	// getNewLinkMap(): Dataview.IndexMap | undefined {
+	// 	return Dataview.getAPI(this.app)?.index.links;
+	// }
 
-	setOldLinkMap() {
-		const oldLinkMap = this.getNewLinkMap();
-		if (oldLinkMap) {
-			this.oldLinkMap = structuredClone(oldLinkMap);
-		}
-	}
+	// setOldLinkMap() {
+	// 	const oldLinkMap = this.getNewLinkMap();
+	// 	if (oldLinkMap) {
+	// 		this.oldLinkMap = structuredClone(oldLinkMap);
+	// 	}
+	// }
 
 	setProfileTagAsCSSClass(view: MarkdownView) {
 		if (!view.file) return;

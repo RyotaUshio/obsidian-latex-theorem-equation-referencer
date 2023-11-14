@@ -2,9 +2,7 @@ import { RangeSetBuilder, RangeSet, RangeValue } from '@codemirror/state';
 import { syntaxTree } from "@codemirror/language";
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate } from "@codemirror/view"
 
-import { nodeText, matchTheoremCallout } from './utils';
-
-
+import { nodeText, matchTheoremCallout, readTheoremCalloutSettings } from './utils';
 
 
 export const CALLOUT = /HyperMD-callout_HyperMD-quote_HyperMD-quote-([1-9][0-9]*)/;
@@ -40,6 +38,7 @@ export const theoremCalloutMetadataHiderPlulgin = ViewPlugin.fromClass(
                     enter(node) {
                         const match = node.name.match(CALLOUT);
                         if (match) {
+                            const settings = readTheoremCalloutSettings(nodeText(node, view.state));
                             const level = +match[1];
                             const calloutPreTitleNode = node.node.firstChild;
                             if (calloutPreTitleNode?.name.match(CALLOUT_PRE_TITLE(level))) {
@@ -49,6 +48,16 @@ export const theoremCalloutMetadataHiderPlulgin = ViewPlugin.fromClass(
                                         calloutPreTitleNode.from + 2,
                                         calloutPreTitleNode.to,
                                         Decoration.replace({})
+                                    );
+                                    decorationBuilder.add(
+                                        calloutPreTitleNode.to+1,
+                                        node.to,
+                                        Decoration.mark({
+                                            class: "theorem-callout-title",
+                                            attributes: {
+                                                "data-auto-number": settings?.number === 'auto' ? 'true' : 'false',
+                                            }
+                                        })
                                     );
                                     atomicRangeBuilder.add(
                                         calloutPreTitleNode.from + 2,

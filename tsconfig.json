@@ -24,6 +24,7 @@
     "**/*.ts"
   ],
   "exclude": [
-    "./src/project.ts"
+    "**/project.ts",
+    "**/indexer.ts"
   ]
 }

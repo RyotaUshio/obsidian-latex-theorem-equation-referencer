@@ -84,7 +84,7 @@ export class MathIndexManager extends Component {
                 const files: TFile[] = [];
                 iterDescendantFiles(file, (descendantFile) => {
                     if (descendantFile.extension == "md") files.push(descendantFile)
-                });
+                });    
                 await this.updateLinked(files);
             })
         );

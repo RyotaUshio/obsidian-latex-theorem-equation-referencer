@@ -19,6 +19,8 @@ import {
 } from "./json";
 import { TheoremCalloutSettings } from "settings/settings";
 import { Pos } from "obsidian";
+import { addSubTitle } from "utils";
+import { TheoremCalloutInfo } from "theorem_callouts";
 
 /** A link normalizer which takes in a raw link and produces a normalized link. */
 export type LinkNormalizer = (link: Link) => Link;
@@ -278,7 +280,7 @@ export class MarkdownBlock implements Indexable, Linkbearing {
 
 export abstract class MathBoosterBlock extends MarkdownBlock {
     // only set after backlinks are ready
-    $printName: string | null;
+    abstract $printName: string | null; // declaring as abstract to treat like an interface
     $refName: string | null;
 
     static isMathBoosterBlock(object: Indexable | undefined): object is MathBoosterBlock {
@@ -286,7 +288,7 @@ export abstract class MathBoosterBlock extends MarkdownBlock {
     }
 }
 
-export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing {
+export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing, TheoremCalloutInfo {
     static TYPES = ["markdown", "block", "block-math-booster", "block-theorem", LINKBEARING_TYPE];
 
     $types: string[] = TheoremCalloutBlock.TYPES;
@@ -295,6 +297,38 @@ export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing
 
     /** The settings for this theorem callout. */
     $settings: TheoremCalloutSettings;
+
+    $titleSuffix: string;
+
+    /** e.g. Theorem 1.1 (Cauchy-Schwarz) -> "Theorem 1.1" */
+    $theoremMainTitle: string;
+
+    /** e.g. Theorem 1.1 (Cauchy-Schwarz) -> "theorem" */
+    get $theoremType(): string {
+        return this.$settings.type;
+    }
+
+    get $numberSpec(): string {
+        return this.$settings.number;
+    }
+
+    /** e.g. Theorem 1.1 (Cauchy-Schwarz) -> "Cauchy-Schwarz" */
+    get $theoremSubtitle(): string | undefined {
+        return this.$settings.title;
+    }
+
+    get $theoremLabel(): string | undefined {
+        return this.$settings.label;
+    }
+    
+    get $setAsNoteMathLink(): boolean {
+        return this.$settings.setAsNoteMathLink;
+    }
+
+    /** e.g. "Theorem 1.1 (Cauchy-Schwarz)" */
+    get $printName(): string {
+        return this.$theoremSubtitle ? `${this.$theoremMainTitle} (${this.$theoremSubtitle})` : this.$theoremMainTitle;
+    }
 
     static from(
         object: JsonTheoremCalloutBlock,
@@ -340,6 +374,7 @@ export class EquationBlock extends MathBoosterBlock {
     $typename: string = "Equation Block";
     $type: string = "equation";
 
+    $printName: string | null = null;
     /** The math text of this equation. */
     $mathText: string;
     $manualTag: string | null = null;
