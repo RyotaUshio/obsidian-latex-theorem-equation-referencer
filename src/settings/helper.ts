@@ -4,7 +4,7 @@ import MathBooster from '../main';
 import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from '../env';
 import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, THEOREM_REF_FORMATS, THEOREM_CALLOUT_STYLES, TheoremCalloutSettings, MathContextSettings, NUMBER_STYLES } from './settings';
 import { BooleanKeys, NumberKeys, formatTheoremCalloutType, formatTitle } from '../utils';
-import { AutoNoteIndexer } from '../indexer';
+// import { AutoNoteIndexer } from '../indexer';
 import { DEFAULT_PROFILES, ManageProfileModal } from './profile';
 // import { PROJECT_DESCRIPTION, Project } from '../project';
 
@@ -107,25 +107,25 @@ export class TheoremCalloutSettingsHelper {
             });
 
 
-        new Setting(contentEl).setName("Use this theorem callout to set this note's mathLink").addToggle((toggle) => {
-            this.settings.setAsNoteMathLink = this.defaultSettings.setAsNoteMathLink ?? false;
-            toggle.setValue(this.settings.setAsNoteMathLink);
-            toggle.onChange(async (value) => {
-                const cache = this.plugin.app.metadataCache.getFileCache(this.file);
-                if (cache) {
-                    const indexer = (new AutoNoteIndexer(this.plugin.app, this.plugin, this.file)).getIndexer().calloutIndexer;
-                    await indexer.iter(cache, async (theoremCallout) => {
-                        theoremCallout.settings.setAsNoteMathLink = false;
-                        await indexer.overwriteSettings(
-                            theoremCallout.cache.position.start.line,
-                            theoremCallout.settings,
-                            formatTitle(this.plugin, this.file, indexer.resolveSettings(theoremCallout))
-                        );
-                    });
-                    this.settings.setAsNoteMathLink = value; // no need to call indexer.overwriteSettings() here
-                }
-            });
-        });
+        // new Setting(contentEl).setName("Use this theorem callout to set this note's mathLink").addToggle((toggle) => {
+        //     this.settings.setAsNoteMathLink = this.defaultSettings.setAsNoteMathLink ?? false;
+        //     toggle.setValue(this.settings.setAsNoteMathLink);
+        //     toggle.onChange(async (value) => {
+        //         const cache = this.plugin.app.metadataCache.getFileCache(this.file);
+        //         if (cache) {
+        //             const indexer = (new AutoNoteIndexer(this.plugin.app, this.plugin, this.file)).getIndexer().calloutIndexer;
+        //             await indexer.iter(cache, async (theoremCallout) => {
+        //                 theoremCallout.settings.setAsNoteMathLink = false;
+        //                 await indexer.overwriteSettings(
+        //                     theoremCallout.cache.position.start.line,
+        //                     theoremCallout.settings,
+        //                     formatTitle(this.plugin, this.file, indexer.resolveSettings(theoremCallout))
+        //                 );
+        //             });
+        //             this.settings.setAsNoteMathLink = value; // no need to call indexer.overwriteSettings() here
+        //         }
+        //     });
+        // });
     }
 }
 
