@@ -1,8 +1,10 @@
-import { MathIndex } from 'index/index';
-import { MarkdownPage, MathBoosterBlock } from 'index/typings/markdown';
-import MathBooster from 'main';
 import { TFile, HeadingSubpathResult, BlockSubpathResult, App } from 'obsidian';
 import * as MathLinks from 'obsidian-mathlinks';
+
+import { MathIndex } from './index/index';
+import { MarkdownPage, MathBoosterBlock } from './index/typings/markdown';
+import MathBooster from './main';
+
 
 export class CleverRefProvider extends MathLinks.Provider {
     app: App;

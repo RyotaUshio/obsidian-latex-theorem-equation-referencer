@@ -1,5 +1,5 @@
-import { StateEffect } from '@codemirror/state';
 import { App, MarkdownRenderChild, renderMath, finishRenderMath, MarkdownPostProcessorContext, CachedMetadata, MarkdownSectionInformation, TFile, editorInfoField, Menu, MarkdownView } from "obsidian";
+import { StateEffect } from '@codemirror/state';
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
 import MathBooster from './main';
@@ -8,7 +8,7 @@ import {
     getMathCache, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveSettings } from './utils';
 import { MathContextSettings } from "./settings/settings";
 import { Backlink, BacklinkModal } from "./backlinks";
-import { EquationBlock, MarkdownPage } from "index/typings/markdown";
+import { EquationBlock, MarkdownPage } from "./index/typings/markdown";
 
 
 /** For reading view */

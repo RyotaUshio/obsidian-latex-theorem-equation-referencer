@@ -1,7 +1,7 @@
 import { App, Editor, MarkdownFileInfo, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, TFile, editorInfoField } from 'obsidian';
 import { RangeSetBuilder, Transaction, StateField, EditorState } from '@codemirror/state';
-import { SyntaxNodeRef } from '@lezer/common';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
+import { SyntaxNodeRef } from '@lezer/common';
 import { foldService, syntaxTree } from '@codemirror/language';
 
 import MathBooster from './main';

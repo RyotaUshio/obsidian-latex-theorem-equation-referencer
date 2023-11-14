@@ -1,12 +1,11 @@
-import { CleverRefProvider } from './cleverref';
 import { MarkdownView, Plugin, TFile } from 'obsidian';
 import { StateField } from '@codemirror/state';
 
 import * as MathLinks from 'obsidian-mathlinks';
-// import * as Dataview from 'obsidian-dataview';
 
 import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS, UNION_TYPE_MATH_CONTEXT_SETTING_KEYS, UNION_TYPE_EXTRA_SETTING_KEYS } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
+import { CleverRefProvider } from './cleverref';
 import { insertTheoremCalloutCallback, theoremCalloutNumberingViewPlugin, theoremCalloutPostProcessor } from './theorem_callouts';
 import { ContextSettingModal, DependencyNotificationModal, TheoremCalloutModal } from './modals';
 import { insertDisplayMath } from './key';
@@ -14,12 +13,11 @@ import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_nu
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote, hideDisplayMathPreviewInQuote } from './math_live_preview_in_callouts';
 // import { LinkedNotesIndexer, VaultIndex, VaultIndexer } from './indexer';
 import { theoremCalloutMetadataHiderPlulgin } from './theorem_callout_metadata_hider';
-import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, isPluginOlderThan, iterDescendantFiles, staticifyEqNumber } from './utils';
+import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, isPluginOlderThan, staticifyEqNumber } from './utils';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
 // import { ProjectManager, makePrefixer } from './project';
 import { MathIndexManager } from './index/manager';
 import { ActiveNoteEquationLinkAutocomplete, ActiveNoteTheoremEquationLinkAutocomplete, ActiveNoteTheoremLinkAutocomplete, RecentNotesEquationLinkAutocomplete, RecentNotesTheoremEquationLinkAutocomplete, RecentNotesTheoremLinkAutocomplete, WholeVaultEquationLinkAutocomplete, WholeVaultTheoremEquationLinkAutocomplete, WholeVaultTheoremLinkAutocomplete } from 'suggest';
-import { MarkdownPage } from 'index/typings/markdown';
 
 
 export const VAULT_ROOT = '/';

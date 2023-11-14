@@ -1,6 +1,5 @@
 import { Editor } from 'obsidian';
 
-
 /**
  * Correctly insert a display math even inside callouts or quotes.
  */

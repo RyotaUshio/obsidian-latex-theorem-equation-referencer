@@ -1,6 +1,5 @@
-import { Modifier, Platform } from 'obsidian';
-import { renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView, Component, MarkdownRenderer, LinkCache, BlockCache, App, Pos, Plugin } from 'obsidian';
-import { DataviewApi, getAPI } from 'obsidian-dataview';
+import { Modifier, Platform, renderMath, finishRenderMath, TAbstractFile, TFolder, EditorPosition, Loc, CachedMetadata, SectionCache, parseLinktext, resolveSubpath, Notice, TFile, editorLivePreviewField, MarkdownView, Component, MarkdownRenderer, LinkCache, BlockCache, App, Pos, Plugin } from 'obsidian';
+// import { DataviewApi, getAPI } from 'obsidian-dataview';
 import { EditorState, ChangeSet, RangeValue, RangeSet } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { SyntaxNodeRef } from '@lezer/common';
@@ -9,10 +8,10 @@ import MathBooster from './main';
 import { DEFAULT_SETTINGS, TheoremCalloutPrivateFields, TheoremCalloutSettings, MathContextSettings, NumberStyle, ResolvedMathSettings } from './settings/settings';
 import { MathInfoSet } from './math_live_preview_in_callouts';
 import { THEOREM_LIKE_ENVs, TheoremLikeEnvID } from './env';
-import { Backlink } from './backlinks';
+// import { Backlink } from './backlinks';
 import { getIO } from './file_io';
 import { LeafArgs } from './typings/type';
-import { EquationBlock, MarkdownBlock, MarkdownPage } from 'index/typings/markdown';
+import { EquationBlock, MarkdownBlock, MarkdownPage } from './index/typings/markdown';
 
 
 const ROMAN = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
@@ -310,50 +309,50 @@ export function rangeSetSome<T extends RangeValue>(set: RangeSet<T>, predicate: 
     return false;
 }
 
-export function getDataviewAPI(plugin: MathBooster): DataviewApi | undefined {
-    const dv = getAPI(plugin.app); // Dataview API
-    if (dv) {
-        return dv;
-    }
-    new Notice(`${plugin.manifest.name}: Cannot load Dataview API. Make sure that Dataview is installed & enabled.`);
-}
+// export function getDataviewAPI(plugin: MathBooster): DataviewApi | undefined {
+//     const dv = getAPI(plugin.app); // Dataview API
+//     if (dv) {
+//         return dv;
+//     }
+//     new Notice(`${plugin.manifest.name}: Cannot load Dataview API. Make sure that Dataview is installed & enabled.`);
+// }
 
-export function getBlockIdsWithBacklink(file: TFile, plugin: MathBooster): string[] {
-    const dv = getDataviewAPI(plugin);
-    const cache = plugin.app.metadataCache.getFileCache(file);
-    const ids: string[] = [];
-    if (dv && cache) {
-        const page = dv.page(file.path); // Dataview page object
-        if (page) {
-            // @ts-ignore
-            for (const inlink of page.file?.inlinks) {
-                // cache of the source of this link (source --link--> target)
-                const sourcePath = inlink.path;
-                const sourceCache = plugin.app.metadataCache.getCache(sourcePath);
-                if (sourceCache) {
-                    sourceCache.links?.forEach(
-                        (item) => {
-                            const linktext = item.link;
-                            const parseResult = parseLinktext(linktext);
-                            const linkpath = parseResult.path;
-                            const subpath = parseResult.subpath;
-                            const targetFile = plugin.app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
-                            if (targetFile && targetFile.path == file.path) {
-                                const subpathResult = resolveSubpath(cache as CachedMetadata, subpath);
-                                if (subpathResult && subpathResult.type == "block") {
-                                    const blockCache = subpathResult.block;
-                                    ids.push(blockCache.id);
-                                }
-                            }
-                        }
-                    )
+// export function getBlockIdsWithBacklink(file: TFile, plugin: MathBooster): string[] {
+//     const dv = getDataviewAPI(plugin);
+//     const cache = plugin.app.metadataCache.getFileCache(file);
+//     const ids: string[] = [];
+//     if (dv && cache) {
+//         const page = dv.page(file.path); // Dataview page object
+//         if (page) {
+//             // @ts-ignore
+//             for (const inlink of page.file?.inlinks) {
+//                 // cache of the source of this link (source --link--> target)
+//                 const sourcePath = inlink.path;
+//                 const sourceCache = plugin.app.metadataCache.getCache(sourcePath);
+//                 if (sourceCache) {
+//                     sourceCache.links?.forEach(
+//                         (item) => {
+//                             const linktext = item.link;
+//                             const parseResult = parseLinktext(linktext);
+//                             const linkpath = parseResult.path;
+//                             const subpath = parseResult.subpath;
+//                             const targetFile = plugin.app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
+//                             if (targetFile && targetFile.path == file.path) {
+//                                 const subpathResult = resolveSubpath(cache as CachedMetadata, subpath);
+//                                 if (subpathResult && subpathResult.type == "block") {
+//                                     const blockCache = subpathResult.block;
+//                                     ids.push(blockCache.id);
+//                                 }
+//                             }
+//                         }
+//                     )
 
-                }
-            }
-        }
-    }
-    return ids;
-}
+//                 }
+//             }
+//         }
+//     }
+//     return ids;
+// }
 
 export function splitIntoLines(text: string): string[] {
     // https://stackoverflow.com/a/5035005/13613783

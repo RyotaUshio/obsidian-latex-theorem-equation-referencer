@@ -1,8 +1,5 @@
-import { ViewUpdate } from '@codemirror/view';
-import { EditorView } from '@codemirror/view';
-import { PluginValue } from '@codemirror/view';
-import { ViewPlugin } from '@codemirror/view';
 import { App, CachedMetadata, Component, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Menu, Notice, TFile, parseLinktext, resolveSubpath } from "obsidian";
+import { ViewUpdate, EditorView, PluginValue, ViewPlugin } from '@codemirror/view';
 
 import MathBooster from './main';
 import { TheoremCalloutModal } from './modals';
@@ -13,8 +10,8 @@ import {
 } from './utils';
 // import { AutoNoteIndexer } from './indexer';
 // import { Backlink, BacklinkModal } from "./backlinks";
-import { MarkdownPage, TheoremCalloutBlock } from "index/typings/markdown";
-import { MathIndex } from 'index';
+import { MarkdownPage, TheoremCalloutBlock } from "./index/typings/markdown";
+import { MathIndex } from './index/index';
 
 
 // export class TheoremCallout extends MarkdownRenderChild {
