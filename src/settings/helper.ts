@@ -62,8 +62,8 @@ export class TheoremCalloutSettingsHelper {
                     .setName("Title")
                     .setDesc("You can include inline math in the title.");
 
-                const labelPane = new Setting(contentEl).setName("Pandoc label");
-                const labelPrefixEl = labelPane.controlEl.createDiv({
+                const labelPane = this.plugin.extraSettings.setLabelInModal ? new Setting(contentEl).setName("Pandoc label") : undefined;
+                const labelPrefixEl = labelPane?.controlEl.createDiv({
                     text: THEOREM_LIKE_ENVs[this.settings.type as TheoremLikeEnvID].prefix + ":" + (this.defaultSettings.labelPrefix ?? "")
                 });
 
@@ -73,8 +73,8 @@ export class TheoremCalloutSettingsHelper {
                         text.setValue(this.defaultSettings.title);
                     }
 
-                    let labelTextComp: TextComponent;
-                    labelPane.addText((text) => {
+                    let labelTextComp: TextComponent | undefined;
+                    labelPane?.addText((text) => {
                         labelTextComp = text;
                         text.inputEl.classList.add("math-booster-label-form");
                         if (this.defaultSettings.label) {
@@ -89,23 +89,27 @@ export class TheoremCalloutSettingsHelper {
                         .setPlaceholder("Ex) $\\sigma$-algebra")
                         .onChange((value) => {
                             this.settings.title = value;
-                            let labelInit = this.settings.title.replaceAll(' ', '-').replaceAll("'s", '').toLowerCase();
-                            labelInit = labelInit.replaceAll(/[^a-z0-1\-]/g, '');
-                            labelTextComp.setValue(labelInit);
-                            this.settings.label = labelInit;
+                            if (this.plugin.extraSettings.setLabelInModal) {
+                                let labelInit = this.settings.title.replaceAll(' ', '-').replaceAll("'s", '').toLowerCase();
+                                labelInit = labelInit.replaceAll(/[^a-z0-1\-]/g, '');
+                                labelTextComp?.setValue(labelInit);
+                                this.settings.label = labelInit;
+                            }
                         })
                 });
 
                 dropdown.onChange((value) => {
                     this.settings.type = value;
-                    labelPrefixEl.textContent = THEOREM_LIKE_ENVs[this.settings.type as TheoremLikeEnvID].prefix + ":";
-                    if (this.defaultSettings.labelPrefix) {
-                        labelPrefixEl.textContent += this.defaultSettings.labelPrefix;
+                    if (labelPrefixEl) {
+                        labelPrefixEl.textContent = THEOREM_LIKE_ENVs[this.settings.type as TheoremLikeEnvID].prefix + ":";
+                        if (this.defaultSettings.labelPrefix) {
+                            labelPrefixEl.textContent += this.defaultSettings.labelPrefix;
+                        }    
                     }
                 });
             });
 
-        addFoldOptionSetting(contentEl, 'Collapse', (fold) => {this.settings.fold = fold}, this.defaultSettings.fold ?? this.plugin.extraSettings.foldDefault);
+        addFoldOptionSetting(contentEl, 'Collapse', (fold) => { this.settings.fold = fold }, this.defaultSettings.fold ?? this.plugin.extraSettings.foldDefault);
     }
 }
 
@@ -275,8 +279,8 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addTextSetting("labelPrefix", "Pandoc label prefix", 'Useful for ensuring no label collision. Ex) When "Pandoc label prefix" = "foo:", A theorem with "Pandoc label" = "bar" is assigned "thm:foo:bar."');
         contentEl.createEl("h6", { text: "Numbering" });
         this.addToggleSetting(
-            "inferNumberPrefix", 
-            "Infer prefix from note title or properties", 
+            "inferNumberPrefix",
+            "Infer prefix from note title or properties",
             `Automatically infer a prefix from the note title or properties. If the inference source (title or property) contains whitespaces, the substring before the first whitespace will be parsed for generating a prefix. Ex) To infer a prefix \"1.2.\" from a property "section" with value "1.2-A", set `
             + `"Use property as source" = "section", `
             + `"Delimiter for parsing" = "-." (i.e. recognize "-" or "." in the note title as a delimiter), `
@@ -304,8 +308,8 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         contentEl.createEl("h4", { text: "Equations" });
         contentEl.createEl("h6", { text: "Numbering" });
         this.addToggleSetting(
-            "inferEqNumberPrefix", 
-            "Infer prefix from note title", 
+            "inferEqNumberPrefix",
+            "Infer prefix from note title",
             `Automatically infer a prefix from the note title. If the title contains whitespaces, the substring before the first whitespace will be parsed for generating a prefix. Ex) To infer a prefix \"1.2.\" from a note \"1.2-A foo.md\", set `
             + `"Delimiter for parsing note title" = "-." (i.e. recognize "-" or "." in the note title as a delimiter), `
             + `"Delimiter for generating prefix" = ".", `
@@ -354,10 +358,11 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.settingRefs["foldDefault"] = addFoldOptionSetting(
             this.contentEl, 'Default collapsibility', (fold) => {
                 this.settings.foldDefault = fold;
-        }, this.defaultSettings.foldDefault);
+            }, this.defaultSettings.foldDefault);
         this.addToggleSetting("noteTitleInLink", "Show note title at link's head", "If turned on, a link to \"Theorem 1\" will look like \"Note title > Theorem 1.\" The same applies to equations.")
         this.addToggleSetting("showTheoremCalloutEditButton", "Show an edit button on a theorem callout");
         this.addToggleSetting("setOnlyTheoremAsMain", "If a note has only one theorem callout, automatically set it as main", 'Regardless of this setting, putting "%% main %%" or "%% main: true %%" in a theorem callout will set it as main one of the note, which means any link to that note will be displayed with the theorem\'s title. Enabling this option implicitly sets a theorem callout as main when it\'s the only one in the note.');
+        this.addToggleSetting("setLabelInModal", "Show LaTeX/Pandoc label input form in theorem callout insert/edit modal");
 
         // Suggest
         this.contentEl.createEl("h4", { text: "Theorem & equation suggestion" });
@@ -381,7 +386,7 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.contentEl.createEl("h5", { text: "From active note" });
         this.addToggleSetting("enableTheoremSuggestActiveNote", "Enable");
         this.addTextSetting("triggerTheoremSuggestActiveNote", "Trigger");
-        
+
         this.contentEl.createEl("h4", { text: "Equation suggestion" });
         this.contentEl.createEl("h5", { text: "From entire vault" });
         this.addToggleSetting("enableEquationSuggest", "Enable");
@@ -392,7 +397,7 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.contentEl.createEl("h5", { text: "From active note" });
         this.addToggleSetting("enableEquationSuggestActiveNote", "Enable");
         this.addTextSetting("triggerEquationSuggestActiveNote", "Trigger");
-        
+
         this.contentEl.createEl("h4", { text: "General" });
         this.addSliderSetting("suggestNumber", { min: 1, max: 50, step: 1 }, "Number of suggestions", "Specify how many items are suggested at one time. Set it to a smaller value if you have a performance issue when equation suggestions with math rendering on.");
         this.addToggleSetting("renderMathInSuggestion", "Render math in equation suggestions", "Turn this off if you have a performance issue and reducing the number of suggestions doesn't fix it.");
@@ -408,7 +413,7 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         list.createEl("li", { text: "Mod is Cmd on MacOS and Ctrl on other OS." });
         list.createEl("li", { text: "Meta is Cmd on MacOS and Win key on Windows." });
         this.addDropdownSetting("suggestLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected suggestion.")
-        
+
         // backlinks
         this.contentEl.createEl("h3", { text: "Backlinks" });
         this.contentEl.createDiv({
@@ -423,8 +428,8 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
 
         // indexer/importer
         this.contentEl.createEl("h3", { text: "Indexing" });
-        this.addSliderSetting('importerNumThreads', {min: 1, max: 10, step: 1}, "Indexer threads", "The maximum number of thread used for indexing.");
-        this.addSliderSetting('importerUtilization', {min: 0.1, max: 1.0, step: 0.01}, 'Indexer CPU utilization', "The CPU utilization that indexer threads should use.");
+        this.addSliderSetting('importerNumThreads', { min: 1, max: 10, step: 1 }, "Indexer threads", "The maximum number of thread used for indexing.");
+        this.addSliderSetting('importerUtilization', { min: 0.1, max: 1.0, step: 0.01 }, 'Indexer CPU utilization', "The CPU utilization that indexer threads should use.");
     }
 }
 
@@ -511,14 +516,14 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
 
 function addFoldOptionSetting(el: HTMLElement, name: string, onChange: (fold: FoldOption) => any, defaultValue?: FoldOption) {
     return new Setting(el)
-    .setName(name)
-    .addDropdown((dropdown) => {
-        dropdown.addOption('', 'Unfoldable');
-        dropdown.addOption('+', 'Foldable & expanded by default');
-        dropdown.addOption('-', 'Foldable & folded by default');
+        .setName(name)
+        .addDropdown((dropdown) => {
+            dropdown.addOption('', 'Unfoldable');
+            dropdown.addOption('+', 'Foldable & expanded by default');
+            dropdown.addOption('-', 'Foldable & folded by default');
 
-        dropdown.setValue(defaultValue ?? DEFAULT_EXTRA_SETTINGS.foldDefault);
+            dropdown.setValue(defaultValue ?? DEFAULT_EXTRA_SETTINGS.foldDefault);
 
-        dropdown.onChange(onChange)
-    });
+            dropdown.onChange(onChange)
+        });
 }

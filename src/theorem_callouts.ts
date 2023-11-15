@@ -23,13 +23,14 @@ import { getIO } from 'file_io';
 import { getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveLinktext } from 'utils/obsidian';
 
 
-function generateTheoremCalloutFirstLine(config: MinimalTheoremCalloutSettings): string {
+function generateTheoremCalloutFirstLine(config: TheoremCalloutSettings): string {
     const metadata = config.number === 'auto' ? '' : config.number === '' ? '|*' : `|${config.number}`;
-    const firstLine = `> [!${config.type}${metadata}]${config.fold ?? ''}${config.title ? ' ' + config.title : ''}`
+    let firstLine = `> [!${config.type}${metadata}]${config.fold ?? ''}${config.title ? ' ' + config.title : ''}`
+    if (config.label) firstLine += `\n> %% label: ${config.label} %%`;
     return firstLine;
 }
 
-export function insertTheoremCalloutCallback(editor: Editor, config: MinimalTheoremCalloutSettings): void {
+export function insertTheoremCalloutCallback(editor: Editor, config: TheoremCalloutSettings): void {
     const selection = editor.getSelection();
     const cursorPos = editor.getCursor();
 
@@ -44,6 +45,7 @@ export function insertTheoremCalloutCallback(editor: Editor, config: MinimalTheo
         cursorPos.line += 1;
     }
 
+    if (config.label) cursorPos.line += 1;
     cursorPos.ch = 2;
     editor.setCursor(cursorPos);
 }
