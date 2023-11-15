@@ -26,10 +26,10 @@ export class CleverRefProvider extends MathLinks.Provider {
         const page = this.index.load(targetFile.path);
         if (!MarkdownPage.isMarkdownPage(page)) return null
 
-        const processedPath = path ? page.$refName ?? path : '';
+        // only path, no subpath: return page.$refName if it exists, otherwise there's nothing to do
+        if (!subpath) return page.$refName ?? null;
 
-        // only path, no subpath
-        if (!subpath) return processedPath;
+        const processedPath = path ? page.$refName ?? path : '';
 
         // subpath resolution failed, do nothing
         if (targetSubpathResult === null) return null;
