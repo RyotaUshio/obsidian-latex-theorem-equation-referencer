@@ -7,7 +7,7 @@ import { Indexable } from "./typings/indexable";
 import { ImportResult } from "./web-worker/message";
 import { MarkdownPage } from "./typings/markdown";
 import MathBooster from "../main";
-import { iterDescendantFiles } from "utils";
+import { iterDescendantFiles } from "utils/obsidian";
 import * as MathLinks from "obsidian-mathlinks";
 
 

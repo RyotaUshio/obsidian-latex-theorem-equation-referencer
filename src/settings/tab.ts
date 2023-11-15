@@ -50,6 +50,10 @@ export class MathSettingTab extends PluginSettingTab {
         );
         extraHelper.makeSettingPane();
 
+        this.containerEl.insertAfter(
+            extraHelper.settingRefs.showTheoremCalloutEditButton.settingEl, 
+            globalHelper.settingRefs.profile.settingEl
+        );
         this.containerEl.insertBefore(
             extraHelper.settingRefs.noteTitleInLink.settingEl, 
             globalHelper.settingRefs.noteMathLinkFormat.settingEl

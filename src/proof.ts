@@ -5,8 +5,10 @@ import { SyntaxNodeRef } from '@lezer/common';
 import { foldService, syntaxTree } from '@codemirror/language';
 
 import MathBooster from './main';
-import { hasOverlap, nodeText, resolveSettings, renderMarkdown } from './utils';
+import { hasOverlap, nodeText } from './utils/editor';
 import { Profile } from './settings/profile';
+import { renderMarkdown } from 'utils/render';
+import { resolveSettings } from 'utils/plugin';
 
 
 export const INLINE_CODE = "inline-code";

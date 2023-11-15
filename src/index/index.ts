@@ -1,10 +1,13 @@
 import { MetadataCache, TFile, Vault } from 'obsidian';
+
 import { InvertedIndex } from './storage/inverted';
 import { Indexable, LINKBEARING_TYPE, Linkable } from './typings/indexable';
 import { Link } from 'index/expression/literal';
 import { EquationBlock, TheoremCalloutBlock } from './typings/markdown';
-import { CONVERTER, formatTitle, formatTitleWithoutSubtitle, getEqNumberPrefix, resolveSettings } from 'utils';
+
 import MathBooster from 'main';
+import { CONVERTER, formatTitle, formatTitleWithoutSubtitle, getEqNumberPrefix } from 'utils/format';
+import { resolveSettings } from 'utils/plugin';
 import { ResolvedMathSettings, TheoremRefFormat } from 'settings/settings';
 
 

@@ -24,7 +24,8 @@
     "**/*.ts"
   ],
   "exclude": [
-    "**/project.ts",
-    "**/indexer.ts"
+    "src/project.ts",
+    "src/indexer.ts",
+    "src/theorem_callout_metadata_hider.ts"
   ]
 }

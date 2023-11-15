@@ -1,182 +1,52 @@
-import { App, CachedMetadata, Component, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Menu, Notice, TFile, parseLinktext, resolveSubpath } from "obsidian";
-import { ViewUpdate, EditorView, PluginValue, ViewPlugin } from '@codemirror/view';
+import { RangeSetBuilder } from '@codemirror/state';
+import { App, CachedMetadata, Component, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Notice, TFile, parseLinktext, resolveSubpath } from "obsidian";
+import { ViewUpdate, EditorView, PluginValue, ViewPlugin, Decoration, DecorationSet } from '@codemirror/view';
 
-import MathBooster from './main';
-import { TheoremCalloutModal } from './modals';
-import { TheoremCalloutSettings, MathSettings, ResolvedMathSettings, MathContextSettings, TheoremCalloutPrivateFields } from './settings/settings';
+import MathBooster from 'main';
+import { TheoremCalloutModal } from 'modals';
+import { TheoremCalloutSettings, TheoremCalloutPrivateFields, MinimalTheoremCalloutSettings } from 'settings/settings';
 import {
-    increaseQuoteLevel, renderTextWithMath, formatTitle, formatTitleWithoutSubtitle, resolveSettings, splitIntoLines, isEditingView, getSectionCacheOfDOM, getSectionCacheFromMouseEvent,
+    increaseQuoteLevel, resolveSettings
     //getBacklinks 
-} from './utils';
+} from './utils/plugin';
+import { isEditingView } from 'utils/editor';
+import { capitalize, splitIntoLines } from 'utils/general';
+import { formatTitleWithoutSubtitle } from "utils/format";
+import { renderTextWithMath } from "utils/render";
 // import { AutoNoteIndexer } from './indexer';
 // import { Backlink, BacklinkModal } from "./backlinks";
-import { MarkdownPage, TheoremCalloutBlock } from "./index/typings/markdown";
-import { MathIndex } from './index/index';
+import { MarkdownPage, TheoremCalloutBlock } from "index/typings/markdown";
+import { MathIndex } from 'index/index';
+import { parseTheoremCalloutMetadata, readTheoremCalloutSettings } from 'utils/parse';
+import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENV_PREFIXES, THEOREM_LIKE_ENV_PREFIX_ID_MAP, TheoremLikeEnvPrefix } from 'env';
+import { getIO } from 'file_io';
+import { getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveLinktext } from 'utils/obsidian';
 
 
-// export class TheoremCallout extends MarkdownRenderChild {
-//     settings: TheoremCalloutSettings;
-//     resolvedSettings: ResolvedMathSettings;
-//     renderedTitleElements: (HTMLElement | string)[];
+function generateTheoremCalloutFirstLine(config: MinimalTheoremCalloutSettings): string {
+    const metadata = config.number === 'auto' ? '' : config.number === '' ? '|*' : `|${config.number}`;
+    const firstLine = `> [!${config.type}${metadata}]${config.title ? ' ' + config.title : ''}`
+    return firstLine;
+}
 
-//     constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, settings: MathSettings, public currentFile: TFile, public context: MarkdownPostProcessorContext) {
-//         super(containerEl);
-//         this.settings = settings;
-//         this.resolvedSettings = resolveSettings(this.settings, this.plugin, this.currentFile);
-//     }
-
-//     async setRenderedTitleElements() {
-//         // ex) "Theorem 1.1", not "Theorem 1.1 (Cauchy-Schwarz)"
-//         const titleWithoutSubtitle = renderTextWithMath(formatTitleWithoutSubtitle(this.plugin, this.currentFile, this.resolvedSettings));
-//         this.renderedTitleElements = [
-//             ...titleWithoutSubtitle
-//         ];
-//         if (this.resolvedSettings.title) {
-//             // ex) "(Cauchy-Schwarz)"
-//             const subtitle = renderTextWithMath(`(${this.resolvedSettings.title})`);
-//             const subtitleEl = createSpan({ cls: "theorem-callout-subtitle" });
-//             subtitleEl.replaceChildren(...subtitle)
-//             this.renderedTitleElements.push(" ", subtitleEl);
-//         }
-//         if (this.resolvedSettings.titleSuffix) {
-//             this.renderedTitleElements.push(this.resolvedSettings.titleSuffix);
-//         }
-//     }
-
-//     onload() {
-//         // make sure setRenderedTitleElements() is called beforehand
-//         const titleInner = this.containerEl.querySelector<HTMLElement>('.callout-title-inner');
-//         titleInner?.replaceChildren(...this.renderedTitleElements);
-
-//         // add classes for CSS snippets
-//         this.containerEl.classList.add("theorem-callout");
-//         const profile = this.plugin.extraSettings.profiles[this.resolvedSettings.profile];
-//         for (const tag of profile.meta.tags) {
-//             this.containerEl.classList.add("theorem-callout-" + tag);
-//         }
-//         this.containerEl.classList.add("theorem-callout-" + this.resolvedSettings.type);
-//         this.containerEl.toggleClass(`theorem-callout-${this.resolvedSettings.theoremCalloutStyle.toLowerCase()}`, this.resolvedSettings.theoremCalloutStyle != "Custom");
-//         this.containerEl.toggleClass("theorem-callout-font-family-inherit", this.resolvedSettings.theoremCalloutStyle != "Custom" && this.resolvedSettings.theoremCalloutFontInherit);
-
-//         // // click the title block (div.callout-title) to edit settings
-//         // const button = new ExtraButtonComponent(this.containerEl)
-//         //     .setIcon("settings-2")
-//         //     .setTooltip("Edit theorem callout settings");
-//         // button.extraSettingsEl.addEventListener("click", (ev) => {
-//         //     ev.stopPropagation();
-//         //     const cache = this.app.metadataCache.getFileCache(this.currentFile);
-//         //     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-//         //     if (view?.file) {
-//         //         // Make sure to get the line number BEFORE opening the modal!!
-//         //         const lineNumber = this.getLineNumber(view, cache, ev);
-
-//         //         new TheoremCalloutModal(
-//         //             this.app,
-//         //             this.plugin,
-//         //             view.file,
-//         //             async (settings) => {
-//         //                 this.settings = settings;
-//         //                 this.resolvedSettings = resolveSettings(this.settings, this.plugin, this.currentFile);
-//         //                 const title = formatTitle(this.plugin, this.currentFile, this.resolvedSettings);
-//         //                 const indexer = (new AutoNoteIndexer(this.app, this.plugin, view.file!)).getIndexer();
-//         //                 if (lineNumber !== undefined) {
-//         //                     await indexer.calloutIndexer.overwriteSettings(lineNumber, this.settings, title);
-//         //                 } else {
-//         //                     new Notice(
-//         //                         `${this.plugin.manifest.name}: Could not find the line number to overwrite. Retry later.`,
-//         //                         5000
-//         //                     )
-//         //                 }
-//         //             },
-//         //             "Confirm",
-//         //             "Edit theorem callout settings",
-//         //             this.settings,
-//         //         ).open();
-//         //     }
-//         // });
-//         // button.extraSettingsEl.classList.add("theorem-callout-setting-button");
-
-//         // this.plugin.registerDomEvent(
-//         //     this.containerEl, "contextmenu", (event) => {
-//         //         const menu = new Menu();
-
-//         //         // Show backlinks
-//         //         menu.addItem((item) => {
-//         //             item.setTitle("Show backlinks");
-//         //             item.onClick((clickEvent) => {
-//         //                 if (clickEvent instanceof MouseEvent) {
-//         //                     const backlinks = this.getBacklinks(event);
-//         //                     new BacklinkModal(this.app, this.plugin, backlinks).open();
-//         //                 }
-//         //             })
-//         //         });
-
-//         //         menu.showAtMouseEvent(event);
-//         //     }
-//         // );
-//     }
-
-//     getLineNumber(view: MarkdownView, cache: CachedMetadata | null, event: MouseEvent): number | undefined {
-//         const info = this.context.getSectionInfo(this.containerEl);
-//         let lineNumber = info?.lineStart;
-//         if (typeof lineNumber == "number") {
-//             return lineNumber;
-//         }
-
-//         if (isEditingView(view) && view.editor.cm && cache) {
-//             let sec = getSectionCacheOfDOM(this.containerEl, "callout", view.editor.cm, cache);
-//             lineNumber = sec?.position.start.line;
-//             if (typeof lineNumber == "number") {
-//                 return lineNumber;
-//             }
-
-//             sec = getSectionCacheFromMouseEvent(event, "callout", view.editor.cm, cache)
-//             lineNumber = sec?.position.start.line;
-//             if (typeof lineNumber == "number") {
-//                 return lineNumber;
-//             }
-//         } else {
-//             // what can I do in reading view??
-//         }
-//     }
-
-//     // getBacklinks(event: MouseEvent): Backlink[] | null {
-//     //     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-//     //     const cache = this.app.metadataCache.getFileCache(this.currentFile);
-//     //     if (!view || !cache) return null;
-
-//     //     const lineNumber = this.getLineNumber(view, cache, event);
-//     //     if (typeof lineNumber != "number") return null;
-
-//     //     return getBacklinks(this.app, this.plugin, this.currentFile, cache, (block) => block.position.start.line == lineNumber);
-//     // }
-// }
-
-
-export function insertTheoremCalloutCallback(plugin: MathBooster, editor: Editor, config: MathSettings, currentFile: TFile) {
+export function insertTheoremCalloutCallback(editor: Editor, config: MinimalTheoremCalloutSettings): void {
     const selection = editor.getSelection();
     const cursorPos = editor.getCursor();
-    const resolvedSettings = resolveSettings(config, plugin, currentFile);
-    const title = formatTitle(plugin, currentFile, resolvedSettings);
+
+    const firstLine = generateTheoremCalloutFirstLine(config);
 
     if (selection) {
         const nLines = splitIntoLines(selection).length;
-        editor.replaceSelection(
-            `> [!math|${JSON.stringify(config)}] ${title}\n`
-            + increaseQuoteLevel(selection)
-        );
+        editor.replaceSelection(firstLine + '\n' + increaseQuoteLevel(selection));
         cursorPos.line += nLines;
     } else {
-        editor.replaceRange(
-            `> [!math|${JSON.stringify(config)}] ${title}\n> `,
-            cursorPos
-        )
+        editor.replaceRange(firstLine + '\n> ', cursorPos)
         cursorPos.line += 1;
     }
+
     cursorPos.ch = 2;
     editor.setCursor(cursorPos);
 }
-
 
 
 export const theoremCalloutPostProcessor = async (plugin: MathBooster, element: HTMLElement, context: MarkdownPostProcessorContext) => {
@@ -184,50 +54,66 @@ export const theoremCalloutPostProcessor = async (plugin: MathBooster, element: 
     const file = plugin.app.vault.getAbstractFileByPath(context.sourcePath);
     if (!(file instanceof TFile)) return null;
 
-    const resolvedSettings = resolveSettings(undefined, plugin, file);
+    for (const calloutEl of element.querySelectorAll<HTMLElement>(`.callout`)) {
+        const type = calloutEl.getAttribute('data-callout')!.toLowerCase();
 
-    for (const calloutEl of element.querySelectorAll<HTMLElement>('.callout[data-callout="math"]')) {
-        // console.log(element, context, context.getSectionInfo((context as any).containerEl));
-        const theoremCallout = new TheoremCalloutRenderer(calloutEl, context, file, resolvedSettings, plugin);
-        context.addChild(theoremCallout);
+        if ((THEOREM_LIKE_ENV_IDs as unknown as string[]).includes(type) || (THEOREM_LIKE_ENV_PREFIXES as unknown as string[]).includes(type) || type === 'math') {
+            const theoremCallout = new TheoremCalloutRenderer(calloutEl, context, file, plugin);
+            context.addChild(theoremCallout);
+        }
     }
 }
 
 
 export interface TheoremCalloutInfo {
-    $numberSpec: string
-    /** e.g. Theorem 1.1 (Cauchy-Schwarz) -> "Theorem 1.1" */
-    $theoremMainTitle: string;
     /** e.g. Theorem 1.1 (Cauchy-Schwarz) -> "theorem" */
-    $theoremType: string;
+    theoremType: string;
+    /** e.g. Theorem 1.1 (Cauchy-Schwarz) -> "Theorem 1.1" */
+    theoremMainTitle: string;
     /** e.g. Theorem 1.1 (Cauchy-Schwarz) -> "Cauchy-Schwarz" */
-    $theoremSubtitle: string | undefined;
-    $titleSuffix: string;
+    theoremSubtitleEl: HTMLElement | null;
+    titleSuffix: string;
 }
 
 
 /**
- * Reading view: Use the index. Listen to the index update event.
- * Live preview: The index might be out-of-date. Also, context.getSectionInfo() returns null.
- * Embeds: Read the target note path and the block id from the `src` attribute, and use it to find the corresponding TheoremCalloutBlock object from the index.
- * Hover popover: There is nothing I can do to get the number. Just display wihout the number.
+ * Renders theorem callouts. The rendering strategy varys depending on the given situation:
+ * 
+ * Reading view: 
+ *     Use the index. Listen to the index update event.
+ * Live preview: 
+ *     The index might be out-of-date. Also, context.getSectionInfo() returns null. 
+ *     Thus, I'm currently taking a rather hacky or dirty approach, where I set "data-theorem-index" attribute 
+ *     indicating a 0-based index of auto-numbered theorems in a document for every editor updates 
+ *     using a CodeMirror6 view plugin called theoremCalloutNumberingViewPlugin.
+ * Embeds: 
+ *     Read the target note path and the block id from the `src` attribute, and 
+ *     use it to find the corresponding TheoremCalloutBlock object from the index.
+ * Hover popover: 
+ *     There is nothing I can do to get the number. Just display wihout the number.
  */
-
 class TheoremCalloutRenderer extends MarkdownRenderChild {
     app: App;
     index: MathIndex;
     observer: MutationObservingChild;
+    /** The info on which the last DOM update was based on. Used to reduce redundant updates. */
+    info: TheoremCalloutInfo | null = null;
+    isHoverPopover: boolean = false;
+    /** Set to the linktext when this theorem callout is inside an embed (i.e. ![[linktext]]). */
+    embedSrc: string | null = null;
+    editButton: HTMLElement | null = null;
 
     constructor(
         containerEl: HTMLElement,
         public context: MarkdownPostProcessorContext,
         public file: TFile,
-        public resolvedSettings: Required<MathContextSettings>,
         public plugin: MathBooster
     ) {
         super(containerEl);
         this.app = plugin.app;
         this.index = plugin.indexManager.index;
+
+        // update: for live preview
         this.addChild(this.observer = new MutationObservingChild(this.containerEl, (mutations) => {
             for (const mutation of mutations) {
                 if (mutation.oldValue !== this.containerEl.getAttribute('data-theorem-index')) {
@@ -238,6 +124,25 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
             attributeFilter: ['data-theorem-index'],
             attributeOldValue: true,
         }))
+
+        // update when the math index is updated
+        this.registerEvent(this.app.metadataCache.on('math-booster:index-updated', (file) => {
+            if (file.path === this.file.path) {
+                this.update();
+            }
+        }));
+
+        // remove the edit button when Math Booster gets disabled
+        this.plugin.addChild(this);
+        this.register(() => this.removeEditButton());
+        // remove the edit button when the relevent setting is disabled
+        this.registerEvent(this.app.metadataCache.on('math-booster:global-settings-updated', () => {
+            if (this.plugin.extraSettings.showTheoremCalloutEditButton) {
+                this.addEditButton();
+            } else {
+                this.removeEditButton();
+            }
+        }));        
     }
 
     getPage(): MarkdownPage | null {
@@ -246,36 +151,69 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
         return null;
     }
 
+    isLivePreview(): boolean {
+        return this.containerEl.closest('.markdown-source-view.is-live-preview') !== null;
+    }
+
     onload() {
         this.update();
-        this.registerEvent(this.app.metadataCache.on('math-booster:index-updated', (file) => {
-            if (file.path === this.file.path) {
-                // TODO: only update the number part
-                this.update();
-            }
-        }));
     }
 
     update() {
-        let block = this.findTheoremCalloutBlock();
+        const existingMainTitleEl = this.containerEl.querySelector<HTMLElement>(".theorem-callout-main-title");
+
+        if (existingMainTitleEl && this.isLivePreview()) {
+            // only update the main title part (e.g. "Theorem 1.2")
+
+            // Here, settings.title might be incorrect (e.g. "Theorem 1.2 (Cauchy-Schwarz)" instead of "Cauchy-Schwarz"), 
+            // but it is not a problem because we are only updating the main title part.
+            const settings: (TheoremCalloutSettings & TheoremCalloutPrivateFields) | null = readSettingsFromEl(this.containerEl);
+            if (!settings) return null;
+
+            const livePreviewIndex = this.containerEl.getAttribute('data-theorem-index');
+            if (livePreviewIndex !== null) settings._index = +livePreviewIndex;
+
+            const resolvedSettings = resolveSettings(settings, this.plugin, this.file);
+            const newMainTitle = formatTitleWithoutSubtitle(this.plugin, this.file, resolvedSettings);
+
+            existingMainTitleEl.setText(newMainTitle);
+            this.info = null;
+
+            return;
+        }
+
+        let block = this.getTheoremCalloutInfoFromIndex();
         let info: TheoremCalloutInfo | null = block ?? this.getTheoremCalloutInfoFromEl();
-        if (!info) return;
+        if (!info) {
+            this.info = null;
+            return
+        };
 
-        this.renderTitle(info);
-        this.addCssClasses(info);
+        if (!this.info || TheoremCalloutRenderer.areDifferentInfo(info, this.info)) {
+            this.renderTitle(info, existingMainTitleEl);
+            this.addCssClasses(info);
+            this.addEditButton();
 
+            this.info = info;
+        }
+
+        // In embeds or hover popover, we can get an incorrect TheoremCalloutBlock because 
+        // MarkdownPostProcessorContext.getSectionInfo() returns incorrect line numbers.
+        // So we have to correct it manually.
         setTimeout(() => {
             if (this.containerEl.closest('.hover-popover:not(.hover-editor)')) {
+                this.isHoverPopover = true;
                 const update = this.correctHover(); // give up auto-numbering! (if you want it, use hover editor!)
                 if (update) {
                     block = update.block;
-                    info = update.info;
+                    this.info = info = update.info;
                 }
-            }
-            if (block) {
-                const updated = this.correctEmbed(block, info!)!; // correct line number
-                block = updated.block;
-                info = updated.info;
+            } else if (block) {
+                const update = this.correctEmbed(block, info!); // correct line number
+                if (update) {
+                    block = update.block;
+                    this.info = info = update.info;
+                }
             }
         });
     }
@@ -284,38 +222,49 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
         const block = null;
         const info = this.getTheoremCalloutInfoFromEl();
         if (!info) return;
-        this.renderTitle(info);
-        this.addCssClasses(info);
+
+        if (!this.info || TheoremCalloutRenderer.areDifferentInfo(info, this.info)) {
+            this.renderTitle(info);
+            this.addCssClasses(info);
+        }
+
+        this.removeEditButton();
+
         return { block, info };
     }
 
-    correctEmbed(block: TheoremCalloutBlock, info: TheoremCalloutInfo) {
+    correctEmbed(block: TheoremCalloutInfo & { blockId?: string }, info: TheoremCalloutInfo) {
         const linktext = this.containerEl.closest('[src]')?.getAttribute('src');
         if (linktext) {
-            const { path, subpath } = parseLinktext(linktext);
-            const targetFile = this.app.metadataCache.getFirstLinkpathDest(path, this.context.sourcePath);
-            if (!targetFile) return;
-            const targetCache = this.app.metadataCache.getFileCache(targetFile);
-            if (!targetCache) return;
-            const result = resolveSubpath(targetCache, subpath);
+            this.embedSrc = linktext;
+            const { subpathResult: result } = resolveLinktext(this.app, linktext, this.context.sourcePath) ?? {};
+            if (!result) return;
+
             if (result.type === 'block') {
-                if (result.block.id !== block.$blockId) {
+                if (result.block.id !== block.blockId) {
                     const _block = this.getPage()?.$blocks.get(result.block.id);
                     if (TheoremCalloutBlock.isTheoremCalloutBlock(_block)) {
-                        info = block = _block;
-                        this.renderTitle(info);
-                        this.addCssClasses(info);
+                        info = block = this.blockToInfo(_block);
+                        if (!this.info || TheoremCalloutRenderer.areDifferentInfo(info, this.info)) {
+                            this.renderTitle(info);
+                            this.addCssClasses(info);
+                        }
                     }
                 }
             } else if (result.type === 'heading') {
                 const _block = this.findTheoremCalloutBlock(result.start.line);
                 if (_block) {
-                    info = block = _block;
-                    this.renderTitle(info);
-                    this.addCssClasses(info);
+                    info = block = this.blockToInfo(_block);
+                    if (!this.info || TheoremCalloutRenderer.areDifferentInfo(info, this.info)) {
+                        this.renderTitle(info);
+                        this.addCssClasses(info);
+                    }
                 }
             }
         }
+
+        this.addEditButton();
+
         return { block, info };
     }
 
@@ -333,35 +282,81 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
         return block;
     }
 
+    blockToInfo(block: TheoremCalloutBlock): TheoremCalloutInfo & { blockId?: string } {
+        let theoremSubtitleEl: HTMLElement | null = null;
+
+        if (block.$theoremSubtitle) {
+            theoremSubtitleEl = createSpan({ cls: "theorem-callout-subtitle" });
+            const subtitle = renderTextWithMath(`(${block.$theoremSubtitle})`);
+            theoremSubtitleEl.replaceChildren(...subtitle);
+        }
+
+        return {
+            theoremType: block.$theoremType,
+            theoremMainTitle: block.$theoremMainTitle,
+            theoremSubtitleEl,
+            titleSuffix: block.$titleSuffix,
+            blockId: block.$blockId,
+        };
+    }
+
+    getTheoremCalloutInfoFromIndex(): TheoremCalloutInfo & { blockId?: string } | null {
+        const block = this.findTheoremCalloutBlock();
+        if (!block) return null;
+        return this.blockToInfo(block);
+    }
+
     getTheoremCalloutInfoFromEl(): TheoremCalloutInfo | null {
         const settings: (TheoremCalloutSettings & TheoremCalloutPrivateFields) | null = readSettingsFromEl(this.containerEl);
         if (!settings) return null;
         const livePreviewIndex = this.containerEl.getAttribute('data-theorem-index');
         if (livePreviewIndex !== null) settings._index = +livePreviewIndex;
+        const resolvedSettings = resolveSettings(settings, this.plugin, this.file);
+
+        let theoremSubtitleEl = this.containerEl.querySelector<HTMLElement>('.theorem-callout-subtitle');
+        if (theoremSubtitleEl === null) {
+            const titleInnerEl = this.containerEl.querySelector<HTMLElement>('.callout-title-inner');
+            if (titleInnerEl) {
+                if (titleInnerEl.textContent !== capitalize(settings.type)) {
+                    theoremSubtitleEl = createSpan({ cls: "theorem-callout-subtitle" });
+                    theoremSubtitleEl.replaceChildren('(', ...titleInnerEl.childNodes, ')');
+                }
+            }
+        }
 
         return {
-            $numberSpec: settings.number,
-            $theoremMainTitle: formatTitleWithoutSubtitle(this.plugin, this.file, Object.assign(settings, this.resolvedSettings)),
-            $theoremType: settings.type,
-            $theoremSubtitle: settings.title,
-            $titleSuffix: this.resolvedSettings.titleSuffix
+            theoremType: settings.type,
+            theoremMainTitle: formatTitleWithoutSubtitle(this.plugin, this.file, resolvedSettings),
+            theoremSubtitleEl,
+            titleSuffix: resolvedSettings.titleSuffix
         };
     }
 
-    renderTitle(info: TheoremCalloutInfo) {
-        const titleElements = renderTextWithMath(info.$theoremMainTitle);
-        if (info.$theoremSubtitle) {
-            const subtitle = renderTextWithMath(`(${info.$theoremSubtitle})`);
-            const subtitleEl = createSpan({ cls: "theorem-callout-subtitle" });
-            subtitleEl.replaceChildren(...subtitle)
-            titleElements.push(" ", subtitleEl);
-        }
-        if (info.$titleSuffix) {
-            titleElements.push(info.$titleSuffix);
+    renderTitle(info: TheoremCalloutInfo, existingMainTitleEl?: HTMLElement | null) {
+        const titleInner = this.containerEl.querySelector<HTMLElement>('.callout-title-inner');
+        if (!titleInner) throw Error(`Math Booster: Failed to find the title element of a theorem callout.`);
+
+        const newMainTitleEl = createSpan({
+            text: info.theoremMainTitle,
+            cls: "theorem-callout-main-title"
+        });
+
+        if (existingMainTitleEl) {
+            // only update the main title part
+            existingMainTitleEl.replaceWith(newMainTitleEl);
+            return;
         }
 
-        const titleInner = this.containerEl.querySelector<HTMLElement>('.callout-title-inner');
-        titleInner?.replaceChildren(...titleElements);
+        const titleElements: (HTMLElement | string)[] = [newMainTitleEl];
+
+        if (info.theoremSubtitleEl) {
+            titleElements.push(" ", info.theoremSubtitleEl);
+        }
+        if (info.titleSuffix) {
+            titleElements.push(info.titleSuffix);
+        }
+
+        titleInner.replaceChildren(...titleElements);
     }
 
     addCssClasses(info: TheoremCalloutInfo) {
@@ -369,56 +364,151 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
             if (cls.startsWith('theorem-callout')) list.remove(cls);
         });
         this.containerEl.classList.add("theorem-callout");
-        const profile = this.plugin.extraSettings.profiles[this.resolvedSettings.profile];
+        const resolvedSettings = resolveSettings(undefined, this.plugin, this.file);
+        const profile = this.plugin.extraSettings.profiles[resolvedSettings.profile];
         for (const tag of profile.meta.tags) {
             this.containerEl.classList.add("theorem-callout-" + tag);
         }
-        this.containerEl.classList.add("theorem-callout-" + info.$theoremType);
-        this.containerEl.toggleClass(`theorem-callout-${this.resolvedSettings.theoremCalloutStyle.toLowerCase()}`, this.resolvedSettings.theoremCalloutStyle != "Custom");
-        this.containerEl.toggleClass("theorem-callout-font-family-inherit", this.resolvedSettings.theoremCalloutStyle != "Custom" && this.resolvedSettings.theoremCalloutFontInherit);
+        this.containerEl.classList.add("theorem-callout-" + info.theoremType);
+        this.containerEl.toggleClass(`theorem-callout-${resolvedSettings.theoremCalloutStyle.toLowerCase()}`, resolvedSettings.theoremCalloutStyle != "Custom");
+        this.containerEl.toggleClass("theorem-callout-font-family-inherit", resolvedSettings.theoremCalloutStyle != "Custom" && resolvedSettings.theoremCalloutFontInherit);
+    }
+
+    removeEditButton() {
+        if (this.editButton) {
+            this.editButton.remove();
+            this.editButton = null;
+        }
+    }
+
+    addEditButton() {
+        if (!this.plugin.extraSettings.showTheoremCalloutEditButton) return;
+        if (this.editButton) return; // already exists
+
+        const button = new ExtraButtonComponent(this.containerEl)
+            .setIcon("settings-2")
+            .setTooltip("Edit theorem callout settings");
+
+        this.editButton = button.extraSettingsEl;
+        this.editButton.addClass("theorem-callout-setting-button");
+
+        button.extraSettingsEl.addEventListener("click", async (ev) => {
+            ev.stopPropagation();
+            const io = getIO(this.plugin, this.file);
+
+            // Make sure to get the line number BEFORE opening the modal!!
+            const lineNumber = this.getLineNumber(ev);
+            if (lineNumber === null) return;
+            const line = await io.getLine(lineNumber);
+
+            new TheoremCalloutModal(this.app, this.plugin, this.file, async (settings) => {
+                if (lineNumber !== undefined) {
+                    await io.setLine(lineNumber, generateTheoremCalloutFirstLine(settings));
+                } else {
+                    new Notice(
+                        `${this.plugin.manifest.name}: Could not find the line number to overwrite. Retry later.`,
+                        5000
+                    )
+                }
+            },
+                "Confirm",
+                "Edit theorem callout settings",
+                readTheoremCalloutSettings(line)
+            ).open();
+        });
+    }
+
+    getLineNumber(event: MouseEvent): number | null {
+        let lineOffset = 0;
+
+        // handle the embed case
+        if (this.embedSrc !== null) {
+            const { subpathResult } = resolveLinktext(this.app, this.embedSrc, this.context.sourcePath) ?? {};
+            if (subpathResult) lineOffset = subpathResult.start.line;
+        }
+
+        const info = this.context.getSectionInfo(this.containerEl);
+        if (info) return lineOffset + info.lineStart;
+
+        const cache = this.app.metadataCache.getFileCache(this.file);
+        if (!cache) return null;
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!view) return null;
+
+        if (isEditingView(view) && this.file.path === view.file?.path && view.editor.cm) {
+            let sec = getSectionCacheOfDOM(this.containerEl, "callout", view.editor.cm, cache)
+                ?? getSectionCacheFromMouseEvent(event, "callout", view.editor.cm, cache)
+            if (sec) return sec.position.start.line;
+        }
+
+        // What can I do in reading view??
+
+        return null;
+    }
+
+    static areDifferentInfo(info1: TheoremCalloutInfo, info2: TheoremCalloutInfo) {
+        return info1.theoremMainTitle !== info2.theoremMainTitle;
     }
 }
 
 
-export const theoremCalloutNumberingViewPlugin = (plugin: MathBooster) => {
-    return ViewPlugin.fromClass(
-        class implements PluginValue {
-            constructor(public view: EditorView) {
-                // Wait until the initial rendering is done so that we can find the callout elements using qeurySelectorAll(). 
-                setTimeout(() => this.impl(view));
-            }
-            update(update: ViewUpdate) {
-                setTimeout(() => this.impl(update.view));
-            }
-            impl(view: EditorView) {
-                let theoremCount = 0;
-                for (const calloutEl of view.contentDOM.querySelectorAll<HTMLElement>('.callout[data-callout="math"], .theorem-callout-title')) {
-                    // in the case of a theorem callout that the cursor is overlapping with
-                    if (calloutEl.matches('.theorem-callout-title[data-auto-number="true"]')) {
-                        theoremCount++;
-                        continue;
-                    }
-                    const settings = readSettingsFromEl(calloutEl);
-                    if (settings?.number === 'auto') {
-                        calloutEl.setAttribute('data-theorem-index', String(theoremCount++));
-                    } else {
-                        calloutEl.removeAttribute('data-theorem-index');
-                    }
+export const theoremCalloutNumberingViewPlugin = ViewPlugin.fromClass(
+    class implements PluginValue {
+        constructor(public view: EditorView) {
+            // Wait until the initial rendering is done so that we can find the callout elements using qeurySelectorAll(). 
+            setTimeout(() => this.impl(view));
+        }
+        update(update: ViewUpdate) {
+            this.impl(update.view)
+            // setTimeout(() => this.impl(update.view));
+        }
+        impl(view: EditorView) {
+            let theoremCount = 0;
+            for (const calloutEl of view.contentDOM.querySelectorAll<HTMLElement>('.callout.theorem-callout, .theorem-callout-first-line')) {
+                // in the case of a theorem callout that the cursor is overlapping with
+                if (calloutEl.matches('.theorem-callout-first-line[data-auto-number="true"]')) {
+                    theoremCount++;
+                    continue;
+                }
+                const settings = readSettingsFromEl(calloutEl);
+                if (settings?.number === 'auto') {
+                    calloutEl.setAttribute('data-theorem-index', String(theoremCount++));
+                } else {
+                    calloutEl.removeAttribute('data-theorem-index');
                 }
             }
         }
-    )
-}
+    }
+);
 
 
 /** Read TheoremCalloutSettings from the element's attribute. */
 function readSettingsFromEl(calloutEl: HTMLElement): TheoremCalloutSettings | null {
+    let type = calloutEl.getAttribute('data-callout')?.trim().toLowerCase();
+    if (type === undefined) return null;
+
     const metadata = calloutEl.getAttribute('data-callout-metadata');
-    if (!metadata) return null;
-    const settings = JSON.parse(metadata) as TheoremCalloutSettings;
-    // @ts-ignore
-    delete settings['_index']; // do not use the legacy "_index" value
-    return settings;
+    if (metadata === null) return null;
+
+    if (type === 'math') {
+        // legacy format
+        const settings = JSON.parse(metadata) as TheoremCalloutSettings;
+        // @ts-ignore
+        delete settings['_index']; // do not use the legacy "_index" value
+        return settings;
+    }
+
+    // new format
+    if (type.length <= 4) { // use length to avoid iterating over all the prefixes
+        // convert a prefix to an ID (e.g. "thm" -> "theorem")
+        type = THEOREM_LIKE_ENV_PREFIX_ID_MAP[type as TheoremLikeEnvPrefix];
+    }
+
+    const number = parseTheoremCalloutMetadata(metadata);
+
+    const title = '' // calloutEl.querySelector<HTMLElement>('.callout-title-inner')?.textContent?.trim();
+
+    return { type, number, title, setAsNoteMathLink: false }
 }
 
 
@@ -438,3 +528,48 @@ class MutationObservingChild extends Component {
         this.observer.disconnect();
     }
 }
+
+
+export const theoremCalloutFirstLineDecorator = ViewPlugin.fromClass(
+    class {
+        decorations: DecorationSet;
+
+        constructor(view: EditorView) {
+            this.decorations = this.buildDecorations(view);
+        }
+
+        update(update: ViewUpdate) {
+            if (update.docChanged || update.viewportChanged) {
+                this.decorations = this.buildDecorations(update.view);
+            }
+        }
+
+        buildDecorations(view: EditorView) {
+            const builder = new RangeSetBuilder<Decoration>();
+            for (const { from, to } of view.visibleRanges) {
+                const lineStart = view.state.doc.lineAt(from);
+                const lineEnd = view.state.doc.lineAt(to);
+                for (let lineNumber = lineStart.number; lineNumber <= lineEnd.number; lineNumber++) {
+                    const line = view.state.doc.line(lineNumber);
+                    const settings = readTheoremCalloutSettings(line.text);
+                    if (!settings) continue;
+
+                    builder.add(
+                        line.from,
+                        line.from,
+                        Decoration.line({
+                            class: 'theorem-callout-first-line',
+                            attributes: {
+                                "data-auto-number": settings.number === 'auto' ? 'true' : 'false',
+                            }
+                        })
+                    );
+                }
+            }
+
+            return builder.finish();
+        }
+    }, {
+    decorations: (v) => v.decorations
+}
+);

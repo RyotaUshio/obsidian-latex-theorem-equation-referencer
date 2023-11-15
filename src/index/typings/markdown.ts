@@ -19,7 +19,6 @@ import {
 } from "./json";
 import { TheoremCalloutSettings } from "settings/settings";
 import { Pos } from "obsidian";
-import { addSubTitle } from "utils";
 import { TheoremCalloutInfo } from "theorem_callouts";
 
 /** A link normalizer which takes in a raw link and produces a normalized link. */
@@ -288,7 +287,7 @@ export abstract class MathBoosterBlock extends MarkdownBlock {
     }
 }
 
-export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing, TheoremCalloutInfo {
+export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing {
     static TYPES = ["markdown", "block", "block-math-booster", "block-theorem", LINKBEARING_TYPE];
 
     $types: string[] = TheoremCalloutBlock.TYPES;

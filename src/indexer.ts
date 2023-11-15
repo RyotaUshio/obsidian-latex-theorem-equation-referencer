@@ -1,3 +1,5 @@
+/** Currently unused. */
+
 import { App, CachedMetadata, Editor, MarkdownView, SectionCache, TAbstractFile, TFile, TFolder } from 'obsidian';
 
 import MathBooster from './main';

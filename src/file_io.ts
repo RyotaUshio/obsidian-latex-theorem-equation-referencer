@@ -1,7 +1,8 @@
 import { CachedMetadata, Editor, MarkdownView, Pos, TFile } from "obsidian";
 
 import MathBooster from "./main";
-import { insertAt, isEditingView, locToEditorPosition, splitIntoLines } from "./utils";
+import { isEditingView, locToEditorPosition } from "utils/editor";
+import { insertAt, splitIntoLines } from "utils/general";
 
 
 export abstract class FileIO {

@@ -9,36 +9,8 @@ import {
     JsonTheoremCalloutBlock,
     JsonEquationBlock,
 } from "index/typings/json";
-import { TheoremCalloutPrivateFields, TheoremCalloutSettings } from "settings/settings";
-
-function trimMathText(text: string) {
-    return text.match(/\$\$([\s\S]*)\$\$/)?.[1].trim() ?? text;
-}
-
-const THEOREM_CALLOUT_PATTERN = /\> *\[\! *math *\|(.*?)\](.*)/;
-
-function matchTheoremCallout(line: string): RegExpExecArray | null {
-    if (line) {
-        return THEOREM_CALLOUT_PATTERN.exec(line)
-    }
-    return null;
-}
-
-function readTheoremCalloutSettingsAndTitle(line: string): { settings: TheoremCalloutSettings & TheoremCalloutPrivateFields, title: string } | undefined {
-    const matchResult = matchTheoremCallout(line);
-    if (matchResult) {
-        const settings = JSON.parse(matchResult[1]) as TheoremCalloutSettings;
-        const title = matchResult[2].trim();
-        return { settings, title };
-    }
-}
-
-function readTheoremCalloutSettings(line: string): TheoremCalloutSettings & TheoremCalloutPrivateFields | undefined {
-    const result = readTheoremCalloutSettingsAndTitle(line);
-    if (result) {
-        return result.settings;
-    }
-}
+import { TheoremCalloutSettings } from "settings/settings";
+import { readTheoremCalloutSettings, trimMathText } from "utils/parse";
 
 
 /**

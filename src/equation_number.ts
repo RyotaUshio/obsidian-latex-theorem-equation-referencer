@@ -4,36 +4,34 @@ import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/vie
 
 import MathBooster from './main';
 import { 
-    // getBacklinks, 
-    getMathCache, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveSettings } from './utils';
+    // getBacklinks, getMathCache, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, 
+    resolveSettings 
+} from './utils/plugin';
 import { MathContextSettings } from "./settings/settings";
-import { Backlink, BacklinkModal } from "./backlinks";
+// import { Backlink, BacklinkModal } from "./backlinks";
 import { EquationBlock, MarkdownPage } from "./index/typings/markdown";
+import { MathIndex } from "index";
 
 
 /** For reading view */
 
 export class DisplayMathRenderChild extends MarkdownRenderChild {
+    index: MathIndex;
+
     constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, public file: TFile, public context: MarkdownPostProcessorContext) {
         // containerEl, currentEL are mjx-container.MathJax elements
         super(containerEl);
-    }
-
-    getCache(): CachedMetadata | null {
-        return this.app.metadataCache.getCache(this.context.sourcePath);
-    }
-
-    getInfo(): MarkdownSectionInformation | null {
-        return this.context.getSectionInfo(this.containerEl);
+        this.index = this.plugin.indexManager.index;
     }
 
     getEquationCache(): EquationBlock | null {
-        const info = this.getInfo();
-        const cache = this.getCache();
-        if (!info || !cache) return null;
+        const info = this.context.getSectionInfo(this.containerEl);
+        const page = this.index.load(this.file.path);
+        if (!info || !MarkdownPage.isMarkdownPage(page)) return null;
 
         // get block ID
-        const id = getMathCache(cache, info.lineStart)?.id;
+        const block = page.getBlockByLineNumber(info.lineStart) ?? page.getBlockByLineNumber(info.lineEnd);
+        const id = block?.$blockId;
 
         // get IndexItem from block ID
         if (id) {

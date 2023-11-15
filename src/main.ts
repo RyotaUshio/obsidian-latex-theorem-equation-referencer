@@ -3,19 +3,18 @@ import { StateField } from '@codemirror/state';
 
 import * as MathLinks from 'obsidian-mathlinks';
 
-import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS, UNION_TYPE_MATH_CONTEXT_SETTING_KEYS, UNION_TYPE_EXTRA_SETTING_KEYS } from './settings/settings';
-import { MathSettingTab } from "./settings/tab";
-import { CleverRefProvider } from './cleverref';
-import { insertTheoremCalloutCallback, theoremCalloutNumberingViewPlugin, theoremCalloutPostProcessor } from './theorem_callouts';
-import { ContextSettingModal, DependencyNotificationModal, TheoremCalloutModal } from './modals';
-import { insertDisplayMath } from './key';
-import { DisplayMathRenderChild, buildEquationNumberPlugin } from './equation_number';
-import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote, hideDisplayMathPreviewInQuote } from './math_live_preview_in_callouts';
-// import { LinkedNotesIndexer, VaultIndex, VaultIndexer } from './indexer';
-import { theoremCalloutMetadataHiderPlulgin } from './theorem_callout_metadata_hider';
-import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, getProfile, isPluginOlderThan, staticifyEqNumber } from './utils';
+import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS, UNION_TYPE_MATH_CONTEXT_SETTING_KEYS, UNION_TYPE_EXTRA_SETTING_KEYS } from 'settings/settings';
+import { MathSettingTab } from "settings/tab";
+import { CleverRefProvider } from 'cleverref';
+import { insertTheoremCalloutCallback, theoremCalloutFirstLineDecorator, theoremCalloutNumberingViewPlugin, theoremCalloutPostProcessor } from 'theorem_callouts';
+import { ContextSettingModal, DependencyNotificationModal, TheoremCalloutModal } from 'modals';
+import { insertDisplayMath } from 'key';
+import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
+import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote, hideDisplayMathPreviewInQuote } from 'math_live_preview_in_callouts';
+// import { theoremCalloutMetadataHiderPlulgin } from 'theorem_callout_metadata_hider';
+import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, isPluginOlderThan } from 'utils/obsidian';
+import { getProfile, staticifyEqNumber } from 'utils/plugin';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
-// import { ProjectManager, makePrefixer } from './project';
 import { MathIndexManager } from './index/manager';
 import { ActiveNoteEquationLinkAutocomplete, ActiveNoteTheoremEquationLinkAutocomplete, ActiveNoteTheoremLinkAutocomplete, RecentNotesEquationLinkAutocomplete, RecentNotesTheoremEquationLinkAutocomplete, RecentNotesTheoremLinkAutocomplete, WholeVaultEquationLinkAutocomplete, WholeVaultTheoremEquationLinkAutocomplete, WholeVaultTheoremLinkAutocomplete } from 'suggest';
 
@@ -59,6 +58,8 @@ export default class MathBooster extends Plugin {
 
 		this.addChild((this.indexManager = new MathIndexManager(this, this.extraSettings)));
 		this.app.workspace.onLayoutReady(async () => this.indexManager.initialize());
+		// @ts-ignore
+		(window['mathIndex'] = this.indexManager.index) && this.register(() => delete window['mathIndex'])
 
 		this.addChild(
 			MathLinks.addProvider(
@@ -197,7 +198,7 @@ export default class MathBooster extends Plugin {
 						this.app, this, context.file,
 						(config) => {
 							if (context.file) {
-								insertTheoremCalloutCallback(this, editor, config, context.file);
+								insertTheoremCalloutCallback(editor, config);
 							}
 						},
 						"Insert", "Insert theorem callout",
@@ -238,7 +239,8 @@ export default class MathBooster extends Plugin {
 		/** Editor Extensions */
 
 		// hide > [!math|{"type":"theorem", ...}]
-		this.registerEditorExtension(theoremCalloutMetadataHiderPlulgin);
+		this.registerEditorExtension(theoremCalloutNumberingViewPlugin);
+		this.registerEditorExtension(theoremCalloutFirstLineDecorator);
 		// equation number
 		this.registerEditorExtension(buildEquationNumberPlugin(this));
 		// math preview in callouts and quotes
@@ -259,7 +261,6 @@ export default class MathBooster extends Plugin {
 		// for theorem callouts
 		this.registerMarkdownPostProcessor(async (element, context) => theoremCalloutPostProcessor(this, element, context));
 
-		this.registerEditorExtension(theoremCalloutNumberingViewPlugin(this));
 
 		// for equation numbers
 		this.registerMarkdownPostProcessor((element, context) => {

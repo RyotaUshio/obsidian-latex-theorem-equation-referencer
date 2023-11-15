@@ -1,11 +1,13 @@
 import { Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile, prepareFuzzySearch, sortSearchResults, SearchResult, Notice, prepareSimpleSearch, renderMath, finishRenderMath, getAllTags } from "obsidian";
 
-import MathBooster from "./main";
-import { getFileTitle } from './index/utils/normalizers';
-import { formatLabel, getModifierNameInPlatform, insertBlockIdIfNotExist, openFileAndSelectPosition, resolveSettings } from './utils';
-import { LEAF_OPTION_TO_ARGS } from "./settings/settings";
-import { EquationBlock, MarkdownBlock, MarkdownPage, MathBoosterBlock, TheoremCalloutBlock } from "./index/typings/markdown";
-import { MathIndex } from "./index/index";
+import MathBooster from "main";
+import { getFileTitle } from 'index/utils/normalizers';
+import { LEAF_OPTION_TO_ARGS } from "settings/settings";
+import { EquationBlock, MarkdownBlock, MarkdownPage, MathBoosterBlock, TheoremCalloutBlock } from "index/typings/markdown";
+import { MathIndex } from "index/index";
+import { getModifierNameInPlatform, openFileAndSelectPosition } from 'utils/obsidian';
+import { formatLabel } from "utils/format";
+import { insertBlockIdIfNotExist, resolveSettings } from "utils/plugin";
 
 
 type ScoredMathBoosterBlock = { match: SearchResult, block: MathBoosterBlock };

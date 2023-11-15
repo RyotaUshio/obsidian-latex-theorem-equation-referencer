@@ -1,12 +1,11 @@
 import { ButtonComponent, Setting, SliderComponent, TAbstractFile, TFile, TFolder, TextComponent, ToggleComponent } from 'obsidian';
 
-import MathBooster from '../main';
-import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from '../env';
-import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, THEOREM_REF_FORMATS, THEOREM_CALLOUT_STYLES, TheoremCalloutSettings, MathContextSettings, NUMBER_STYLES } from './settings';
-import { BooleanKeys, NumberKeys, formatTheoremCalloutType, formatTitle } from '../utils';
-// import { AutoNoteIndexer } from '../indexer';
+import MathBooster from 'main';
+import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from 'env';
+import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, THEOREM_REF_FORMATS, THEOREM_CALLOUT_STYLES, TheoremCalloutSettings, MathContextSettings, NUMBER_STYLES } from 'settings/settings';
+import { formatTheoremCalloutType } from 'utils/format';
+import { NumberKeys, BooleanKeys } from 'utils/general';
 import { DEFAULT_PROFILES, ManageProfileModal } from './profile';
-// import { PROJECT_DESCRIPTION, Project } from '../project';
 
 
 export class TheoremCalloutSettingsHelper {
@@ -372,6 +371,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
 export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
     makeSettingPane(): void {
         this.addToggleSetting("noteTitleInLink", "Show note title at link's head", "If turned on, a link to \"Theorem 1\" will look like \"Note title > Theorem 1.\" The same applies to equations.")
+        this.addToggleSetting("showTheoremCalloutEditButton", "Show an edit button on a theorem callout");
 
         // Suggest
         this.contentEl.createEl("h4", { text: "Theorem & equation suggestion" });

@@ -1,3 +1,4 @@
+// length must be >= 5
 export const THEOREM_LIKE_ENV_IDs = [
     "axiom",
     "definition",
@@ -21,6 +22,7 @@ export const PROOF_LIKE_ENV_IDs = [
 
 export const ENV_IDs = [...THEOREM_LIKE_ENV_IDs, ...PROOF_LIKE_ENV_IDs,] as const;
 
+// length must be <= 4
 export const THEOREM_LIKE_ENV_PREFIXES = [
     "axm",
     "def",
@@ -48,4 +50,9 @@ export interface TheoremLikeEnv {
 export const THEOREM_LIKE_ENVs = {} as Record<TheoremLikeEnvID, TheoremLikeEnv>;
 THEOREM_LIKE_ENV_IDs.forEach((id, index) => {
     THEOREM_LIKE_ENVs[id] = {id, prefix: THEOREM_LIKE_ENV_PREFIXES[index]};
+});
+
+export const THEOREM_LIKE_ENV_PREFIX_ID_MAP = {} as Record<TheoremLikeEnvPrefix, TheoremLikeEnvID>;
+THEOREM_LIKE_ENV_PREFIXES.forEach((prefix, index) => {
+    THEOREM_LIKE_ENV_PREFIX_ID_MAP[prefix] = THEOREM_LIKE_ENV_IDs[index];
 });

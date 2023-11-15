@@ -97,10 +97,16 @@ export const UNION_TYPE_MATH_CONTEXT_SETTING_KEYS: {[k in keyof Partial<MathCont
     "theoremCalloutStyle": THEOREM_CALLOUT_STYLES,
 };
 
-export interface TheoremCalloutSettings {
+export type MinimalTheoremCalloutSettings = {
     type: string;
     number: string;
     title?: string;
+}
+
+export type TheoremCalloutSettings = MinimalTheoremCalloutSettings & {
+    // type: string;
+    // number: string;
+    // title?: string;
     label?: string;
     setAsNoteMathLink: boolean;
 }
@@ -149,6 +155,7 @@ export type ExtraSettings = ImporterSettings & {
     backlinkLeafOption: LeafOption;
     // projectInfix: string;
     // projectSep: string;
+    showTheoremCalloutEditButton: boolean;
 }
 
 export const UNION_TYPE_EXTRA_SETTING_KEYS: {[k in keyof Partial<ExtraSettings>]: readonly string[]} = {
@@ -232,4 +239,5 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     // projectSep: "/",
     importerNumThreads: 2,
     importerUtilization: 0.75,
+    showTheoremCalloutEditButton: false,
 };
