@@ -345,42 +345,51 @@ export default class MathBooster extends Plugin {
 	}
 
 	registerLinkAutocomplete() {
-		this.registerEditorSuggest(new WholeVaultTheoremEquationLinkAutocomplete(
-			this,
-			() => this.extraSettings.triggerSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerSuggest
-		));
-		this.registerEditorSuggest(new WholeVaultTheoremLinkAutocomplete(
-			this,
-			() => this.extraSettings.triggerTheoremSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggest
-		));
-		this.registerEditorSuggest(new WholeVaultEquationLinkAutocomplete(
-			this,
-			() => this.extraSettings.triggerEquationSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggest
-		));
-		this.registerEditorSuggest(new RecentNotesTheoremEquationLinkAutocomplete(
-			this,
-			() => this.extraSettings.triggerSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerSuggestRecentNotes
-		));
-		this.registerEditorSuggest(new RecentNotesTheoremLinkAutocomplete(
-			this,
-			() => this.extraSettings.triggerTheoremSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggestRecentNotes
-		));
-		this.registerEditorSuggest(new RecentNotesEquationLinkAutocomplete(
-			this,
-			() => this.extraSettings.triggerEquationSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggestRecentNotes
-		));
-		this.registerEditorSuggest(new ActiveNoteTheoremEquationLinkAutocomplete(
-			this,
-			() => this.extraSettings.triggerSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerSuggestActiveNote
-		));
-		this.registerEditorSuggest(new ActiveNoteTheoremLinkAutocomplete(
-			this,
-			() => this.extraSettings.triggerTheoremSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggestActiveNote
-		));
-		this.registerEditorSuggest(new ActiveNoteEquationLinkAutocomplete(
-			this,
-			() => this.extraSettings.triggerEquationSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggestActiveNote
-		));
+		if (this.extraSettings.enableSuggest)
+			this.registerEditorSuggest(new WholeVaultTheoremEquationLinkAutocomplete(
+				this,
+				() => this.extraSettings.triggerSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerSuggest
+			));
+		if (this.extraSettings.enableTheoremSuggest)
+			this.registerEditorSuggest(new WholeVaultTheoremLinkAutocomplete(
+				this,
+				() => this.extraSettings.triggerTheoremSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggest
+			));
+		if (this.extraSettings.enableEquationSuggest)
+			this.registerEditorSuggest(new WholeVaultEquationLinkAutocomplete(
+				this,
+				() => this.extraSettings.triggerEquationSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggest
+			));
+		if (this.extraSettings.enableSuggestRecentNotes)
+			this.registerEditorSuggest(new RecentNotesTheoremEquationLinkAutocomplete(
+				this,
+				() => this.extraSettings.triggerSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerSuggestRecentNotes
+			));
+		if (this.extraSettings.enableTheoremSuggestRecentNotes)
+			this.registerEditorSuggest(new RecentNotesTheoremLinkAutocomplete(
+				this,
+				() => this.extraSettings.triggerTheoremSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggestRecentNotes
+			));
+		if (this.extraSettings.enableEquationSuggestRecentNotes)
+			this.registerEditorSuggest(new RecentNotesEquationLinkAutocomplete(
+				this,
+				() => this.extraSettings.triggerEquationSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggestRecentNotes
+			));
+		if (this.extraSettings.enableSuggestActiveNote)
+			this.registerEditorSuggest(new ActiveNoteTheoremEquationLinkAutocomplete(
+				this,
+				() => this.extraSettings.triggerSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerSuggestActiveNote
+			));
+		if (this.extraSettings.enableTheoremSuggestActiveNote)
+			this.registerEditorSuggest(new ActiveNoteTheoremLinkAutocomplete(
+				this,
+				() => this.extraSettings.triggerTheoremSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggestActiveNote
+			));
+		if (this.extraSettings.enableEquationSuggestActiveNote)
+			this.registerEditorSuggest(new ActiveNoteEquationLinkAutocomplete(
+				this,
+				() => this.extraSettings.triggerEquationSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggestActiveNote
+			));
 	}
 
 	/**

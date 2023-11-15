@@ -365,6 +365,10 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addToggleSetting("setLabelInModal", "Show LaTeX/Pandoc label input form in theorem callout insert/edit modal");
 
         // Suggest
+        this.contentEl.createDiv({
+            text: `Enabling/disabling requires to reloading ${this.plugin.manifest.name} to take effect.`,
+            cls: ["setting-item-description", "math-booster-setting-item-description"],
+        });
         this.contentEl.createEl("h4", { text: "Theorem & equation suggestion" });
         this.contentEl.createEl("h5", { text: "From entire vault" });
         this.addToggleSetting("enableSuggest", "Enable");
