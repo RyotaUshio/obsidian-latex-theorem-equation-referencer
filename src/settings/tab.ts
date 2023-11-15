@@ -3,7 +3,7 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import MathBooster, { VAULT_ROOT } from "../main";
 import { DEFAULT_EXTRA_SETTINGS, DEFAULT_SETTINGS } from "./settings";
 import { ExtraSettingsHelper, MathContextSettingsHelper } from "./helper";
-import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "../modals";
+import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "settings/modals";
 // import { PROJECT_DESCRIPTION } from "project";
 
 

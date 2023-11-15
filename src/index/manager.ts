@@ -135,7 +135,7 @@ export class MathIndexManager extends Component {
     }
 
     /** Queue a file for reloading; this is done asynchronously in the background and may take a few seconds. */
-    public async reload(file: TFile): Promise<Indexable> {
+    public async reload(file: TFile): Promise<MarkdownPage> {
         const result = await this.importer.import<ImportResult>(file);
 
         if (result.type === "error") {

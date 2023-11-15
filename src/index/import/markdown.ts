@@ -82,8 +82,11 @@ export function markdownImport(
         const end = block.position.end.line;
 
         let theoremCalloutSettings: MinimalTheoremCalloutSettings | null = null;
+        let v1 = false;
         if (block.type === "callout") {
-            theoremCalloutSettings = readTheoremCalloutSettings(lines[start]) ?? null;
+            const settings = readTheoremCalloutSettings(lines[start]);
+            theoremCalloutSettings = settings ?? null;
+            v1 = !!(settings?.legacy);
         }
 
         if (block.type === "math") {
@@ -137,6 +140,7 @@ export function markdownImport(
                 $label: metadata.label,
                 $display: metadata.display,
                 $main: metadata.main === 'true',
+                $v1: v1,
             } as JsonTheoremCalloutBlock);
         } else {
             blocks.set(start, {
@@ -204,7 +208,7 @@ function emptylines(lines: string[], start: number, end: number): boolean {
         if (lines[index].trim() !== "") return false;
     }
 
-    return false;
+    return true;
 }
 
 /**

@@ -1,11 +1,11 @@
 import { TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder } from 'obsidian';
 
-import MathBooster from './main';
-import { MathSettings, MathContextSettings, DEFAULT_SETTINGS, MinimalTheoremCalloutSettings } from './settings/settings';
-import { MathSettingTab } from "./settings/tab";
-import { TheoremCalloutSettingsHelper, MathContextSettingsHelper } from "./settings/helper";
-import { isEqualToOrChildOf, isPluginOlderThan } from './utils/obsidian';
-import { resolveSettings } from './utils/plugin';
+import MathBooster from 'main';
+import { MathSettings, MathContextSettings, DEFAULT_SETTINGS, MinimalTheoremCalloutSettings } from 'settings/settings';
+import { MathSettingTab } from "settings/tab";
+import { TheoremCalloutSettingsHelper, MathContextSettingsHelper } from "settings/helper";
+import { isEqualToOrChildOf } from 'utils/obsidian';
+import { resolveSettings } from 'utils/plugin';
 
 
 abstract class MathSettingModal<SettingsType> extends Modal {
@@ -275,59 +275,6 @@ export class ExcludedFileManageModal extends Modal {
             }
         }
 
-    }
-
-    onClose() {
-        const { contentEl } = this;
-        contentEl.empty();
-    }
-}
-
-
-export class DependencyNotificationModal extends Modal {
-    constructor(public plugin: MathBooster) {
-        super(plugin.app);
-    }
-
-    onOpen() {
-        const { contentEl } = this;
-        contentEl.empty();
-
-        contentEl.createEl('h3', {
-            text: `Welcome to ${this.plugin.manifest.name}`
-        });
-
-        contentEl.createDiv({
-            text: `${this.plugin.manifest.name} requires the following plugins to work properly. Disable it once, install/update & enable the dependencies and enable it again.`,
-            attr: { style: "margin-bottom: 1em;" }
-        });
-
-        // Validity indicator is taken from the Latex Suite plugin (https://github.com/artisticat1/obsidian-latex-suite/blob/a5914c70c16d5763a182ec51d9716110b40965cf/src/settings.ts)
-        for (const depenedency of [
-            { id: "mathlinks", name: "MathLinks" },
-            { id: "dataview", name: "Dataview" }
-        ]) {
-            const depPlugin = this.app.plugins.getPlugin(depenedency.id);
-            const requiredVersion = this.plugin.dependencies[depenedency.id];
-            const isValid = depPlugin && !isPluginOlderThan(depPlugin, requiredVersion);
-            const setting = new Setting(contentEl)
-                .setName(depenedency.name)
-                .addExtraButton((button) => {
-                    button.setIcon(isValid ? "checkmark" : "cross");
-                    const el = button.extraSettingsEl;
-                    el.addClass("math-booster-dependency-validation");
-                    el.removeClass(isValid ? "invalid" : "valid");
-                    el.addClass(isValid ? "valid" : "invalid");
-                });
-            setting.descEl.createDiv(
-                {
-                    text:
-                        `Required version: ${requiredVersion}+ / `
-                        + (depPlugin ? `Currently installed: ${depPlugin.manifest.version}`
-                            : `Not installed or enabled`)
-                }
-            );
-        }
     }
 
     onClose() {

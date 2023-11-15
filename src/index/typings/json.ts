@@ -72,6 +72,7 @@ export interface JsonTheoremCalloutBlock extends JsonMathBoosterBlock {
     $type: "theorem";
     $settings: MinimalTheoremCalloutSettings;
     $main: boolean;
+    $v1: boolean;
 }
 
 export interface JsonEquationBlock extends JsonMathBoosterBlock {

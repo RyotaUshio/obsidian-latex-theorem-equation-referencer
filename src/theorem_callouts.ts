@@ -3,7 +3,7 @@ import { App, Component, Editor, ExtraButtonComponent, MarkdownPostProcessorCont
 import { ViewUpdate, EditorView, PluginValue, ViewPlugin, Decoration, DecorationSet } from '@codemirror/view';
 
 import MathBooster from 'main';
-import { TheoremCalloutModal } from 'modals';
+import { TheoremCalloutModal } from 'settings/modals';
 import { TheoremCalloutSettings, TheoremCalloutPrivateFields, MinimalTheoremCalloutSettings } from 'settings/settings';
 import {
     increaseQuoteLevel, resolveSettings
@@ -144,7 +144,7 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
             } else {
                 this.removeEditButton();
             }
-        }));        
+        }));
     }
 
     getPage(): MarkdownPage | null {
@@ -573,5 +573,41 @@ export const theoremCalloutFirstLineDecorator = ViewPlugin.fromClass(
         }
     }, {
     decorations: (v) => v.decorations
+});
+
+
+export async function rewriteTheoremCalloutFromV1ToV2(plugin: MathBooster, file: TFile) {
+    const { app, indexManager } = plugin;
+
+    const page = await indexManager.reload(file);
+    await app.vault.process(file, (data) => convertTheoremCalloutFromV1ToV2(data, page));
 }
-);
+
+
+export const convertTheoremCalloutFromV1ToV2 = (data: string, page: MarkdownPage) => {
+    const lines = data.split('\n');
+    const newLines = [...lines];
+    let lineAdded = 0;
+
+    for (const section of page.$sections) {
+        for (const block of section.$blocks) {
+            if (!TheoremCalloutBlock.isTheoremCalloutBlock(block)) continue;
+            if (!block.$v1) continue
+
+            const newHeadLines = [generateTheoremCalloutFirstLine({
+                type: block.$settings.type,
+                number: block.$settings.number,
+                title: block.$settings.title
+            })];
+            const legacySettings = block.$settings as any;
+            if (legacySettings.label) newHeadLines.push(`> %% label: ${legacySettings.label} %%`);
+            if (legacySettings.setAsNoteMathLink) newHeadLines.push(`> %% main %%`);
+
+            newLines.splice(block.$position.start + lineAdded, 1, ...newHeadLines);
+
+            lineAdded += newHeadLines.length - 1;
+        }
+    }
+
+    return newLines.join('\n');
+} 

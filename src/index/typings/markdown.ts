@@ -301,6 +301,9 @@ export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing
     $typename: string = "Theorem Callout Block";
     $type: string = "theorem";
 
+    /** True if written in the version-1 format of '> [!math|{"type":"theorem",...}]"' */
+    $v1: boolean;
+
     /** The settings for this theorem callout. */
     $settings: MinimalTheoremCalloutSettings;
 
@@ -353,6 +356,7 @@ export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing
             $label: object.$label,
             $display: object.$display,
             $main: object.$main,
+            $v1: object.$v1,
         });
     }
 
@@ -362,6 +366,7 @@ export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing
             $label: this.$label,
             $display: this.$display,
             $main: this.$main,
+            $v1: this.$v1,
         });
     }
 
