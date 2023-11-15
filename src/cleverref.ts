@@ -18,21 +18,41 @@ export class CleverRefProvider extends MathLinks.Provider {
 
     provide(
         parsedLinktext: { path: string; subpath: string; },
-        targetFile: TFile | null, 
-        targetSubpathResult: HeadingSubpathResult | BlockSubpathResult | null, 
+        targetFile: TFile | null,
+        targetSubpathResult: HeadingSubpathResult | BlockSubpathResult | null,
     ): string | null {
-        // Only care about block references
-        if (targetSubpathResult?.type !== 'block') return null;
-
+        const { path, subpath } = parsedLinktext;
         if (targetFile === null) return null;
         const page = this.index.load(targetFile.path);
         if (!MarkdownPage.isMarkdownPage(page)) return null
 
-        const block = page.$blocks.get(targetSubpathResult.block.id);
-        
-        if (block instanceof MathBoosterBlock && block.$refName !== null) {
-            const linkpath = parsedLinktext.path;
-            return linkpath ? linkpath + ' > ' + block.$refName : block.$refName;
+        const processedPath = path ? page.$refName ?? path : '';
+
+        // only path, no subpath
+        if (!subpath) return processedPath;
+
+        // subpath resolution failed, do nothing
+        if (targetSubpathResult === null) return null;
+
+        // subpath resolution succeeded
+        if (targetSubpathResult.type === 'block') {
+            // handle block links
+
+            // get the target block
+            const block = page.$blocks.get(targetSubpathResult.block.id);
+
+            if (MathBoosterBlock.isMathBoosterBlock(block)) {
+                // display text set manually: higher priority
+                if (block.$display) return path ? processedPath + ' > ' + block.$display : block.$display;
+                // display text computed automatically: lower priority
+                if (block.$refName) return path ? processedPath + ' > ' + block.$refName : block.$refName;
+            }
+        } else {
+            // handle heading links
+            // just ignore (return null) if we don't need to perform any particular processing
+            if (path && page.$refName) {
+                return processedPath + ' > ' + subpath;
+            }
         }
 
         return null;

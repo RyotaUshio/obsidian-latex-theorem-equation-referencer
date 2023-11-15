@@ -105,27 +105,6 @@ export class TheoremCalloutSettingsHelper {
                 });
             });
 
-
-        // new Setting(contentEl).setName("Use this theorem callout to set this note's mathLink").addToggle((toggle) => {
-        //     this.settings.setAsNoteMathLink = this.defaultSettings.setAsNoteMathLink ?? false;
-        //     toggle.setValue(this.settings.setAsNoteMathLink);
-        //     toggle.onChange(async (value) => {
-        //         const cache = this.plugin.app.metadataCache.getFileCache(this.file);
-        //         if (cache) {
-        //             const indexer = (new AutoNoteIndexer(this.plugin.app, this.plugin, this.file)).getIndexer().calloutIndexer;
-        //             await indexer.iter(cache, async (theoremCallout) => {
-        //                 theoremCallout.settings.setAsNoteMathLink = false;
-        //                 await indexer.overwriteSettings(
-        //                     theoremCallout.cache.position.start.line,
-        //                     theoremCallout.settings,
-        //                     formatTitle(this.plugin, this.file, indexer.resolveSettings(theoremCallout))
-        //                 );
-        //             });
-        //             this.settings.setAsNoteMathLink = value; // no need to call indexer.overwriteSettings() here
-        //         }
-        //     });
-        // });
-
         addFoldOptionSetting(contentEl, 'Collapse', (fold) => {this.settings.fold = fold}, this.defaultSettings.fold ?? this.plugin.extraSettings.foldDefault);
     }
 }
@@ -378,6 +357,7 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         }, this.defaultSettings.foldDefault);
         this.addToggleSetting("noteTitleInLink", "Show note title at link's head", "If turned on, a link to \"Theorem 1\" will look like \"Note title > Theorem 1.\" The same applies to equations.")
         this.addToggleSetting("showTheoremCalloutEditButton", "Show an edit button on a theorem callout");
+        this.addToggleSetting("setOnlyTheoremAsMain", "If a note has only one theorem callout, automatically set it as main", 'Regardless of this setting, putting "%% main %%" or "%% main: true %%" in a theorem callout will set it as main one of the note, which means any link to that note will be displayed with the theorem\'s title. Enabling this option implicitly sets a theorem callout as main when it\'s the only one in the note.');
 
         // Suggest
         this.contentEl.createEl("h4", { text: "Theorem & equation suggestion" });

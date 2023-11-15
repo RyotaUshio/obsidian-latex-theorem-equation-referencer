@@ -3,7 +3,7 @@ import { MetadataCache, TFile, Vault } from 'obsidian';
 import { InvertedIndex } from './storage/inverted';
 import { Indexable, LINKBEARING_TYPE, Linkable } from './typings/indexable';
 import { Link } from 'index/expression/literal';
-import { EquationBlock, TheoremCalloutBlock } from './typings/markdown';
+import { EquationBlock, MarkdownPage, TheoremCalloutBlock } from './typings/markdown';
 
 import MathBooster from 'main';
 import { CONVERTER, formatTitle, formatTitleWithoutSubtitle, getEqNumberPrefix } from 'utils/format';
@@ -254,23 +254,32 @@ export class MathIndex {
 
     /**
      * Update $printName and $refName of theorems and equations.
+     * Additionally, set $main of a theorem callout to true if it is the only one in the file, if configured as such.
+     * Fiinally, set $refName of the page to the refName of the main theorem, if it exists.
      */
     public updateNames(file: TFile) {
         const settings = resolveSettings(undefined, this.plugin, file);
+        
         let blockOrdinal = 1;
         let block: Indexable | undefined;
-        let theoremCount = 0;
+
+        let theorems: TheoremCalloutBlock[] = []
+        let autoNumberedTheoremCount = 0;
+        let mainTheorem: TheoremCalloutBlock | null = null;
+
         let equationNumber = +(settings.eqNumberInit);
         const eqPrefix = getEqNumberPrefix(this.plugin.app, file, settings);
         const eqSuffix = settings.eqNumberSuffix;
 
         while (block = this.load(`${file.path}/block${blockOrdinal++}`)) {
             if (TheoremCalloutBlock.isTheoremCalloutBlock(block)) {
+                theorems.push(block);
+                if (block.$main) mainTheorem = block;
                 // Theorem numbers start at 1, and are incremented by 1 
                 // for each theorem callout.
                 // They may be additionally formatted according to the settings.
                 const resolvedSettings = Object.assign({}, settings, block.$settings);
-                if (block.$settings.number == 'auto') (resolvedSettings as ResolvedMathSettings)._index = theoremCount++;
+                if (block.$settings.number == 'auto') (resolvedSettings as ResolvedMathSettings)._index = autoNumberedTheoremCount++;
                 // const printName = formatTitle(this.plugin, file, resolvedSettings);
                 const mainTitle = formatTitleWithoutSubtitle(this.plugin, file, resolvedSettings);
                 const refName = this.formatMathLink(file, resolvedSettings, "refFormat");
@@ -295,6 +304,15 @@ export class MathIndex {
                 block.$refName = refName;
             }
         }
+
+        if (this.plugin.extraSettings.setOnlyTheoremAsMain && theorems.length == 1) {
+            theorems[0].$main = true;
+            mainTheorem = theorems[0];
+        }
+
+        const page = this.load(file.path);
+        if (MarkdownPage.isMarkdownPage(page)) page.$refName = mainTheorem?.$refName ?? undefined;
+
         this.plugin.app.metadataCache.trigger("math-booster:index-updated", file);
     }
 

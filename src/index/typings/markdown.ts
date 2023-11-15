@@ -62,6 +62,9 @@ export class MarkdownPage implements File, Linkbearing, Indexable {
      */
     $blocks: Map<string, MarkdownBlock>;
 
+    /** $refName of the main theorem callout, if any. */
+    $refName?: string
+
     /** Create a markdown file from the given raw values. */
     static from(raw: JsonMarkdownPage, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownPage {
         const sections = raw.$sections.map((sect) => MarkdownSection.from(sect, raw.$path, normalizer));
@@ -282,6 +285,10 @@ export abstract class MathBoosterBlock extends MarkdownBlock {
     abstract $printName: string | null; // declaring as abstract to treat like an interface
     $refName: string | null;
 
+    /** Additional metadata specified via comments */
+    $label?: string;
+    $display?: string;
+
     static isMathBoosterBlock(object: Indexable | undefined): object is MathBoosterBlock {
         return object !== undefined && object.$types.includes('block-math-booster');
     }
@@ -316,18 +323,13 @@ export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing
         return this.$settings.title;
     }
 
-    // get $theoremLabel(): string | undefined {
-    //     return this.$settings.label;
-    // }
-    
-    // get $setAsNoteMathLink(): boolean {
-    //     return this.$settings.setAsNoteMathLink;
-    // }
-
     /** e.g. "Theorem 1.1 (Cauchy-Schwarz)" */
     get $printName(): string {
         return this.$theoremSubtitle ? `${this.$theoremMainTitle} (${this.$theoremSubtitle})` : this.$theoremMainTitle;
     }
+
+    /** Additional metadata specified via comments */
+    $main: boolean;
 
     static from(
         object: JsonTheoremCalloutBlock,
@@ -348,12 +350,18 @@ export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing
             $blockId: object.$blockId,
             $type: object.$type,
             $settings: object.$settings,
+            $label: object.$label,
+            $display: object.$display,
+            $main: object.$main,
         });
     }
 
     public partial(): JsonMarkdownBlock {
         return Object.assign(super.partial(), {
             $settings: this.$settings,
+            $label: this.$label,
+            $display: this.$display,
+            $main: this.$main,
         });
     }
 
@@ -398,6 +406,8 @@ export class EquationBlock extends MathBoosterBlock {
             $type: object.$type,
             $mathText: object.$mathText,
             $manualTag: object.$manualTag,
+            $label: object.$label,
+            $display: object.$display,
         });
     }
 
@@ -405,6 +415,8 @@ export class EquationBlock extends MathBoosterBlock {
         return Object.assign(super.partial(), {
             $mathText: this.$mathText,
             $manualTag: this.$manualTag,
+            $label: this.$label,
+            $display: this.$display,
         });
     }
 

@@ -11,6 +11,7 @@ import { MathContextSettings } from "./settings/settings";
 // import { Backlink, BacklinkModal } from "./backlinks";
 import { EquationBlock, MarkdownPage } from "./index/typings/markdown";
 import { MathIndex } from "index";
+import { parseLatexComment } from "utils/parse";
 
 
 /** For reading view */
@@ -227,12 +228,8 @@ export function insertTagInMathText(text: string, tagContent: string, lineByLine
             // remove comments
             let alignContent = alignResult[1]
                 .split('\n')
-                .map(line => {
-                    const commentMatch = line.match(/(?<!\\)\%/);
-                    return commentMatch?.index !== undefined
-                        ? line.substring(0, commentMatch.index)
-                        : line;
-                }).join('\n');
+                .map(line => parseLatexComment(line).nonComment)
+                .join('\n');
             // add tags
             let index = 1;
             alignContent = alignContent

@@ -9,8 +9,9 @@ import {
     JsonTheoremCalloutBlock,
     JsonEquationBlock,
 } from "index/typings/json";
-import { MinimalTheoremCalloutSettings, TheoremCalloutSettings } from "settings/settings";
-import { readTheoremCalloutSettings, trimMathText } from "utils/parse";
+import { MinimalTheoremCalloutSettings } from "settings/settings";
+import { parseMarkdownComment, parseYamlLike, readTheoremCalloutSettings, trimMathText } from "utils/parse";
+import { parseLatexComment } from "utils/parse";
 
 
 /**
@@ -86,8 +87,20 @@ export function markdownImport(
         }
 
         if (block.type === "math") {
+            // Read the LaTeX source
             const mathText = trimMathText(getBlockText(markdown, block));
+
+            // If manually tagged (`\tag{...}`), extract the tag
             const tagMatch = mathText.match(/\\tag\{(.*)\}/);
+
+            // Parse additional metadata from LaTeX comments
+            const metadata: Record<string, string | undefined> = {};
+            for (const line of mathText.split('\n')) {
+                const { comment } = parseLatexComment(line);
+                if (!comment) continue;
+                Object.assign(metadata, parseYamlLike(comment));
+            }
+
             blocks.set(start, {
                 $ordinal: blockOrdinal++,
                 $position: { start, end },
@@ -97,8 +110,22 @@ export function markdownImport(
                 $manualTag: tagMatch?.[1] ?? null,
                 $mathText: mathText,
                 $type: "equation",
+                $label: metadata.label,
+                $display: metadata.display,
             } as JsonEquationBlock);
         } else if (theoremCalloutSettings) {
+
+            // Parse additional metadata from Markdown comments
+            const contentText = lines.slice(start + 1, end + 1).join('\n');
+            const commentLines = parseMarkdownComment(contentText);
+            const metadata: Record<string, string | undefined> = {};
+            for (let line of commentLines) {
+                if (line.startsWith('>')) line = line.slice(1).trim();
+                if (!line) continue;
+                if (line === 'main') metadata.main = 'true'; // %% main %% is the same as %% main: true %%
+                else Object.assign(metadata, parseYamlLike(line));
+            }
+
             blocks.set(start, {
                 $ordinal: blockOrdinal++,
                 $position: { start, end },
@@ -107,6 +134,9 @@ export function markdownImport(
                 $blockId: block.id,
                 $settings: theoremCalloutSettings,
                 $type: "theorem",
+                $label: metadata.label,
+                $display: metadata.display,
+                $main: metadata.main === 'true',
             } as JsonTheoremCalloutBlock);
         } else {
             blocks.set(start, {

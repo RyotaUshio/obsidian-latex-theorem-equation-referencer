@@ -160,6 +160,7 @@ export type ExtraSettings = ImporterSettings & {
     // projectInfix: string;
     // projectSep: string;
     showTheoremCalloutEditButton: boolean;
+    setOnlyTheoremAsMain: boolean;
 }
 
 export const UNION_TYPE_EXTRA_SETTING_KEYS: {[k in keyof Partial<ExtraSettings>]: readonly string[]} = {
@@ -245,4 +246,5 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     importerNumThreads: 2,
     importerUtilization: 0.75,
     showTheoremCalloutEditButton: false,
+    setOnlyTheoremAsMain: false,
 };

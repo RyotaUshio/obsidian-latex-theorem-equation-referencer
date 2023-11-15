@@ -64,11 +64,14 @@ export interface JsonMarkdownBlock {
 
 export interface JsonMathBoosterBlock extends JsonMarkdownBlock {
     $type: "theorem" | "equation";
+    $label?: string;
+    $display?: string;
 }
 
 export interface JsonTheoremCalloutBlock extends JsonMathBoosterBlock {
     $type: "theorem";
     $settings: MinimalTheoremCalloutSettings;
+    $main: boolean;
 }
 
 export interface JsonEquationBlock extends JsonMathBoosterBlock {
