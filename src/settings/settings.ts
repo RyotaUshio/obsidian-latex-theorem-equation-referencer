@@ -97,10 +97,13 @@ export const UNION_TYPE_MATH_CONTEXT_SETTING_KEYS: {[k in keyof Partial<MathCont
     "theoremCalloutStyle": THEOREM_CALLOUT_STYLES,
 };
 
+export type FoldOption = '' | '+' | '-';
+
 export type MinimalTheoremCalloutSettings = {
     type: string;
     number: string;
     title?: string;
+    fold?: FoldOption;
 }
 
 export type TheoremCalloutSettings = MinimalTheoremCalloutSettings & {
@@ -108,7 +111,7 @@ export type TheoremCalloutSettings = MinimalTheoremCalloutSettings & {
     // number: string;
     // title?: string;
     label?: string;
-    setAsNoteMathLink: boolean;
+    // setAsNoteMathLink: boolean;
 }
 
 export interface TheoremCalloutPrivateFields {
@@ -121,6 +124,7 @@ export interface ImporterSettings {
 }
 
 export type ExtraSettings = ImporterSettings & {
+    foldDefault: FoldOption;
     noteTitleInLink: boolean;
     profiles: Record<string, Profile>;
     triggerSuggest: string;
@@ -203,6 +207,7 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
 }
 
 export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
+    foldDefault: '',
     noteTitleInLink: true,
     profiles: DEFAULT_PROFILES,
     triggerSuggest: "\\ref",

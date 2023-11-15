@@ -17,7 +17,7 @@ import {
     JsonTheoremCalloutBlock,
     JsonEquationBlock,
 } from "./json";
-import { TheoremCalloutSettings } from "settings/settings";
+import { MinimalTheoremCalloutSettings, TheoremCalloutSettings } from "settings/settings";
 import { Pos } from "obsidian";
 import { TheoremCalloutInfo } from "theorem_callouts";
 
@@ -295,7 +295,7 @@ export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing
     $type: string = "theorem";
 
     /** The settings for this theorem callout. */
-    $settings: TheoremCalloutSettings;
+    $settings: MinimalTheoremCalloutSettings;
 
     $titleSuffix: string;
 
@@ -316,13 +316,13 @@ export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing
         return this.$settings.title;
     }
 
-    get $theoremLabel(): string | undefined {
-        return this.$settings.label;
-    }
+    // get $theoremLabel(): string | undefined {
+    //     return this.$settings.label;
+    // }
     
-    get $setAsNoteMathLink(): boolean {
-        return this.$settings.setAsNoteMathLink;
-    }
+    // get $setAsNoteMathLink(): boolean {
+    //     return this.$settings.setAsNoteMathLink;
+    // }
 
     /** e.g. "Theorem 1.1 (Cauchy-Schwarz)" */
     get $printName(): string {

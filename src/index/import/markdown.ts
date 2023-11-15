@@ -9,7 +9,7 @@ import {
     JsonTheoremCalloutBlock,
     JsonEquationBlock,
 } from "index/typings/json";
-import { TheoremCalloutSettings } from "settings/settings";
+import { MinimalTheoremCalloutSettings, TheoremCalloutSettings } from "settings/settings";
 import { readTheoremCalloutSettings, trimMathText } from "utils/parse";
 
 
@@ -80,7 +80,7 @@ export function markdownImport(
         const start = block.position.start.line;
         const end = block.position.end.line;
 
-        let theoremCalloutSettings: TheoremCalloutSettings | null = null;
+        let theoremCalloutSettings: MinimalTheoremCalloutSettings | null = null;
         if (block.type === "callout") {
             theoremCalloutSettings = readTheoremCalloutSettings(lines[start]) ?? null;
         }

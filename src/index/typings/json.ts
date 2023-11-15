@@ -3,7 +3,7 @@
 
 import { Link } from "index/expression/literal";
 import { Pos } from "obsidian";
-import { TheoremCalloutSettings } from "settings/settings";
+import { MinimalTheoremCalloutSettings, TheoremCalloutSettings } from "settings/settings";
 
 /** A span of contiguous lines. */
 export interface LineSpan {
@@ -68,7 +68,7 @@ export interface JsonMathBoosterBlock extends JsonMarkdownBlock {
 
 export interface JsonTheoremCalloutBlock extends JsonMathBoosterBlock {
     $type: "theorem";
-    $settings: TheoremCalloutSettings;
+    $settings: MinimalTheoremCalloutSettings;
 }
 
 export interface JsonEquationBlock extends JsonMathBoosterBlock {

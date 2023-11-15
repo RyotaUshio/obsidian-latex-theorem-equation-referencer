@@ -1,5 +1,5 @@
 import { RangeSetBuilder } from '@codemirror/state';
-import { App, CachedMetadata, Component, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Notice, TFile, parseLinktext, resolveSubpath } from "obsidian";
+import { App, Component, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Notice, TFile } from "obsidian";
 import { ViewUpdate, EditorView, PluginValue, ViewPlugin, Decoration, DecorationSet } from '@codemirror/view';
 
 import MathBooster from 'main';
@@ -25,7 +25,7 @@ import { getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveLinktext } 
 
 function generateTheoremCalloutFirstLine(config: MinimalTheoremCalloutSettings): string {
     const metadata = config.number === 'auto' ? '' : config.number === '' ? '|*' : `|${config.number}`;
-    const firstLine = `> [!${config.type}${metadata}]${config.title ? ' ' + config.title : ''}`
+    const firstLine = `> [!${config.type}${metadata}]${config.fold ?? ''}${config.title ? ' ' + config.title : ''}`
     return firstLine;
 }
 
@@ -508,7 +508,7 @@ function readSettingsFromEl(calloutEl: HTMLElement): TheoremCalloutSettings | nu
 
     const title = '' // calloutEl.querySelector<HTMLElement>('.callout-title-inner')?.textContent?.trim();
 
-    return { type, number, title, setAsNoteMathLink: false }
+    return { type, number, title }
 }
 
 

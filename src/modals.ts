@@ -1,7 +1,7 @@
 import { TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder } from 'obsidian';
 
 import MathBooster from './main';
-import { MathSettings, MathContextSettings, DEFAULT_SETTINGS } from './settings/settings';
+import { MathSettings, MathContextSettings, DEFAULT_SETTINGS, MinimalTheoremCalloutSettings } from './settings/settings';
 import { MathSettingTab } from "./settings/tab";
 import { TheoremCalloutSettingsHelper, MathContextSettingsHelper } from "./settings/helper";
 import { isEqualToOrChildOf, isPluginOlderThan } from './utils/obsidian';
@@ -68,7 +68,7 @@ export class TheoremCalloutModal extends MathSettingModal<MathSettings> {
         callback: (settings: MathSettings) => void,
         public buttonText: string,
         public headerText: string,
-        public currentCalloutSettings?: MathSettings,
+        public currentCalloutSettings?: MinimalTheoremCalloutSettings,
     ) {
         super(app, plugin, callback);
     }

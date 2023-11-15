@@ -2,7 +2,7 @@ import { ButtonComponent, Setting, SliderComponent, TAbstractFile, TFile, TFolde
 
 import MathBooster from 'main';
 import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from 'env';
-import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, THEOREM_REF_FORMATS, THEOREM_CALLOUT_STYLES, TheoremCalloutSettings, MathContextSettings, NUMBER_STYLES } from 'settings/settings';
+import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, THEOREM_REF_FORMATS, THEOREM_CALLOUT_STYLES, TheoremCalloutSettings, MathContextSettings, NUMBER_STYLES, FoldOption, DEFAULT_EXTRA_SETTINGS } from 'settings/settings';
 import { formatTheoremCalloutType } from 'utils/format';
 import { NumberKeys, BooleanKeys } from 'utils/general';
 import { DEFAULT_PROFILES, ManageProfileModal } from './profile';
@@ -125,6 +125,8 @@ export class TheoremCalloutSettingsHelper {
         //         }
         //     });
         // });
+
+        addFoldOptionSetting(contentEl, 'Collapse', (fold) => {this.settings.fold = fold}, this.defaultSettings.fold ?? this.plugin.extraSettings.foldDefault);
     }
 }
 
@@ -370,6 +372,10 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
 
 export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
     makeSettingPane(): void {
+        this.settingRefs["foldDefault"] = addFoldOptionSetting(
+            this.contentEl, 'Default collapsibility', (fold) => {
+                this.settings.foldDefault = fold;
+        }, this.defaultSettings.foldDefault);
         this.addToggleSetting("noteTitleInLink", "Show note title at link's head", "If turned on, a link to \"Theorem 1\" will look like \"Note title > Theorem 1.\" The same applies to equations.")
         this.addToggleSetting("showTheoremCalloutEditButton", "Show an edit button on a theorem callout");
 
@@ -521,3 +527,18 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
 //         return setting;
 //     }
 // }
+
+
+function addFoldOptionSetting(el: HTMLElement, name: string, onChange: (fold: FoldOption) => any, defaultValue?: FoldOption) {
+    return new Setting(el)
+    .setName(name)
+    .addDropdown((dropdown) => {
+        dropdown.addOption('', 'Unfoldable');
+        dropdown.addOption('+', 'Foldable & expanded by default');
+        dropdown.addOption('-', 'Foldable & folded by default');
+
+        dropdown.setValue(defaultValue ?? DEFAULT_EXTRA_SETTINGS.foldDefault);
+
+        dropdown.onChange(onChange)
+    });
+}

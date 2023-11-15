@@ -1,13 +1,13 @@
 import MathBooster from "main";
 import { CachedMetadata, Notice, TAbstractFile, TFile } from "obsidian";
-import { DEFAULT_SETTINGS, MathContextSettings, ResolvedMathSettings, TheoremCalloutSettings } from "settings/settings";
+import { DEFAULT_SETTINGS, MathContextSettings, MinimalTheoremCalloutSettings, ResolvedMathSettings, TheoremCalloutSettings } from "settings/settings";
 import { generateBlockID, getAncestors } from "./obsidian";
 import { EquationBlock, MarkdownBlock, MarkdownPage } from "index/typings/markdown";
 import { getIO } from "file_io";
 
-export function resolveSettings(settings: TheoremCalloutSettings, plugin: MathBooster, currentFile: TAbstractFile): ResolvedMathSettings;
+export function resolveSettings(settings: MinimalTheoremCalloutSettings, plugin: MathBooster, currentFile: TAbstractFile): ResolvedMathSettings;
 export function resolveSettings(settings: undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings>;
-export function resolveSettings(settings: TheoremCalloutSettings | undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings> {
+export function resolveSettings(settings: MinimalTheoremCalloutSettings | undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings> {
     /** Resolves settings. Does not overwride, but returns a new settings object.
      * Returned settings can be either 
      * - ResolvedMathContextSettings or 

@@ -55,6 +55,10 @@ export class MathSettingTab extends PluginSettingTab {
             globalHelper.settingRefs.profile.settingEl
         );
         this.containerEl.insertBefore(
+            extraHelper.settingRefs.foldDefault.settingEl, 
+            globalHelper.settingRefs.labelPrefix.settingEl
+        );
+        this.containerEl.insertBefore(
             extraHelper.settingRefs.noteTitleInLink.settingEl, 
             globalHelper.settingRefs.noteMathLinkFormat.settingEl
         );
