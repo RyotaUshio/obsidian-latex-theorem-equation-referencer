@@ -49,8 +49,6 @@ export default class MathBooster extends Plugin {
 			const dependenciesOK = Object.keys(this.dependencies).every((id) => this.checkDependency(id));
 			const v1 = (version as string | undefined)?.startsWith("1.") ?? true;
 
-			console.log(v1);
-
 			if (!dependenciesOK || v1) {
 				new DependencyNotificationModal(this, dependenciesOK, v1).open();
 			}
