@@ -18,15 +18,15 @@ declare module "obsidian" {
     interface MetadataCache {
         // Custom Events
         on(
-            name: "math-booster:index-updated", 
+            name: "math-booster:index-updated",
             callback: (file: TFile) => any
         ): EventRef;
         on(
-            name: "math-booster:local-settings-updated", 
+            name: "math-booster:local-settings-updated",
             callback: (file: TAbstractFile) => any
         ): EventRef;
         on(
-            name: "math-booster:global-settings-updated", 
+            name: "math-booster:global-settings-updated",
             callback: () => any
         ): EventRef;
 
@@ -54,11 +54,25 @@ declare module "obsidian" {
     interface EditorSuggest<T> {
         scope: Scope;
         suggestions: {
-          selectedItem: number;
-          values: T[];
-          containerEl: HTMLElement;
+            selectedItem: number;
+            values: T[];
+            containerEl: HTMLElement;
         };
         suggestEl: HTMLElement;
+    }
+
+    // Reference: https://github.com/tadashi-aikawa/obsidian-another-quick-switcher/blob/6aa40a46fe817d25c11847a46ec6c765c742d629/src/ui/UnsafeModalInterface.ts#L5
+    interface SuggestModal<T> {
+        chooser: {
+            values: T[] | null;
+            selectedItem: number;
+            setSelectedItem(
+                item: number,
+                event?: KeyboardEvent,
+            ): void;
+            useSelectedItem(ev: Partial<KeyboardEvent>): void;
+            suggestions: Element[];
+        };
     }
 }
 
