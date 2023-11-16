@@ -4,7 +4,7 @@ import { App, CachedMetadata, Editor, MarkdownView, SectionCache, TAbstractFile,
 
 import MathBooster from './main';
 import { MathSettings, TheoremRefFormat, ResolvedMathSettings, TheoremCalloutSettings, TheoremCalloutPrivateFields } from './settings/settings';
-import { getBlockIdsWithBacklink, readTheoremCalloutSettings, resolveSettings, formatTitle, readTheoremCalloutSettingsAndTitle, CONVERTER, matchTheoremCallout, formatTitleWithoutSubtitle, isEditingView, getEqNumberPrefix, trimMathText } from './utils';
+import { getBlockIdsWithBacklink, readTheoremCalloutSettings, resolveSettings, formatTitle, readTheoremCalloutSettingsAndTitle, CONVERTER, matchTheoremCallout, formatTitleWithoutSubtitle, isEditingView, getEqNumberPrefix, trimMathText } from 'utils';
 import { ActiveNoteIO, FileIO, NonActiveNoteIO } from './file_io';
 
 

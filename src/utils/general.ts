@@ -31,3 +31,17 @@ export function pathToBaseName(path: string): string {
 // https://stackoverflow.com/a/50851710/13613783
 export type BooleanKeys<T> = { [k in keyof T]: T[k] extends boolean ? k : never }[keyof T];
 export type NumberKeys<T> = { [k in keyof T]: T[k] extends number ? k : never }[keyof T];
+
+// https://www.typescriptlang.org/docs/handbook/mixins.html#alternative-pattern
+export function applyMixins(derivedCtor: any, constructors: any[]) {
+    constructors.forEach((baseCtor) => {
+        Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
+            Object.defineProperty(
+                derivedCtor.prototype,
+                name,
+                Object.getOwnPropertyDescriptor(baseCtor.prototype, name) ||
+                Object.create(null)
+            );
+        });
+    });
+}

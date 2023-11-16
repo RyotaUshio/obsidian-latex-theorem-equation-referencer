@@ -1,37 +1,52 @@
-import { Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile, prepareFuzzySearch, sortSearchResults, SearchResult, Notice, prepareSimpleSearch, renderMath, finishRenderMath, getAllTags } from "obsidian";
+import { App, EditorSuggestContext, Instruction, Notice, Scope, SearchResult, TFile, getAllTags, prepareFuzzySearch, prepareSimpleSearch, renderMath, sortSearchResults } from 'obsidian';
+import * as Dataview from 'obsidian-dataview';
 
-import MathBooster from "main";
+import MathBooster from 'main';
+import { MathIndex } from 'index/index';
+import { EquationBlock, MarkdownBlock, MarkdownPage, MathBoosterBlock, TheoremCalloutBlock } from 'index/typings/markdown';
 import { getFileTitle } from 'index/utils/normalizers';
-import { LEAF_OPTION_TO_ARGS } from "settings/settings";
-import { EquationBlock, MarkdownBlock, MarkdownPage, MathBoosterBlock, TheoremCalloutBlock } from "index/typings/markdown";
-import { MathIndex } from "index/index";
+import { LEAF_OPTION_TO_ARGS } from 'settings/settings';
+import { formatLabel } from 'utils/format';
 import { getModifierNameInPlatform, openFileAndSelectPosition } from 'utils/obsidian';
-import { formatLabel } from "utils/format";
-import { insertBlockIdIfNotExist, resolveSettings } from "utils/plugin";
+import { insertBlockIdIfNotExist, resolveSettings } from 'utils/plugin';
 
 
-type ScoredMathBoosterBlock = { match: SearchResult, block: MathBoosterBlock };
+export type ScoredMathBoosterBlock = { match: SearchResult, block: MathBoosterBlock };
 
-abstract class LinkAutocomplete extends EditorSuggest<MathBoosterBlock> {
+export type QueryType = 'theorem' | 'equation' | 'both';
+
+export type MathSearchCoreCreator = (parent: SuggestParent) => MathSearchCore;
+
+export interface SuggestParent {
+    plugin: MathBooster;
+    scope: Scope;
+    getContext(): Omit<EditorSuggestContext, 'query'> | null;
+    setInstructions(instructions: Instruction[]): void;
+    getSelectedItem(): MathBoosterBlock;
+}
+
+export abstract class MathSearchCore {
+    app: App;
+    plugin: MathBooster;
     index: MathIndex;
+    scope: Scope;
 
-    /**
-     * @param type The type of the block to search for. See: index/typings/markdown.ts
-     */
-    constructor(public plugin: MathBooster, public triggerGetter: () => string) {
-        const { app } = plugin;
-        super(app);
-
+    constructor(public parent: SuggestParent) {
+        this.plugin = parent.plugin;
+        this.app = this.plugin.app;
         this.index = this.plugin.indexManager.index;
+        this.scope = parent.scope;
+    }
 
+    setScope() {
         // Mod (by default) + Enter to jump to the selected item
         this.scope.register([this.plugin.extraSettings.modifierToJump], "Enter", () => {
-            if (this.context) {
-                const { editor, start, end } = this.context;
+            const context = this.parent.getContext();
+            if (context) {
+                const { editor, start, end } = context;
                 editor.replaceRange("", start, end);
             }
-            // Reference: https://github.com/tadashi-aikawa/obsidian-various-complements-plugin/blob/be4a12c3f861c31f2be3c0f81809cfc5ab6bb5fd/src/ui/AutoCompleteSuggest.ts#L595-L619
-            const item = this.suggestions.values[this.suggestions.selectedItem];
+            const item = this.parent.getSelectedItem();
             const file = this.app.vault.getAbstractFileByPath(item.$file); // the file containing the selected item
             if (!(file instanceof TFile)) return;
             openFileAndSelectPosition(file, item.$pos, ...LEAF_OPTION_TO_ARGS[this.plugin.extraSettings.suggestLeafOption]);
@@ -40,13 +55,13 @@ abstract class LinkAutocomplete extends EditorSuggest<MathBoosterBlock> {
 
         // Shift (by default) + Enter to insert a link to the note containing the selected item
         this.scope.register([this.plugin.extraSettings.modifierToNoteLink], "Enter", () => {
-            const item = this.suggestions.values[this.suggestions.selectedItem];
+            const item = this.parent.getSelectedItem();
             this.selectSuggestionImpl(item, true);
             return false;
         });
 
         if (this.plugin.extraSettings.showModifierInstruction) {
-            this.setInstructions([
+            this.parent.setInstructions([
                 { command: "↑↓", purpose: "to navigate" },
                 { command: "↵", purpose: "to insert link" },
                 { command: `${getModifierNameInPlatform(this.plugin.extraSettings.modifierToNoteLink)} + ↵`, purpose: "to insert link to note" },
@@ -55,35 +70,20 @@ abstract class LinkAutocomplete extends EditorSuggest<MathBoosterBlock> {
         }
     }
 
-    onTrigger(cursor: EditorPosition, editor: Editor, file: TFile | null): EditorSuggestTriggerInfo | null {
-        const trigger = this.triggerGetter();
-        const text = editor.getLine(cursor.line);
-        const index = text.lastIndexOf(trigger);
-        if (index < 0) return null;
-
-        const query = text.slice(index + trigger.length);
-        this.limit = this.plugin.extraSettings.suggestNumber;
-        return !query.startsWith("[[") ? {
-            start: { line: cursor.line, ch: index },
-            end: cursor,
-            query
-        } : null;
-    }
-
-    abstract getUnsortedSuggestions(): Array<string> | Set<string>;
-    
-    postProcessResults(results: ScoredMathBoosterBlock[]) {}
-
-    getSuggestions(context: EditorSuggestContext): MathBoosterBlock[] {
-        const ids = this.getUnsortedSuggestions();
-        const results = this.gradeSuggestions(ids, context);
+    async getSuggestions(query: string): Promise<MathBoosterBlock[]> {
+        const ids = await this.getUnsortedSuggestions();
+        const results = this.gradeSuggestions(ids, query);
         this.postProcessResults(results);
         sortSearchResults(results);
         return results.map((result) => result.block);
     }
 
-    gradeSuggestions(ids: Array<string> | Set<string>, context: EditorSuggestContext) {
-        const callback = (this.plugin.extraSettings.searchMethod == "Fuzzy" ? prepareFuzzySearch : prepareSimpleSearch)(context.query);
+    abstract getUnsortedSuggestions(): Promise<Array<string>> | Promise<Set<string>>;
+
+    postProcessResults(results: ScoredMathBoosterBlock[]) { }
+
+    gradeSuggestions(ids: Array<string> | Set<string>, query: string) {
+        const callback = (this.plugin.extraSettings.searchMethod == "Fuzzy" ? prepareFuzzySearch : prepareSimpleSearch)(query);
         const results: ScoredMathBoosterBlock[] = [];
 
         for (const id of ids) {
@@ -148,12 +148,13 @@ abstract class LinkAutocomplete extends EditorSuggest<MathBoosterBlock> {
     }
 
     async selectSuggestionImpl(block: MathBoosterBlock, insertNoteLink: boolean): Promise<void> {
-        if (!this.context) return;
+        const context = this.parent.getContext();
+        if (!context) return;
         const fileContainingBlock = this.app.vault.getAbstractFileByPath(block.$file);
         const cache = this.app.metadataCache.getCache(block.$file);
         if (!(fileContainingBlock instanceof TFile) || !cache) return;
 
-        const { editor, start, end, file } = this.context;
+        const { editor, start, end, file } = context;
         const settings = resolveSettings(undefined, this.plugin, file);
         let success = false;
 
@@ -193,8 +194,8 @@ abstract class LinkAutocomplete extends EditorSuggest<MathBoosterBlock> {
     }
 }
 
-/** Suggest theorems and/or equations from the entire vault. */
-export abstract class WholeVaultLinkAutocomplete extends LinkAutocomplete {
+
+abstract class WholeVaultSearchCore extends MathSearchCore {
     postProcessResults(results: ScoredMathBoosterBlock[]) {
         results.forEach((result) => {
             if (this.app.workspace.getLastOpenFiles().contains(result.block.$file)) {
@@ -204,34 +205,42 @@ export abstract class WholeVaultLinkAutocomplete extends LinkAutocomplete {
     }
 }
 
-export class WholeVaultTheoremEquationLinkAutocomplete extends WholeVaultLinkAutocomplete {
-    getUnsortedSuggestions(): Set<string> {
+export class WholeVaultTheoremEquationSearchCore extends WholeVaultSearchCore {
+    async getUnsortedSuggestions(): Promise<Set<string>> {
         return this.index.getByType('block-math-booster');
     }
 }
 
-export class WholeVaultTheoremLinkAutocomplete extends WholeVaultLinkAutocomplete {
-    getUnsortedSuggestions(): Set<string> {
+export class WholeVaultTheoremSearchCore extends WholeVaultSearchCore {
+    async getUnsortedSuggestions(): Promise<Set<string>> {
         return this.index.getByType('block-theorem');
     }
 }
 
-export class WholeVaultEquationLinkAutocomplete extends WholeVaultLinkAutocomplete {
-    getUnsortedSuggestions(): Set<string> {
+export class WholeVaultEquationSearchCore extends WholeVaultSearchCore {
+    async getUnsortedSuggestions(): Promise<Set<string>> {
         return this.index.getByType('block-equation');
     }
 }
 
 
 /** Suggest theorems and/or equations from the given set of files. */
-export abstract class PartialLinkAutocomplete extends LinkAutocomplete {
-    abstract getPaths(): Array<string>;
+export abstract class PartialSearchCore extends MathSearchCore {
+    constructor(parent: SuggestParent, public type: QueryType) {
+        super(parent);
+    }
 
-    abstract filterBlock(block: MarkdownBlock): boolean;
+    abstract getPaths(): Promise<Array<string>>;
 
-    getUnsortedSuggestions(): Array<string> {
+    filterBlock(block: MarkdownBlock): boolean {
+        if (this.type === 'theorem') return TheoremCalloutBlock.isTheoremCalloutBlock(block);
+        if (this.type === 'equation') return EquationBlock.isEquationBlock(block);
+        return MathBoosterBlock.isMathBoosterBlock(block);
+    }
+
+    async getUnsortedSuggestions() {
         const ids: string[] = [];
-        const pages = this.getPaths().map((path) => this.index.load(path));
+        const pages = (await this.getPaths()).map((path) => this.index.load(path));
         for (const page of pages) {
             if (!MarkdownPage.isMarkdownPage(page)) continue;
 
@@ -246,40 +255,34 @@ export abstract class PartialLinkAutocomplete extends LinkAutocomplete {
 }
 
 
-export abstract class RecentNotesLinkAutocomplete extends PartialLinkAutocomplete {
-    getPaths(): Array<string> {
+export class RecentNotesSearchCore extends PartialSearchCore {
+    async getPaths() {
         return this.app.workspace.getLastOpenFiles();
     }
 }
 
-export class RecentNotesTheoremEquationLinkAutocomplete extends RecentNotesLinkAutocomplete {
-    filterBlock = MathBoosterBlock.isMathBoosterBlock;
-}
 
-export class RecentNotesTheoremLinkAutocomplete extends RecentNotesLinkAutocomplete {
-    filterBlock = TheoremCalloutBlock.isTheoremCalloutBlock;
-}
-
-export class RecentNotesEquationLinkAutocomplete extends RecentNotesLinkAutocomplete {
-    filterBlock = EquationBlock.isEquationBlock;
-}
-
-
-export abstract class ActiveNoteLinkAutocomplete extends PartialLinkAutocomplete {
-    getPaths(): Array<string> {
+export class ActiveNoteSearchCore extends PartialSearchCore {
+    async getPaths() {
         const path = this.app.workspace.getActiveFile()?.path;
         return path?.endsWith('.md') ? [path] : [];
     }
 }
 
-export class ActiveNoteTheoremEquationLinkAutocomplete extends ActiveNoteLinkAutocomplete {
-    filterBlock = MathBoosterBlock.isMathBoosterBlock;
-}
+export class DataviewQuerySearchCore extends PartialSearchCore {
+    public dvQuery: string;
 
-export class ActiveNoteTheoremLinkAutocomplete extends ActiveNoteLinkAutocomplete {
-    filterBlock = TheoremCalloutBlock.isTheoremCalloutBlock;
-}
+    constructor(parent: SuggestParent, type: 'theorem' | 'equation' | 'both', public dv: Dataview.DataviewApi, dvQuery?: string) {
+        super(parent, type);
+        this.dvQuery = dvQuery ?? '';
+    }
 
-export class ActiveNoteEquationLinkAutocomplete extends ActiveNoteLinkAutocomplete {
-    filterBlock = EquationBlock.isEquationBlock;
+    async getPaths() {
+        const result = await this.dv.query(this.dvQuery);
+        if (result.successful && result.value.type === 'list') {
+            const links = result.value.values as Dataview.Link[];
+            return links.map((link) => link.path);
+        }
+        return [];
+    }
 }
