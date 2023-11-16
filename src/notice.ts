@@ -34,7 +34,7 @@ export class DependencyNotificationModal extends Modal {
         // Validity indicator is taken from the Latex Suite plugin (https://github.com/artisticat1/obsidian-latex-suite/blob/a5914c70c16d5763a182ec51d9716110b40965cf/src/settings.ts)
         for (const depenedency of [
             { id: "mathlinks", name: "MathLinks" },
-            { id: "dataview", name: "Dataview" }
+            // { id: "dataview", name: "Dataview" }
         ]) {
             const depPlugin = this.app.plugins.getPlugin(depenedency.id);
             const requiredVersion = this.plugin.dependencies[depenedency.id];
