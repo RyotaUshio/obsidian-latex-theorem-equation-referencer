@@ -43,6 +43,8 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
                 dropdown.onChange((value: QueryType) => {
                     this.queryType = value;
                     this.resetCore();
+                    // @ts-ignore
+                    this.onInput();
                 })
             });
 
@@ -56,6 +58,8 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
                 dropdown.onChange((value: SearchRange) => {
                     this.range = value;
                     this.resetCore();
+                    // @ts-ignore
+                    this.onInput();
                 })
             });
 
@@ -68,7 +72,7 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
             .addTextArea((text) => {
                 text.inputEl.addClass('math-booster-dv-query')
                 text.inputEl.style.width = '100%';
-                
+
                 text.setPlaceholder('LIST ...').onChange((dvQuery) => {
                     if (this.core instanceof DataviewQuerySearchCore) {
                         this.core.dvQuery = dvQuery;
