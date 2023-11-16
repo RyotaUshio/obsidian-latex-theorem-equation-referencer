@@ -6,7 +6,7 @@ import { App, EditorSuggestContext, MarkdownView, Notice, Setting, SuggestModal,
 import { MathSearchCore, SuggestParent } from "./core";
 import { MathBoosterBlock } from "index/typings/markdown";
 
-type SearchRange = 'active' | 'vault' | 'recent' | 'dataview';
+export type SearchRange = 'active' | 'vault' | 'recent' | 'dataview';
 
 export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements SuggestParent {
     app: App;
@@ -25,8 +25,8 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
         this.core.setScope();
         this.setPlaceholder('Type here...')
 
-        this.queryType = 'both';
-        this.range = 'vault';
+        this.queryType = this.plugin.extraSettings.searchModalQueryType;
+        this.range = this.plugin.extraSettings.searchModalRange;
 
         this.topEl = this.modalEl.createDiv({ cls: 'math-booster-modal-top' });
         this.modalEl.insertBefore(this.topEl, this.modalEl.firstChild)
@@ -37,29 +37,44 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
         new Setting(this.topEl)
             .setName('Query type')
             .addDropdown((dropdown) => {
-                dropdown.addOption('both', 'Theorems and equations');
-                dropdown.addOption('theorem', 'Theorems');
-                dropdown.addOption('equation', 'Equations');
+                dropdown.addOption('both', 'Theorems and equations')
+                    .addOption('theorem', 'Theorems')
+                    .addOption('equation', 'Equations');
+
+                // recover the last state
+                dropdown.setValue(this.plugin.extraSettings.searchModalQueryType)
+
                 dropdown.onChange((value: QueryType) => {
                     this.queryType = value;
                     this.resetCore();
                     // @ts-ignore
                     this.onInput();
+
+                    // remember the last state
+                    this.plugin.extraSettings.searchModalQueryType = value;
+                    this.plugin.saveSettings();
                 })
             });
 
         new Setting(this.topEl)
             .setName('Search range')
             .addDropdown((dropdown) => {
-                dropdown.addOption('vault', 'Vault');
-                dropdown.addOption('recent', 'Recent notes');
-                dropdown.addOption('active', 'Active note');
+                dropdown.addOption('vault', 'Vault')
+                    .addOption('recent', 'Recent notes')
+                    .addOption('active', 'Active note');
                 if (Dataview.isPluginEnabled(this.app)) dropdown.addOption('dataview', 'Dataview query');
+
+                // recover the last state
+                dropdown.setValue(this.plugin.extraSettings.searchModalRange)
                 dropdown.onChange((value: SearchRange) => {
                     this.range = value;
                     this.resetCore();
                     // @ts-ignore
                     this.onInput();
+
+                    // remember the last state
+                    this.plugin.extraSettings.searchModalRange = value;
+                    this.plugin.saveSettings();
                 })
             });
 
@@ -73,15 +88,22 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
                 text.inputEl.addClass('math-booster-dv-query')
                 text.inputEl.style.width = '100%';
 
-                text.setPlaceholder('LIST ...').onChange((dvQuery) => {
-                    if (this.core instanceof DataviewQuerySearchCore) {
-                        this.core.dvQuery = dvQuery;
-                        // @ts-ignore
-                        this.onInput();
-                    }
-                })
+                text.setValue(this.plugin.extraSettings.searchModalDvQuery) // recover the last state
+                    .setPlaceholder('LIST ...')
+                    .onChange((dvQuery) => {
+                        if (this.core instanceof DataviewQuerySearchCore) {
+                            this.core.dvQuery = dvQuery;
+                            // @ts-ignore
+                            this.onInput();
+
+                            // remember the last state
+                            this.plugin.extraSettings.searchModalDvQuery = dvQuery;
+                            this.plugin.saveSettings();
+                        }
+                    })
             });
-        this.dvQueryField.settingEl.hide();
+
+        this.resetCore();
     }
 
     resetCore() {

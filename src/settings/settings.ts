@@ -2,6 +2,8 @@ import { Modifier } from "obsidian";
 
 import { DEFAULT_PROFILES, Profile } from "./profile";
 import { LeafArgs } from "../typings/type";
+import { QueryType } from "search/core";
+import { SearchRange } from "search/modal";
 
 // Types
 
@@ -162,6 +164,10 @@ export type ExtraSettings = ImporterSettings & {
     showTheoremCalloutEditButton: boolean;
     setOnlyTheoremAsMain: boolean;
     setLabelInModal: boolean;
+    // not congigurable from the setting tab, just remenbers the last state
+    searchModalQueryType: QueryType;
+    searchModalRange: SearchRange;
+    searchModalDvQuery: string;
 }
 
 export const UNION_TYPE_EXTRA_SETTING_KEYS: {[k in keyof Partial<ExtraSettings>]: readonly string[]} = {
@@ -249,4 +255,7 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     showTheoremCalloutEditButton: false,
     setOnlyTheoremAsMain: false,
     setLabelInModal: false,
+    searchModalQueryType: 'both',
+    searchModalRange: 'recent',
+    searchModalDvQuery: '',
 };
