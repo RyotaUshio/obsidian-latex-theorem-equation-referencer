@@ -23,12 +23,16 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
         window['modal'] = this;
         this.core = new WholeVaultTheoremEquationSearchCore(this);
         this.core.setScope();
+        this.setPlaceholder('Type here...')
 
         this.queryType = 'both';
         this.range = 'vault';
 
         this.topEl = this.modalEl.createDiv({ cls: 'math-booster-modal-top' });
         this.modalEl.insertBefore(this.topEl, this.modalEl.firstChild)
+        this.inputEl.addClass('math-booster-search-input');
+
+        this.limit = this.plugin.extraSettings.suggestNumber;
 
         new Setting(this.topEl)
             .setName('Query type')
@@ -58,7 +62,13 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
         this.dvQueryField = new Setting(this.topEl)
             .setName('Dataview query')
             .setDesc('Only LIST query is supported.')
+            .then(setting => {
+                setting.controlEl.style.width = '60%';
+            })
             .addTextArea((text) => {
+                text.inputEl.addClass('math-booster-dv-query')
+                text.inputEl.style.width = '100%';
+                
                 text.setPlaceholder('LIST ...').onChange((dvQuery) => {
                     if (this.core instanceof DataviewQuerySearchCore) {
                         this.core.dvQuery = dvQuery;
@@ -82,6 +92,7 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
             return;
         }
         this.dvQueryField.settingEl.hide();
+
         if (this.range === 'vault') {
             if (this.queryType === 'both') this.core = new WholeVaultTheoremEquationSearchCore(this);
             else if (this.queryType === 'theorem') this.core = new WholeVaultTheoremSearchCore(this);

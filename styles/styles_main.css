@@ -1,3 +1,7 @@
+.math-booster-modal-top {
+    padding: var(--size-4-3);
+}
+
 .math-booster-setting-item-description {
     padding-bottom: 0.75em;
 }
