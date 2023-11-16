@@ -9,7 +9,7 @@ import {
     increaseQuoteLevel, resolveSettings
     //getBacklinks 
 } from './utils/plugin';
-import { isEditingView } from 'utils/editor';
+import { isEditingView, nodeText } from 'utils/editor';
 import { capitalize, splitIntoLines } from 'utils/general';
 import { formatTitleWithoutSubtitle } from "utils/format";
 import { renderTextWithMath } from "utils/render";
@@ -21,6 +21,8 @@ import { parseTheoremCalloutMetadata, readTheoremCalloutSettings } from 'utils/p
 import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENV_PREFIXES, THEOREM_LIKE_ENV_PREFIX_ID_MAP, TheoremLikeEnvPrefix } from 'env';
 import { getIO } from 'file_io';
 import { getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveLinktext } from 'utils/obsidian';
+import { syntaxTree } from '@codemirror/language';
+import { CALLOUT } from 'theorem_callout_metadata_hider';
 
 
 function generateTheoremCalloutFirstLine(config: TheoremCalloutSettings): string {
@@ -536,6 +538,7 @@ export const theoremCalloutFirstLineDecorator = ViewPlugin.fromClass(
     class {
         decorations: DecorationSet;
 
+
         constructor(view: EditorView) {
             this.decorations = this.buildDecorations(view);
         }
@@ -548,25 +551,29 @@ export const theoremCalloutFirstLineDecorator = ViewPlugin.fromClass(
 
         buildDecorations(view: EditorView) {
             const builder = new RangeSetBuilder<Decoration>();
-            for (const { from, to } of view.visibleRanges) {
-                const lineStart = view.state.doc.lineAt(from);
-                const lineEnd = view.state.doc.lineAt(to);
-                for (let lineNumber = lineStart.number; lineNumber <= lineEnd.number; lineNumber++) {
-                    const line = view.state.doc.line(lineNumber);
-                    const settings = readTheoremCalloutSettings(line.text);
-                    if (!settings) continue;
+            const tree = syntaxTree(view.state);
 
-                    builder.add(
-                        line.from,
-                        line.from,
-                        Decoration.line({
-                            class: 'theorem-callout-first-line',
-                            attributes: {
-                                "data-auto-number": settings.number === 'auto' ? 'true' : 'false',
-                            }
-                        })
-                    );
-                }
+            for (const { from, to } of view.visibleRanges) {
+                tree.iterate({
+                    from, to,
+                    enter(node) {
+                        const match = node.name.match(CALLOUT);
+                        if (!match) return;
+
+                        const text = nodeText(node, view.state);
+                        const settings = readTheoremCalloutSettings(text);
+                        if (!settings) return;
+
+                        builder.add(
+                            node.from,
+                            node.from,
+                            Decoration.line({
+                                class: 'theorem-callout-first-line',
+                                attributes: { "data-auto-number": settings.number === 'auto' ? 'true' : 'false' }
+                            })
+                        );
+                    }
+                })
             }
 
             return builder.finish();
