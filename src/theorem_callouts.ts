@@ -572,6 +572,8 @@ export const theoremCalloutFirstLineDecorator = ViewPlugin.fromClass(
                                 attributes: { "data-auto-number": settings.number === 'auto' ? 'true' : 'false' }
                             })
                         );
+
+                        return false;
                     }
                 })
             }
