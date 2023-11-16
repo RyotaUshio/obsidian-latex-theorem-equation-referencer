@@ -418,13 +418,13 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         list.createEl("li", { text: "Meta is Cmd on MacOS and Win key on Windows." });
         this.addDropdownSetting("suggestLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected suggestion.")
 
-        // backlinks
-        this.contentEl.createEl("h3", { text: "Backlinks" });
-        this.contentEl.createDiv({
-            text: `Right-click a theorem callout or an equation and select \"Show backlinks\" to see its backlinks.`,
-            cls: ["setting-item-description", "math-booster-setting-item-description"],
-        });
-        this.addDropdownSetting("backlinkLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected backlink.")
+        // // backlinks
+        // this.contentEl.createEl("h3", { text: "Backlinks" });
+        // this.contentEl.createDiv({
+        //     text: `Right-click a theorem callout or an equation and select \"Show backlinks\" to see its backlinks.`,
+        //     cls: ["setting-item-description", "math-booster-setting-item-description"],
+        // });
+        // this.addDropdownSetting("backlinkLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected backlink.")
 
         // projects
         // this.addTextSetting("projectInfix", "Link infix", "Specify the infix to connect a project name and a theorem title or an equation number.");
