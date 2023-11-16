@@ -330,7 +330,7 @@ export function insertProof(plugin: MathBooster, editor: Editor, context: Markdo
     if (context.file) {
         const settings = resolveSettings(undefined, plugin, context.file);
         const cursor = editor.getCursor();
-        editor.replaceRange(`\`${settings.beginProof}\`\`${settings.endProof}\``, cursor);
-        editor.setCursor({ line: cursor.line, ch: cursor.ch + settings.beginProof.length + 2 });
+        editor.replaceRange(`\`${settings.beginProof}\`\n\n\`${settings.endProof}\``, cursor);
+        editor.setCursor({ line: cursor.line + 1, ch: 0 });
     }
 }
