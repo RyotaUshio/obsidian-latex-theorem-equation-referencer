@@ -151,8 +151,6 @@ export type ExtraSettings = ImporterSettings & {
     suggestNumber: number;
     searchMethod: SearchMethod;
     upWeightRecent: number;
-    // searchOnlyRecent: boolean;
-    searchTags: boolean;
     searchLabel: boolean;
     modifierToJump: Modifier;
     modifierToNoteLink: Modifier;
@@ -240,8 +238,6 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     suggestNumber: 20,
     searchMethod: "Fuzzy",
     upWeightRecent: 0.1, 
-    // searchOnlyRecent: false,
-    searchTags: false,
     searchLabel: false,
     modifierToJump: "Mod",
     modifierToNoteLink: "Shift",

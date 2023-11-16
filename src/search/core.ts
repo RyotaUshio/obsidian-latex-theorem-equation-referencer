@@ -89,14 +89,7 @@ export abstract class MathSearchCore {
         for (const id of ids) {
             const block = this.index.load(id) as MathBoosterBlock;
 
-            // generate the search target text
-            let tags: string[] = [];
-            if (this.plugin.extraSettings.searchTags) {
-                const cache = this.app.metadataCache.getCache(block.$file);
-                if (cache) tags = getAllTags(cache) ?? [];
-            }
-
-            let text = `${block.$printName} ${block.$file} ${tags.join(" ")}`;
+            let text = `${block.$printName} ${block.$file}}`;
 
             if (block.$type === "theorem") {
                 text += ` ${(block as TheoremCalloutBlock).$settings.type}`;
