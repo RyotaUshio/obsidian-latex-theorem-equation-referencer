@@ -16,13 +16,29 @@ import { parseLatexComment } from "utils/parse";
 
 /** For reading view */
 
+export const equationNumberProcessor = (plugin: MathBooster) => async (el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+    const isPdfExport = el.classList.contains('markdown-rendered');
+    const sourceFile = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
+    if (!(sourceFile instanceof TFile)) return;
+    const mjxContainerElements = el.querySelectorAll<HTMLElement>('mjx-container.MathJax[display="true"]');
+    for (const mjxContainerEl of mjxContainerElements) {
+        ctx.addChild(
+            new DisplayMathRenderChild(mjxContainerEl, plugin.app, plugin, sourceFile, ctx, isPdfExport)
+        );
+    }
+}
+
 export class DisplayMathRenderChild extends MarkdownRenderChild {
     index: MathIndex;
 
-    constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, public file: TFile, public context: MarkdownPostProcessorContext) {
+    constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, public file: TFile, public context: MarkdownPostProcessorContext, public isPdfExport: boolean) {
         // containerEl, currentEL are mjx-container.MathJax elements
         super(containerEl);
         this.index = this.plugin.indexManager.index;
+
+        this.registerEvent(this.app.metadataCache.on("math-booster:index-updated", (file) => {
+            if (file == this.file) this.update()
+        }));
     }
 
     getEquationCache(): EquationBlock | null {
@@ -45,15 +61,11 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         return null;
     }
 
-    async onload(): Promise<void> {
-        this.registerEvent(this.app.metadataCache.on("math-booster:index-updated", (file) => {
-            if (file == this.file) this.impl()
-        }));
-        await this.impl();
-        // (new AutoNoteIndexer(this.app, this.plugin, this.file)).run();
+    onload(): void {
+        this.update();
     }
 
-    async impl() {
+    update() {
         /**
          * https://github.com/RyotaUshio/obsidian-math-booster/issues/179
          * 
@@ -64,17 +76,19 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
          * For this reason, DisplayMathRenderChild.setId() doesn't work properly for embeds or hover popovers,
          * and we have to exclude them from the target of DisplayMathRenderChild.
          */
-        if (this.containerEl.closest('.popover.hover-popover')) {
-            // ignore HoverPopover
-            return;
-        }
+        let equation: EquationBlock | null = null;
+        const hover = this.containerEl.closest('.popover.hover-popover');
+        const embedSrc = this.containerEl.closest('[src]')?.getAttribute('src');
 
-        if (this.containerEl.closest('.markdown-embed')) {
+        if (hover) return; // ignore HoverPopover
+
+        if (embedSrc) {
             // ignore embeds
+            // TODO: support embeds! theorem callouts are already supported so it should be possible
             return;
         }
 
-        const equation = this.getEquationCache();
+        equation = equation ?? this.getEquationCache();
 
         if (!equation) return;
 

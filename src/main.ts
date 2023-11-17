@@ -9,7 +9,7 @@ import { CleverRefProvider } from 'cleverref';
 import { insertTheoremCalloutCallback, createTheoremCalloutFirstLineDecorator, theoremCalloutNumberingViewPlugin, theoremCalloutPostProcessor } from 'theorem_callouts';
 import { ContextSettingModal, TheoremCalloutModal } from 'settings/modals';
 import { insertDisplayMath } from 'key';
-import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
+import { buildEquationNumberPlugin, equationNumberProcessor } from 'equation_number';
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote, hideDisplayMathPreviewInQuote } from 'math_live_preview_in_callouts';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, isPluginOlderThan } from 'utils/obsidian';
 import { getProfile, staticifyEqNumber } from 'utils/plugin';
@@ -241,20 +241,10 @@ export default class MathBooster extends Plugin {
 		/** Markdown post processors */
 
 		// for theorem callouts
-		this.registerMarkdownPostProcessor(async (element, context) => theoremCalloutPostProcessor(this, element, context));
-
+		this.registerMarkdownPostProcessor(theoremCalloutPostProcessor(this));
 
 		// for equation numbers
-		this.registerMarkdownPostProcessor((element, context) => {
-			const sourceFile = this.app.vault.getAbstractFileByPath(context.sourcePath);
-			if (!(sourceFile instanceof TFile)) return;
-			const mjxContainerElements = element.querySelectorAll<HTMLElement>('mjx-container.MathJax[display="true"]');
-			for (const mjxContainerEl of mjxContainerElements) {
-				context.addChild(
-					new DisplayMathRenderChild(mjxContainerEl, this.app, this, sourceFile, context)
-				);
-			}
-		});
+		this.registerMarkdownPostProcessor(equationNumberProcessor(this));
 
 		// for proof environments
 		this.registerMarkdownPostProcessor(

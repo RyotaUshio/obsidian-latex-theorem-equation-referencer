@@ -53,7 +53,7 @@ export function insertTheoremCalloutCallback(editor: Editor, config: TheoremCall
 }
 
 
-export const theoremCalloutPostProcessor = async (plugin: MathBooster, element: HTMLElement, context: MarkdownPostProcessorContext) => {
+export const theoremCalloutPostProcessor = (plugin: MathBooster) => async (element: HTMLElement, context: MarkdownPostProcessorContext) => {
 
     const file = plugin.app.vault.getAbstractFileByPath(context.sourcePath);
     if (!(file instanceof TFile)) return null;
@@ -158,7 +158,7 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
     }
 
     isLivePreview(): boolean {
-        return this.containerEl.closest('.markdown-source-view.is-live-preview') !== null;
+        return this.containerEl.closest('[src]') === null && this.containerEl.closest('.markdown-source-view.is-live-preview') !== null;
     }
 
     onload() {
@@ -214,7 +214,7 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
                     block = update.block;
                     this.info = info = update.info;
                 }
-            } else if (block) {
+            } else {
                 const update = this.correctEmbed(block, info!); // correct line number
                 if (update) {
                     block = update.block;
@@ -239,16 +239,20 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
         return { block, info };
     }
 
-    correctEmbed(block: TheoremCalloutInfo & { blockId?: string }, info: TheoremCalloutInfo) {
+    correctEmbed(block: (TheoremCalloutInfo & { blockId?: string }) | null, info: TheoremCalloutInfo) {
         const linktext = this.containerEl.closest('[src]')?.getAttribute('src');
         if (linktext) {
             this.embedSrc = linktext;
-            const { subpathResult: result } = resolveLinktext(this.app, linktext, this.context.sourcePath) ?? {};
-            if (!result) return;
+            const { file, subpathResult: result } = resolveLinktext(this.app, linktext, this.context.sourcePath) ?? {};
+            if (!file || !result) return;
 
             if (result.type === 'block') {
-                if (result.block.id !== block.blockId) {
-                    const _block = this.getPage()?.$blocks.get(result.block.id);
+                if (result.block.id !== block?.blockId) {
+
+                    const page = this.getPage();
+                    if (!page) return;
+
+                    const _block = page.$blocks.get(result.block.id);
                     if (TheoremCalloutBlock.isTheoremCalloutBlock(_block)) {
                         info = block = this.blockToInfo(_block);
                         if (!this.info || TheoremCalloutRenderer.areDifferentInfo(info, this.info)) {
@@ -259,6 +263,7 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
                 }
             } else if (result.type === 'heading') {
                 const _block = this.findTheoremCalloutBlock(result.start.line);
+                console.log({_block})
                 if (_block) {
                     info = block = this.blockToInfo(_block);
                     if (!this.info || TheoremCalloutRenderer.areDifferentInfo(info, this.info)) {
