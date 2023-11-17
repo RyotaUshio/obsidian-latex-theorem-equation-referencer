@@ -204,6 +204,7 @@ to the new format:
                     await rewriteTheoremCalloutFromV1ToV2(this.plugin, file);
                     bar.setValue(done++ / all * 100);
                 }
+                bar.setValue(100);
                 resolve();
             })
         });
