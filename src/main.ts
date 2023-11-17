@@ -9,7 +9,7 @@ import { CleverRefProvider } from 'cleverref';
 import { insertTheoremCalloutCallback, createTheoremCalloutFirstLineDecorator, theoremCalloutNumberingViewPlugin, theoremCalloutPostProcessor } from 'theorem_callouts';
 import { ContextSettingModal, TheoremCalloutModal } from 'settings/modals';
 import { insertDisplayMath } from 'key';
-import { buildEquationNumberPlugin, equationNumberProcessor } from 'equation_number';
+import { createEquationNumberPlugin, equationNumberProcessor } from 'equation_number';
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote, hideDisplayMathPreviewInQuote } from 'math_live_preview_in_callouts';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, isPluginOlderThan } from 'utils/obsidian';
 import { getProfile, staticifyEqNumber } from 'utils/plugin';
@@ -224,7 +224,7 @@ export default class MathBooster extends Plugin {
 		this.registerEditorExtension(theoremCalloutNumberingViewPlugin);
 		this.registerEditorExtension(createTheoremCalloutFirstLineDecorator(this));
 		// equation number
-		this.registerEditorExtension(buildEquationNumberPlugin(this));
+		this.registerEditorExtension(createEquationNumberPlugin(this));
 		// math preview in callouts and quotes
 		this.registerEditorExtension(mathPreviewInfoField);
 		this.registerEditorExtension(inlineMathPreview);

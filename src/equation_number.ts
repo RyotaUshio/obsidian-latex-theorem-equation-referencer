@@ -24,12 +24,12 @@ export const equationNumberProcessor = (plugin: MathBooster) => async (el: HTMLE
     const mjxContainerElements = el.querySelectorAll<HTMLElement>('mjx-container.MathJax[display="true"]');
     for (const mjxContainerEl of mjxContainerElements) {
         ctx.addChild(
-            new DisplayMathRenderChild(mjxContainerEl, plugin.app, plugin, sourceFile, ctx, isPdfExport)
+            new EquationNumberRenderer(mjxContainerEl, plugin.app, plugin, sourceFile, ctx, isPdfExport)
         );
     }
 }
 
-export class DisplayMathRenderChild extends MarkdownRenderChild {
+export class EquationNumberRenderer extends MarkdownRenderChild {
     index: MathIndex;
 
     constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, public file: TFile, public context: MarkdownPostProcessorContext, public isPdfExport: boolean) {
@@ -38,7 +38,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         this.index = this.plugin.indexManager.index;
 
         this.registerEvent(this.app.metadataCache.on("math-booster:index-updated", (file) => {
-            if (file == this.file) this.update()
+            if (file.path === this.file.path) this.update();
         }));
     }
 
@@ -63,10 +63,17 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
     }
 
     async onload() {
-        this.update();
+        setTimeout(() => this.update());
     }
 
     update() {
+        const settings = resolveSettings(undefined, this.plugin, this.file);
+        const equation = this.getEquationCacheCaringHoverAndEmbed(settings);
+        if (!equation) return;
+        replaceMathTag(this.containerEl, equation.$mathText, equation.$printName, settings);
+    }
+
+    getEquationCacheCaringHoverAndEmbed(settings: Required<MathContextSettings>): EquationBlock | null {
         /**
          * https://github.com/RyotaUshio/obsidian-math-booster/issues/179
          * 
@@ -74,54 +81,42 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
          * in the result of MarkdownPostProcessorContext.getSectionInfo() is 
          * relative to the content included in the embed.
          * In other words, they does not always represent the offset from the beginning of the file.
-         * For this reason, DisplayMathRenderChild.setId() doesn't work properly for embeds or hover popovers,
-         * and we have to exclude them from the target of DisplayMathRenderChild.
+         * So they require special handling.
          */
-        let equation: EquationBlock | null = this.getEquationCache();
-        if (!equation) return;
 
-        const settings = resolveSettings(undefined, this.plugin, this.file);
-        replaceMathTag(this.containerEl, equation.$mathText, equation.$printName, settings);
+        const equation = this.getEquationCache();
+        if (!equation) return null;
 
-        setTimeout(() => {
-            const hover = this.containerEl.closest('.popover.hover-popover');
-            const embedSrc = this.containerEl.closest('[src]')?.getAttribute('src');
+        const hover = this.containerEl.closest('.popover.hover-popover');
+        const embedSrc = this.containerEl.closest('[src]')?.getAttribute('src');
 
-            if (hover) return; // ignore HoverPopover
+        if (hover) return null; // ignore HoverPopover
 
-            if (embedSrc) {
-                // ignore embeds
-                // TODO: support embeds! theorem callouts are already supported so it should be possible
+        if (embedSrc) {
+            const { file, subpathResult } = resolveLinktext(this.app, embedSrc, this.context.sourcePath) ?? {};
 
-                const { file, subpathResult } = resolveLinktext(this.app, embedSrc, this.context.sourcePath) ?? {};
+            if (!file || !subpathResult) return null;
 
-                if (!file || !subpathResult) return;
+            const page = this.index.load(file.path);
+            if (!MarkdownPage.isMarkdownPage(page)) return null;
 
-                const page = this.index.load(file.path);
-                if (!MarkdownPage.isMarkdownPage(page)) return;
-
-                if (subpathResult.type === "block") {
-                    const block = page.$blocks.get(subpathResult.block.id);
-                    if (!EquationBlock.isEquationBlock(block)) return;
-
-                    equation = block;
-                    replaceMathTag(this.containerEl, equation.$mathText, equation.$printName, settings);
-                } else {
-                    equation = this.getEquationCache(subpathResult.start.line);
-                    if (!equation) return;
-                    replaceMathTag(this.containerEl, equation.$mathText, equation.$printName, settings);
-                }
-
-                return;
+            if (subpathResult.type === "block") {
+                const block = page.$blocks.get(subpathResult.block.id);
+                if (!EquationBlock.isEquationBlock(block)) return null;
+                return block;
+            } else {
+                return this.getEquationCache(subpathResult.start.line);
             }
-        })
+        }
+
+        return equation;
     }
 }
 
 
 /** For live preview */
 
-export function buildEquationNumberPlugin<V extends PluginValue>(plugin: MathBooster): ViewPlugin<V> {
+export function createEquationNumberPlugin<V extends PluginValue>(plugin: MathBooster): ViewPlugin<V> {
 
     const { app, indexManager: { index } } = plugin;
 
