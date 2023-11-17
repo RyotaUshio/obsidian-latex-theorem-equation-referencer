@@ -210,8 +210,8 @@ export default class MathBooster extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'immigrate-from-v1',
-			name: 'Immigrate from version 1',
+			id: 'migrate-from-v1',
+			name: 'Migrate from version 1',
 			callback: () => {
 				new MigrationModal(this).open();
 			}
