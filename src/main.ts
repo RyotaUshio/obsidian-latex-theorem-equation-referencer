@@ -1,19 +1,19 @@
-import { MarkdownView, Plugin, TFile } from 'obsidian';
-import { StateField } from '@codemirror/state';
+import { MarkdownView, Plugin } from 'obsidian';
+import { StateField, Extension } from '@codemirror/state';
 
 import * as MathLinks from 'obsidian-mathlinks';
 
 import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS, UNION_TYPE_MATH_CONTEXT_SETTING_KEYS, UNION_TYPE_EXTRA_SETTING_KEYS } from 'settings/settings';
 import { MathSettingTab } from "settings/tab";
 import { CleverRefProvider } from 'cleverref';
-import { insertTheoremCalloutCallback, createTheoremCalloutFirstLineDecorator, theoremCalloutNumberingViewPlugin, theoremCalloutPostProcessor } from 'theorem_callouts';
+import { insertTheoremCalloutCallback, createTheoremCalloutFirstLineDecorator, theoremCalloutNumberingViewPlugin, createTheoremCalloutPostProcessor } from 'theorem_callouts';
 import { ContextSettingModal, TheoremCalloutModal } from 'settings/modals';
 import { insertDisplayMath } from 'key';
-import { createEquationNumberPlugin, equationNumberProcessor } from 'equation_number';
+import { createEquationNumberPlugin, createEquationNumberProcessor } from 'equation_number';
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote, hideDisplayMathPreviewInQuote } from 'math_live_preview_in_callouts';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, isPluginOlderThan } from 'utils/obsidian';
 import { getProfile, staticifyEqNumber } from 'utils/plugin';
-import { proofPositionFieldFactory, proofDecorationFactory, ProofProcessor, ProofPosition, proofFoldFactory, insertProof } from './proof';
+import { proofPositionFieldFactory, proofDecorationFactory, ProofPosition, proofFoldFactory, insertProof, createProofProcessor } from './proof';
 import { MathIndexManager } from './index/manager';
 import { DependencyNotificationModal, MigrationModal } from 'notice';
 import { LinkAutocomplete } from 'search/editor-suggest';
@@ -34,6 +34,7 @@ export default class MathBooster extends Plugin {
 		// "dataview": "0.5.56",
 	};
 	indexManager: MathIndexManager;
+	editorExtensions: Extension[];
 
 	async onload() {
 
@@ -70,9 +71,8 @@ export default class MathBooster extends Plugin {
 		this.app.workspace.onLayoutReady(() => {
 			this.addChild(
 				MathLinks.addProvider(this.app, (mathLinks) => new CleverRefProvider(mathLinks, this))
-			);	
+			);
 		});
-
 
 
 		this.registerEvent(
@@ -148,112 +148,30 @@ export default class MathBooster extends Plugin {
 
 
 		/** Commands */
-
-		this.addCommand({
-			id: 'insert-display-math',
-			name: 'Insert display math',
-			editorCallback: insertDisplayMath,
-		});
-
-		this.addCommand({
-			id: 'insert-theorem-callout',
-			name: 'Insert theorem callout',
-			editorCallback: async (editor, context) => {
-				if (context.file) {
-					new TheoremCalloutModal(
-						this.app, this, context.file,
-						(config) => {
-							if (context.file) {
-								insertTheoremCalloutCallback(editor, config);
-							}
-						},
-						"Insert", "Insert theorem callout",
-					).open();
-				}
-			}
-		});
-
-		this.addCommand({
-			id: 'search',
-			name: 'Search',
-			callback: () => {
-				new MathSearchModal(this).open();
-			}
-		})
-
-		this.addCommand({
-			id: 'open-local-settings-for-current-note',
-			name: 'Open local settings for the current note',
-			callback: () => {
-				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (view?.file) {
-					new ContextSettingModal(this.app, this, view.file).open();
-				}
-			}
-		});
-
-		this.addCommand({
-			id: 'insert-proof',
-			name: 'Insert proof',
-			editorCallback: (editor, context) => insertProof(this, editor, context)
-		});
-
-		this.addCommand({
-			id: 'convert-equation-number-to-tag',
-			name: 'Convert equation numbers in the current note to static \\tag{}',
-			callback: () => {
-				const file = this.app.workspace.getActiveFile();
-				if (file) {
-					staticifyEqNumber(this, file);
-				}
-			}
-		});
-
-		this.addCommand({
-			id: 'migrate-from-v1',
-			name: 'Migrate from version 1',
-			callback: () => {
-				new MigrationModal(this).open();
-			}
-		});
+		this.registerCommands();
 
 
 		/** Editor Extensions */
-
-		// hide > [!math|{"type":"theorem", ...}]
-		this.registerEditorExtension(theoremCalloutNumberingViewPlugin);
-		this.registerEditorExtension(createTheoremCalloutFirstLineDecorator(this));
-		// equation number
-		this.registerEditorExtension(createEquationNumberPlugin(this));
-		// math preview in callouts and quotes
-		this.registerEditorExtension(mathPreviewInfoField);
-		this.registerEditorExtension(inlineMathPreview);
-		this.registerEditorExtension(displayMathPreviewForCallout);
-		this.registerEditorExtension(displayMathPreviewForQuote);
-		this.registerEditorExtension(hideDisplayMathPreviewInQuote);
-		// proofs
-		this.proofPositionField = proofPositionFieldFactory(this);
-		this.registerEditorExtension(this.proofPositionField);
-		this.registerEditorExtension(proofDecorationFactory(this));
-		this.registerEditorExtension(proofFoldFactory(this));
-
-
-		/** Markdown post processors */
-
-		// for theorem callouts
-		this.registerMarkdownPostProcessor(theoremCalloutPostProcessor(this));
-
-		// for equation numbers
-		this.registerMarkdownPostProcessor(equationNumberProcessor(this));
-
-		// for proof environments
-		this.registerMarkdownPostProcessor(
-			(element, context) => ProofProcessor(this.app, this, element, context),
-		);
+		this.editorExtensions = []
+		this.registerEditorExtension(this.editorExtensions);
+		this.updateEditorExtensions();
 
 
 		/** Theorem/equation link autocompletion */
 		this.registerLinkAutocomplete();
+
+
+		/** Markdown post processors */
+
+		// theorem callouts
+		this.registerMarkdownPostProcessor(createTheoremCalloutPostProcessor(this));
+
+		// equation numbers
+		this.registerMarkdownPostProcessor(createEquationNumberProcessor(this));
+
+		// proof environments
+		this.registerMarkdownPostProcessor(createProofProcessor(this));
+
 
 		/** File menu */
 
@@ -433,5 +351,103 @@ export default class MathBooster extends Plugin {
 				el?.addClass(...classes);
 			}
 		}
+	}
+
+	updateEditorExtensions() {
+		this.editorExtensions.length = 0;
+
+		// theorem callouts
+		this.editorExtensions.push(theoremCalloutNumberingViewPlugin);
+		this.editorExtensions.push(createTheoremCalloutFirstLineDecorator(this));
+
+		// equation numbers
+		this.editorExtensions.push(createEquationNumberPlugin(this));
+
+		// math preview in callouts and quotes
+		document.body.toggleClass('math-booster-preview-enabled', this.extraSettings.enableMathPreviewInCalloutAndQuote);
+		if (this.extraSettings.enableMathPreviewInCalloutAndQuote) {
+			this.editorExtensions.push(mathPreviewInfoField);
+			this.editorExtensions.push(inlineMathPreview);
+			this.editorExtensions.push(displayMathPreviewForCallout);
+			this.editorExtensions.push(displayMathPreviewForQuote);
+			this.editorExtensions.push(hideDisplayMathPreviewInQuote);
+		}
+		// proofs
+		if (this.extraSettings.enableProof) {
+			this.proofPositionField = proofPositionFieldFactory(this);
+			this.editorExtensions.push(this.proofPositionField);
+			this.editorExtensions.push(proofDecorationFactory(this));
+			this.editorExtensions.push(proofFoldFactory(this));
+		}
+
+		this.app.workspace.updateOptions();
+	}
+
+	registerCommands() {
+		this.addCommand({
+			id: 'insert-display-math',
+			name: 'Insert display math',
+			editorCallback: insertDisplayMath,
+		});
+
+		this.addCommand({
+			id: 'insert-theorem-callout',
+			name: 'Insert theorem callout',
+			editorCallback: async (editor, context) => {
+				if (context.file) {
+					new TheoremCalloutModal(
+						this.app, this, context.file,
+						(config) => {
+							if (context.file) {
+								insertTheoremCalloutCallback(editor, config);
+							}
+						},
+						"Insert", "Insert theorem callout",
+					).open();
+				}
+			}
+		});
+
+		this.addCommand({
+			id: 'search',
+			name: 'Search',
+			callback: () => {
+				new MathSearchModal(this).open();
+			}
+		})
+
+		this.addCommand({
+			id: 'open-local-settings-for-current-note',
+			name: 'Open local settings for the current note',
+			callback: () => {
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (view?.file) {
+					new ContextSettingModal(this.app, this, view.file).open();
+				}
+			}
+		});
+
+		this.addCommand({
+			id: 'insert-proof',
+			name: 'Insert proof',
+			editorCallback: (editor, context) => insertProof(this, editor, context)
+		});
+
+		this.addCommand({
+			id: 'convert-equation-number-to-tag',
+			name: 'Convert equation numbers in the current note to static \\tag{}',
+			callback: () => {
+				const file = this.app.workspace.getActiveFile();
+				if (file) staticifyEqNumber(this, file);
+			}
+		});
+
+		this.addCommand({
+			id: 'migrate-from-v1',
+			name: 'Migrate from version 1',
+			callback: () => {
+				new MigrationModal(this).open();
+			}
+		});
 	}
 }

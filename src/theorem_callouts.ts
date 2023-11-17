@@ -4,7 +4,7 @@ import { ViewUpdate, EditorView, PluginValue, ViewPlugin, Decoration, Decoration
 
 import MathBooster from 'main';
 import { TheoremCalloutModal } from 'settings/modals';
-import { TheoremCalloutSettings, TheoremCalloutPrivateFields, MinimalTheoremCalloutSettings } from 'settings/settings';
+import { TheoremCalloutSettings, TheoremCalloutPrivateFields } from 'settings/settings';
 import {
     increaseQuoteLevel, resolveSettings
     //getBacklinks 
@@ -53,7 +53,7 @@ export function insertTheoremCalloutCallback(editor: Editor, config: TheoremCall
 }
 
 
-export const theoremCalloutPostProcessor = (plugin: MathBooster) => async (element: HTMLElement, context: MarkdownPostProcessorContext) => {
+export const createTheoremCalloutPostProcessor = (plugin: MathBooster) => async (element: HTMLElement, context: MarkdownPostProcessorContext) => {
 
     const file = plugin.app.vault.getAbstractFileByPath(context.sourcePath);
     if (!(file instanceof TFile)) return null;

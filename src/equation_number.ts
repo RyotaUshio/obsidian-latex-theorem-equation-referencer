@@ -17,7 +17,7 @@ import { resolveLinktext } from "utils/obsidian";
 
 /** For reading view */
 
-export const equationNumberProcessor = (plugin: MathBooster) => async (el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+export const createEquationNumberProcessor = (plugin: MathBooster) => async (el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
     const isPdfExport = el.classList.contains('markdown-rendered');
     const sourceFile = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
     if (!(sourceFile instanceof TFile)) return;

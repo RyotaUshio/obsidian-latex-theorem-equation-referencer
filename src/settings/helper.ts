@@ -197,7 +197,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
         return setting;
     }
 
-    addToggleSetting(name: BooleanKeys<SettingsType>, prettyName: string, description?: string) {
+    addToggleSetting(name: BooleanKeys<SettingsType>, prettyName: string, description?: string, additionalOnChange?: () => void): Setting {
         const setting = new Setting(this.contentEl).setName(prettyName);
         if (description) {
             setting.setDesc(description);
@@ -211,6 +211,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
             }
             toggle.onChange((value) => {
                 Object.assign(this.settings, { [name]: value });
+                additionalOnChange?.();
             });
         });
         if (this.addClear) {
@@ -305,7 +306,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
             "When a theorem callout's \"Use this theorem callout to set this note's mathLink\" setting is turned on, this format will be used for links to the note containing that theorem callout."
         );
 
-        contentEl.createEl("h4", { text: "Equations" });
+        contentEl.createEl("h4", { text: "Equations", cls: 'equation-heading' });
         contentEl.createEl("h6", { text: "Numbering" });
         this.addToggleSetting(
             "inferEqNumberPrefix",
@@ -328,15 +329,11 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addTextSetting("eqRefPrefix", "Prefix");
         this.addTextSetting("eqRefSuffix", "Suffix");
 
-        contentEl.createEl("h4", { text: "Proofs" });
-        contentEl.createDiv({
-            text: `For example, you can replace a pair of inline codes \`${DEFAULT_SETTINGS.beginProof}\` & \`${DEFAULT_SETTINGS.endProof}\` with \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.begin}\" & \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.end}\". You can style it with CSS snippets. See the documentation for the details.`,
-            cls: ["setting-item-description", "math-booster-setting-item-description"]
-        });
+        contentEl.createEl("h4", { text: "Proofs", cls: 'proof-heading' });
         this.addTextSetting("beginProof", "Beginning of a proof");
         this.addTextSetting("endProof", "End of a proof");
 
-        this.contentEl.createEl("h3", { text: "Suggestions" });
+        this.contentEl.createEl("h3", { text: "Search & link auto-completion" });
         this.addToggleSetting("insertSpace", "Insert a space after the link");
     }
 
@@ -364,6 +361,8 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addToggleSetting("showTheoremCalloutEditButton", "Show an edit button on a theorem callout");
         this.addToggleSetting("setOnlyTheoremAsMain", "If a note has only one theorem callout, automatically set it as main", 'Regardless of this setting, putting "%% main %%" or "%% main: true %%" in a theorem callout will set it as main one of the note, which means any link to that note will be displayed with the theorem\'s title. Enabling this option implicitly sets a theorem callout as main when it\'s the only one in the note.');
         this.addToggleSetting("setLabelInModal", "Show LaTeX/Pandoc label input form in theorem callout insert/edit modal");
+        this.addToggleSetting("enableMathPreviewInCalloutAndQuote", "Render equations inside callouts & add multi-line equation support to blockquotes", undefined, () => this.plugin.updateEditorExtensions());
+        this.addToggleSetting("enableProof", "Enable proof environment", `For example, you can replace a pair of inline codes \`${DEFAULT_SETTINGS.beginProof}\` & \`${DEFAULT_SETTINGS.endProof}\` with \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.begin}\" & \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.end}\". You can style it with CSS snippets. See the documentation for the details.`, () => this.plugin.updateEditorExtensions());
 
         // Suggest
         this.contentEl.createDiv({
@@ -409,7 +408,6 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addDropdownSetting("searchMethod", ["Fuzzy", "Simple"], "Search method", "Fuzzy search is more flexible, but simple search is more light-weight.");
         this.addToggleSetting("searchLabel", "Include theorem callout label for search target");
         this.addSliderSetting("upWeightRecent", { min: 0, max: 0.5, step: 0.01 }, "Up-weight recently opened notes by", "It takes effect only if \"Search only recently opened notes\" is turned off.");
-        // this.addToggleSetting("searchOnlyRecent", "Search only recently opened notes", "Turning this on might speed up suggestions.");
         this.addDropdownSetting("modifierToJump", ['Mod', 'Ctrl', 'Meta', 'Shift', 'Alt'], "Modifier key for jumping to suggestion", "Press Enter and this modifier key to jump to the currently selected suggestion. Changing this option requires to reloading " + this.plugin.manifest.name + " to take effect.");
         this.addDropdownSetting("modifierToNoteLink", ['Mod', 'Ctrl', 'Meta', 'Shift', 'Alt'], "Modifier key for insert link to note", "Press Enter and this modifier key to insert a link to the note containing the currently selected item. Changing this option requires to reloading " + this.plugin.manifest.name + " to take effect.");
         this.addToggleSetting("showModifierInstruction", "Show modifier key instruction", "Show the instruction for the modifier key at the bottom of suggestion box. " + `Changing this option requires to reloading ${this.plugin.manifest.name} to take effect.`);
@@ -417,14 +415,6 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         list.createEl("li", { text: "Mod is Cmd on MacOS and Ctrl on other OS." });
         list.createEl("li", { text: "Meta is Cmd on MacOS and Win key on Windows." });
         this.addDropdownSetting("suggestLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected suggestion.")
-
-        // // backlinks
-        // this.contentEl.createEl("h3", { text: "Backlinks" });
-        // this.contentEl.createDiv({
-        //     text: `Right-click a theorem callout or an equation and select \"Show backlinks\" to see its backlinks.`,
-        //     cls: ["setting-item-description", "math-booster-setting-item-description"],
-        // });
-        // this.addDropdownSetting("backlinkLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected backlink.")
 
         // projects
         // this.addTextSetting("projectInfix", "Link infix", "Specify the infix to connect a project name and a theorem title or an equation number.");

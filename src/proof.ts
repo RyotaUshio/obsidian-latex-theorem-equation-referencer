@@ -116,7 +116,9 @@ export class ProofRenderChild extends MarkdownRenderChild {
     }
 }
 
-export const ProofProcessor = (app: App, plugin: MathBooster, element: HTMLElement, context: MarkdownPostProcessorContext) => {
+export const createProofProcessor = (plugin: MathBooster) => (element: HTMLElement, context: MarkdownPostProcessorContext) => {
+    if (!plugin.extraSettings.enableProof) return;
+
     const file = plugin.app.vault.getAbstractFileByPath(context.sourcePath);
     if (!(file instanceof TFile)) return;
 

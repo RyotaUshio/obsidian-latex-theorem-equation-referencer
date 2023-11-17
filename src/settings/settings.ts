@@ -163,6 +163,8 @@ export type ExtraSettings = ImporterSettings & {
     setOnlyTheoremAsMain: boolean;
     setLabelInModal: boolean;
     excludeExampleCallout: boolean;
+    enableProof: boolean;
+    enableMathPreviewInCalloutAndQuote: boolean;
     // searchModal*: not congigurable from the setting tab, just remenbers the last state
     searchModalQueryType: QueryType;
     searchModalRange: SearchRange;
@@ -253,6 +255,8 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     setOnlyTheoremAsMain: false,
     setLabelInModal: false,
     excludeExampleCallout: false,
+    enableProof: true,
+    enableMathPreviewInCalloutAndQuote: true,
     searchModalQueryType: 'both',
     searchModalRange: 'recent',
     searchModalDvQuery: '',

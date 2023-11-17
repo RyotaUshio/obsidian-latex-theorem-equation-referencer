@@ -86,7 +86,7 @@
 (see https://forum.obsidian.md/t/live-preview-support-math-block-in-quotes/32564/2), 
 so we need to replace it with this plugin's editor extension. 
 */
-.HyperMD-quote.cm-line .math.math-block.cm-embed-block:has(> mjx-container.MathJax[display="true"]:not(.math-booster-preview)) {
+.math-booster-preview-enabled .HyperMD-quote.cm-line .math.math-block.cm-embed-block:has(> mjx-container.MathJax[display="true"]:not(.math-booster-preview)) {
     display: none;
 }
 

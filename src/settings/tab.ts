@@ -51,6 +51,14 @@ export class MathSettingTab extends PluginSettingTab {
         extraHelper.makeSettingPane();
 
         this.containerEl.insertAfter(
+            extraHelper.settingRefs.enableMathPreviewInCalloutAndQuote.settingEl,
+            this.containerEl.querySelector('.equation-heading')!
+        );
+        this.containerEl.insertAfter(
+            extraHelper.settingRefs.enableProof.settingEl,
+            this.containerEl.querySelector('.proof-heading')!
+        );
+        this.containerEl.insertAfter(
             extraHelper.settingRefs.showTheoremCalloutEditButton.settingEl, 
             globalHelper.settingRefs.profile.settingEl
         );
