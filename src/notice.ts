@@ -1,4 +1,4 @@
-import { Modal, Setting, Component, MarkdownRenderer, App } from "obsidian";
+import { Modal, Setting, Component, MarkdownRenderer, App, Notice } from "obsidian";
 
 import MathBooster from "main";
 import { isPluginOlderThan } from "utils/obsidian";
@@ -166,6 +166,12 @@ to the new format:
                     button.setButtonText('No').onClick(() => this.close())
                 });
         });
+
+        // @ts-ignore
+        if (!this.app.metadataCache.initialized || !this.plugin.indexManager.initialized) {
+            new Notice('Obsidian is still indexing the vault. Try again after the cache is fully initialized.');
+            return;
+        }
 
         contentEl.empty();
 
