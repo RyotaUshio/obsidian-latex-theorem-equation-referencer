@@ -553,6 +553,7 @@ export const theoremCalloutFirstLineDecorator = ViewPlugin.fromClass(
             const builder = new RangeSetBuilder<Decoration>();
             const tree = syntaxTree(view.state);
 
+            // assuming the theorem callout that is currently being edited is inside the viewport
             for (const { from, to } of view.visibleRanges) {
                 tree.iterate({
                     from, to,
