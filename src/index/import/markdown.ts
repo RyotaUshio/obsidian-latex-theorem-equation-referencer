@@ -21,7 +21,8 @@ import { parseLatexComment } from "utils/parse";
 export function markdownImport(
     path: string,
     markdown: string,
-    metadata: CachedMetadata
+    metadata: CachedMetadata,
+    excludeExample: boolean
 ): JsonMarkdownPage {
     // Total length of the file.
     const lines = markdown.split("\n");
@@ -84,7 +85,7 @@ export function markdownImport(
         let theoremCalloutSettings: MinimalTheoremCalloutSettings | null = null;
         let v1 = false;
         if (block.type === "callout") {
-            const settings = readTheoremCalloutSettings(lines[start]);
+            const settings = readTheoremCalloutSettings(lines[start], excludeExample);
             theoremCalloutSettings = settings ?? null;
             v1 = !!(settings?.legacy);
         }

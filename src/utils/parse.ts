@@ -20,7 +20,13 @@ export function parseTheoremCalloutMetadata(metadata: string) {
     return number;
 }
 
-export function readTheoremCalloutSettings(line: string): MinimalTheoremCalloutSettings & { legacy: boolean } | undefined {
+/**
+ * 
+ * @param line 
+ * @param excludeExample if true, then ""> [!example]" will not be treated as a theorem callout but as the built-in example callout.
+ * @returns 
+ */
+export function readTheoremCalloutSettings(line: string, excludeExample: boolean = false): MinimalTheoremCalloutSettings & { legacy: boolean } | undefined {
     const rawSettings = line.match(THEOREM_CALLOUT_PATTERN)?.groups as { type: string, number?: string, title: string, fold: string } | undefined;
     if (!rawSettings) return;
 
@@ -34,6 +40,8 @@ export function readTheoremCalloutSettings(line: string): MinimalTheoremCalloutS
     }
 
     // new format
+    if (excludeExample && type === 'example') return undefined;
+
     if (type.length <= 4) { // use length to avoid iterating over all the prefixes
         // convert a prefix to an ID (e.g. "thm" -> "theorem")
         type = THEOREM_LIKE_ENV_PREFIX_ID_MAP[type as TheoremLikeEnvPrefix];

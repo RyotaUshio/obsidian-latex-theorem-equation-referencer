@@ -162,7 +162,8 @@ export type ExtraSettings = ImporterSettings & {
     showTheoremCalloutEditButton: boolean;
     setOnlyTheoremAsMain: boolean;
     setLabelInModal: boolean;
-    // not congigurable from the setting tab, just remenbers the last state
+    excludeExampleCallout: boolean;
+    // searchModal*: not congigurable from the setting tab, just remenbers the last state
     searchModalQueryType: QueryType;
     searchModalRange: SearchRange;
     searchModalDvQuery: string;
@@ -251,6 +252,7 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     showTheoremCalloutEditButton: false,
     setOnlyTheoremAsMain: false,
     setLabelInModal: false,
+    excludeExampleCallout: false,
     searchModalQueryType: 'both',
     searchModalRange: 'recent',
     searchModalDvQuery: '',

@@ -28,7 +28,7 @@ export class MathIndexManager extends Component {
     // persister: LocalStorageCache;
     /** Only set when the index is in the midst of initialization; tracks current progress. */
     initializer?: MathIndexInitializer;
-    /** If true, datacore is fully hydrated and all files have been indexed. */
+    /** If true, the index is fully hydrated and all files have been indexed. */
     initialized: boolean;
 
     constructor(
@@ -49,7 +49,7 @@ export class MathIndexManager extends Component {
         this.initialized = false;
 
         this.addChild(
-            (this.importer = new MathImporter(app.vault, app.metadataCache, () => {
+            (this.importer = new MathImporter(this.plugin, app.vault, app.metadataCache, () => {
                 return {
                     workers: settings.importerNumThreads,
                     utilization: Math.max(0.1, Math.min(1.0, settings.importerUtilization)),

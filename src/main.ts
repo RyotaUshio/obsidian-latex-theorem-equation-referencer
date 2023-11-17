@@ -6,7 +6,7 @@ import * as MathLinks from 'obsidian-mathlinks';
 import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS, UNION_TYPE_MATH_CONTEXT_SETTING_KEYS, UNION_TYPE_EXTRA_SETTING_KEYS } from 'settings/settings';
 import { MathSettingTab } from "settings/tab";
 import { CleverRefProvider } from 'cleverref';
-import { insertTheoremCalloutCallback, theoremCalloutFirstLineDecorator, theoremCalloutNumberingViewPlugin, theoremCalloutPostProcessor } from 'theorem_callouts';
+import { insertTheoremCalloutCallback, createTheoremCalloutFirstLineDecorator, theoremCalloutNumberingViewPlugin, theoremCalloutPostProcessor } from 'theorem_callouts';
 import { ContextSettingModal, TheoremCalloutModal } from 'settings/modals';
 import { insertDisplayMath } from 'key';
 import { DisplayMathRenderChild, buildEquationNumberPlugin } from 'equation_number';
@@ -222,7 +222,7 @@ export default class MathBooster extends Plugin {
 
 		// hide > [!math|{"type":"theorem", ...}]
 		this.registerEditorExtension(theoremCalloutNumberingViewPlugin);
-		this.registerEditorExtension(theoremCalloutFirstLineDecorator);
+		this.registerEditorExtension(createTheoremCalloutFirstLineDecorator(this));
 		// equation number
 		this.registerEditorExtension(buildEquationNumberPlugin(this));
 		// math preview in callouts and quotes

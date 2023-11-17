@@ -62,6 +62,8 @@ export const theoremCalloutPostProcessor = async (plugin: MathBooster, element: 
         const type = calloutEl.getAttribute('data-callout')!.toLowerCase();
 
         if ((THEOREM_LIKE_ENV_IDs as unknown as string[]).includes(type) || (THEOREM_LIKE_ENV_PREFIXES as unknown as string[]).includes(type) || type === 'math') {
+            if (plugin.extraSettings.excludeExampleCallout && type === 'example') continue;
+            
             const theoremCallout = new TheoremCalloutRenderer(calloutEl, context, file, plugin);
             context.addChild(theoremCallout);
         }
@@ -417,7 +419,7 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
             },
                 "Confirm",
                 "Edit theorem callout settings",
-                readTheoremCalloutSettings(line)
+                readTheoremCalloutSettings(line, this.plugin.extraSettings.excludeExampleCallout)
             ).open();
         });
     }
@@ -534,7 +536,7 @@ class MutationObservingChild extends Component {
 }
 
 
-export const theoremCalloutFirstLineDecorator = ViewPlugin.fromClass(
+export const createTheoremCalloutFirstLineDecorator = (plugin: MathBooster) => ViewPlugin.fromClass(
     class {
         decorations: DecorationSet;
 
@@ -562,7 +564,7 @@ export const theoremCalloutFirstLineDecorator = ViewPlugin.fromClass(
                         if (!match) return;
 
                         const text = nodeText(node, view.state);
-                        const settings = readTheoremCalloutSettings(text);
+                        const settings = readTheoremCalloutSettings(text, plugin.extraSettings.excludeExampleCallout);
                         if (!settings) return;
 
                         builder.add(

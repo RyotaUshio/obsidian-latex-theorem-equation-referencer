@@ -9,10 +9,11 @@ export interface MarkdownImport {
     path: string;
     /** The file contents to import. */
     contents: string;
-    /** The stats for the file. */
-    stat: FileStats;
+    // /** The stats for the file. */
+    // stat: FileStats;
     /** Metadata for the file. */
     metadata: CachedMetadata;
+    excludeExampleCallout: boolean;
 }
 
 

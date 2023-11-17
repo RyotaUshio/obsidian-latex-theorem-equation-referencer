@@ -54,6 +54,10 @@ export class MathSettingTab extends PluginSettingTab {
             extraHelper.settingRefs.showTheoremCalloutEditButton.settingEl, 
             globalHelper.settingRefs.profile.settingEl
         );
+        this.containerEl.insertAfter(
+            extraHelper.settingRefs.excludeExampleCallout.settingEl, 
+            globalHelper.settingRefs.profile.settingEl
+        );
         this.containerEl.insertBefore(
             extraHelper.settingRefs.foldDefault.settingEl, 
             globalHelper.settingRefs.labelPrefix.settingEl

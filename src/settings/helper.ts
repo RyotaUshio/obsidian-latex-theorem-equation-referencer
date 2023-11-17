@@ -356,10 +356,11 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
 export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
     makeSettingPane(): void {
         this.settingRefs["foldDefault"] = addFoldOptionSetting(
-            this.contentEl, 'Default collapsibility', (fold) => {
+            this.contentEl, 'Default collapsibility when using the "Insert theorem callout" command', (fold) => {
                 this.settings.foldDefault = fold;
             }, this.defaultSettings.foldDefault);
         this.addToggleSetting("noteTitleInLink", "Show note title at link's head", "If turned on, a link to \"Theorem 1\" will look like \"Note title > Theorem 1.\" The same applies to equations.")
+        this.addToggleSetting("excludeExampleCallout", 'Don\'t treat "> [!example]" as a theorem callout', 'If turned on, a callout of the form "> [!example]" will be treated as Obsidian\'s built-in "Example" callout, and you will need to type "> [!exm]" instead to insert a theorem callout of "Example" type.');
         this.addToggleSetting("showTheoremCalloutEditButton", "Show an edit button on a theorem callout");
         this.addToggleSetting("setOnlyTheoremAsMain", "If a note has only one theorem callout, automatically set it as main", 'Regardless of this setting, putting "%% main %%" or "%% main: true %%" in a theorem callout will set it as main one of the note, which means any link to that note will be displayed with the theorem\'s title. Enabling this option implicitly sets a theorem callout as main when it\'s the only one in the note.');
         this.addToggleSetting("setLabelInModal", "Show LaTeX/Pandoc label input form in theorem callout insert/edit modal");

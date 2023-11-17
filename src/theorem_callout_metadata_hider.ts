@@ -4,7 +4,7 @@ import { RangeSetBuilder, RangeSet, RangeValue } from '@codemirror/state';
 import { syntaxTree } from "@codemirror/language";
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate } from "@codemirror/view"
 
-import { matchTheoremCallout, readTheoremCalloutSettings } from './utils/parse';
+import { readTheoremCalloutSettings } from 'utils/parse';
 import { nodeText } from 'utils/editor';
 
 
@@ -41,7 +41,7 @@ export const theoremCalloutMetadataHiderPlulgin = ViewPlugin.fromClass(
                     enter(node) {
                         const match = node.name.match(CALLOUT);
                         if (match) {
-                            const settings = readTheoremCalloutSettings(nodeText(node, view.state));
+                            const settings = readTheoremCalloutSettings(nodeText(node, view.state)); // should be passed plugin.extraSettings.excludeExample, but I'll leave it for now because this file is currently unused.
                             if (!settings) return;
                             const level = +match[1];
                             const calloutPreTitleNode = node.node.firstChild;
