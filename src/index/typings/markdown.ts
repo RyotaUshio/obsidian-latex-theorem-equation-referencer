@@ -389,7 +389,7 @@ export class EquationBlock extends MathBoosterBlock {
     $printName: string | null = null;
     /** The math text of this equation. */
     $mathText: string;
-    $manualTag: string | null = null;
+    $manualTag: string | null;
 
     static from(
         object: JsonEquationBlock,
