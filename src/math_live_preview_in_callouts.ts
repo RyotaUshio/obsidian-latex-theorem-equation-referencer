@@ -69,7 +69,6 @@ class MathInfo extends RangeValue {
 
     async render() {
         this.mathEl = renderMath(this.mathText, this.display);
-        await finishRenderMath();
     }
 
     toWidget(): MathPreviewWidget {

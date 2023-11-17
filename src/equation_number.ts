@@ -66,6 +66,11 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
         setTimeout(() => this.update());
     }
 
+    onunload() {
+        // I don't know when to call finishRenderMath...
+        finishRenderMath();
+    }
+
     update() {
         const settings = resolveSettings(undefined, this.plugin, this.file);
         const equation = this.getEquationCacheCaringHoverAndEmbed(settings);
@@ -169,34 +174,17 @@ export function createEquationNumberPlugin<V extends PluginValue>(plugin: MathBo
                     if (!(block instanceof EquationBlock)) return;
 
                     replaceMathTag(mjxContainerEl, block.$mathText, block.$printName, settings);
-                    // plugin.registerDomEvent(
-                    //     mjxContainerEl, "contextmenu", (event) => {
-                    //         const menu = new Menu();
-
-                    //         // Show backlinks
-                    //         menu.addItem((item) => {
-                    //             item.setTitle("Show backlinks");
-                    //             item.onClick((clickEvent) => {
-                    //                 if (clickEvent instanceof MouseEvent) {
-                    //                     const backlinks = this.getBacklinks(mjxContainerEl, event, file, view);
-                    //                     new BacklinkModal(app, plugin, backlinks).open();
-                    //                 }
-                    //             })
-                    //         });
-
-                    //         menu.showAtMouseEvent(event);
-                    //     }
-                    // );
 
                 } catch (err) {
                     // try it again later
                 }
             }
-
-
         }
 
-        destroy() { }
+        destroy() {
+            // I don't know when to call finishRenderMath...
+            finishRenderMath();
+        }
 
         // getBacklinks(mjxContainerEl: HTMLElement, event: MouseEvent, file: TFile, view: EditorView): Backlink[] | null {
         //     const cache = app.metadataCache.getFileCache(file);
@@ -256,6 +244,5 @@ export function replaceMathTag(displayMathEl: HTMLElement, text: string, tag: st
     if (taggedText) {
         const mjxContainerEl = renderMath(taggedText, true);
         displayMathEl.replaceChildren(...mjxContainerEl.childNodes);
-        finishRenderMath();
     }
 }

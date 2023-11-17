@@ -1,4 +1,4 @@
-import { App, EditorSuggestContext, Instruction, Notice, Scope, SearchResult, TFile, getAllTags, prepareFuzzySearch, prepareSimpleSearch, renderMath, sortSearchResults } from 'obsidian';
+import { App, EditorSuggestContext, Instruction, Notice, Scope, SearchResult, TFile, finishRenderMath, getAllTags, prepareFuzzySearch, prepareSimpleSearch, renderMath, sortSearchResults } from 'obsidian';
 import * as Dataview from 'obsidian-dataview';
 
 import MathBooster from 'main';
@@ -128,7 +128,6 @@ export abstract class MathSearchCore {
             if (this.plugin.extraSettings.renderMathInSuggestion) {
                 const mjxContainerEl = renderMath((block as EquationBlock).$mathText, true);
                 baseEl.insertBefore(mjxContainerEl, smallEl);
-                // finishRenderMath();
             } else {
                 const mathTextEl = createDiv({ text: (block as EquationBlock).$mathText });
                 baseEl.insertBefore(mathTextEl, smallEl);
@@ -138,6 +137,8 @@ export abstract class MathSearchCore {
 
     selectSuggestion(item: MathBoosterBlock, evt: MouseEvent | KeyboardEvent): void {
         this.selectSuggestionImpl(item, false);
+        // I don't know when to call finishRenderMath...
+        finishRenderMath();
     }
 
     async selectSuggestionImpl(block: MathBoosterBlock, insertNoteLink: boolean): Promise<void> {

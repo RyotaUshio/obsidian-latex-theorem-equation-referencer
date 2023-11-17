@@ -29,8 +29,6 @@ export function renderTextWithMath(source: string): (HTMLElement | string)[] {
         elements.push(source.slice(textFrom));
     }
 
-    // finishRenderMath();
-
     return elements;
 }
 
