@@ -56,3 +56,8 @@ export const THEOREM_LIKE_ENV_PREFIX_ID_MAP = {} as Record<TheoremLikeEnvPrefix,
 THEOREM_LIKE_ENV_PREFIXES.forEach((prefix, index) => {
     THEOREM_LIKE_ENV_PREFIX_ID_MAP[prefix] = THEOREM_LIKE_ENV_IDs[index];
 });
+
+export const THEOREM_LIKE_ENV_ID_PREFIX_MAP = {} as Record<TheoremLikeEnvID, TheoremLikeEnvPrefix>;
+THEOREM_LIKE_ENV_IDs.forEach((id, index) => {
+    THEOREM_LIKE_ENV_ID_PREFIX_MAP[id] = THEOREM_LIKE_ENV_PREFIXES[index];
+});

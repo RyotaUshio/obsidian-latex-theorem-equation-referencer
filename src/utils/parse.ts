@@ -2,7 +2,7 @@ import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENV_PREFIXES, THEOREM_LIKE_ENV_PREFI
 import { FoldOption, MinimalTheoremCalloutSettings } from "settings/settings";
 
 export const THEOREM_CALLOUT_PATTERN = new RegExp(
-    `> *\\[\\! *(?<type>${THEOREM_LIKE_ENV_IDs.join('|')}|${THEOREM_LIKE_ENV_PREFIXES.join('|')}|math) *(\\|(?<number>.*?))?\\](?<fold>[+-]?) (?<title>.*)`,
+    `> *\\[\\! *(?<type>${THEOREM_LIKE_ENV_IDs.join('|')}|${THEOREM_LIKE_ENV_PREFIXES.join('|')}|math) *(\\|(?<number>.*?))?\\](?<fold>[+-])?(?<title> .*)?`,
     'i'
 );
 
@@ -27,7 +27,7 @@ export function parseTheoremCalloutMetadata(metadata: string) {
  * @returns 
  */
 export function readTheoremCalloutSettings(line: string, excludeExample: boolean = false): MinimalTheoremCalloutSettings & { legacy: boolean } | undefined {
-    const rawSettings = line.match(THEOREM_CALLOUT_PATTERN)?.groups as { type: string, number?: string, title: string, fold: string } | undefined;
+    const rawSettings = line.match(THEOREM_CALLOUT_PATTERN)?.groups as { type: string, number?: string, title?: string, fold?: string } | undefined;
     if (!rawSettings) return;
 
     let type = rawSettings.type.trim().toLowerCase();
@@ -46,15 +46,12 @@ export function readTheoremCalloutSettings(line: string, excludeExample: boolean
         // convert a prefix to an ID (e.g. "thm" -> "theorem")
         type = THEOREM_LIKE_ENV_PREFIX_ID_MAP[type as TheoremLikeEnvPrefix];
     }
-    // let number = rawSettings.number?.trim();
-    // if (!number) number = 'auto';
-    // else if (number === '*') number = '';
     const number = parseTheoremCalloutMetadata(rawSettings.number ?? '');
 
-    let title: string | undefined = rawSettings.title.trim();
+    let title: string | undefined = rawSettings.title?.trim();
     if (title === '') title = undefined;
 
-    const fold = rawSettings.fold.trim() as FoldOption;
+    const fold = (rawSettings.fold?.trim() ?? '') as FoldOption;
 
     return { type, number, title, fold, legacy: false };
 }

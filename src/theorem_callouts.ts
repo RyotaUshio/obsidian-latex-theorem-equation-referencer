@@ -18,7 +18,7 @@ import { renderTextWithMath } from "utils/render";
 import { MarkdownPage, TheoremCalloutBlock } from "index/typings/markdown";
 import { MathIndex } from 'index/index';
 import { parseTheoremCalloutMetadata, readTheoremCalloutSettings } from 'utils/parse';
-import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENV_PREFIXES, THEOREM_LIKE_ENV_PREFIX_ID_MAP, TheoremLikeEnvPrefix } from 'env';
+import { THEOREM_LIKE_ENV_ID_PREFIX_MAP, THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENV_PREFIXES, THEOREM_LIKE_ENV_PREFIX_ID_MAP, TheoremLikeEnvID, TheoremLikeEnvPrefix } from 'env';
 import { getIO } from 'file_io';
 import { getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveLinktext } from 'utils/obsidian';
 import { syntaxTree } from '@codemirror/language';
@@ -312,6 +312,7 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
         return this.blockToInfo(block);
     }
 
+    // this method is expected to be called for live preview only
     getTheoremCalloutInfoFromEl(): TheoremCalloutInfo | null {
         const settings: (TheoremCalloutSettings & TheoremCalloutPrivateFields) | null = readSettingsFromEl(this.containerEl);
         if (!settings) return null;
@@ -322,8 +323,8 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
         let theoremSubtitleEl = this.containerEl.querySelector<HTMLElement>('.theorem-callout-subtitle');
         if (theoremSubtitleEl === null) {
             const titleInnerEl = this.containerEl.querySelector<HTMLElement>('.callout-title-inner');
-            if (titleInnerEl) {
-                if (titleInnerEl.textContent !== capitalize(settings.type)) {
+            if (titleInnerEl?.childNodes.length) {
+                if (titleInnerEl.textContent !== capitalize(settings.type) && titleInnerEl.textContent !== capitalize(THEOREM_LIKE_ENV_ID_PREFIX_MAP[settings.type as TheoremLikeEnvID])) {
                     theoremSubtitleEl = createSpan({ cls: "theorem-callout-subtitle" });
                     theoremSubtitleEl.replaceChildren('(', ...titleInnerEl.childNodes, ')');
                 }
