@@ -2,7 +2,7 @@
     --callout-color: var(--text-normal);
     font-family: Times;
     background-color: rgb(0, 0, 0, 0);
-    border: solid;
+    border: solid var(--border-width);
     border-radius: 6px;
 }
 
