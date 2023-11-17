@@ -66,12 +66,12 @@ export default class MathBooster extends Plugin {
 		// @ts-ignore
 		(window['mathIndex'] = this.indexManager.index) && this.register(() => delete window['mathIndex'])
 
-		this.addChild(
-			MathLinks.addProvider(
-				this.app,
-				(mathLinks) => new CleverRefProvider(mathLinks, this)
-			)
-		);
+		// wait until the layout is ready to ensure MathLinks has been loaded when calling addProvider()
+		this.app.workspace.onLayoutReady(() => {
+			this.addChild(
+				MathLinks.addProvider(this.app, (mathLinks) => new CleverRefProvider(mathLinks, this))
+			);	
+		});
 
 
 
