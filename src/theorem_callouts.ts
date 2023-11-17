@@ -263,7 +263,6 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
                 }
             } else if (result.type === 'heading') {
                 const _block = this.findTheoremCalloutBlock(result.start.line);
-                console.log({_block})
                 if (_block) {
                     info = block = this.blockToInfo(_block);
                     if (!this.info || TheoremCalloutRenderer.areDifferentInfo(info, this.info)) {

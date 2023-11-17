@@ -3,15 +3,16 @@ import { StateEffect } from '@codemirror/state';
 import { EditorView, ViewPlugin, PluginValue, ViewUpdate } from '@codemirror/view';
 
 import MathBooster from './main';
-import { 
+import {
     // getBacklinks, getMathCache, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, 
-    resolveSettings 
+    resolveSettings
 } from './utils/plugin';
 import { MathContextSettings } from "./settings/settings";
 // import { Backlink, BacklinkModal } from "./backlinks";
 import { EquationBlock, MarkdownPage } from "./index/typings/markdown";
 import { MathIndex } from "index";
 import { parseLatexComment } from "utils/parse";
+import { resolveLinktext } from "utils/obsidian";
 
 
 /** For reading view */
@@ -41,13 +42,13 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         }));
     }
 
-    getEquationCache(): EquationBlock | null {
+    getEquationCache(lineOffset: number = 0): EquationBlock | null {
         const info = this.context.getSectionInfo(this.containerEl);
         const page = this.index.load(this.file.path);
         if (!info || !MarkdownPage.isMarkdownPage(page)) return null;
 
         // get block ID
-        const block = page.getBlockByLineNumber(info.lineStart) ?? page.getBlockByLineNumber(info.lineEnd);
+        const block = page.getBlockByLineNumber(info.lineStart + lineOffset) ?? page.getBlockByLineNumber(info.lineEnd + lineOffset);
         const id = block?.$blockId;
 
         // get IndexItem from block ID
@@ -61,7 +62,7 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
         return null;
     }
 
-    onload(): void {
+    async onload() {
         this.update();
     }
 
@@ -76,53 +77,45 @@ export class DisplayMathRenderChild extends MarkdownRenderChild {
          * For this reason, DisplayMathRenderChild.setId() doesn't work properly for embeds or hover popovers,
          * and we have to exclude them from the target of DisplayMathRenderChild.
          */
-        let equation: EquationBlock | null = null;
-        const hover = this.containerEl.closest('.popover.hover-popover');
-        const embedSrc = this.containerEl.closest('[src]')?.getAttribute('src');
-
-        if (hover) return; // ignore HoverPopover
-
-        if (embedSrc) {
-            // ignore embeds
-            // TODO: support embeds! theorem callouts are already supported so it should be possible
-            return;
-        }
-
-        equation = equation ?? this.getEquationCache();
-
+        let equation: EquationBlock | null = this.getEquationCache();
         if (!equation) return;
 
         const settings = resolveSettings(undefined, this.plugin, this.file);
         replaceMathTag(this.containerEl, equation.$mathText, equation.$printName, settings);
-        // this.registerDomEvent(
-        //     this.containerEl, "contextmenu", (event) => {
-        //         const menu = new Menu();
 
-        //         // Show backlinks
-        //         menu.addItem((item) => {
-        //             item.setTitle("Show backlinks");
-        //             item.onClick((clickEvent) => {
-        //                 if (clickEvent instanceof MouseEvent) {
-        //                     const backlinks = this.getBacklinks(event);
-        //                     new BacklinkModal(this.app, this.plugin, backlinks).open();
-        //                 }
-        //             })
-        //         });
-        //         menu.showAtMouseEvent(event);
-        //     }
-        // );
+        setTimeout(() => {
+            const hover = this.containerEl.closest('.popover.hover-popover');
+            const embedSrc = this.containerEl.closest('[src]')?.getAttribute('src');
+
+            if (hover) return; // ignore HoverPopover
+
+            if (embedSrc) {
+                // ignore embeds
+                // TODO: support embeds! theorem callouts are already supported so it should be possible
+
+                const { file, subpathResult } = resolveLinktext(this.app, embedSrc, this.context.sourcePath) ?? {};
+
+                if (!file || !subpathResult) return;
+
+                const page = this.index.load(file.path);
+                if (!MarkdownPage.isMarkdownPage(page)) return;
+
+                if (subpathResult.type === "block") {
+                    const block = page.$blocks.get(subpathResult.block.id);
+                    if (!EquationBlock.isEquationBlock(block)) return;
+
+                    equation = block;
+                    replaceMathTag(this.containerEl, equation.$mathText, equation.$printName, settings);
+                } else {
+                    equation = this.getEquationCache(subpathResult.start.line);
+                    if (!equation) return;
+                    replaceMathTag(this.containerEl, equation.$mathText, equation.$printName, settings);
+                }
+
+                return;
+            }
+        })
     }
-
-    // getBacklinks(event: MouseEvent): Backlink[] | null {
-    //     const cache = this.app.metadataCache.getFileCache(this.file);
-    //     if (!cache) return null;
-
-    //     const info = this.context.getSectionInfo(this.containerEl);
-    //     let lineNumber = info?.lineStart;
-    //     if (typeof lineNumber !== "number") return null;
-
-    //     return getBacklinks(this.app, this.plugin, this.file, cache, (block) => block.position.start.line == lineNumber);
-    // }
 }
 
 
