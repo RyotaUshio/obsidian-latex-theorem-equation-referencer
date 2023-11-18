@@ -158,7 +158,7 @@ export default class MathBooster extends Plugin {
 
 
 		/** Theorem/equation link autocompletion */
-		this.registerLinkAutocomplete();
+		this.updateLinkAutocomplete();
 
 
 		/** Markdown post processors */
@@ -262,7 +262,13 @@ export default class MathBooster extends Plugin {
 		});
 	}
 
-	registerLinkAutocomplete() {
+	updateLinkAutocomplete() {
+		// reset all editor suggests registered by this plugin
+		const suggestManager = (this.app.workspace as any).editorSuggest;
+		for (const suggest of suggestManager.suggests) {
+			if (suggest instanceof LinkAutocomplete) suggestManager.removeSuggest(suggest);
+		}
+
 		if (this.extraSettings.enableSuggest) {
 			this.registerEditorSuggest(new LinkAutocomplete(this,
 				() => this.extraSettings.triggerSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerSuggest,

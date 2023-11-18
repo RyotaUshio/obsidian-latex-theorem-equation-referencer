@@ -371,35 +371,35 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         });
         this.contentEl.createEl("h4", { text: "Theorem & equation suggestion" });
         this.contentEl.createEl("h5", { text: "From entire vault" });
-        this.addToggleSetting("enableSuggest", "Enable");
+        this.addToggleSetting("enableSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
         this.addTextSetting("triggerSuggest", "Trigger");
         this.contentEl.createEl("h5", { text: "From recent notes" });
-        this.addToggleSetting("enableSuggestRecentNotes", "Enable");
+        this.addToggleSetting("enableSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
         this.addTextSetting("triggerSuggestRecentNotes", "Trigger");
         this.contentEl.createEl("h5", { text: "From active note" });
-        this.addToggleSetting("enableSuggestActiveNote", "Enable");
+        this.addToggleSetting("enableSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
         this.addTextSetting("triggerSuggestActiveNote", "Trigger");
 
         this.contentEl.createEl("h4", { text: "Theorem suggestion" });
         this.contentEl.createEl("h5", { text: "From entire vault" });
-        this.addToggleSetting("enableTheoremSuggest", "Enable");
+        this.addToggleSetting("enableTheoremSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
         this.addTextSetting("triggerTheoremSuggest", "Trigger");
         this.contentEl.createEl("h5", { text: "From recent notes" });
-        this.addToggleSetting("enableTheoremSuggestRecentNotes", "Enable");
+        this.addToggleSetting("enableTheoremSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
         this.addTextSetting("triggerTheoremSuggestRecentNotes", "Trigger");
         this.contentEl.createEl("h5", { text: "From active note" });
-        this.addToggleSetting("enableTheoremSuggestActiveNote", "Enable");
+        this.addToggleSetting("enableTheoremSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
         this.addTextSetting("triggerTheoremSuggestActiveNote", "Trigger");
 
         this.contentEl.createEl("h4", { text: "Equation suggestion" });
         this.contentEl.createEl("h5", { text: "From entire vault" });
-        this.addToggleSetting("enableEquationSuggest", "Enable");
+        this.addToggleSetting("enableEquationSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
         this.addTextSetting("triggerEquationSuggest", "Trigger");
         this.contentEl.createEl("h5", { text: "From recent notes" });
-        this.addToggleSetting("enableEquationSuggestRecentNotes", "Enable");
+        this.addToggleSetting("enableEquationSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
         this.addTextSetting("triggerEquationSuggestRecentNotes", "Trigger");
         this.contentEl.createEl("h5", { text: "From active note" });
-        this.addToggleSetting("enableEquationSuggestActiveNote", "Enable");
+        this.addToggleSetting("enableEquationSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
         this.addTextSetting("triggerEquationSuggestActiveNote", "Trigger");
 
         this.contentEl.createEl("h4", { text: "General" });
