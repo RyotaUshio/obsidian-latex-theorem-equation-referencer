@@ -19,8 +19,6 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
     constructor(public plugin: MathBooster) {
         super(plugin.app);
         this.app = plugin.app;
-        // @ts-ignore
-        window['modal'] = this;
         this.core = new WholeVaultTheoremEquationSearchCore(this);
         this.core.setScope();
         this.setPlaceholder('Type here...')
@@ -138,7 +136,7 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
     }
 
     getSelectedItem(): MathBoosterBlock {
-        // @ts-ignore
+        if (!this.chooser.values) throw Error('Math Booster: chooser is not ready.');
         return this.chooser.values[this.chooser.selectedItem];
     };
 
