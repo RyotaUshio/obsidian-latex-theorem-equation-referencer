@@ -18,6 +18,6 @@
     font-weight: 400;
 }
 
-.theorem-callout-en .callout-content {
+:not(theorem-callout-axiom):not(.theorem-callout-definition):not(.theorem-callout-remark).theorem-callout-en .callout-content {
     font-style: italic;
 }
