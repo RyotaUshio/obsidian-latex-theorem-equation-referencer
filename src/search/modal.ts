@@ -59,8 +59,8 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
             .addDropdown((dropdown) => {
                 dropdown.addOption('vault', 'Vault')
                     .addOption('recent', 'Recent notes')
-                    .addOption('active', 'Active note');
-                if (Dataview.isPluginEnabled(this.app)) dropdown.addOption('dataview', 'Dataview query');
+                    .addOption('active', 'Active note')
+                    .addOption('dataview', 'Dataview query');
 
                 // recover the last state
                 dropdown.setValue(this.plugin.extraSettings.searchModalRange)
@@ -108,7 +108,10 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
         if (this.range === 'dataview') {
             const dv = Dataview.getAPI(this.app);
             if (!dv) {
-                new Notice('Failed to access Dataview API.')
+                new Notice('Dataview is not enabled.')
+                this.dvQueryField.setDisabled(true);
+                (this.dvQueryField.components[0] as TextAreaComponent).setPlaceholder('Retry after enabling Dataview.');
+                this.dvQueryField.settingEl.show();
                 return;
             }
             this.core = new DataviewQuerySearchCore(this, this.queryType, dv, (this.dvQueryField.components[0] as TextAreaComponent).getValue());
