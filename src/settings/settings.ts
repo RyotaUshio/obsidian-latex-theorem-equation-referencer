@@ -34,6 +34,7 @@ export const THEOREM_REF_FORMATS = [
 export type TheoremRefFormat = typeof THEOREM_REF_FORMATS[number];
 
 export const LEAF_OPTIONS = [
+    "Current tab",
     "Split right",
     "Split down", 
     "New tab", 
@@ -41,6 +42,7 @@ export const LEAF_OPTIONS = [
 ] as const;
 export type LeafOption = typeof LEAF_OPTIONS[number];
 export const LEAF_OPTION_TO_ARGS: Record<LeafOption, LeafArgs> = {
+    "Current tab": [false],
     "Split right": ["split", "vertical"],
     "Split down": ["split", "horizontal"],
     "New tab": ["tab"], 
@@ -156,7 +158,6 @@ export type ExtraSettings = ImporterSettings & {
     modifierToNoteLink: Modifier;
     showModifierInstruction: boolean;
     suggestLeafOption: LeafOption;
-    backlinkLeafOption: LeafOption;
     // projectInfix: string;
     // projectSep: string;
     showTheoremCalloutEditButton: boolean;
@@ -174,7 +175,6 @@ export type ExtraSettings = ImporterSettings & {
 export const UNION_TYPE_EXTRA_SETTING_KEYS: {[k in keyof Partial<ExtraSettings>]: readonly string[]} = {
     "searchMethod": SEARCH_METHODS,
     "suggestLeafOption": LEAF_OPTIONS,
-    "backlinkLeafOption": LEAF_OPTIONS,
 };
 
 export type MathSettings = Partial<MathContextSettings> & TheoremCalloutSettings & TheoremCalloutPrivateFields;
@@ -245,8 +245,7 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     modifierToJump: "Mod",
     modifierToNoteLink: "Shift",
     showModifierInstruction: true,
-    suggestLeafOption: "Split right", 
-    backlinkLeafOption: "Split right",
+    suggestLeafOption: "Current tab", 
     // projectInfix: " > ",
     // projectSep: "/",
     importerNumThreads: 2,

@@ -9,6 +9,7 @@ import { LEAF_OPTION_TO_ARGS } from 'settings/settings';
 import { formatLabel } from 'utils/format';
 import { getModifierNameInPlatform, openFileAndSelectPosition } from 'utils/obsidian';
 import { insertBlockIdIfNotExist, resolveSettings } from 'utils/plugin';
+import { MathSearchModal } from './modal';
 
 
 export type ScoredMathBoosterBlock = { match: SearchResult, block: MathBoosterBlock };
@@ -49,7 +50,8 @@ export abstract class MathSearchCore {
             const item = this.parent.getSelectedItem();
             const file = this.app.vault.getAbstractFileByPath(item.$file); // the file containing the selected item
             if (!(file instanceof TFile)) return;
-            openFileAndSelectPosition(file, item.$pos, ...LEAF_OPTION_TO_ARGS[this.plugin.extraSettings.suggestLeafOption]);
+            openFileAndSelectPosition(this.app, file, item.$pos, ...LEAF_OPTION_TO_ARGS[this.plugin.extraSettings.suggestLeafOption]);
+            if (this.parent instanceof MathSearchModal) this.parent.close();
             return false;
         });
 
@@ -57,6 +59,7 @@ export abstract class MathSearchCore {
         this.scope.register([this.plugin.extraSettings.modifierToNoteLink], "Enter", () => {
             const item = this.parent.getSelectedItem();
             this.selectSuggestionImpl(item, true);
+            if (this.parent instanceof MathSearchModal) this.parent.close();
             return false;
         });
 
