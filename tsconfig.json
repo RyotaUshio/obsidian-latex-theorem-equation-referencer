@@ -26,6 +26,7 @@
   "exclude": [
     "src/project.ts",
     "src/indexer.ts",
-    "src/theorem_callout_metadata_hider.ts"
+    "src/theorem_callout_metadata_hider.ts",
+    "src/backlinks.ts"
   ]
 }
