@@ -50,7 +50,7 @@ export abstract class MathSearchCore {
             const item = this.parent.getSelectedItem();
             const file = this.app.vault.getAbstractFileByPath(item.$file); // the file containing the selected item
             if (!(file instanceof TFile)) return;
-            openFileAndSelectPosition(file, item.$pos, ...LEAF_OPTION_TO_ARGS[this.plugin.extraSettings.suggestLeafOption]);
+            openFileAndSelectPosition(this.app, file, item.$pos, ...LEAF_OPTION_TO_ARGS[this.plugin.extraSettings.suggestLeafOption]);
             if (this.parent instanceof MathSearchModal) this.parent.close();
             return false;
         });

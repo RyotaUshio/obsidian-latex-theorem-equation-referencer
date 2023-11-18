@@ -74,7 +74,7 @@ export class BacklinkModal extends Modal {
             this.plugin.registerDomEvent(
                 el, "click", async () => {
                     this.close();
-                    await openFileAndSelectPosition(file, backlink.link.position, ...LEAF_OPTION_TO_ARGS[this.plugin.extraSettings.backlinkLeafOption]);
+                    await openFileAndSelectPosition(this.app, file, backlink.link.position, ...LEAF_OPTION_TO_ARGS[this.plugin.extraSettings.backlinkLeafOption]);
                 }
             );
         }

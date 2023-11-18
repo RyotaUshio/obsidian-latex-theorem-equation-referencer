@@ -1,5 +1,5 @@
 import { EditorView } from '@codemirror/view';
-import { BlockSubpathResult, CachedMetadata, HeadingSubpathResult, MarkdownView, Modifier, Platform, Plugin, Pos, SectionCache, parseLinktext, resolveSubpath } from "obsidian";
+import { BlockSubpathResult, CachedMetadata, HeadingSubpathResult, MarkdownPostProcessorContext, MarkdownView, Modifier, Platform, Plugin, Pos, SectionCache, parseLinktext, resolveSubpath } from "obsidian";
 import { App, TAbstractFile, TFile, TFolder } from "obsidian";
 import { locToEditorPosition } from 'utils/editor';
 import { LeafArgs } from 'typings/type';
@@ -145,22 +145,32 @@ export function getMarkdownSourceViewEl(view: MarkdownView) {
     }
 }
 
-export async function openFileAndSelectPosition(file: TFile, position: Pos, ...leafArgs: LeafArgs) {
-    const leaf = this.app.workspace.getLeaf(...leafArgs);
+export async function openFileAndSelectPosition(app: App, file: TFile, position: Pos, ...leafArgs: LeafArgs) {
+    // @ts-ignore
+    const leaf = app.workspace.getLeaf(...leafArgs);
     await leaf.openFile(file);
     if (leaf.view instanceof MarkdownView) {
-        leaf.view.editor.setSelection(
-            locToEditorPosition(position.start),
-            locToEditorPosition(position.end)
-        );
-        const cm = leaf.view.editor.cm;
-        if (cm) {
-            const lineCenter = Math.floor((position.start.line + position.end.line) / 2);
-            const posCenter = cm.state.doc.line(lineCenter).from
-            cm.dispatch({
-                effects: EditorView.scrollIntoView(posCenter, { y: "center" }),
-            });
-        }
+        // Editing view
+        const editor = leaf.view.editor;
+        const from = locToEditorPosition(position.start);
+        const to = locToEditorPosition(position.end);
+        
+        editor.setSelection(from, to);
+        editor.scrollIntoView({ from, to }, true);
+
+        // Reading view
+        setTimeout(() => {
+            const previewMode = (leaf.view as MarkdownView).previewMode;
+            const ctx = (previewMode as any).renderer as MarkdownPostProcessorContext;
+            const div = Array.from(previewMode.containerEl.querySelector<HTMLElement>('.markdown-preview-section')!
+                .querySelectorAll<HTMLElement>(':scope > div'))
+                .find((div) => ctx.getSectionInfo(div)?.lineStart === position.start.line);
+
+            // previewMode.applyScroll(position.start.line) doesn't center-align the target block
+            // @ts-ignore
+            ctx.highlightEl(div);
+            div?.scrollIntoView({ block: 'center' });
+        }, 50);
     }
 }
 
