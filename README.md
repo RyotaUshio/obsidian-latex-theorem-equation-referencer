@@ -9,6 +9,8 @@ Turn your Obsidian into ***LaTeX on steroids*** with Math Booster.
 
 **Math Booster** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience.
 
+(The theorem in the screenshot is cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
+
 ## Docs
 
 https://ryotaushio.github.io/obsidian-math-booster
@@ -57,8 +59,6 @@ In version 2, [Dataview](https://github.com/blacksmithgu/obsidian-dataview) is n
 You have to install [CMU Serif](https://www.cufonfonts.com/font/cmu-serif) (which this documentation uses) to get some of the preset styles for [[Theorem callouts|theorem callouts]] displayed properly.
 
 Additionally, [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) is required for render the preset styles properly in Japanese.
-
-(The theorem in the screenshot is cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
 
 ## Contributing
 
