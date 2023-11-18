@@ -1,17 +1,27 @@
 # Math Booster for Obsidian
 
+> [!note]
+> Math Booster is moving forward to major version 2! Check out our [new documentation site](https://ryotaushio.github.io/obsidian-math-booster).
+
 Turn your Obsidian into ***LaTeX on steroids*** with Math Booster. 
 
-![Screenshot](docs/fig/screenshot.png)
+![Screenshot](https://raw.githubusercontent.com/RyotaUshio/obsidian-math-booster/1c7b106fcfbddccdcda8451de1c21a094994b686/docs/fig/screenshot.png)
 
-**Math Booster** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience with several powerful features, including:
+**Math Booster** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience.
 
-- [Equation numbering](https://ryotaushio.github.io/obsidian-math-booster//equation-number)
-- [Theorem environments](https://ryotaushio.github.io/obsidian-math-booster//math-callouts)
-- [Live suggestions (auto-completion) for theorem/equation links](https://ryotaushio.github.io/obsidian-math-booster//suggest)
-- [Rendering equations inside callouts & blockquotes in live preview](https://ryotaushio.github.io/obsidian-math-booster//math-preview)
-- [Showing backlinks to theorems/equations](https://ryotaushio.github.io/obsidian-math-booster//backlinks)
-- [Proof environments](https://ryotaushio.github.io/obsidian-math-booster//proofs) _(experimental)_
+## Docs
+
+https://ryotaushio.github.io/obsidian-math-booster
+
+## Features
+
+- [Theorem environments](https://ryotaushio.github.io/obsidian-math-booster/theorem-callouts/theorem-callouts.html)
+- [Automatic equation numbering](https://ryotaushio.github.io/obsidian-math-booster/equations.html)
+- [Rendering equations inside callouts](https://ryotaushio.github.io/obsidian-math-booster/extending-obsidian's-math-rendering-functionalities/rendering-equations-inside-callouts.html)
+- [Multi-line equation support inside blockquotes](https://ryotaushio.github.io/obsidian-math-booster/extending-obsidian's-math-rendering-functionalities/multi-line-equation-support-inside-blockquotes.html)
+- [Clever referencing](https://ryotaushio.github.io/obsidian-math-booster/clever-referencing.html)
+- [Search modal](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/search-modal.html)
+- [Proof environment (experimental)](https://ryotaushio.github.io/obsidian-math-booster/proof-environment.html)
 
 Theorems & equations can be **dynamically/automatically numbered**, while you can statically/manually number them if you want.
 The number prefix can be either explicitly specified or automatically inferred from the note title.
@@ -22,83 +32,49 @@ You can also customize the appearance of theorem callouts using CSS snippets. Se
 
 Also check out the [No More Flickering Inline Math](https://github.com/RyotaUshio/obsidian-inline-math) plugin, which lets you work with inline math much more comfortably.
 
+## Installation
+
+Since version 2 is still beta, it's not on the community plugin browser yet.
+
+But you can install the latest beta release using [BRAT](https://github.com/TfTHacker/obsidian42-brat):
+
+1.  Install BRAT and enable it.
+2.  Go to `Options`. In the `Beta Plugin List` section, click on the `Add Beta plugin` button.
+3.  Copy and paste `RyotaUshio/obsidian-math-booster` in the pop-up prompt and click on **Add Plugin**.
+4.  _(Optional but highly recommended)_ Turn on `Auto-update plugins at startup` at the top of the page.
+5.  Go to `Community plugins > Installed plugins`. You will find “Math Booster” in the list. Click on the toggle button to enable it.
+
+## Dependencies
+
+### Obsidian plugins
+
+Math Booster requires [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) version 0.5.1 or higher installed to work properly ([Clever referencing](https://ryotaushio.github.io/obsidian-math-booster/clever-referencing.html)).
+
+In version 2, [Dataview](https://github.com/blacksmithgu/obsidian-dataview) is no longer required. But I strongly recommend installing it because it enhances Math Booster's [search](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/search-modal.html) functionality significantly.
+
+### Fonts
+
+You have to install [CMU Serif](https://www.cufonfonts.com/font/cmu-serif) (which this documentation uses) to get some of the preset styles for [[Theorem callouts|theorem callouts]] displayed properly.
+
+Additionally, [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) is required for render the preset styles properly in Japanese.
+
 (The theorem in the screenshot is cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
+
+## Contributing
+
+- Feel free to create a new issue if something is not working well. Questions are also welcomed.
+- Please send a pull request if you have any ideas to improve Math Booster and our experience!
+  - **Even if you don't code, your help is still needed to improve the documentation and README.** For example, the active update of this plugin has already made some of the images in the documentation outdated...
+  - Of course, programmers' contributions are highly welcomed.
+
+## Roadmaps
+
+- Import from LaTeX: ArXiv papers, research/literature notes written in LaTeX, ...
+- Export to LaTeX: Write research notes in Obsidian, and then export them into LaTeX.
 
 ## Support development
 
 If you find this plugin useful, please support my work by buying me a coffee!
 
 <a href="https://www.buymeacoffee.com/ryotaushio" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
-## Documentation
-
-https://ryotaushio.github.io/obsidian-math-booster/
-
-## Dependencies
-
-The following community plugins are required to be installed and enabled:
-
-- [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) ver. 0.4.6+
-- [Dataview](https://github.com/blacksmithgu/obsidian-dataview) ver. 0.5.56+
-
-Also, you must install the [CMU Serif](https://www.cufonfonts.com/font/cmu-serif) font to fully enjoy some of the preset styles listed below. Additionally, the [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) font is required to render proofs using the Japanese profile correctly.
-
-## Installation
-
-You can install this plugin inside Obsidian (see [here](https://help.obsidian.md/Extending+Obsidian/Community+plugins#Install+a+community+plugin) for instructions).
-
-Also, you can test the latest beta release using [BRAT](https://github.com/TfTHacker/obsidian42-brat):
-
-1.  Install BRAT and enable it.
-2.  Go to **Options**. In the **Beta Plugin List** section, click on the **Add Beta plugin** button.
-3.  Copy and paste `RyotaUshio/obsidian-math-booster` in the pop-up prompt and click on **Add Plugin**.
-4.  _(Optional)_ Turn on **Auto-update plugins at startup** at the top of the page.
-5.  Go to **Community plugins > Installed plugins**. You will find "Math Booster" in the list. Click on the toggle button to enable it.
-
-## Contributing
-
-**I need your help!!**
-
-- Feel free to create a new issue if something is not working well. Questions are also welcomed.
-- Please send a pull request if you have any ideas to improve Math Booster and our experience!
-  - **Even if you don't code, your help is still needed to improve the documentation and README.** For example, the active update of this plugin has already made some of the images in the documentation outdated...
-  - Of course, programmers' contributions are highly welcomed. (I'm pretty new to TypeScript/JavaScript/HTML/CSS. Making this plugin was the only purpose for me to start learning them. So your help is needed for real.)
-
-## Roadmaps
-
-- Import from LaTeX: ArXiv papers, research/literature notes written in LaTeX, ...
-- Export to LaTeX: Write research notes in Obsidian, and then export them into LaTeX.
-- More user-friendly UI for local settings
-
-## Styles gallery
-
-### Plain
-
-![Plain light](docs/fig/plain.png)
-![Plain dark](docs/fig/plain-dark.png)
-
-[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/styles/plain.css)
-
-### Framed
-
-![Framed](docs/fig/framed.png)
-![Framed dark](docs/fig/framed-dark.png)
-
-[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/styles/framed.css)
-
-### MathWiki style
-
-This beautiful style is taken from [MathWiki](https://github.com/zhaoshenzhai/MathWiki). A big thank you to [Zhaoshen Zhai](https://github.com/zhaoshenzhai), the owner of MathWiki and the [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) plugin, for readily consenting to including it in this documentation.
-
-
-![MathWiki style](docs/fig/mathwiki.png)
-
-[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/styles/mathwiki.css)
-
-### Vivid
-
-![Vivid light](docs/fig/vivid-light.png)
-![Vivid dark](docs/fig/vivid-dark.png)
-
-[View CSS snippet](https://github.com/RyotaUshio/obsidian-math-booster/blob/master/styles/vivid.css)
 
