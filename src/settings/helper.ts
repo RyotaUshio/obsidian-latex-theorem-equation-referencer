@@ -365,42 +365,6 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addToggleSetting("enableProof", "Enable proof environment", `For example, you can replace a pair of inline codes \`${DEFAULT_SETTINGS.beginProof}\` & \`${DEFAULT_SETTINGS.endProof}\` with \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.begin}\" & \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.end}\". You can style it with CSS snippets. See the documentation for the details.`, () => this.plugin.updateEditorExtensions());
 
         // Suggest
-        this.contentEl.createDiv({
-            text: `Enabling/disabling requires to reloading ${this.plugin.manifest.name} to take effect.`,
-            cls: ["setting-item-description", "math-booster-setting-item-description"],
-        });
-        this.contentEl.createEl("h4", { text: "Theorem & equation suggestion" });
-        this.contentEl.createEl("h5", { text: "From entire vault" });
-        this.addToggleSetting("enableSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
-        this.addTextSetting("triggerSuggest", "Trigger");
-        this.contentEl.createEl("h5", { text: "From recent notes" });
-        this.addToggleSetting("enableSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
-        this.addTextSetting("triggerSuggestRecentNotes", "Trigger");
-        this.contentEl.createEl("h5", { text: "From active note" });
-        this.addToggleSetting("enableSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
-        this.addTextSetting("triggerSuggestActiveNote", "Trigger");
-
-        this.contentEl.createEl("h4", { text: "Theorem suggestion" });
-        this.contentEl.createEl("h5", { text: "From entire vault" });
-        this.addToggleSetting("enableTheoremSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
-        this.addTextSetting("triggerTheoremSuggest", "Trigger");
-        this.contentEl.createEl("h5", { text: "From recent notes" });
-        this.addToggleSetting("enableTheoremSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
-        this.addTextSetting("triggerTheoremSuggestRecentNotes", "Trigger");
-        this.contentEl.createEl("h5", { text: "From active note" });
-        this.addToggleSetting("enableTheoremSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
-        this.addTextSetting("triggerTheoremSuggestActiveNote", "Trigger");
-
-        this.contentEl.createEl("h4", { text: "Equation suggestion" });
-        this.contentEl.createEl("h5", { text: "From entire vault" });
-        this.addToggleSetting("enableEquationSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
-        this.addTextSetting("triggerEquationSuggest", "Trigger");
-        this.contentEl.createEl("h5", { text: "From recent notes" });
-        this.addToggleSetting("enableEquationSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
-        this.addTextSetting("triggerEquationSuggestRecentNotes", "Trigger");
-        this.contentEl.createEl("h5", { text: "From active note" });
-        this.addToggleSetting("enableEquationSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
-        this.addTextSetting("triggerEquationSuggestActiveNote", "Trigger");
 
         this.contentEl.createEl("h4", { text: "General" });
         this.addSliderSetting("suggestNumber", { min: 1, max: 50, step: 1 }, "Number of suggestions", "Specify how many items are suggested at one time. Set it to a smaller value if you have a performance issue when equation suggestions with math rendering on.");
@@ -415,6 +379,44 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         list.createEl("li", { text: "Mod is Cmd on MacOS and Ctrl on other OS." });
         list.createEl("li", { text: "Meta is Cmd on MacOS and Win key on Windows." });
         this.addDropdownSetting("suggestLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected suggestion.")
+
+        this.contentEl.createEl("h4", { text: "Editor link auto-completion" });
+        this.contentEl.createDiv({
+            text: `It is recommended to turn off unnecessary auto-completions to improve performance.`,
+            cls: ["setting-item-description", "math-booster-setting-item-description"],
+        });
+        this.contentEl.createEl("h5", { text: "Theorem & equation suggestion" });
+        this.contentEl.createEl("h6", { text: "From entire vault" });
+        this.addToggleSetting("enableSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addTextSetting("triggerSuggest", "Trigger");
+        this.contentEl.createEl("h6", { text: "From recently opened notes" });
+        this.addToggleSetting("enableSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addTextSetting("triggerSuggestRecentNotes", "Trigger");
+        this.contentEl.createEl("h6", { text: "From active note" });
+        this.addToggleSetting("enableSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addTextSetting("triggerSuggestActiveNote", "Trigger");
+
+        this.contentEl.createEl("h5", { text: "Theorem suggestion" });
+        this.contentEl.createEl("h6", { text: "From entire vault" });
+        this.addToggleSetting("enableTheoremSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addTextSetting("triggerTheoremSuggest", "Trigger");
+        this.contentEl.createEl("h6", { text: "From recently opened notes" });
+        this.addToggleSetting("enableTheoremSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addTextSetting("triggerTheoremSuggestRecentNotes", "Trigger");
+        this.contentEl.createEl("h6", { text: "From active note" });
+        this.addToggleSetting("enableTheoremSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addTextSetting("triggerTheoremSuggestActiveNote", "Trigger");
+
+        this.contentEl.createEl("h5", { text: "Equation suggestion" });
+        this.contentEl.createEl("h6", { text: "From entire vault" });
+        this.addToggleSetting("enableEquationSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addTextSetting("triggerEquationSuggest", "Trigger");
+        this.contentEl.createEl("h6", { text: "From recently opened notes" });
+        this.addToggleSetting("enableEquationSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addTextSetting("triggerEquationSuggestRecentNotes", "Trigger");
+        this.contentEl.createEl("h6", { text: "From active note" });
+        this.addToggleSetting("enableEquationSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addTextSetting("triggerEquationSuggestActiveNote", "Trigger");
 
         // projects
         // this.addTextSetting("projectInfix", "Link infix", "Specify the infix to connect a project name and a theorem title or an equation number.");
