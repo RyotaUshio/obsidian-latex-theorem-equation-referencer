@@ -2,7 +2,7 @@ import { ActiveNoteSearchCore, DataviewQuerySearchCore, QueryType, RecentNotesSe
 import * as Dataview from 'obsidian-dataview';
 
 import MathBooster from "main";
-import { App, EditorSuggestContext, MarkdownView, Notice, Setting, SuggestModal, TextAreaComponent } from "obsidian";
+import { App, EditorSuggestContext, MarkdownView, Setting, SuggestModal, TextAreaComponent } from "obsidian";
 import { MathSearchCore, SuggestParent } from "./core";
 import { MathBoosterBlock } from "index/typings/markdown";
 
@@ -108,9 +108,9 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
         if (this.range === 'dataview') {
             const dv = Dataview.getAPI(this.app);
             if (!dv) {
-                new Notice('Dataview is not enabled.')
                 this.dvQueryField.setDisabled(true);
-                (this.dvQueryField.components[0] as TextAreaComponent).setPlaceholder('Retry after enabling Dataview.');
+                this.dvQueryField.setDesc('Retry after enabling Dataview.')
+                    .then(setting => setting.descEl.style.color = '#ea5555');
                 this.dvQueryField.settingEl.show();
                 return;
             }
