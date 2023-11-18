@@ -21,7 +21,7 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
         this.app = plugin.app;
         this.core = new WholeVaultTheoremEquationSearchCore(this);
         this.core.setScope();
-        this.setPlaceholder('Type here...')
+        this.setPlaceholder('Type here...');
 
         this.queryType = this.plugin.extraSettings.searchModalQueryType;
         this.range = this.plugin.extraSettings.searchModalRange;
@@ -100,6 +100,8 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
                         }
                     })
             });
+
+        this.modalEl.insertBefore(this.inputEl, this.modalEl.firstChild);
 
         this.resetCore();
     }
