@@ -17,9 +17,8 @@ import {
     JsonTheoremCalloutBlock,
     JsonEquationBlock,
 } from "./json";
-import { MinimalTheoremCalloutSettings, TheoremCalloutSettings } from "settings/settings";
+import { MinimalTheoremCalloutSettings } from "settings/settings";
 import { Pos } from "obsidian";
-import { TheoremCalloutInfo } from "theorem_callouts";
 
 /** A link normalizer which takes in a raw link and produces a normalized link. */
 export type LinkNormalizer = (link: Link) => Link;

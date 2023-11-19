@@ -1,5 +1,5 @@
 import { RangeSetBuilder } from '@codemirror/state';
-import { App, Component, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Notice, TFile } from "obsidian";
+import { App, Component, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Notice, TFile, editorInfoField } from "obsidian";
 import { ViewUpdate, EditorView, PluginValue, ViewPlugin, Decoration, DecorationSet } from '@codemirror/view';
 
 import MathBooster from 'main';
@@ -8,7 +8,7 @@ import { TheoremCalloutSettings, TheoremCalloutPrivateFields } from 'settings/se
 import {
     increaseQuoteLevel, resolveSettings
     //getBacklinks 
-} from './utils/plugin';
+} from 'utils/plugin';
 import { isEditingView, nodeText } from 'utils/editor';
 import { capitalize, splitIntoLines } from 'utils/general';
 import { formatTitleWithoutSubtitle } from "utils/format";
@@ -63,7 +63,7 @@ export const createTheoremCalloutPostProcessor = (plugin: MathBooster) => async 
 
         if ((THEOREM_LIKE_ENV_IDs as unknown as string[]).includes(type) || (THEOREM_LIKE_ENV_PREFIXES as unknown as string[]).includes(type) || type === 'math') {
             if (plugin.extraSettings.excludeExampleCallout && type === 'example') continue;
-            
+
             const theoremCallout = new TheoremCalloutRenderer(calloutEl, context, file, plugin);
             context.addChild(theoremCallout);
         }
@@ -463,30 +463,25 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
 }
 
 
-export const theoremCalloutNumberingViewPlugin = ViewPlugin.fromClass(
+export const createTheoremCalloutNumberingViewPlugin = (plugin: MathBooster) => ViewPlugin.fromClass(
     class implements PluginValue {
+        index: MathIndex = plugin.indexManager.index;
+
         constructor(public view: EditorView) {
             // Wait until the initial rendering is done so that we can find the callout elements using qeurySelectorAll(). 
             setTimeout(() => this.impl(view));
         }
         update(update: ViewUpdate) {
-            this.impl(update.view)
-            // setTimeout(() => this.impl(update.view));
+            this.impl(update.view);
         }
         impl(view: EditorView) {
-            let theoremCount = 0;
-            for (const calloutEl of view.contentDOM.querySelectorAll<HTMLElement>('.callout.theorem-callout, .theorem-callout-first-line')) {
-                // in the case of a theorem callout that the cursor is overlapping with
-                if (calloutEl.matches('.theorem-callout-first-line[data-auto-number="true"]')) {
-                    theoremCount++;
-                    continue;
-                }
-                const settings = readSettingsFromEl(calloutEl);
-                if (settings?.number === 'auto') {
-                    calloutEl.setAttribute('data-theorem-index', String(theoremCount++));
-                } else {
-                    calloutEl.removeAttribute('data-theorem-index');
-                }
+            const infos = view.state.field(plugin.theoremCalloutsField);
+
+            for (const calloutEl of view.contentDOM.querySelectorAll<HTMLElement>('.callout.theorem-callout')) {
+                const pos = view.posAtDOM(calloutEl);
+                const index = infos.iter(pos).value?.index;
+                if (typeof index === 'number') calloutEl.setAttribute('data-theorem-index', String(index));
+                else calloutEl.removeAttribute('data-theorem-index');
             }
         }
     }
@@ -539,58 +534,6 @@ class MutationObservingChild extends Component {
         this.observer.disconnect();
     }
 }
-
-
-export const createTheoremCalloutFirstLineDecorator = (plugin: MathBooster) => ViewPlugin.fromClass(
-    class {
-        decorations: DecorationSet;
-
-
-        constructor(view: EditorView) {
-            this.decorations = this.buildDecorations(view);
-        }
-
-        update(update: ViewUpdate) {
-            if (update.docChanged || update.viewportChanged) {
-                this.decorations = this.buildDecorations(update.view);
-            }
-        }
-
-        buildDecorations(view: EditorView) {
-            const builder = new RangeSetBuilder<Decoration>();
-            const tree = syntaxTree(view.state);
-
-            // assuming the theorem callout that is currently being edited is inside the viewport
-            for (const { from, to } of view.visibleRanges) {
-                tree.iterate({
-                    from, to,
-                    enter(node) {
-                        const match = node.name.match(CALLOUT);
-                        if (!match) return;
-
-                        const text = nodeText(node, view.state);
-                        const settings = readTheoremCalloutSettings(text, plugin.extraSettings.excludeExampleCallout);
-                        if (!settings) return;
-
-                        builder.add(
-                            node.from,
-                            node.from,
-                            Decoration.line({
-                                class: 'theorem-callout-first-line',
-                                attributes: { "data-auto-number": settings.number === 'auto' ? 'true' : 'false' }
-                            })
-                        );
-
-                        return false;
-                    }
-                })
-            }
-
-            return builder.finish();
-        }
-    }, {
-    decorations: (v) => v.decorations
-});
 
 
 export async function rewriteTheoremCalloutFromV1ToV2(plugin: MathBooster, file: TFile) {
