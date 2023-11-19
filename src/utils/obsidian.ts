@@ -154,7 +154,7 @@ export async function openFileAndSelectPosition(app: App, file: TFile, position:
         const editor = leaf.view.editor;
         const from = locToEditorPosition(position.start);
         const to = locToEditorPosition(position.end);
-        
+
         editor.setSelection(from, to);
         editor.scrollIntoView({ from, to }, true);
 
@@ -163,7 +163,7 @@ export async function openFileAndSelectPosition(app: App, file: TFile, position:
             // previewMode.applyScroll(position.start.line) doesn't center-align the target block, 
             // so we have to do it manually.
             const previewMode = (leaf.view as MarkdownView).previewMode;
-            const renderer = (previewMode as any).renderer as MarkdownPostProcessorContext & {sizerEl: HTMLElement};
+            const renderer = (previewMode as any).renderer as MarkdownPostProcessorContext & { sizerEl: HTMLElement };
             // find the div corresponding the target block
             const div = Array.from(renderer.sizerEl.querySelectorAll<HTMLElement>(':scope > div'))
                 .find((div) => renderer.getSectionInfo(div)?.lineStart === position.start.line);
