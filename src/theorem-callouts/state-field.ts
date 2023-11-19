@@ -31,22 +31,24 @@ export const createTheoremCalloutsField = (plugin: MathBooster) => StateField.de
         let minChangedPosition = tr.newDoc.length - 1;
         const changeDesc = tr.changes.desc;
         changeDesc.iterChangedRanges((fromA, toA, fromB, toB) => {
-            if (fromB < minChangedPosition) minChangedPosition = fromB;
+            if (fromB < minChangedPosition) {
+                minChangedPosition = fromB;
+            }
         });
 
         value = value.map(changeDesc);
 
         let init = 0;
         value.between(0, minChangedPosition, (from, to, info) => {
-            if (info.index !== null) init = info.index + 1;
+            if (to < minChangedPosition && info.index !== null) init = info.index + 1;
         });
 
         const updatedRanges = getTheoremCalloutInfos(plugin, tr.state, tr.newDoc, minChangedPosition, init);
         return value.update({
-                add: updatedRanges,
-                filter: () => false,
-                filterFrom: minChangedPosition,
-            });
+            add: updatedRanges,
+            filter: () => false,
+            filterFrom: minChangedPosition,
+        });
     }
 });
 
