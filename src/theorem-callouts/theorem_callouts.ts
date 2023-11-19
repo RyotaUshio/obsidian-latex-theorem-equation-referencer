@@ -479,14 +479,9 @@ export const createTheoremCalloutNumberingViewPlugin = (plugin: MathBooster) => 
 
             for (const calloutEl of view.contentDOM.querySelectorAll<HTMLElement>('.callout.theorem-callout')) {
                 const pos = view.posAtDOM(calloutEl);
-                infos.between(pos, pos + 400, (from, to, info) => { // assuming first line of theorem callout is within 400 characters (this is for improving performance by reducing iterations)
-                    // From CM6 docs:  "There is no guarantee that the ranges will be reported in any specific order."
-                    // So we have to check if this info is the one we are looking for.
-                    if (from !== pos) return;
-
-                    if (info.index !== null) calloutEl.setAttribute('data-theorem-index', String(info.index));
-                    else calloutEl.removeAttribute('data-theorem-index');
-                });
+                const index = infos.iter(pos).value?.index;
+                if (typeof index === 'number') calloutEl.setAttribute('data-theorem-index', String(index));
+                else calloutEl.removeAttribute('data-theorem-index');
             }
         }
     }
