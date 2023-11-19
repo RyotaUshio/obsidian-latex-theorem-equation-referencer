@@ -1,12 +1,12 @@
 import { MarkdownView, Plugin } from 'obsidian';
-import { StateField, Extension } from '@codemirror/state';
+import { StateField, Extension, RangeSet } from '@codemirror/state';
 
 import * as MathLinks from 'obsidian-mathlinks';
 
 import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS, UNION_TYPE_MATH_CONTEXT_SETTING_KEYS, UNION_TYPE_EXTRA_SETTING_KEYS } from 'settings/settings';
 import { MathSettingTab } from "settings/tab";
 import { CleverRefProvider } from 'cleverref';
-import { insertTheoremCalloutCallback, createTheoremCalloutFirstLineDecorator, theoremCalloutNumberingViewPlugin, createTheoremCalloutPostProcessor } from 'theorem_callouts';
+import { insertTheoremCalloutCallback, createTheoremCalloutPostProcessor } from 'theorem-callouts/theorem_callouts';
 import { ContextSettingModal, TheoremCalloutModal } from 'settings/modals';
 import { insertDisplayMath } from 'key';
 import { createEquationNumberPlugin, createEquationNumberProcessor } from 'equation_number';
@@ -19,6 +19,7 @@ import { DependencyNotificationModal, MigrationModal } from 'notice';
 import { LinkAutocomplete } from 'search/editor-suggest';
 import { ActiveNoteSearchCore, RecentNotesSearchCore, WholeVaultEquationSearchCore, WholeVaultTheoremEquationSearchCore, WholeVaultTheoremSearchCore } from 'search/core';
 import { MathSearchModal } from 'search/modal';
+import { TheoremCalloutInfo, createTheoremCalloutsField } from 'theorem-callouts/state-field';
 
 
 export const VAULT_ROOT = '/';
@@ -28,13 +29,14 @@ export default class MathBooster extends Plugin {
 	settings: Record<string, Partial<MathContextSettings>>;
 	extraSettings: ExtraSettings;
 	excludedFiles: string[];
-	proofPositionField: StateField<ProofPosition[]>;
 	dependencies: Record<string, string> = {
 		"mathlinks": "0.5.1",
 		// "dataview": "0.5.56",
 	};
 	indexManager: MathIndexManager;
 	editorExtensions: Extension[];
+	theoremCalloutsField: StateField<RangeSet<TheoremCalloutInfo>>;
+	proofPositionField: StateField<ProofPosition[]>;
 
 	async onload() {
 
@@ -363,8 +365,9 @@ export default class MathBooster extends Plugin {
 		this.editorExtensions.length = 0;
 
 		// theorem callouts
-		this.editorExtensions.push(theoremCalloutNumberingViewPlugin);
-		this.editorExtensions.push(createTheoremCalloutFirstLineDecorator(this));
+		this.editorExtensions.push(this.theoremCalloutsField = createTheoremCalloutsField(this));
+		// this.editorExtensions.push(createTheoremCalloutNumberingViewPlugin(this));
+		// this.editorExtensions.push(createTheoremCalloutFirstLineDecorator(this));
 
 		// equation numbers
 		this.editorExtensions.push(createEquationNumberPlugin(this));
@@ -380,8 +383,7 @@ export default class MathBooster extends Plugin {
 		}
 		// proofs
 		if (this.extraSettings.enableProof) {
-			this.proofPositionField = proofPositionFieldFactory(this);
-			this.editorExtensions.push(this.proofPositionField);
+			this.editorExtensions.push(this.proofPositionField = proofPositionFieldFactory(this));
 			this.editorExtensions.push(proofDecorationFactory(this));
 			this.editorExtensions.push(proofFoldFactory(this));
 		}
