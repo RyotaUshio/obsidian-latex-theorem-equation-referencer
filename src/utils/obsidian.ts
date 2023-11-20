@@ -1,5 +1,5 @@
 import { EditorView } from '@codemirror/view';
-import { BlockSubpathResult, CachedMetadata, HeadingSubpathResult, MarkdownPostProcessorContext, MarkdownView, Modifier, Platform, Plugin, Pos, SectionCache, parseLinktext, resolveSubpath } from "obsidian";
+import { BlockSubpathResult, CachedMetadata, Component, HeadingSubpathResult, MarkdownPostProcessorContext, MarkdownView, Modifier, Platform, Plugin, Pos, SectionCache, parseLinktext, resolveSubpath } from "obsidian";
 import { App, TAbstractFile, TFile, TFolder } from "obsidian";
 import { locToEditorPosition } from 'utils/editor';
 import { LeafArgs } from 'typings/type';
@@ -124,7 +124,6 @@ export function resolveLinktext(app: App, linktext: string, sourcePath: string):
     if (!targetCache) return null;
     const result = resolveSubpath(targetCache, subpath);
     return { file: targetFile, subpathResult: result };
-
 }
 
 
@@ -228,90 +227,19 @@ export function getModifierNameInPlatform(mod: Modifier): string {
 }
 
 
+export class MutationObservingChild extends Component {
+    observer: MutationObserver;
 
-// export function getDataviewAPI(plugin: MathBooster): DataviewApi | undefined {
-//     const dv = getAPI(plugin.app); // Dataview API
-//     if (dv) {
-//         return dv;
-//     }
-//     new Notice(`${plugin.manifest.name}: Cannot load Dataview API. Make sure that Dataview is installed & enabled.`);
-// }
+    constructor(public targetEl: HTMLElement, public callback: MutationCallback, public options: MutationObserverInit) {
+        super();
+        this.observer = new MutationObserver(callback);
+    }
 
-// export function getMathCache(cache: CachedMetadata, lineStart: number): SectionCache | undefined {
-//     if (cache.sections) {
-//         const sectionCache = Object.values(cache.sections).find((sectionCache) =>
-//             sectionCache.type == 'math'
-//             && sectionCache.position.start.line == lineStart
-//         );
-//         return sectionCache;
-//     }
-// }
+    onload() {
+        this.observer.observe(this.targetEl, this.options);
+    }
 
-// export function getMathCacheFromPos(cache: CachedMetadata, pos: number): SectionCache | undefined {
-//     return getSectionCacheFromPos(cache, pos, "math");
-// }
-
-// export function findSectionCache(cache: CachedMetadata, callback: (sectionCache: SectionCache, index: number, sections: SectionCache[]) => boolean): SectionCache | undefined {
-//     // pos: CodeMirror offset units
-//     if (cache.sections) {
-//         return Object.values(cache.sections).find(callback);
-//     }
-// }
-
-
-// export function getBacklinks(app: App, plugin: MathBooster, file: TFile, cache: CachedMetadata, pick: (block: BlockCache) => boolean): Backlink[] | null {
-//     const backlinksToNote = plugin.oldLinkMap.invMap.get(file.path); // backlinks to the note containing this theorem callout
-//     const backlinks: Backlink[] = [] // backlinks to this theorem callout
-//     if (backlinksToNote) {
-//         for (const backlink of backlinksToNote) {
-//             const sourceCache = app.metadataCache.getCache(backlink);
-//             sourceCache?.links
-//                 ?.forEach((link: LinkCache) => {
-//                     const { subpath } = parseLinktext(link.link);
-//                     const subpathResult = resolveSubpath(cache, subpath);
-//                     if (subpathResult?.type == "block" && pick(subpathResult.block)) {
-//                         backlinks.push({ sourcePath: backlink, link: link });
-//                     }
-//                 })
-//         }
-//     }
-//     return backlinks;
-// }
-
-
-// export function getBlockIdsWithBacklink(file: TFile, plugin: MathBooster): string[] {
-//     const dv = getDataviewAPI(plugin);
-//     const cache = plugin.app.metadataCache.getFileCache(file);
-//     const ids: string[] = [];
-//     if (dv && cache) {
-//         const page = dv.page(file.path); // Dataview page object
-//         if (page) {
-//             // @ts-ignore
-//             for (const inlink of page.file?.inlinks) {
-//                 // cache of the source of this link (source --link--> target)
-//                 const sourcePath = inlink.path;
-//                 const sourceCache = plugin.app.metadataCache.getCache(sourcePath);
-//                 if (sourceCache) {
-//                     sourceCache.links?.forEach(
-//                         (item) => {
-//                             const linktext = item.link;
-//                             const parseResult = parseLinktext(linktext);
-//                             const linkpath = parseResult.path;
-//                             const subpath = parseResult.subpath;
-//                             const targetFile = plugin.app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
-//                             if (targetFile && targetFile.path == file.path) {
-//                                 const subpathResult = resolveSubpath(cache as CachedMetadata, subpath);
-//                                 if (subpathResult && subpathResult.type == "block") {
-//                                     const blockCache = subpathResult.block;
-//                                     ids.push(blockCache.id);
-//                                 }
-//                             }
-//                         }
-//                     )
-
-//                 }
-//             }
-//         }
-//     }
-//     return ids;
-// }
+    onunload() {
+        this.observer.disconnect();
+    }
+}

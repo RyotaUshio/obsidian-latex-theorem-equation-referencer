@@ -1,13 +1,10 @@
-import { App, Component, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Notice, TFile, editorInfoField } from "obsidian";
+import { App, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Notice, TFile, editorInfoField } from "obsidian";
 import { ViewUpdate, EditorView, PluginValue, ViewPlugin } from '@codemirror/view';
 
 import MathBooster from 'main';
 import { TheoremCalloutModal } from 'settings/modals';
 import { TheoremCalloutSettings, TheoremCalloutPrivateFields } from 'settings/settings';
-import {
-    increaseQuoteLevel, resolveSettings
-    //getBacklinks 
-} from 'utils/plugin';
+import { increaseQuoteLevel, resolveSettings } from 'utils/plugin';
 import { isEditingView } from 'utils/editor';
 import { capitalize, splitIntoLines } from 'utils/general';
 import { formatTitleWithoutSubtitle } from "utils/format";
@@ -17,7 +14,7 @@ import { MathIndex } from 'index/index';
 import { parseTheoremCalloutMetadata, readTheoremCalloutSettings } from 'utils/parse';
 import { THEOREM_LIKE_ENV_ID_PREFIX_MAP, THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENV_PREFIXES, THEOREM_LIKE_ENV_PREFIX_ID_MAP, TheoremLikeEnvID, TheoremLikeEnvPrefix } from 'env';
 import { getIO } from 'file_io';
-import { getSectionCacheFromMouseEvent, getSectionCacheOfDOM, isPdfExport, resolveLinktext } from 'utils/obsidian';
+import { MutationObservingChild, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, isPdfExport, resolveLinktext } from 'utils/obsidian';
 
 
 function generateTheoremCalloutFirstLine(config: TheoremCalloutSettings): string {
@@ -61,7 +58,7 @@ export const createTheoremCalloutPostProcessor = (plugin: MathBooster) => async 
         if ((THEOREM_LIKE_ENV_IDs as unknown as string[]).includes(type) || (THEOREM_LIKE_ENV_PREFIXES as unknown as string[]).includes(type) || type === 'math') {
             if (plugin.extraSettings.excludeExampleCallout && type === 'example') continue;
 
-            if (pdf) { // preprocess for theorem numbering if PDF export
+            if (pdf) { // preprocess for theorem numbering in PDF export
                 const settings = readSettingsFromEl(calloutEl);
                 if (settings?.number === 'auto') calloutEl.setAttribute('data-theorem-index', String(index++));
             }
@@ -98,8 +95,8 @@ export interface TheoremCalloutInfo {
  *     Read the target note path and the block id from the `src` attribute, and 
  *     use it to find the corresponding TheoremCalloutBlock object from the index.
  * Hover popover: 
- *     Patch the core page preview plugin so that it adds the linktext as "src" attribute to the hover element,
- *     and then proceed as in the embed case.
+ *     The core page preview plugin is patched (src/patches/page-preview.ts) so that the linktext is 
+ *     saved in the plugin instance. Read it then proceed as in the embed case.
  */
 class TheoremCalloutRenderer extends MarkdownRenderChild {
     app: App;
@@ -108,7 +105,7 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
     /** The info on which the last DOM update was based on. Used to reduce redundant updates. */
     info: TheoremCalloutInfo | null = null;
     /** Set to the linktext when this theorem callout is inside an embed or a hover page preview. */
-    embedSrc: string | null = null;
+    linktext: string | null = null;
     editButton: HTMLElement | null = null;
 
     constructor(
@@ -121,7 +118,7 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
         this.app = plugin.app;
         this.index = plugin.indexManager.index;
 
-        // update: for live preview
+        // update: for Live Preview & PDF export
         this.addChild(this.observer = new MutationObservingChild(this.containerEl, (mutations) => {
             for (const mutation of mutations) {
                 if (mutation.oldValue !== this.containerEl.getAttribute('data-theorem-index')) {
@@ -222,23 +219,32 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
     }
 
     correctEmbedOrHoverPagePreview(block: (TheoremCalloutInfo & { blockId?: string }) | null, info: TheoremCalloutInfo) {
-        // By default, "src" doesn't exist in hover page preview.
-        // So we patched the core page preview plugin so that it adds "src" to the hover element.
+        // For embeds, we can get the linktext from the "src" attribute.
+        // In the case of hover page preview, we cannot get the linktext from the "src" attribute.
+        // So we patched the core page preview plugin so that it saves the linktext in the plugin instance.
         // See src/patches/page-preview.ts
-        const linktext = this.containerEl.closest('[src]')?.getAttribute('src');
+        let linktext = this.containerEl.closest('[src]')?.getAttribute('src');
 
-        // failed to add "src" attribute to the hover element; abort.
-        if (!linktext && this.containerEl.closest('.hover-popover:not(.hover-editor)')) {
-            const update = this.correctHoverWithoutSrc();
-            if (update) {
-                block = update.block;
-                this.info = info = update.info;
+        if (!linktext) {
+            const hoverEl = this.containerEl.closest<HTMLElement>('.hover-popover:not(.hover-editor)');
+            if (hoverEl) {
+                // The current context is hover page preview; read the linktext saved in the plugin instance.
+                linktext = this.plugin.lastHoverLinktext;
+
+                if (!linktext) {
+                    // somehow failed to get the linktext; abort.
+                    const update = this.correctHoverWithoutSrc();
+                    if (update) {
+                        block = update.block;
+                        this.info = info = update.info;
+                    }
+                    return;
+                }
             }
-            return;
         }
 
         if (linktext) {
-            this.embedSrc = linktext;
+            this.linktext = linktext;
             const { file, subpathResult: result } = resolveLinktext(this.app, linktext, this.context.sourcePath) ?? {};
             if (!file || !result) return;
 
@@ -444,8 +450,8 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
         let lineOffset = 0;
 
         // handle the embed case
-        if (this.embedSrc !== null) {
-            const { subpathResult } = resolveLinktext(this.app, this.embedSrc, this.context.sourcePath) ?? {};
+        if (this.linktext !== null) {
+            const { subpathResult } = resolveLinktext(this.app, this.linktext, this.context.sourcePath) ?? {};
             if (subpathResult) lineOffset = subpathResult.start.line;
         }
 
@@ -526,24 +532,6 @@ function readSettingsFromEl(calloutEl: HTMLElement): TheoremCalloutSettings | nu
     const title = '' // calloutEl.querySelector<HTMLElement>('.callout-title-inner')?.textContent?.trim();
 
     return { type, number, title }
-}
-
-
-class MutationObservingChild extends Component {
-    observer: MutationObserver;
-
-    constructor(public targetEl: HTMLElement, public callback: MutationCallback, public options: MutationObserverInit) {
-        super();
-        this.observer = new MutationObserver(callback);
-    }
-
-    onload() {
-        this.observer.observe(this.targetEl, this.options);
-    }
-
-    onunload() {
-        this.observer.disconnect();
-    }
 }
 
 

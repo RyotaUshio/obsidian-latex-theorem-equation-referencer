@@ -13,9 +13,10 @@ export const patchPagePreview = (plugin: MathBooster) => {
         // @ts-ignore
         around(app.internalPlugins.plugins['page-preview'].instance.constructor.prototype, {
             onLinkHover(old: Function) {
-                return function(parent: HoverParent, targetEl: HTMLElement, linktext: string, ...args: unknown[]) {
+                return function (parent: HoverParent, targetEl: HTMLElement, linktext: string, ...args: unknown[]) {
                     old.call(this, parent, targetEl, linktext, ...args);
-                    setTimeout(() => parent.hoverPopover?.hoverEl.setAttribute('src', linktext), 300);
+                    // Save the linktext in the plugin instance
+                    plugin.lastHoverLinktext = linktext;
                 }
             }
         })

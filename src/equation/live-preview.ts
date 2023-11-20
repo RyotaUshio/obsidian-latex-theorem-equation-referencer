@@ -1,3 +1,8 @@
+/**
+ * Display equation numbers in Live Preview.
+ */
+
+
 import { StateEffect } from '@codemirror/state';
 import { PluginValue, ViewPlugin, EditorView, ViewUpdate } from '@codemirror/view';
 import { EquationBlock, MarkdownPage } from 'index/typings/markdown';

@@ -39,6 +39,7 @@ export default class MathBooster extends Plugin {
 	editorExtensions: Extension[];
 	theoremCalloutsField: StateField<RangeSet<TheoremCalloutInfo>>;
 	proofPositionField: StateField<ProofPosition[]>;
+	lastHoverLinktext: string | null;
 
 	async onload() {
 
@@ -178,6 +179,7 @@ export default class MathBooster extends Plugin {
 
 		// patch hover page preview to display theorem numbers in it
 		patchPagePreview(this);
+		this.lastHoverLinktext = null;
 
 
 		/** File menu */

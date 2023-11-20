@@ -1,8 +1,11 @@
-import { App, MarkdownRenderChild, finishRenderMath, MarkdownPostProcessorContext, CachedMetadata, MarkdownSectionInformation, TFile, editorInfoField, Menu, MarkdownView } from "obsidian";
+/**
+ * Display equation numbers in reading view, embeds, hover page preview, and PDF export.
+ */
+
+import { App, MarkdownRenderChild, finishRenderMath, MarkdownPostProcessorContext, TFile } from "obsidian";
 
 import MathBooster from 'main';
 import { resolveSettings } from 'utils/plugin';
-import { MathContextSettings } from "settings/settings";
 import { EquationBlock, MarkdownPage } from "index/typings/markdown";
 import { MathIndex } from "index";
 import { resolveLinktext } from "utils/obsidian";
@@ -42,7 +45,7 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
         const block = page.getBlockByLineNumber(info.lineStart + lineOffset) ?? page.getBlockByLineNumber(info.lineEnd + lineOffset);
         const id = block?.$blockId;
 
-        // get IndexItem from block ID
+        // get EquationBlock from block ID
         if (id) {
             const page = this.plugin.indexManager.index.load(this.file.path);
             if (!MarkdownPage.isMarkdownPage(page)) return null
@@ -63,13 +66,13 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
     }
 
     update() {
-        const settings = resolveSettings(undefined, this.plugin, this.file);
-        const equation = this.getEquationCacheCaringHoverAndEmbed(settings);
+        const equation = this.getEquationCacheCaringHoverAndEmbed();
         if (!equation) return;
+        const settings = resolveSettings(undefined, this.plugin, this.file);
         replaceMathTag(this.containerEl, equation.$mathText, equation.$printName, settings);
     }
 
-    getEquationCacheCaringHoverAndEmbed(settings: Required<MathContextSettings>): EquationBlock | null {
+    getEquationCacheCaringHoverAndEmbed(): EquationBlock | null {
         /**
          * https://github.com/RyotaUshio/obsidian-math-booster/issues/179
          * 
@@ -81,16 +84,19 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
          */
 
         const equation = this.getEquationCache();
-        if (!equation) return null;
 
-        const embedSrc = this.containerEl.closest('[src]')?.getAttribute('src');
+        let linktext = this.containerEl.closest('[src]')?.getAttribute('src'); // in the case of embeds
 
-        if (!embedSrc && this.containerEl.closest('.hover-popover:not(.hover-editor)')) {
-            return null;
+        if (!linktext) {
+            const hoverEl = this.containerEl.closest<HTMLElement>('.hover-popover:not(.hover-editor)');
+            if (hoverEl) {
+                // The current context is hover page preview; read the linktext saved in the plugin instance.
+                linktext = this.plugin.lastHoverLinktext;
+            }
         }
 
-        if (embedSrc) {
-            const { file, subpathResult } = resolveLinktext(this.app, embedSrc, this.context.sourcePath) ?? {};
+        if (linktext) { // linktext was found
+            const { file, subpathResult } = resolveLinktext(this.app, linktext, this.context.sourcePath) ?? {};
 
             if (!file || !subpathResult) return null;
 
