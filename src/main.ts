@@ -14,7 +14,7 @@ import { createEquationNumberProcessor } from 'equations/reading-view';
 import { createEquationNumberPlugin } from 'equations/live-preview';
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote, hideDisplayMathPreviewInQuote } from 'render-math-in-callouts';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, isPluginOlderThan } from 'utils/obsidian';
-import { getProfile, staticifyEqNumber, insertDisplayMath, insertTheoremCalloutCallback } from 'utils/plugin';
+import { getProfile, staticifyEqNumber, insertDisplayMath, insertTheoremCallout } from 'utils/plugin';
 import { proofPositionFieldFactory, proofDecorationFactory, ProofPosition, proofFoldFactory, insertProof, createProofProcessor } from 'proof';
 import { MathIndexManager } from './index/manager';
 import { DependencyNotificationModal, MigrationModal } from 'notice';
@@ -93,8 +93,6 @@ export default class MathBooster extends Plugin {
 
 		this.registerEvent(
 			this.app.metadataCache.on("math-booster:global-settings-updated", async () => {
-				// await (new VaultIndexer(this.app, this)).run();
-
 				// Add profile's tags as CSS classes
 				this.app.workspace.iterateRootLeaves((leaf) => {
 					if (leaf.view instanceof MarkdownView) {
@@ -178,7 +176,7 @@ export default class MathBooster extends Plugin {
 		this.registerMarkdownPostProcessor(createProofProcessor(this));
 
 		// patch hover page preview to display theorem numbers in it
-		patchPagePreview(this);
+		this.app.workspace.onLayoutReady(() => patchPagePreview(this));
 		this.lastHoverLinktext = null;
 
 
@@ -407,18 +405,20 @@ export default class MathBooster extends Plugin {
 		this.addCommand({
 			id: 'insert-theorem-callout',
 			name: 'Insert theorem callout',
-			editorCallback: async (editor, context) => {
-				if (context.file) {
+			editorCheckCallback: (checking, editor, context) => {
+				if (!context.file) return false;
+
+				if (!checking) {
 					new TheoremCalloutModal(
 						this.app, this, context.file,
 						(config) => {
-							if (context.file) {
-								insertTheoremCalloutCallback(editor, config);
-							}
+							insertTheoremCallout(editor, config);
 						},
 						"Insert", "Insert theorem callout",
-					).open();
+					).open();	
 				}
+
+				return true;
 			}
 		});
 

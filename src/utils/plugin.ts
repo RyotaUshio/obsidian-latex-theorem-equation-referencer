@@ -134,7 +134,7 @@ export function generateTheoremCalloutFirstLine(config: TheoremCalloutSettings):
     return firstLine;
 }
 
-export function insertTheoremCalloutCallback(editor: Editor, config: TheoremCalloutSettings): void {
+export function insertTheoremCallout(editor: Editor, config: TheoremCalloutSettings): void {
     const selection = editor.getSelection();
     const cursorPos = editor.getCursor();
 
