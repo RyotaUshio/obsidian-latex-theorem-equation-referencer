@@ -1,6 +1,5 @@
-import { RangeSetBuilder } from '@codemirror/state';
 import { App, Component, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Notice, TFile, editorInfoField } from "obsidian";
-import { ViewUpdate, EditorView, PluginValue, ViewPlugin, Decoration, DecorationSet } from '@codemirror/view';
+import { ViewUpdate, EditorView, PluginValue, ViewPlugin } from '@codemirror/view';
 
 import MathBooster from 'main';
 import { TheoremCalloutModal } from 'settings/modals';
@@ -9,20 +8,16 @@ import {
     increaseQuoteLevel, resolveSettings
     //getBacklinks 
 } from 'utils/plugin';
-import { isEditingView, nodeText } from 'utils/editor';
+import { isEditingView } from 'utils/editor';
 import { capitalize, splitIntoLines } from 'utils/general';
 import { formatTitleWithoutSubtitle } from "utils/format";
 import { renderTextWithMath } from "utils/render";
-// import { AutoNoteIndexer } from './indexer';
-// import { Backlink, BacklinkModal } from "./backlinks";
 import { MarkdownPage, TheoremCalloutBlock } from "index/typings/markdown";
 import { MathIndex } from 'index/index';
 import { parseTheoremCalloutMetadata, readTheoremCalloutSettings } from 'utils/parse';
 import { THEOREM_LIKE_ENV_ID_PREFIX_MAP, THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENV_PREFIXES, THEOREM_LIKE_ENV_PREFIX_ID_MAP, TheoremLikeEnvID, TheoremLikeEnvPrefix } from 'env';
 import { getIO } from 'file_io';
-import { getSectionCacheFromMouseEvent, getSectionCacheOfDOM, resolveLinktext } from 'utils/obsidian';
-import { syntaxTree } from '@codemirror/language';
-import { CALLOUT } from 'theorem_callout_metadata_hider';
+import { getSectionCacheFromMouseEvent, getSectionCacheOfDOM, isPdfExport, resolveLinktext } from 'utils/obsidian';
 
 
 function generateTheoremCalloutFirstLine(config: TheoremCalloutSettings): string {
@@ -54,15 +49,22 @@ export function insertTheoremCalloutCallback(editor: Editor, config: TheoremCall
 
 
 export const createTheoremCalloutPostProcessor = (plugin: MathBooster) => async (element: HTMLElement, context: MarkdownPostProcessorContext) => {
-
     const file = plugin.app.vault.getAbstractFileByPath(context.sourcePath);
     if (!(file instanceof TFile)) return null;
+
+    const pdf = isPdfExport(element);
+    let index = 0; // for numbering theorems in PDf export
 
     for (const calloutEl of element.querySelectorAll<HTMLElement>(`.callout`)) {
         const type = calloutEl.getAttribute('data-callout')!.toLowerCase();
 
         if ((THEOREM_LIKE_ENV_IDs as unknown as string[]).includes(type) || (THEOREM_LIKE_ENV_PREFIXES as unknown as string[]).includes(type) || type === 'math') {
             if (plugin.extraSettings.excludeExampleCallout && type === 'example') continue;
+
+            if (pdf) { // preprocess for theorem numbering if PDF export
+                const settings = readSettingsFromEl(calloutEl);
+                if (settings?.number === 'auto') calloutEl.setAttribute('data-theorem-index', String(index++));
+            }
 
             const theoremCallout = new TheoremCalloutRenderer(calloutEl, context, file, plugin);
             context.addChild(theoremCallout);
