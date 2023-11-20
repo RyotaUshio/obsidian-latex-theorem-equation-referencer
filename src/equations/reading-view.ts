@@ -34,26 +34,32 @@ export const createEquationNumberProcessor = (plugin: MathBooster) => async (el:
  * without relying on the line number.
  */
 function preprocessForPdfExport(plugin: MathBooster, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
-    const topLevelMathDivs = el.querySelectorAll<HTMLElement>(':scope > div.math.math-block > mjx-container.MathJax[display="true"]');
-    
-    const page = plugin.indexManager.index.load(ctx.sourcePath);
-    if (!MarkdownPage.isMarkdownPage(page)) {
-        new Notice(`${plugin.manifest.name}: Failed to fetch the metadata for PDF export; equation numbers will not be displayed in the exported PDF.`);
-        return;
-    }
 
-    let equationIndex = 0;
-    for (const section of page.$sections) {
-        for (const block of section.$blocks) {
-            if (!EquationBlock.isEquationBlock(block)) continue;
+    try {
+        const topLevelMathDivs = el.querySelectorAll<HTMLElement>(':scope > div.math.math-block > mjx-container.MathJax[display="true"]');
 
-            const div = topLevelMathDivs[equationIndex++];
-            if (block.$printName && block.$blockId) div.setAttribute('data-equation-block-id', block.$blockId);
+        const page = plugin.indexManager.index.load(ctx.sourcePath);
+        if (!MarkdownPage.isMarkdownPage(page)) {
+            new Notice(`${plugin.manifest.name}: Failed to fetch the metadata for PDF export; equation numbers will not be displayed in the exported PDF.`);
+            return;
         }
-    }
 
-    if (topLevelMathDivs.length != equationIndex) {
-        new Notice(`${plugin.manifest.name}: Something unexpected occured while preprocessing for PDF export. Equation numbers might not be displayed properly in the exported PDF.`);
+        let equationIndex = 0;
+        for (const section of page.$sections) {
+            for (const block of section.$blocks) {
+                if (!EquationBlock.isEquationBlock(block)) continue;
+
+                const div = topLevelMathDivs[equationIndex++];
+                if (block.$printName && block.$blockId) div.setAttribute('data-equation-block-id', block.$blockId);
+            }
+        }
+
+        if (topLevelMathDivs.length != equationIndex) {
+            new Notice(`${plugin.manifest.name}: Something unexpected occured while preprocessing for PDF export. Equation numbers might not be displayed properly in the exported PDF.`);
+        }
+    } catch (err) {
+        new Notice(`${plugin.manifest.name}: Something unexpected occured while preprocessing for PDF export. See the developer console for the details. Equation numbers might not be displayed properly in the exported PDF.`);
+        console.error(err);
     }
 }
 

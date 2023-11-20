@@ -198,7 +198,8 @@ export function isPdfExport(el: HTMLElement): boolean {
     // el.classList.contains('markdown-rendered') is true not only for PDf export
     // but also CM6 decorations in Live Preview whose widgets are rendered by MarkdownRenderer.
     // So we need to check '.print', too.
-    return el.closest('.print') !== null && el.classList.contains('markdown-rendered');
+    // el.closest('[src]') === null is necessary to exclude embeds inside a note exported to PDF.
+    return el.closest('.print') !== null && el.closest('[src]') === null && el.classList.contains('markdown-rendered');
 }
 
 ////////////
