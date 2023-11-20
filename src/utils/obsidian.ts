@@ -165,15 +165,41 @@ export async function openFileAndSelectPosition(app: App, file: TFile, position:
             const previewMode = (leaf.view as MarkdownView).previewMode;
             const renderer = (previewMode as any).renderer as MarkdownPostProcessorContext & { sizerEl: HTMLElement, highlightEl: (el: HTMLElement) => void };
 
-            // find the div corresponding the target block
-            const div = Array.from(renderer.sizerEl.querySelectorAll<HTMLElement>(':scope > div'))
-                .find((div) => renderer.getSectionInfo(div)?.lineStart === position.start.line);
-            if (!div) return;
+            // find the div corresponding the target block: fails if viewport is large
+            previewMode.applyScroll(position.start.line);
+            // wait for the div to be rendered by scrolling
+            setTimeout(() => {
+                const div = findBlockFromReadingViewDom(renderer.sizerEl,
+                    (div) => renderer.getSectionInfo(div)?.lineStart === position.start.line
+                );
+                if (!div) return;
 
-            renderer.highlightEl(div);
-            div.scrollIntoView({ block: 'center' });
-        }, 50);
+                renderer.highlightEl(div);
+                div.scrollIntoView({ block: 'center' });
+            });
+        }, 300);
     }
+}
+
+export function findBlockFromReadingViewDom(sizerEl: HTMLElement, cb: (div: HTMLElement, index: number) => boolean): HTMLElement | undefined {
+    let index = 0;
+    for (const div of sizerEl.querySelectorAll<HTMLElement>(':scope > div')) {
+        if (div.classList.contains('markdown-preview-pusher')) continue;
+        if (div.classList.contains('mod-header')) continue;
+        if (div.classList.contains('mod-footer')) continue;
+
+        if (cb(div, index++)) return div;
+    }
+}
+
+/**
+ * Given a HTMLElement passed to a MarkdownPostProcessor, check if the current context is PDF export of not.
+ */
+export function isPdfExport(el: HTMLElement): boolean {
+    // el.classList.contains('markdown-rendered') is true not only for PDf export
+    // but also CM6 decorations in Live Preview whose widgets are rendered by MarkdownRenderer.
+    // So we need to check '.print', too.
+    return el.closest('.print') !== null && el.classList.contains('markdown-rendered');
 }
 
 ////////////
