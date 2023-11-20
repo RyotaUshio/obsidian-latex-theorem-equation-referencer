@@ -199,7 +199,10 @@ export function isPdfExport(el: HTMLElement): boolean {
     // but also CM6 decorations in Live Preview whose widgets are rendered by MarkdownRenderer.
     // So we need to check '.print', too.
     // el.closest('[src]') === null is necessary to exclude embeds inside a note exported to PDF.
-    return el.closest('.print') !== null && el.closest('[src]') === null && el.classList.contains('markdown-rendered');
+    // return el.closest('.print') !== null && el.closest('[src]') === null && el.classList.contains('markdown-rendered');
+
+    // Come to think about it, just the following would suffice:
+    return (el.parentElement?.classList.contains('print') ?? false) && el.classList.contains('markdown-rendered');
 }
 
 ////////////
