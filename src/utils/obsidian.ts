@@ -202,7 +202,7 @@ export function isPdfExport(el: HTMLElement): boolean {
     // return el.closest('.print') !== null && el.closest('[src]') === null && el.classList.contains('markdown-rendered');
 
     // Come to think about it, just the following would suffice:
-    return (el.parentElement?.classList.contains('print') ?? false) && el.classList.contains('markdown-rendered');
+    return (el.parentElement?.classList.contains('print') ?? false) && el.matches('.markdown-preview-view.markdown-rendered');
 }
 
 ////////////
