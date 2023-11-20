@@ -96,7 +96,8 @@ export interface TheoremCalloutInfo {
  *     Read the target note path and the block id from the `src` attribute, and 
  *     use it to find the corresponding TheoremCalloutBlock object from the index.
  * Hover popover: 
- *     There is nothing I can do to get the number. Just display wihout the number.
+ *     Patch the core page preview plugin so that it adds the linktext as "src" attribute to the hover element,
+ *     and then proceed as in the embed case.
  */
 class TheoremCalloutRenderer extends MarkdownRenderChild {
     app: App;
@@ -104,8 +105,7 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
     observer: MutationObservingChild;
     /** The info on which the last DOM update was based on. Used to reduce redundant updates. */
     info: TheoremCalloutInfo | null = null;
-    isHoverPopover: boolean = false;
-    /** Set to the linktext when this theorem callout is inside an embed (i.e. ![[linktext]]). */
+    /** Set to the linktext when this theorem callout is inside an embed or a hover page preview. */
     embedSrc: string | null = null;
     editButton: HTMLElement | null = null;
 
@@ -226,7 +226,14 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
         const linktext = this.containerEl.closest('[src]')?.getAttribute('src');
 
         // failed to add "src" attribute to the hover element; abort.
-        if (!linktext && this.containerEl.closest('.hover-popover:not(.hover-editor)')) return;
+        if (!linktext && this.containerEl.closest('.hover-popover:not(.hover-editor)')) {
+            const update = this.correctHoverWithoutSrc();
+            if (update) {
+                block = update.block;
+                this.info = info = update.info;
+            }
+            return;
+        }
 
         if (linktext) {
             this.embedSrc = linktext;
@@ -261,6 +268,21 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
         }
 
         this.addEditButton();
+
+        return { block, info };
+    }
+
+    correctHoverWithoutSrc() {
+        const block = null;
+        const info = this.getTheoremCalloutInfoFromEl();
+        if (!info) return;
+
+        if (!this.info || TheoremCalloutRenderer.areDifferentInfo(info, this.info)) {
+            this.renderTitle(info);
+            this.addCssClasses(info);
+        }
+
+        this.removeEditButton();
 
         return { block, info };
     }
