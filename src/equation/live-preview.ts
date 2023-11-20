@@ -49,7 +49,7 @@ export function createEquationNumberPlugin<V extends PluginValue>(plugin: MathBo
         }
 
         async callback(view: EditorView, file: TFile) {
-            const mjxContainerElements = view.contentDOM.querySelectorAll<HTMLElement>('mjx-container.MathJax[display="true"]');
+            const mjxContainerElements = view.contentDOM.querySelectorAll<HTMLElement>(':scope > mjx-container.MathJax[display="true"]');
             const settings = resolveSettings(undefined, plugin, file);
             const page = plugin.indexManager.index.load(file.path);
             if (!MarkdownPage.isMarkdownPage(page)) return;
@@ -59,7 +59,7 @@ export function createEquationNumberPlugin<V extends PluginValue>(plugin: MathBo
                     const pos = view.posAtDOM(mjxContainerEl);
                     const line = view.state.doc.lineAt(pos).number - 1;
                     const block = page.getBlockByLineNumber(line);
-                    if (!(block instanceof EquationBlock)) return;
+                    if (!(block instanceof EquationBlock)) continue;
 
                     replaceMathTag(mjxContainerEl, block.$mathText, block.$printName, settings);
 
