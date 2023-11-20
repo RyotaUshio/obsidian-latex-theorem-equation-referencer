@@ -2,7 +2,7 @@
  * Display equation numbers in reading view, embeds, hover page preview, and PDF export.
  */
 
-import { App, MarkdownRenderChild, finishRenderMath, MarkdownPostProcessorContext, TFile } from "obsidian";
+import { App, MarkdownRenderChild, finishRenderMath, MarkdownPostProcessorContext, TFile, Notice } from "obsidian";
 
 import MathBooster from 'main';
 import { resolveSettings } from 'utils/plugin';
@@ -13,7 +13,7 @@ import { replaceMathTag } from "./common";
 
 
 export const createEquationNumberProcessor = (plugin: MathBooster) => async (el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-    if (isPdfExport(el)) preprocessForPdfExport(el);
+    if (isPdfExport(el)) preprocessForPdfExport(plugin, el, ctx);
 
     const sourceFile = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
     if (!(sourceFile instanceof TFile)) return;
@@ -29,12 +29,32 @@ export const createEquationNumberProcessor = (plugin: MathBooster) => async (el:
 
 /** 
  * As a preprocessing for displaying equation numbers in the exported PDF, 
- * add an attribute to each numbered equation element.
- * 
- * @param el The '.markdown-preview-view' element passed to the markdown post processor.
+ * add an attribute representing a block ID to each numbered equation element
+ * so that EquationNumberRenderer can find the corresponding block from the index
+ * without relying on the line number.
  */
-function preprocessForPdfExport(el: HTMLElement) {
-    console.log(el.cloneNode(true));
+function preprocessForPdfExport(plugin: MathBooster, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+    const topLevelMathDivs = el.querySelectorAll<HTMLElement>(':scope > div.math.math-block > mjx-container.MathJax[display="true"]');
+    
+    const page = plugin.indexManager.index.load(ctx.sourcePath);
+    if (!MarkdownPage.isMarkdownPage(page)) {
+        new Notice(`${plugin.manifest.name}: Failed to fetch the metadata for PDF export; equation numbers will not be displayed in the exported PDF.`);
+        return;
+    }
+
+    let equationIndex = 0;
+    for (const section of page.$sections) {
+        for (const block of section.$blocks) {
+            if (!EquationBlock.isEquationBlock(block)) continue;
+
+            const div = topLevelMathDivs[equationIndex++];
+            if (block.$printName && block.$blockId) div.setAttribute('data-equation-block-id', block.$blockId);
+        }
+    }
+
+    if (topLevelMathDivs.length != equationIndex) {
+        new Notice(`${plugin.manifest.name}: Something unexpected occured while preprocessing for PDF export. Equation numbers might not be displayed properly in the exported PDF.`);
+    }
 }
 
 
@@ -61,13 +81,16 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
         const id = block?.$blockId;
 
         // get EquationBlock from block ID
-        if (id) {
-            const page = this.plugin.indexManager.index.load(this.file.path);
-            if (!MarkdownPage.isMarkdownPage(page)) return null
-            const block = page.$blocks.get(id);
-            if (EquationBlock.isEquationBlock(block)) return block;
-        }
+        if (id) return this.getEquationCacheFromId(id);
 
+        return null;
+    }
+
+    getEquationCacheFromId(id: string): EquationBlock | null {
+        const page = this.plugin.indexManager.index.load(this.file.path);
+        if (!MarkdownPage.isMarkdownPage(page)) return null
+        const block = page.$blocks.get(id);
+        if (EquationBlock.isEquationBlock(block)) return block;
         return null;
     }
 
@@ -81,7 +104,10 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
     }
 
     update() {
-        const equation = this.getEquationCacheCaringHoverAndEmbed();
+        // for PDF export
+        const id = this.containerEl.getAttribute('data-equation-block-id');
+
+        const equation = id ? this.getEquationCacheFromId(id) : this.getEquationCacheCaringHoverAndEmbed();
         if (!equation) return;
         const settings = resolveSettings(undefined, this.plugin, this.file);
         replaceMathTag(this.containerEl, equation, settings);

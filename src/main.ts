@@ -22,7 +22,6 @@ import { LinkAutocomplete } from 'search/editor-suggest';
 import { ActiveNoteSearchCore, RecentNotesSearchCore, WholeVaultEquationSearchCore, WholeVaultTheoremEquationSearchCore, WholeVaultTheoremSearchCore } from 'search/core';
 import { MathSearchModal } from 'search/modal';
 import { TheoremCalloutInfo, createTheoremCalloutsField } from 'theorem-callouts/state-field';
-import { patchPdfExportModal } from 'patches/pdf-export';
 
 
 export const VAULT_ROOT = '/';
@@ -41,7 +40,6 @@ export default class MathBooster extends Plugin {
 	theoremCalloutsField: StateField<RangeSet<TheoremCalloutInfo>>;
 	proofPositionField: StateField<ProofPosition[]>;
 	lastHoverLinktext: string | null;
-	isPdfPatched: boolean;
 
 	async onload() {
 
@@ -181,10 +179,6 @@ export default class MathBooster extends Plugin {
 		this.lastHoverLinktext = null;
 		this.app.workspace.onLayoutReady(() => patchPagePreview(this));
 		
-		// patch the "Export to PDF" modal to print equation numbers in the exported PDF
-		this.isPdfPatched = false;
-		this.app.workspace.onLayoutReady(() => patchPdfExportModal(this));
-
 		/** File menu */
 
 		this.registerEvent(
