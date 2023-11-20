@@ -12,7 +12,7 @@ import { replaceMathTag } from './common';
 import { DEFAULT_SETTINGS, MathContextSettings } from 'settings/settings';
 
 
-export function createEquationNumberPlugin<V extends PluginValue>(plugin: MathBooster): ViewPlugin<V> {
+export function createEquationNumberPlugin(plugin: MathBooster) {
 
     const { app, indexManager: { index } } = plugin;
 
