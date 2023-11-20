@@ -69,7 +69,7 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
         const equation = this.getEquationCacheCaringHoverAndEmbed();
         if (!equation) return;
         const settings = resolveSettings(undefined, this.plugin, this.file);
-        replaceMathTag(this.containerEl, equation.$mathText, equation.$printName, settings);
+        replaceMathTag(this.containerEl, equation, settings);
     }
 
     getEquationCacheCaringHoverAndEmbed(): EquationBlock | null {

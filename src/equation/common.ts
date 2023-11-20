@@ -1,17 +1,29 @@
+import { EquationBlock } from "index/typings/markdown";
 import { renderMath } from "obsidian";
 import { MathContextSettings } from "settings/settings";
 import { parseLatexComment } from "utils/parse";
 
 
-export function getMathTextWithTag(text: string, tag: string | null, lineByLine?: boolean): string | undefined {
-    if (tag !== null) {
-        const tagResult = tag.match(/^\((.*)\)$/);
+
+export function replaceMathTag(displayMathEl: HTMLElement, equation: EquationBlock, settings: Required<MathContextSettings>) {
+    if (equation.$manualTag) return; // respect a tag (\tag{...}) manually set by the user
+
+    const taggedText = getMathTextWithTag(equation, settings.lineByLine);
+    if (taggedText) {
+        const mjxContainerEl = renderMath(taggedText, true);
+        displayMathEl.replaceChildren(...mjxContainerEl.childNodes);
+    }
+}
+
+export function getMathTextWithTag(equation: EquationBlock, lineByLine?: boolean): string | undefined {
+    if (equation.$printName !== null) {
+        const tagResult = equation.$printName.match(/^\((.*)\)$/);
         if (tagResult) {
             const tagContent = tagResult[1];
-            return insertTagInMathText(text, tagContent, lineByLine);
+            return insertTagInMathText(equation.$mathText, tagContent, lineByLine);
         }
     }
-    return text;
+    return equation.$mathText;
 }
 
 export function insertTagInMathText(text: string, tagContent: string, lineByLine?: boolean): string {
@@ -35,17 +47,4 @@ export function insertTagInMathText(text: string, tagContent: string, lineByLine
         }
     }
     return text + `\\tag{${tagContent}}`;
-}
-
-
-export function replaceMathTag(displayMathEl: HTMLElement, text: string, tag: string | null, settings: Required<MathContextSettings>) {
-    const tagMatch = text.match(/\\tag\{.*\}/);
-    if (tagMatch) {
-        return;
-    }
-    const taggedText = getMathTextWithTag(text, tag, settings.lineByLine);
-    if (taggedText) {
-        const mjxContainerEl = renderMath(taggedText, true);
-        displayMathEl.replaceChildren(...mjxContainerEl.childNodes);
-    }
 }
