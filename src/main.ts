@@ -1,3 +1,4 @@
+import { patchPagePreview } from './patches/page-preview';
 import { MarkdownView, Plugin } from 'obsidian';
 import { StateField, Extension, RangeSet } from '@codemirror/state';
 
@@ -173,6 +174,9 @@ export default class MathBooster extends Plugin {
 
 		// proof environments
 		this.registerMarkdownPostProcessor(createProofProcessor(this));
+
+		// patch hover page preview to display theorem numbers in it
+		patchPagePreview(this);
 
 
 		/** File menu */

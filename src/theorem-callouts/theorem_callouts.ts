@@ -207,40 +207,27 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
         // MarkdownPostProcessorContext.getSectionInfo() returns incorrect line numbers.
         // So we have to correct it manually.
         setTimeout(() => {
-            if (this.containerEl.closest('.hover-popover:not(.hover-editor)')) {
-                this.isHoverPopover = true;
-                const update = this.correctHover(); // give up auto-numbering! (if you want it, use hover editor!)
-                if (update) {
-                    block = update.block;
-                    this.info = info = update.info;
-                }
-            } else {
-                const update = this.correctEmbed(block, info!); // correct line number
-                if (update) {
-                    block = update.block;
-                    this.info = info = update.info;
-                }
+            // hover editor has no problem with line numbers, so there is no job to do!
+            if (this.containerEl.closest('.hover-popover.hover-editor')) return;
+
+            const update = this.correctEmbedOrHoverPagePreview(block, info!); // correct line number
+            if (update) {
+                block = update.block;
+                this.info = info = update.info;
             }
+
         });
     }
 
-    correctHover() {
-        const block = null;
-        const info = this.getTheoremCalloutInfoFromEl();
-        if (!info) return;
-
-        if (!this.info || TheoremCalloutRenderer.areDifferentInfo(info, this.info)) {
-            this.renderTitle(info);
-            this.addCssClasses(info);
-        }
-
-        this.removeEditButton();
-
-        return { block, info };
-    }
-
-    correctEmbed(block: (TheoremCalloutInfo & { blockId?: string }) | null, info: TheoremCalloutInfo) {
+    correctEmbedOrHoverPagePreview(block: (TheoremCalloutInfo & { blockId?: string }) | null, info: TheoremCalloutInfo) {
+        // By default, "src" doesn't exist in hover page preview.
+        // So we patched the core page preview plugin so that it adds "src" to the hover element.
+        // See src/patches/page-preview.ts
         const linktext = this.containerEl.closest('[src]')?.getAttribute('src');
+
+        // failed to add "src" attribute to the hover element; abort.
+        if (!linktext && this.containerEl.closest('.hover-popover:not(.hover-editor)')) return;
+
         if (linktext) {
             this.embedSrc = linktext;
             const { file, subpathResult: result } = resolveLinktext(this.app, linktext, this.context.sourcePath) ?? {};
