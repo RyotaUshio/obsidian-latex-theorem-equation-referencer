@@ -17,7 +17,8 @@
       "ES6",
       "ES7",
       "ES2021.String",
-      "DOM.Iterable"
+      "DOM.Iterable",
+      "es2022"
     ]
   },
   "include": [

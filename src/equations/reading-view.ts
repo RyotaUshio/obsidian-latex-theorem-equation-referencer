@@ -8,13 +8,16 @@ import MathBooster from 'main';
 import { resolveSettings } from 'utils/plugin';
 import { EquationBlock, MarkdownPage } from "index/typings/markdown";
 import { MathIndex } from "index";
-import { resolveLinktext } from "utils/obsidian";
+import { isPdfExport, resolveLinktext } from "utils/obsidian";
 import { replaceMathTag } from "./common";
 
 
 export const createEquationNumberProcessor = (plugin: MathBooster) => async (el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+    if (isPdfExport(el)) preprocessForPdfExport(el);
+
     const sourceFile = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
     if (!(sourceFile instanceof TFile)) return;
+
     const mjxContainerElements = el.querySelectorAll<HTMLElement>('mjx-container.MathJax[display="true"]');
     for (const mjxContainerEl of mjxContainerElements) {
         ctx.addChild(
@@ -22,6 +25,18 @@ export const createEquationNumberProcessor = (plugin: MathBooster) => async (el:
         );
     }
 }
+
+
+/** 
+ * As a preprocessing for displaying equation numbers in the exported PDF, 
+ * add an attribute to each numbered equation element.
+ * 
+ * @param el The '.markdown-preview-view' element passed to the markdown post processor.
+ */
+function preprocessForPdfExport(el: HTMLElement) {
+    console.log(el.cloneNode(true));
+}
+
 
 export class EquationNumberRenderer extends MarkdownRenderChild {
     index: MathIndex;
