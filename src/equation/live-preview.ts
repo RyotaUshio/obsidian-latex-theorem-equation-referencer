@@ -85,13 +85,11 @@ export function createEquationNumberPlugin<V extends PluginValue>(plugin: MathBo
                 const line = view.state.doc.lineAt(pos).number - 1;
                 const block = page.getBlockByLineNumber(line);
                 if (!(block instanceof EquationBlock)) {
-                    console.log({ block, mjxContainerEl });
                     continue;
                 }
 
                 // only update if necessary
                 if (mjxContainerEl.getAttribute('data-equation-print-name') !== block.$printName) {
-                    console.log(block.$printName);
                     replaceMathTag(mjxContainerEl, block, this.settings);
                 }
                 if (block.$printName !== null) mjxContainerEl.setAttribute('data-equation-print-name', block.$printName);
