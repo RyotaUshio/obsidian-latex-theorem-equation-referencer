@@ -2,9 +2,9 @@ import { StateField, EditorState, Transaction, RangeSet, RangeValue, Range, Text
 import { ensureSyntaxTree, syntaxTree } from '@codemirror/language';
 
 import MathBooster from 'main';
-import { CALLOUT } from 'theorem_callout_metadata_hider';
 import { readTheoremCalloutSettings } from 'utils/parse';
 
+export const CALLOUT = /HyperMD-callout_HyperMD-quote_HyperMD-quote-([1-9][0-9]*)/;
 
 export class TheoremCalloutInfo extends RangeValue {
     constructor(public index: number | null) {

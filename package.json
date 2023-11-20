@@ -28,6 +28,7 @@
 		"@lezer/common": "^1.0.3",
 		"esbuild-plugin-inline-worker": "^0.1.1",
 		"flatqueue": "^2.0.3",
+		"monkey-around": "^2.3.0",
 		"sorted-btree": "^1.8.1"
 	}
 }

@@ -1,10 +1,10 @@
-import { ExtraButtonComponent, finishRenderMath, renderMath } from "obsidian";
+import { ExtraButtonComponent, renderMath } from "obsidian";
 import { Extension, Transaction, StateField, RangeSetBuilder, EditorState, RangeValue, RangeSet } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { syntaxTree } from '@codemirror/language';
 
 import { hasOverlap, isSourceMode, nodeText, nodeTextQuoteSymbolTrimmed, rangeSetSome } from './utils/editor';
-import { CALLOUT } from "./theorem_callout_metadata_hider";
+import { CALLOUT } from "theorem-callouts/state-field";
 
 
 const DISPLAY_MATH_BEGIN = "formatting_formatting-math_formatting-math-begin_keyword_math_math-block";

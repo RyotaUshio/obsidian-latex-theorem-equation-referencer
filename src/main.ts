@@ -6,16 +6,16 @@ import * as MathLinks from 'obsidian-mathlinks';
 
 import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS, UNION_TYPE_MATH_CONTEXT_SETTING_KEYS, UNION_TYPE_EXTRA_SETTING_KEYS } from 'settings/settings';
 import { MathSettingTab } from "settings/tab";
-import { CleverRefProvider } from 'cleverref';
-import { insertTheoremCalloutCallback, createTheoremCalloutPostProcessor, createTheoremCalloutNumberingViewPlugin } from 'theorem-callouts/theorem_callouts';
+import { CleverefProvider } from 'cleveref';
+import { createTheoremCalloutPostProcessor } from 'theorem-callouts/renderer';
+import { createTheoremCalloutNumberingViewPlugin } from 'theorem-callouts/view-plugin';
 import { ContextSettingModal, TheoremCalloutModal } from 'settings/modals';
-import { insertDisplayMath } from 'key';
-import { createEquationNumberProcessor } from 'equation/reading-view';
-import { createEquationNumberPlugin } from 'equation/live-preview';
-import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote, hideDisplayMathPreviewInQuote } from 'math_live_preview_in_callouts';
+import { createEquationNumberProcessor } from 'equations/reading-view';
+import { createEquationNumberPlugin } from 'equations/live-preview';
+import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote, hideDisplayMathPreviewInQuote } from 'render-math-in-callouts';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, isPluginOlderThan } from 'utils/obsidian';
-import { getProfile, staticifyEqNumber } from 'utils/plugin';
-import { proofPositionFieldFactory, proofDecorationFactory, ProofPosition, proofFoldFactory, insertProof, createProofProcessor } from './proof';
+import { getProfile, staticifyEqNumber, insertDisplayMath, insertTheoremCalloutCallback } from 'utils/plugin';
+import { proofPositionFieldFactory, proofDecorationFactory, ProofPosition, proofFoldFactory, insertProof, createProofProcessor } from 'proof';
 import { MathIndexManager } from './index/manager';
 import { DependencyNotificationModal, MigrationModal } from 'notice';
 import { LinkAutocomplete } from 'search/editor-suggest';
@@ -75,7 +75,7 @@ export default class MathBooster extends Plugin {
 		// wait until the layout is ready to ensure MathLinks has been loaded when calling addProvider()
 		this.app.workspace.onLayoutReady(() => {
 			this.addChild(
-				MathLinks.addProvider(this.app, (mathLinks) => new CleverRefProvider(mathLinks, this))
+				MathLinks.addProvider(this.app, (mathLinks) => new CleverefProvider(mathLinks, this))
 			);
 		});
 

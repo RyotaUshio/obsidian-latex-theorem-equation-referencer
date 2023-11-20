@@ -1,9 +1,11 @@
 import MathBooster from "main";
-import { CachedMetadata, Notice, TAbstractFile, TFile } from "obsidian";
+import { CachedMetadata, Editor, Notice, TAbstractFile, TFile } from "obsidian";
 import { DEFAULT_SETTINGS, MathContextSettings, MinimalTheoremCalloutSettings, ResolvedMathSettings, TheoremCalloutSettings } from "settings/settings";
 import { generateBlockID, getAncestors } from "./obsidian";
-import { EquationBlock, MarkdownBlock, MarkdownPage } from "index/typings/markdown";
-import { getIO } from "file_io";
+import { EquationBlock, MarkdownBlock, MarkdownPage, TheoremCalloutBlock } from "index/typings/markdown";
+import { getIO } from "file-io";
+import { splitIntoLines } from "./general";
+
 
 export function resolveSettings(settings: MinimalTheoremCalloutSettings, plugin: MathBooster, currentFile: TAbstractFile): ResolvedMathSettings;
 export function resolveSettings(settings: undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings>;
@@ -69,4 +71,85 @@ export function increaseQuoteLevel(content: string): string {
     let lines = content.split("\n");
     lines = lines.map((line) => "> " + line);
     return lines.join("\n");
+}
+
+/**
+ * Correctly insert a display math even inside callouts or quotes.
+ */
+export function insertDisplayMath(editor: Editor) {
+    const cursorPos = editor.getCursor();
+    const line = editor.getLine(cursorPos.line).trimStart();
+    const nonQuoteMatch = line.match(/[^>\s]/);
+
+    const head = nonQuoteMatch?.index ?? line.length;
+    const quoteLevel = line.slice(0, head).match(/>\s*/g)?.length ?? 0;
+    let insert = "$$\n" + "> ".repeat(quoteLevel) + "\n" + "> ".repeat(quoteLevel) + "$$";
+
+    editor.replaceRange(insert, cursorPos);
+    cursorPos.line += 1;
+    cursorPos.ch = quoteLevel * 2;
+    editor.setCursor(cursorPos);
+}
+
+export async function rewriteTheoremCalloutFromV1ToV2(plugin: MathBooster, file: TFile) {
+    const { app, indexManager } = plugin;
+
+    const page = await indexManager.reload(file);
+    await app.vault.process(file, (data) => convertTheoremCalloutFromV1ToV2(data, page));
+}
+
+
+export const convertTheoremCalloutFromV1ToV2 = (data: string, page: MarkdownPage) => {
+    const lines = data.split('\n');
+    const newLines = [...lines];
+    let lineAdded = 0;
+
+    for (const section of page.$sections) {
+        for (const block of section.$blocks) {
+            if (!TheoremCalloutBlock.isTheoremCalloutBlock(block)) continue;
+            if (!block.$v1) continue
+
+            const newHeadLines = [generateTheoremCalloutFirstLine({
+                type: block.$settings.type,
+                number: block.$settings.number,
+                title: block.$settings.title
+            })];
+            const legacySettings = block.$settings as any;
+            if (legacySettings.label) newHeadLines.push(`> %% label: ${legacySettings.label} %%`);
+            if (legacySettings.setAsNoteMathLink) newHeadLines.push(`> %% main %%`);
+
+            newLines.splice(block.$position.start + lineAdded, 1, ...newHeadLines);
+
+            lineAdded += newHeadLines.length - 1;
+        }
+    }
+
+    return newLines.join('\n');
+} 
+
+export function generateTheoremCalloutFirstLine(config: TheoremCalloutSettings): string {
+    const metadata = config.number === 'auto' ? '' : config.number === '' ? '|*' : `|${config.number}`;
+    let firstLine = `> [!${config.type}${metadata}]${config.fold ?? ''}${config.title ? ' ' + config.title : ''}`
+    if (config.label) firstLine += `\n> %% label: ${config.label} %%`;
+    return firstLine;
+}
+
+export function insertTheoremCalloutCallback(editor: Editor, config: TheoremCalloutSettings): void {
+    const selection = editor.getSelection();
+    const cursorPos = editor.getCursor();
+
+    const firstLine = generateTheoremCalloutFirstLine(config);
+
+    if (selection) {
+        const nLines = splitIntoLines(selection).length;
+        editor.replaceSelection(firstLine + '\n' + increaseQuoteLevel(selection));
+        cursorPos.line += nLines;
+    } else {
+        editor.replaceRange(firstLine + '\n> ', cursorPos)
+        cursorPos.line += 1;
+    }
+
+    if (config.label) cursorPos.line += 1;
+    cursorPos.ch = 2;
+    editor.setCursor(cursorPos);
 }

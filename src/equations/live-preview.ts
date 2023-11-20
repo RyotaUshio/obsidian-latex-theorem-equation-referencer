@@ -72,7 +72,7 @@ export function createEquationNumberPlugin<V extends PluginValue>(plugin: MathBo
                 this.settings = resolveSettings(undefined, plugin, this.file);
                 this.updatePage(this.file).then((updatedPage) => this.updateEquationNumber(update.view, updatedPage))
             } else if (update.geometryChanged) {
-                if (this.page) this.updateEquationNumber(update.view, this.page);                    
+                if (this.page) this.updateEquationNumber(update.view, this.page);
                 else this.updatePage(this.file).then((updatedPage) => this.updateEquationNumber(update.view, updatedPage));
             }
         }
@@ -81,19 +81,21 @@ export function createEquationNumberPlugin<V extends PluginValue>(plugin: MathBo
             const mjxContainerElements = view.contentDOM.querySelectorAll<HTMLElement>(':scope > .cm-embed-block.math > mjx-container.MathJax[display="true"]');
 
             for (const mjxContainerEl of mjxContainerElements) {
-                const pos = view.posAtDOM(mjxContainerEl);
-                const line = view.state.doc.lineAt(pos).number - 1;
-                const block = page.getBlockByLineNumber(line);
-                if (!(block instanceof EquationBlock)) {
-                    continue;
-                }
+                try {
+                    const pos = view.posAtDOM(mjxContainerEl);
+                    const line = view.state.doc.lineAt(pos).number - 1; // sometimes throws an error for reasons that I don't understand
+                    const block = page.getBlockByLineNumber(line);
+                    if (!(block instanceof EquationBlock)) continue;
 
-                // only update if necessary
-                if (mjxContainerEl.getAttribute('data-equation-print-name') !== block.$printName) {
-                    replaceMathTag(mjxContainerEl, block, this.settings);
+                    // only update if necessary
+                    if (mjxContainerEl.getAttribute('data-equation-print-name') !== block.$printName) {
+                        replaceMathTag(mjxContainerEl, block, this.settings);
+                    }
+                    if (block.$printName !== null) mjxContainerEl.setAttribute('data-equation-print-name', block.$printName);
+                    else mjxContainerEl.removeAttribute('data-equation-print-name');
+                } catch (err) {
+                    // never mind, try again later
                 }
-                if (block.$printName !== null) mjxContainerEl.setAttribute('data-equation-print-name', block.$printName);
-                else mjxContainerEl.removeAttribute('data-equation-print-name');
             }
         }
 

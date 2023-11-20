@@ -1,6 +1,6 @@
 import { EditorState, ChangeSet, RangeValue, RangeSet } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
-import { MathInfoSet } from 'math_live_preview_in_callouts';
+import { MathInfoSet } from 'render-math-in-callouts';
 import { EditorPosition, Loc, MarkdownView, editorLivePreviewField } from "obsidian";
 
 export function locToEditorPosition(loc: Loc): EditorPosition {

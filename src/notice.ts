@@ -2,7 +2,7 @@ import { Modal, Setting, Component, MarkdownRenderer, App, Notice } from "obsidi
 
 import MathBooster from "main";
 import { isPluginOlderThan } from "utils/obsidian";
-import { rewriteTheoremCalloutFromV1ToV2 } from "theorem-callouts/theorem_callouts";
+import { rewriteTheoremCalloutFromV1ToV2 } from "utils/plugin";
 
 
 export class DependencyNotificationModal extends Modal {

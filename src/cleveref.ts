@@ -6,7 +6,7 @@ import { MarkdownPage, MathBoosterBlock } from './index/typings/markdown';
 import MathBooster from './main';
 
 
-export class CleverRefProvider extends MathLinks.Provider {
+export class CleverefProvider extends MathLinks.Provider {
     app: App;
     index: MathIndex;
 

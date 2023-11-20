@@ -1,48 +1,20 @@
-import { App, Editor, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Notice, TFile, editorInfoField } from "obsidian";
+import { App, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Notice, TFile, editorInfoField } from "obsidian";
 import { ViewUpdate, EditorView, PluginValue, ViewPlugin } from '@codemirror/view';
 
 import MathBooster from 'main';
 import { TheoremCalloutModal } from 'settings/modals';
 import { TheoremCalloutSettings, TheoremCalloutPrivateFields } from 'settings/settings';
-import { increaseQuoteLevel, resolveSettings } from 'utils/plugin';
+import { generateTheoremCalloutFirstLine, resolveSettings } from 'utils/plugin';
 import { isEditingView } from 'utils/editor';
-import { capitalize, splitIntoLines } from 'utils/general';
+import { capitalize } from 'utils/general';
 import { formatTitleWithoutSubtitle } from "utils/format";
 import { renderTextWithMath } from "utils/render";
 import { MarkdownPage, TheoremCalloutBlock } from "index/typings/markdown";
 import { MathIndex } from 'index/index';
 import { parseTheoremCalloutMetadata, readTheoremCalloutSettings } from 'utils/parse';
 import { THEOREM_LIKE_ENV_ID_PREFIX_MAP, THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENV_PREFIXES, THEOREM_LIKE_ENV_PREFIX_ID_MAP, TheoremLikeEnvID, TheoremLikeEnvPrefix } from 'env';
-import { getIO } from 'file_io';
+import { getIO } from 'file-io';
 import { MutationObservingChild, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, isPdfExport, resolveLinktext } from 'utils/obsidian';
-
-
-function generateTheoremCalloutFirstLine(config: TheoremCalloutSettings): string {
-    const metadata = config.number === 'auto' ? '' : config.number === '' ? '|*' : `|${config.number}`;
-    let firstLine = `> [!${config.type}${metadata}]${config.fold ?? ''}${config.title ? ' ' + config.title : ''}`
-    if (config.label) firstLine += `\n> %% label: ${config.label} %%`;
-    return firstLine;
-}
-
-export function insertTheoremCalloutCallback(editor: Editor, config: TheoremCalloutSettings): void {
-    const selection = editor.getSelection();
-    const cursorPos = editor.getCursor();
-
-    const firstLine = generateTheoremCalloutFirstLine(config);
-
-    if (selection) {
-        const nLines = splitIntoLines(selection).length;
-        editor.replaceSelection(firstLine + '\n' + increaseQuoteLevel(selection));
-        cursorPos.line += nLines;
-    } else {
-        editor.replaceRange(firstLine + '\n> ', cursorPos)
-        cursorPos.line += 1;
-    }
-
-    if (config.label) cursorPos.line += 1;
-    cursorPos.ch = 2;
-    editor.setCursor(cursorPos);
-}
 
 
 export const createTheoremCalloutPostProcessor = (plugin: MathBooster) => async (element: HTMLElement, context: MarkdownPostProcessorContext) => {
@@ -480,31 +452,6 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
 }
 
 
-export const createTheoremCalloutNumberingViewPlugin = (plugin: MathBooster) => ViewPlugin.fromClass(
-    class implements PluginValue {
-        index: MathIndex = plugin.indexManager.index;
-
-        constructor(public view: EditorView) {
-            // Wait until the initial rendering is done so that we can find the callout elements using qeurySelectorAll(). 
-            setTimeout(() => this.impl(view));
-        }
-        update(update: ViewUpdate) {
-            this.impl(update.view);
-        }
-        impl(view: EditorView) {
-            const infos = view.state.field(plugin.theoremCalloutsField);
-
-            for (const calloutEl of view.contentDOM.querySelectorAll<HTMLElement>('.callout.theorem-callout')) {
-                const pos = view.posAtDOM(calloutEl);
-                const index = infos.iter(pos).value?.index;
-                if (typeof index === 'number') calloutEl.setAttribute('data-theorem-index', String(index));
-                else calloutEl.removeAttribute('data-theorem-index');
-            }
-        }
-    }
-);
-
-
 /** Read TheoremCalloutSettings from the element's attribute. */
 function readSettingsFromEl(calloutEl: HTMLElement): TheoremCalloutSettings | null {
     let type = calloutEl.getAttribute('data-callout')?.trim().toLowerCase();
@@ -533,40 +480,3 @@ function readSettingsFromEl(calloutEl: HTMLElement): TheoremCalloutSettings | nu
 
     return { type, number, title }
 }
-
-
-export async function rewriteTheoremCalloutFromV1ToV2(plugin: MathBooster, file: TFile) {
-    const { app, indexManager } = plugin;
-
-    const page = await indexManager.reload(file);
-    await app.vault.process(file, (data) => convertTheoremCalloutFromV1ToV2(data, page));
-}
-
-
-export const convertTheoremCalloutFromV1ToV2 = (data: string, page: MarkdownPage) => {
-    const lines = data.split('\n');
-    const newLines = [...lines];
-    let lineAdded = 0;
-
-    for (const section of page.$sections) {
-        for (const block of section.$blocks) {
-            if (!TheoremCalloutBlock.isTheoremCalloutBlock(block)) continue;
-            if (!block.$v1) continue
-
-            const newHeadLines = [generateTheoremCalloutFirstLine({
-                type: block.$settings.type,
-                number: block.$settings.number,
-                title: block.$settings.title
-            })];
-            const legacySettings = block.$settings as any;
-            if (legacySettings.label) newHeadLines.push(`> %% label: ${legacySettings.label} %%`);
-            if (legacySettings.setAsNoteMathLink) newHeadLines.push(`> %% main %%`);
-
-            newLines.splice(block.$position.start + lineAdded, 1, ...newHeadLines);
-
-            lineAdded += newHeadLines.length - 1;
-        }
-    }
-
-    return newLines.join('\n');
-} 
