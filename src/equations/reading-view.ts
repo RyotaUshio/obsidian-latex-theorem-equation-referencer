@@ -75,7 +75,6 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
         this.index = this.plugin.indexManager.index;
 
         this.registerEvent(this.plugin.indexManager.on("index-initialized", () => {
-            console.log('init');
             setTimeout(() => this.update());
         }));
     
