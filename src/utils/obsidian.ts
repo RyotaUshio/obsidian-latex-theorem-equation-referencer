@@ -157,26 +157,8 @@ export async function openFileAndSelectPosition(app: App, file: TFile, position:
         editor.setSelection(from, to);
         editor.scrollIntoView({ from, to }, true);
 
-        // Reading view
-        setTimeout(() => {
-            // previewMode.applyScroll(position.start.line) doesn't center-align the target block, 
-            // so we have to do it manually.
-            const previewMode = (leaf.view as MarkdownView).previewMode;
-            const renderer = (previewMode as any).renderer as MarkdownPostProcessorContext & { sizerEl: HTMLElement, highlightEl: (el: HTMLElement) => void };
-
-            // find the div corresponding the target block: fails if viewport is large
-            previewMode.applyScroll(position.start.line);
-            // wait for the div to be rendered by scrolling
-            setTimeout(() => {
-                const div = findBlockFromReadingViewDom(renderer.sizerEl,
-                    (div) => renderer.getSectionInfo(div)?.lineStart === position.start.line
-                );
-                if (!div) return;
-
-                renderer.highlightEl(div);
-                div.scrollIntoView({ block: 'center' });
-            });
-        }, 300);
+        // Reading view: thank you NothingIsLost (https://discord.com/channels/686053708261228577/840286264964022302/952218718711189554)
+        leaf.view.setEphemeralState({ line: position.start.line });
     }
 }
 
