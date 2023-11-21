@@ -15,6 +15,9 @@ export function replaceMathTag(displayMathEl: HTMLElement, equation: EquationBlo
         if (equation.$printName !== null) {
             displayMathEl.setAttribute('width', 'full');
             displayMathEl.style.cssText = mjxContainerEl.style.cssText;
+        } else {
+            displayMathEl.removeAttribute('width');
+            displayMathEl.style.cssText = '';
         }
         displayMathEl.replaceChildren(...mjxContainerEl.childNodes);        
     }

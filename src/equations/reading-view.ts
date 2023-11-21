@@ -119,7 +119,6 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
     }
 
     update() {
-        console.log('update');
         // for PDF export
         const id = this.containerEl.getAttribute('data-equation-block-id');
 
