@@ -190,10 +190,6 @@ export default class MathBooster extends Plugin {
 		);
 	}
 
-	onunload() {
-		MathLinks.deleteAPIAccount(this);
-	}
-
 	async loadSettings() {
 		this.settings = { [VAULT_ROOT]: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)) };
 		this.extraSettings = JSON.parse(JSON.stringify(DEFAULT_EXTRA_SETTINGS));
