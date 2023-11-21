@@ -84,6 +84,34 @@ export class DependencyNotificationModal extends Modal {
     }
 
     async showMigrationGuild() {
+        this.contentEl.createEl('h3', { text: "Migration from version 1" });
+
+        MarkdownRenderer.render(
+            this.app,
+`Math Booster introduces a [new format for theorem callouts](https://ryotaushio.github.io/obsidian-math-booster/theorem-callouts/theorem-callouts.html). 
+
+To fully enjoy Math Booster v2, click the button below to convert the old theorem format to the new one. Alternatively, you can do it later by running the command "Migrate from version 1".`,
+            this.contentEl.createDiv(),
+            '',
+            this.component
+        );
+
+        new Setting(this.contentEl)
+            .addButton((button) => {
+                button.setButtonText('Convert')
+                    .setCta()
+                    .onClick(() => {
+                        this.close();
+                        new MigrationModal(this.plugin).open();
+                    })
+            })
+            .addButton((button) => button.setButtonText('Not now')
+                .onClick(() => this.close()))
+            .then(setting => setting.settingEl.style.border = 'none');
+
+
+
+
         const descEl = this.contentEl.createDiv({ cls: 'math-booster-version-2-release-note-modal' });
 
         await MarkdownRenderer.render(this.app,
@@ -106,11 +134,11 @@ export class DependencyNotificationModal extends Modal {
 
 |                    | Theorem number | Equation number |
 | ------------------ | -------------- | --------------- |
-| Reading view       |       ✅       |         ✅        |
-| Live preview       |       ✅        |        ✅        |
-| Embeds             |                |                 |
-| Hover page preview |                |                 |
-| PDF export         |       ✅        |                 |
+| Reading view       |       ✅       |        ✅       |
+| Live preview       |       ✅       |        ✅       |
+| Embeds             |       ✅       |                 |
+| Hover page preview |       ✅       |                 |
+| PDF export         |       ✅       |                 |
  
 ##### **🎉 Version 2:**
 
@@ -127,24 +155,10 @@ export class DependencyNotificationModal extends Modal {
 - ["Show backlinks" right-click menu](https://github.com/RyotaUshio/obsidian-math-booster/blob/1.0.4/docs/backlinks.md)
     - Use [Strange New Worlds](https://github.com/TfTHacker/obsidian42-strange-new-worlds) instead.
 - [Projects](https://github.com/RyotaUshio/obsidian-math-booster/blob/1.0.4/docs/projects.md)
-    - might be supported later with some improveme
+    - might be supported later with some improvements
 
-### Migration from version 1
-
-To fully enjoy Math Booster v2, click the button below to convert the old theorem format to the new one. Alternatively, you can do it later by running the command **Migrate from version 1**.
 `, descEl, '', this.component);
         descEl.querySelectorAll('.copy-code-button').forEach((el) => el.remove());
-
-        new Setting(this.contentEl)
-            .addButton((button) => {
-                button.setButtonText('Convert')
-                    .setCta()
-                    .onClick(() => {
-                        this.close();
-                        new MigrationModal(this.plugin).open();
-                    })
-            })
-            .addButton((button) => button.setButtonText('Not now').onClick(() => this.close()))
     }
 
     onClose() {
