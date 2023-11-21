@@ -90,7 +90,8 @@ export class TheoremCalloutModal extends MathSettingModal<MathSettings> {
         this.resolveDefaultSettings(this.file);
 
         if (this.headerText) {
-            contentEl.createEl("h4", { text: this.headerText });
+            // contentEl.createEl("h4", { text: this.headerText });
+            this.titleEl.setText(this.headerText);
         }
 
         const helper = new TheoremCalloutSettingsHelper(contentEl, this.settings, this.defaultSettings, this.plugin, this.file);
@@ -133,7 +134,9 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
         const { contentEl } = this;
         contentEl.empty();
 
-        contentEl.createEl('h3', { text: 'Local settings for ' + this.file.path });
+        // contentEl.createEl('h4', { text: 'Local settings for ' + this.file.path });
+        this.titleEl.setText('Local settings for ' + this.file.path);
+
         contentEl.createDiv({
             text: "If you want the change to apply to the entire vault, go to the plugin settings.",
             cls: ["setting-item-description", "math-booster-setting-item-description"],

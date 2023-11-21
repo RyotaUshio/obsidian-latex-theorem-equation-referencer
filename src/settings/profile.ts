@@ -97,7 +97,8 @@ export class ManageProfileModal extends Modal {
         let { contentEl } = this;
 
         contentEl.empty();
-        contentEl.createEl("h3", { text: "Manage profiles" });
+        // contentEl.createEl("h4", { text: "Manage profiles" });
+        this.titleEl.setText("Manage profiles");
 
         new Setting(contentEl)
             .setName("Add profile")
@@ -165,7 +166,8 @@ class EditProfileModal extends Modal {
     onOpen() {
         const { contentEl } = this;
         contentEl.empty();
-        contentEl.createEl("h3", { text: `Edit profile` });
+        // contentEl.createEl("h4", { text: `Edit profile` });
+        this.titleEl.setText(`Edit profile`);
 
         new Setting(contentEl)
             .setName("Name")
@@ -191,7 +193,9 @@ class EditProfileModal extends Modal {
                     });
             });
 
-        contentEl.createEl("h5", { text: "Theorem-like environments" });
+        // contentEl.createEl("h5", { text: "Theorem-like environments" });
+        new Setting(contentEl).setName("Theorem-like environments").setHeading();
+
         for (const envID of THEOREM_LIKE_ENV_IDs) {
             this.settingRefs[envID] = new Setting(contentEl).setName(envID).addText((text) => {
                 text.setValue(this.profile.body.theorem[envID] ?? "")
@@ -201,7 +205,8 @@ class EditProfileModal extends Modal {
             });
         }
 
-        contentEl.createEl("h5", { text: "Proofs" });
+        // contentEl.createEl("h5", { text: "Proofs" });
+        new Setting(contentEl).setName("Proofs").setHeading();
 
         const prettyNames = [
             "Beginning of proof",
@@ -220,13 +225,17 @@ class EditProfileModal extends Modal {
             });
         }
 
-        const linkedProofHeading = contentEl.createEl("h6", {text: "Linked proofs"});
-        const linkedProofDesc = contentEl.createDiv({ 
-            text: `For example, you can render \`${DEFAULT_SETTINGS.beginProof}\`@[[link to Theorem 1]] as "${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.linkedBeginPrefix}Theorem 1${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.linkedBeginSuffix}".`,
-            cls: ["setting-item-description", "math-booster-setting-item-description"],
-        });
+        // const linkedProofHeading = contentEl.createEl("h6", {text: "Linked proofs"});
+        const linkedProofHeading = new Setting(contentEl)
+        .setName("Linked proofs")
+        .setDesc(`For example, you can render \`${DEFAULT_SETTINGS.beginProof}\`@[[link to Theorem 1]] as "${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.linkedBeginPrefix}Theorem 1${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.linkedBeginSuffix}".`)
+        .setHeading().settingEl;
+        // const linkedProofDesc = contentEl.createDiv({ 
+        //     text: `For example, you can render \`${DEFAULT_SETTINGS.beginProof}\`@[[link to Theorem 1]] as "${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.linkedBeginPrefix}Theorem 1${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.linkedBeginSuffix}".`,
+        //     cls: ["setting-item-description", "math-booster-setting-item-description"],
+        // });
         contentEl.insertBefore(linkedProofHeading, this.settingRefs.linkedBeginPrefix.settingEl);
-        contentEl.insertBefore(linkedProofDesc, this.settingRefs.linkedBeginPrefix.settingEl);
+        // contentEl.insertBefore(linkedProofDesc, this.settingRefs.linkedBeginPrefix.settingEl);
     }
 
     onClose() {
@@ -257,7 +266,9 @@ class ConfirmProfileDeletionModal extends Modal {
         let { contentEl } = this;
         contentEl.empty();
 
-        contentEl.createEl("h3", { text: "Delete profile" });
+        // contentEl.createEl("h3", { text: "Delete profile" });
+        this.titleEl.setText("Delete profile");
+
         contentEl.createDiv({ text: `Are you sure you want to delete the profile "${this.id}"?` });
         const buttonContainerEl = contentEl.createDiv({ cls: "math-booster-button-container" });
         new ButtonComponent(buttonContainerEl)
@@ -298,7 +309,9 @@ class AddProfileModal extends Modal {
 
         let id: string;
 
-        contentEl.createEl("h3", { text: "Add profile" });
+        // contentEl.createEl("h3", { text: "Add profile" });
+        this.titleEl.setText("Add profile");
+
         const addProfileEl = contentEl.createDiv({ cls: "math-booster-add-profile" });
 
         new TextComponent(addProfileEl)
@@ -348,7 +361,9 @@ class UpdateProfileModal extends Modal {
         let { contentEl } = this;
         contentEl.empty();
 
-        contentEl.createEl("h3", { text: "Update profiles" });
+        // contentEl.createEl("h3", { text: "Update profiles" });
+        this.titleEl.setText("Update profiles");
+
         contentEl.createDiv({ text: `The following ${this.affected.length > 1 ? this.affected.length : ""} local setting${this.affected.length > 1 ? "s are" : " is"} affected by the deletion of profile "${this.deletedID}." Select a new profile to be applied for them.` });
 
         const profiles = this.parent.parent.plugin.extraSettings.profiles;

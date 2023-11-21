@@ -28,7 +28,7 @@ export class MathSettingTab extends PluginSettingTab {
         const { containerEl } = this;
         containerEl.empty();
 
-        containerEl.createEl("h3", { text: "Global" });
+        containerEl.createEl("h4", { text: "Global" });
 
         const root = this.app.vault.getRoot();
         const globalHelper = new MathContextSettingsHelper(
@@ -50,9 +50,15 @@ export class MathSettingTab extends PluginSettingTab {
         );
         extraHelper.makeSettingPane();
 
+        const heading = extraHelper.addHeading('Equations - general');
+        const numberingHeading = this.containerEl.querySelector<HTMLElement>('.equation-heading')!;
+        this.containerEl.insertBefore(
+            heading.settingEl,
+            numberingHeading
+        );
         this.containerEl.insertAfter(
             extraHelper.settingRefs.enableMathPreviewInCalloutAndQuote.settingEl,
-            this.containerEl.querySelector('.equation-heading')!
+            heading.settingEl
         );
         this.containerEl.insertAfter(
             extraHelper.settingRefs.enableProof.settingEl,
@@ -105,7 +111,7 @@ export class MathSettingTab extends PluginSettingTab {
 
         this.addRestoreDefaultsButton();
 
-        containerEl.createEl("h3", { text: "Local" });
+        containerEl.createEl("h4", { text: "Local" });
         new Setting(containerEl).setName("Local settings")
             .setDesc("You can set up local (i.e. file-specific or folder-specific) settings, which have more precedence than the global settings. Local settings can be configured in various ways; here in the plugin settings, right-clicking in the file explorer, the \"Open local settings for the current file\" command, and the \"Open local settings for the current file\" button in the theorem callout settings pop-ups.")
             .addButton((btn) => {

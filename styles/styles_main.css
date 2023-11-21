@@ -1,3 +1,11 @@
+.editor-suggest-setting-indented-heading {
+    margin-left: var(--size-4-1);
+}
+.editor-suggest-setting-indented-heading + .setting-item,
+.editor-suggest-setting-indented-heading + .setting-item + .setting-item {
+    margin-left: var(--size-4-3);
+}
+
 .math-booster-modal-top {
     padding: var(--size-4-3);
 }
