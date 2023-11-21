@@ -46,7 +46,7 @@ function parseAtSignLink(codeEl: HTMLElement) {
 
 /** For reading view */
 
-export class ProofRenderChild extends MarkdownRenderChild {
+export class ProofRenderer extends MarkdownRenderChild {
     atSignParseResult: { atSign: ChildNode, links: HTMLElement[] } | undefined;
 
     constructor(public app: App, public plugin: MathBooster, containerEl: HTMLElement, public which: "begin" | "end", public file: TFile, public display?: string) {
@@ -56,15 +56,16 @@ export class ProofRenderChild extends MarkdownRenderChild {
 
     onload(): void {
         this.update();
-        this.plugin.registerEvent(
-            this.app.metadataCache.on("math-booster:local-settings-updated", (file) => {
+        this.registerEvent(
+            this.plugin.indexManager.on("local-settings-updated", (file) => {
+            // this.app.metadataCache.on("math-booster:local-settings-updated", (file) => {
                 if (file == this.file) {
                     this.update();
                 }
             })
         );
-        this.plugin.registerEvent(
-            this.app.metadataCache.on("math-booster:global-settings-updated", () => {
+        this.registerEvent(
+            this.plugin.indexManager.on("global-settings-updated", () => {
                 this.update();
             })
         );
@@ -132,13 +133,13 @@ export const createProofProcessor = (plugin: MathBooster) => (element: HTMLEleme
             const rest = text.slice(settings.beginProof.length);
             let displayMatch;
             if (!rest) {
-                context.addChild(new ProofRenderChild(app, plugin, code, "begin", file));
+                context.addChild(new ProofRenderer(app, plugin, code, "begin", file));
             } else if (displayMatch = rest.match(/^\[(.*)\]$/)) {
                 const display = displayMatch[1];
-                context.addChild(new ProofRenderChild(app, plugin, code, "begin", file, display));
+                context.addChild(new ProofRenderer(app, plugin, code, "begin", file, display));
             }
         } else if (code.textContent == settings.endProof) {
-            context.addChild(new ProofRenderChild(app, plugin, code, "end", file));
+            context.addChild(new ProofRenderer(app, plugin, code, "end", file));
         }
     }
 };

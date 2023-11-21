@@ -21,7 +21,7 @@ export const createEquationNumberProcessor = (plugin: MathBooster) => async (el:
     const mjxContainerElements = el.querySelectorAll<HTMLElement>('mjx-container.MathJax[display="true"]');
     for (const mjxContainerEl of mjxContainerElements) {
         ctx.addChild(
-            new EquationNumberRenderer(mjxContainerEl, plugin.app, plugin, sourceFile, ctx)
+            new EquationNumberRenderer(mjxContainerEl, plugin, sourceFile, ctx)
         );
     }
 }
@@ -65,15 +65,24 @@ function preprocessForPdfExport(plugin: MathBooster, el: HTMLElement, ctx: Markd
 
 
 export class EquationNumberRenderer extends MarkdownRenderChild {
+    app: App
     index: MathIndex;
 
-    constructor(containerEl: HTMLElement, public app: App, public plugin: MathBooster, public file: TFile, public context: MarkdownPostProcessorContext) {
+    constructor(containerEl: HTMLElement, public plugin: MathBooster, public file: TFile, public context: MarkdownPostProcessorContext) {
         // containerEl, currentEL are mjx-container.MathJax elements
         super(containerEl);
+        this.app = plugin.app;
         this.index = this.plugin.indexManager.index;
 
-        this.registerEvent(this.app.metadataCache.on("math-booster:index-updated", (file) => {
-            if (file.path === this.file.path) this.update();
+        this.registerEvent(this.plugin.indexManager.on("index-initialized", () => {
+            console.log('init');
+            setTimeout(() => this.update());
+        }));
+    
+        this.registerEvent(this.plugin.indexManager.on("index-updated", (file) => {
+            setTimeout(() => {
+                if (file.path === this.file.path) this.update();
+            });
         }));
     }
 
@@ -110,6 +119,7 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
     }
 
     update() {
+        console.log('update');
         // for PDF export
         const id = this.containerEl.getAttribute('data-equation-block-id');
 

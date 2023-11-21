@@ -18,12 +18,12 @@ export function createEquationNumberPlugin(plugin: MathBooster) {
 
     const forceUpdateEffect = StateEffect.define<null>();
 
-    plugin.registerEvent(app.metadataCache.on('math-booster:index-updated', (file) => {
+    plugin.registerEvent(plugin.indexManager.on('index-updated', (file) => {
         app.workspace.iterateAllLeaves((leaf) => {
             if (
                 leaf.view instanceof MarkdownView
+                && leaf.view.file?.path === file.path
                 && leaf.view.getMode() === 'source'
-                // && backlinks.has(leaf.view.file.path) // TODO: auto-register file link from block link so that we can get backlinks properly
             ) {
                 leaf.view.editor.cm?.dispatch({ effects: forceUpdateEffect.of(null) });
             }

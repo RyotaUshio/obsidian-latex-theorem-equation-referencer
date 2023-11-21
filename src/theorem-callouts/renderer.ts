@@ -103,7 +103,7 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
         }))
 
         // update when the math index is updated
-        this.registerEvent(this.app.metadataCache.on('math-booster:index-updated', (file) => {
+        this.registerEvent(this.plugin.indexManager.on('index-updated', (file) => {
             if (file.path === this.file.path) {
                 this.update();
             }
@@ -113,7 +113,7 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
         this.plugin.addChild(this);
         this.register(() => this.removeEditButton());
         // remove the edit button when the relevent setting is disabled
-        this.registerEvent(this.app.metadataCache.on('math-booster:global-settings-updated', () => {
+        this.registerEvent(this.plugin.indexManager.on('global-settings-updated', () => {
             if (this.plugin.extraSettings.showTheoremCalloutEditButton) {
                 this.addEditButton();
             } else {

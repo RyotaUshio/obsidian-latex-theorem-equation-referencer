@@ -1,6 +1,7 @@
 import { EquationBlock } from "index/typings/markdown";
 import { renderMath } from "obsidian";
 import { MathContextSettings } from "settings/settings";
+import { MutationObservingChild } from "utils/obsidian";
 import { parseLatexComment } from "utils/parse";
 
 
@@ -11,7 +12,11 @@ export function replaceMathTag(displayMathEl: HTMLElement, equation: EquationBlo
     const taggedText = getMathTextWithTag(equation, settings.lineByLine);
     if (taggedText) {
         const mjxContainerEl = renderMath(taggedText, true);
-        displayMathEl.replaceChildren(...mjxContainerEl.childNodes);
+        if (equation.$printName !== null) {
+            displayMathEl.setAttribute('width', 'full');
+            displayMathEl.style.cssText = mjxContainerEl.style.cssText;
+        }
+        displayMathEl.replaceChildren(...mjxContainerEl.childNodes);        
     }
 }
 

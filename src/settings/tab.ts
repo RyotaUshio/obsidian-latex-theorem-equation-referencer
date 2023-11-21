@@ -135,6 +135,7 @@ export class MathSettingTab extends PluginSettingTab {
     async hide() {
         super.hide();
         await this.plugin.saveSettings();
-        this.app.metadataCache.trigger("math-booster:global-settings-updated");
+        // this.app.metadataCache.trigger("math-booster:global-settings-updated");
+        this.plugin.indexManager.trigger('global-settings-updated');
     }
 }

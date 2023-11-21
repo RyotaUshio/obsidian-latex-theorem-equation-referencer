@@ -1,3 +1,7 @@
+.math-booster-version-2-release-note-modal {
+    --table-border-width: 2px;
+}
+
 .editor-suggest-setting-indented-heading {
     margin-left: var(--size-4-1);
 }

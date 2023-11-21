@@ -162,7 +162,8 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
         super.onClose();
 
         this.plugin.saveSettings();
-        this.app.metadataCache.trigger("math-booster:local-settings-updated", this.file);
+        // this.app.metadataCache.trigger("math-booster:local-settings-updated", this.file);
+        this.plugin.indexManager.trigger('local-settings-updated', this.file);
 
         if (this.parent) {
             this.parent.open();

@@ -32,7 +32,7 @@ export default class MathBooster extends Plugin {
 	extraSettings: ExtraSettings;
 	excludedFiles: string[];
 	dependencies: Record<string, string> = {
-		"mathlinks": "0.5.1",
+		"mathlinks": "0.5.2",
 		// "dataview": "0.5.56",
 	};
 	indexManager: MathIndexManager;
@@ -81,7 +81,8 @@ export default class MathBooster extends Plugin {
 
 
 		this.registerEvent(
-			this.app.metadataCache.on("math-booster:local-settings-updated", async (file) => {
+			// this.app.metadataCache.on("math-booster:local-settings-updated", async (file) => {
+			this.indexManager.on("local-settings-updated", async (file) => {
 				// Add profile's tags as CSS classes
 				this.app.workspace.iterateRootLeaves((leaf) => {
 					if (leaf.view instanceof MarkdownView) {
@@ -92,7 +93,8 @@ export default class MathBooster extends Plugin {
 		);
 
 		this.registerEvent(
-			this.app.metadataCache.on("math-booster:global-settings-updated", async () => {
+			this.indexManager.on("global-settings-updated", async () => {
+				// this.app.metadataCache.on("math-booster:global-settings-updated", async () => {
 				// Add profile's tags as CSS classes
 				this.app.workspace.iterateRootLeaves((leaf) => {
 					if (leaf.view instanceof MarkdownView) {
@@ -122,34 +124,6 @@ export default class MathBooster extends Plugin {
 		);
 
 
-		/** Update settings when file renamed/created */
-
-		this.registerEvent(
-			this.app.vault.on("rename", (file, oldPath) => {
-				this.settings[file.path] = this.settings[oldPath];
-				delete this.settings[oldPath];
-
-				const index = this.excludedFiles.indexOf(oldPath);
-				if (index >= 0) {
-					this.excludedFiles.splice(index, 1);
-					this.excludedFiles.push(file.path);
-				}
-			})
-		)
-
-		this.registerEvent(
-			this.app.vault.on("delete", (file) => {
-				if (file.path in this.settings) {
-					delete this.settings[file.path];
-				}
-				const index = this.excludedFiles.indexOf(file.path);
-				if (index >= 0) {
-					this.excludedFiles.splice(index, 1);
-				}
-			})
-		)
-
-
 		/** Commands */
 		this.registerCommands();
 
@@ -171,6 +145,14 @@ export default class MathBooster extends Plugin {
 
 		// equation numbers
 		this.registerMarkdownPostProcessor(createEquationNumberProcessor(this));
+		// quick fix for https://github.com/RyotaUshio/obsidian-math-booster/issues/200
+		this.app.workspace.onLayoutReady(() => {
+			setTimeout(() => {
+				for (const leaf of this.app.workspace.getLeavesOfType('markdown')) {
+					(leaf.view as MarkdownView).previewMode.rerender(true);
+				}
+			}, 500)
+		})
 
 		// proof environments
 		this.registerMarkdownPostProcessor(createProofProcessor(this));
@@ -178,7 +160,7 @@ export default class MathBooster extends Plugin {
 		// patch hover page preview to display theorem numbers in it
 		this.lastHoverLinktext = null;
 		this.app.workspace.onLayoutReady(() => patchPagePreview(this));
-		
+
 		/** File menu */
 
 		this.registerEvent(
@@ -414,7 +396,7 @@ export default class MathBooster extends Plugin {
 							insertTheoremCallout(editor, config);
 						},
 						"Insert", "Insert theorem callout",
-					).open();	
+					).open();
 				}
 
 				return true;

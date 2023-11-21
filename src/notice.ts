@@ -84,41 +84,54 @@ export class DependencyNotificationModal extends Modal {
     }
 
     async showMigrationGuild() {
-        const descEl = this.contentEl.createDiv();
+        const descEl = this.contentEl.createDiv({ cls: 'math-booster-version-2-release-note-modal' });
 
         await MarkdownRenderer.render(this.app,
-            `# Migration from version 1
+            `### What's new in version 2
 
-Among many improvements that Math Booster v2 introduces is a new format for theorem callouts, which is
+- [New format for theorem callouts](https://ryotaushio.github.io/obsidian-math-booster/theorem-callouts/theorem-callouts.html):
+    - much cleaner,
+    - more intuitive,
+    - more keyboard-friendly,
+    - and less plugin-dependent than the previous format
+- New indexing mechanism:
+    - no longer blocks UI
+    - no longer hard-codes theorem indices in notes directly
+- [Editor auto-completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/editor-auto-completion.html) improvements: filter theorems & equations (entire vault/recent notes/active note/dataview queries)
+- [Search modal](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/search-modal.html): more control & flexibility than editor auto-completion
+- Adding metadata to theorems and equations with comments
+    - e.g. display name of equations
+- Theorem/equation numbers now can be displayed *almost everywhere*:
+##### Version 1:
 
-- **More keyboard-friendly** (though you can insert one using a modal as before)
-- **Less plugin-dependent**
+|                    | Theorem number | Equation number |
+| ------------------ | -------------- | --------------- |
+| Reading view       |       ✅       |         ✅        |
+| Live preview       |       ✅        |        ✅        |
+| Embeds             |                |                 |
+| Hover page preview |                |                 |
+| PDF export         |       ✅        |                 |
+ 
+##### **🎉 Version 2:**
 
-than the old format used in v1.
+|                    | Theorem number | Equation number |
+| ------------------ | -------------- | --------------- |
+| Reading view       |       ✅       |         ✅       |
+| Live preview       |       ✅       |         ✅       |
+| Embeds             |       ✅       |         ✅       |
+| Hover page preview |       ✅       |         ✅       |
+| PDF export         |       ✅       |         ✅       |
 
-##### Automatically numbered
+### No longer supported
 
-\`\`\`md
-> [!theorem] Cauchy-Schwarz inequality
-> Let $x, y \\in \\R^n$. Then, ...
-\`\`\`
+- ["Show backlinks" right-click menu](https://github.com/RyotaUshio/obsidian-math-booster/blob/1.0.4/docs/backlinks.md)
+    - Use [Strange New Worlds](https://github.com/TfTHacker/obsidian42-strange-new-worlds) instead.
+- [Projects](https://github.com/RyotaUshio/obsidian-math-booster/blob/1.0.4/docs/projects.md)
+    - might be supported later with some improveme
 
-##### Manually numbered
+### Migration from version 1
 
-\`\`\`md
-> [!theorem|1.2] Cauchy-Schwarz inequality
-> Let $x, y \\in \\R^n$. Then, ...
-\`\`\`
-
-##### Without number
-
-\`\`\`md
-> [!theorem|*] Cauchy-Schwarz inequality
-> Let $x, y \\in \\R^n$. Then, ...
-\`\`\`
-
-
-To fully enjoy Math Booster v2, click the button below to convert the old format to the new one. Alternatively, you can do it later by running the command **Migrate from version 1**.
+To fully enjoy Math Booster v2, click the button below to convert the old theorem format to the new one. Alternatively, you can do it later by running the command **Migrate from version 1**.
 `, descEl, '', this.component);
         descEl.querySelectorAll('.copy-code-button').forEach((el) => el.remove());
 
@@ -161,7 +174,7 @@ export class MigrationModal extends Modal {
         await MarkdownRenderer.render(
             this.app,
             `
-In order to enjoy Math Booster v2, you need to convert the old format:
+In order to enjoy Math Booster v2, you need to convert the old theorem format:
 
 \`\`\`md
 > [!math|{"type":"theorem","number":"auto","title":"Main result","label":"main-result","_index":0}] Theorem 1 (Main result).
@@ -200,8 +213,7 @@ to the new format:
         contentEl.empty();
 
         const waitForCacheRefresh = new Setting(contentEl)
-            .setName('Preparing the fresh cache...')
-        // .then(setting => setting.controlEl.style.width = '50%');
+            .setName('Preparing the fresh cache...');
         await new Promise<void>((resolve) => {
             waitForCacheRefresh.addProgressBar((bar) => {
                 let progress = 0;

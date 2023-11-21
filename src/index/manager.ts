@@ -3,7 +3,6 @@ import { Deferred, deferred } from "./utils/deferred";
 import { ImporterSettings } from "../settings/settings";
 import { MathImporter } from "./web-worker/importer";
 import { MathIndex } from "./index";
-import { Indexable } from "./typings/indexable";
 import { ImportResult } from "./web-worker/message";
 import { MarkdownPage } from "./typings/markdown";
 import MathBooster from "../main";
@@ -72,15 +71,19 @@ export class MathIndexManager extends Component {
 
         // File creation does cause a metadata change, but deletes do not. Clear the caches for this.
         this.registerEvent(
-            this.vault.on("delete", (file) => {
+            this.vault.on("delete", async (file) => {
                 if (file instanceof TFile) {
-                    this.index.delete(file.path);
+                    await this.updateLinkedOnDeltion(file);
                 }
+                if (file.path in this.plugin.settings) {
+                    delete this.plugin.settings[file.path];
+                }
+                this.plugin.excludedFiles.remove(file.path);
             })
         );
 
         this.registerEvent(
-            this.app.metadataCache.on("math-booster:local-settings-updated", async (file) => {
+            this.on("local-settings-updated", async (file) => {
                 iterDescendantFiles(file, (descendantFile) => {
                     if (descendantFile.extension === "md") {
                         this.index.updateNames(descendantFile);
@@ -91,7 +94,7 @@ export class MathIndexManager extends Component {
         );
 
         this.registerEvent(
-            this.app.metadataCache.on("math-booster:global-settings-updated", () => {
+            this.on("global-settings-updated", () => {
                 // re-index the whole vault
                 const init = new MathIndexInitializer(this);
                 init.finished().then(() => {
@@ -117,22 +120,28 @@ export class MathIndexManager extends Component {
 
             this.index.touch();
             this.trigger("update", this.revision);
+            this.trigger("index-initialized");
             MathLinks.update(this.app);
         });
 
         this.addChild(init);
     }
 
-    private rename(file: TAbstractFile, oldPath: string) {
-        if (!(file instanceof TFile)) {
-            return;
-        }
+    private async rename(file: TAbstractFile, oldPath: string) {
+        if (!(file instanceof TFile)) return;
+
+        this.plugin.settings[file.path] = JSON.parse(JSON.stringify(this.plugin.settings[oldPath]));
+        delete this.plugin.settings[oldPath];
+        this.plugin.excludedFiles.remove(oldPath);
+        this.plugin.excludedFiles.push(file.path);
 
         // Delete the file at the old path, then request a reload at the new path.
         // This is less optimal than what can probably be done, but paths are used in a bunch of places
         // (for sections, tasks, etc to refer to their parent file) and it requires some finesse to fix.
         this.index.delete(oldPath);
-        this.reload(file);
+        await this.reload(file);
+        this.index.updateNames(file);
+        MathLinks.update(this.app);
     }
 
     /** Queue a file for reloading; this is done asynchronously in the background and may take a few seconds. */
@@ -155,6 +164,7 @@ export class MathIndexManager extends Component {
             });
 
             this.trigger("update", this.revision);
+            this.trigger('index-updated', file);
             return parsed;
         }
 
@@ -211,10 +221,47 @@ export class MathIndexManager extends Component {
         this.trigger("update", this.revision);
     }
 
+    public async updateLinkedOnDeltion(file: TFile) {
+        // Since only linked/referenced equations are numbered, we need to recompute 
+        // the equation numbers for all the files that contained blocks that this file previously linked to
+        const toBeUpdated = new Set<TFile>(); // Use Set, not Array, to avoid updating the same file multiple times.
+
+        // get the old outgoing block links (each of which can be potentially a link to some equation) 
+        // before deleting the given file
+        const oldPage = this.index.load(file.path);
+        if (MarkdownPage.isMarkdownPage(oldPage)) {
+            for (const link of oldPage.$links) {
+                if (link.type === "block") {
+                    const linkedFile = this.vault.getAbstractFileByPath(link.path);
+                    if (linkedFile instanceof TFile) {
+                        toBeUpdated.add(linkedFile);
+                    }
+                }
+            }
+        }
+
+        // execute deletion
+        this.index.delete(file.path);
+
+        // recompute theorem/equation numbers for the previously linked files
+        toBeUpdated.forEach((fileToBeUpdated) => {
+            this.index.updateNames(fileToBeUpdated);
+            MathLinks.update(this.app, fileToBeUpdated);
+        });
+        this.trigger("update", this.revision);
+    }
+
     // Event propogation.
 
-    /** Called whenever the index updates to a new revision. This is the broadest possible datacore event. */
+    /** From Datacore: Called whenever the index updates to a new revision. This is the broadest possible datacore event. */
     public on(evt: "update", callback: (revision: number) => any, context?: any): EventRef;
+
+    /** Math Booster custom events */
+    // triggered when the index is updated, which means the datacore-level metadata or math-booster-level metadata (such as $printName) are updated
+    public on(evt: "index-updated", callback: (file: TFile) => any): EventRef;
+    public on(evt: "local-settings-updated", callback: (file: TAbstractFile) => any): EventRef;
+    public on(evt: "global-settings-updated", callback: () => any): EventRef;
+    public on(evt: "index-initialized", callback: () => any): EventRef;
 
     on(evt: string, callback: (...data: any) => any, context?: any): EventRef {
         return this.events.on(evt, callback, context);
@@ -230,12 +277,17 @@ export class MathIndexManager extends Component {
         this.events.offref(ref);
     }
 
-    /** Trigger an update event. */
-    private trigger(evt: "update", revision: number): void;
+    /** From Datacore: Trigger an update event. */
+    public trigger(evt: "update", revision: number): void;
+    /** Math Booster custom events */
+    public trigger(evt: "index-updated", file: TFile): void;
+    public trigger(evt: "local-settings-updated", file: TAbstractFile): void;
+    public trigger(evt: "global-settings-updated"): void;
+    public trigger(evt: "index-initialized"): void;
 
     /** Trigger an event. */
-    private trigger(evt: string, ...args: any[]): void {
-        this.events.trigger(evt, args);
+    trigger(evt: string, ...args: any[]): void {
+        this.events.trigger(evt, ...args);
     }
 }
 

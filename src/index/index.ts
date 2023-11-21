@@ -315,7 +315,7 @@ export class MathIndex {
         const page = this.load(file.path);
         if (MarkdownPage.isMarkdownPage(page)) page.$refName = mainTheorem?.$refName ?? undefined;
 
-        this.plugin.app.metadataCache.trigger("math-booster:index-updated", file);
+        this.plugin.indexManager.trigger("index-updated", file);
     }
 
     formatMathLink(file: TFile, resolvedSettings: ResolvedMathSettings, key: "refFormat" | "noteMathLinkFormat"): string {
