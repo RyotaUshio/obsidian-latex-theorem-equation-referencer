@@ -7,29 +7,10 @@ declare module "obsidian" {
             enabledPlugins: Set<string>;
             plugins: {
                 [id: string]: any;
-                // dataview?: {
-                //     api?: DataviewApi;
-                // };
             };
             getPlugin: (id: string) => Plugin | null;
-            disablePlugin: (id: string) => Promise<void>;
         };
     }
-    // interface MetadataCache {
-    //     // Custom Events
-    //     on(
-    //         name: "math-booster:index-updated",
-    //         callback: (file: TFile) => any
-    //     ): EventRef;
-    //     on(
-    //         name: "math-booster:local-settings-updated",
-    //         callback: (file: TAbstractFile) => any
-    //     ): EventRef;
-    //     on(
-    //         name: "math-booster:global-settings-updated",
-    //         callback: () => any
-    //     ): EventRef;
-    // }
     interface Editor {
         cm?: EditorView;
     }

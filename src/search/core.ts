@@ -1,5 +1,4 @@
 import { App, EditorSuggestContext, Instruction, Notice, Scope, SearchResult, TFile, finishRenderMath, getAllTags, prepareFuzzySearch, prepareSimpleSearch, renderMath, sortSearchResults } from 'obsidian';
-import * as Dataview from 'obsidian-dataview';
 
 import MathBooster from 'main';
 import { MathIndex } from 'index/index';
@@ -269,7 +268,7 @@ export class ActiveNoteSearchCore extends PartialSearchCore {
 export class DataviewQuerySearchCore extends PartialSearchCore {
     public dvQuery: string;
 
-    constructor(parent: SuggestParent, type: 'theorem' | 'equation' | 'both', public dv: Dataview.DataviewApi, dvQuery?: string) {
+    constructor(parent: SuggestParent, type: 'theorem' | 'equation' | 'both', public dv: any, dvQuery?: string) {
         super(parent, type);
         this.dvQuery = dvQuery ?? '';
     }
@@ -277,7 +276,7 @@ export class DataviewQuerySearchCore extends PartialSearchCore {
     async getPaths() {
         const result = await this.dv.query(this.dvQuery);
         if (result.successful && result.value.type === 'list') {
-            const links = result.value.values as Dataview.Link[];
+            const links = result.value.values as { path: string }[];
             return links.map((link) => link.path);
         }
         return [];

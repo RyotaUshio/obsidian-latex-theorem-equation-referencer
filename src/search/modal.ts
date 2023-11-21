@@ -1,5 +1,4 @@
 import { ActiveNoteSearchCore, DataviewQuerySearchCore, QueryType, RecentNotesSearchCore, WholeVaultEquationSearchCore, WholeVaultTheoremEquationSearchCore, WholeVaultTheoremSearchCore } from 'search/core';
-import * as Dataview from 'obsidian-dataview';
 
 import MathBooster from "main";
 import { App, EditorSuggestContext, MarkdownView, Setting, SuggestModal, TextAreaComponent } from "obsidian";
@@ -108,7 +107,7 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
 
     resetCore() {
         if (this.range === 'dataview') {
-            const dv = Dataview.getAPI(this.app);
+            const dv = this.app.plugins.plugins.dataview?.api;
             if (!dv) {
                 this.dvQueryField.setDisabled(true);
                 this.dvQueryField.setDesc('Retry after enabling Dataview.')
