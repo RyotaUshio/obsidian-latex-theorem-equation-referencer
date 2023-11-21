@@ -66,7 +66,7 @@ export class MathIndexManager extends Component {
     /** Initialize datacore by scanning persisted caches and all available files, and queueing parses as needed. */
     initialize() {
         // The metadata cache is updated on initial file index and file loads.
-        this.registerEvent(this.metadataCache.on("resolve", (file) => this.updateLinked([file])));
+        this.registerEvent(this.metadataCache.on("resolve", (file) => this.updateLinked(file)));
         // Renames do not set off the metadata cache; catch these explicitly.
         this.registerEvent(this.vault.on("rename", this.rename, this));
 
@@ -81,11 +81,12 @@ export class MathIndexManager extends Component {
 
         this.registerEvent(
             this.app.metadataCache.on("math-booster:local-settings-updated", async (file) => {
-                const files: TFile[] = [];
                 iterDescendantFiles(file, (descendantFile) => {
-                    if (descendantFile.extension == "md") files.push(descendantFile)
-                });    
-                await this.updateLinked(files);
+                    if (descendantFile.extension === "md") {
+                        this.index.updateNames(descendantFile);
+                        MathLinks.update(this.app, descendantFile);
+                    };
+                });
             })
         );
 
@@ -164,31 +165,45 @@ export class MathIndexManager extends Component {
      * 1. It reloads (re-imports) each file in the array.
      * 2. It re-computes the theorem/equation numbers for all the files containing blocks 
      *    that each file in the array previously linked to.
+     * 　　EDIT: Wow, I forgot to update the files that each file in the array newly links to.
+     * 
+     * This should be named like updateOldAndNewLinkDestinations.
      */
-    public async updateLinked(files: TFile[]) {
-        // Use Set, not Array, to avoid updating the same file multiple times.
-        const toBeUpdated = new Set<TFile>(files);
-
+    public async updateLinked(file: TFile) {
         // Since only linked/referenced equations are numbered, we need to recompute 
-        // the equation numbers for all the files containing blocks 
-        // that this file previously linked to.
-        const reloadPromises: Promise<Indexable>[] = [];
-        for (const file of new Set(files)) {
-            const oldPage = this.index.load(file.path);
-            if (MarkdownPage.isMarkdownPage(oldPage)) {
-                for (const link of oldPage.$links) {
-                    if (link.type === "block") {
-                        const linkedFile = this.vault.getAbstractFileByPath(link.path);
-                        if (linkedFile instanceof TFile) {
-                            toBeUpdated.add(linkedFile);
-                        }
+        // the equation numbers for all the files such that
+        // 1. contained blocks that this file previously linked to, or
+        // 2. is now containing blocks that this file newly links to.
+        const toBeUpdated = new Set<TFile>([file]); // Use Set, not Array, to avoid updating the same file multiple times.
+
+        // get the old outgoing block links (each of which can be potentially a link to some equation) 
+        // before reloading the given file
+        const oldPage = this.index.load(file.path);
+        if (MarkdownPage.isMarkdownPage(oldPage)) {
+            for (const link of oldPage.$links) {
+                if (link.type === "block") {
+                    const linkedFile = this.vault.getAbstractFileByPath(link.path);
+                    if (linkedFile instanceof TFile) {
+                        toBeUpdated.add(linkedFile);
                     }
                 }
             }
-            reloadPromises.push(this.reload(file));
         }
-        await Promise.all(reloadPromises);
-        // recompute theorem/equation numbers for linked files
+
+        // re-import the file changed
+        const newPage = await this.reload(file);
+
+        // get the new outgoing block links (each of which can be potentially a link to some equation) 
+        for (const link of newPage.$links) {
+            if (link.type === "block") {
+                const linkedFile = this.vault.getAbstractFileByPath(link.path);
+                if (linkedFile instanceof TFile) {
+                    toBeUpdated.add(linkedFile);
+                }
+            }
+        }
+
+        // recompute theorem/equation numbers for the previously or currently linked files
         toBeUpdated.forEach((fileToBeUpdated) => {
             this.index.updateNames(fileToBeUpdated);
             MathLinks.update(this.app, fileToBeUpdated);
