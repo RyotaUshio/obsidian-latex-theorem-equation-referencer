@@ -10,17 +10,22 @@ export const createTheoremCalloutNumberingViewPlugin = (plugin: MathBooster) => 
 
         constructor(public view: EditorView) {
             // Wait until the initial rendering is done so that we can find the callout elements using qeurySelectorAll(). 
-            setTimeout(() => this.impl(view));
+            setTimeout(() => this._update(view));
         }
+
         update(update: ViewUpdate) {
-            this.impl(update.view);
+            this._update(update.view);
         }
-        impl(view: EditorView) {
+
+        _update(view: EditorView) {
             const infos = view.state.field(plugin.theoremCalloutsField);
 
             for (const calloutEl of view.contentDOM.querySelectorAll<HTMLElement>('.callout.theorem-callout')) {
                 const pos = view.posAtDOM(calloutEl);
-                const index = infos.iter(pos).value?.index;
+                const iter = infos.iter(pos);
+                if (iter.from !== pos) continue; // insertion or deletion occured before this callout, and the posAtDom is out-dated for some reasons: do not update the theorem number
+                
+                const index = iter.value?.index;
                 if (typeof index === 'number') calloutEl.setAttribute('data-theorem-index', String(index));
                 else calloutEl.removeAttribute('data-theorem-index');
             }
