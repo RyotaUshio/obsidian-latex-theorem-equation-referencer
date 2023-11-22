@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-math-booster",
-	"version": "2.0.0-beta10",
+	"version": "2.0.0-beta11",
 	"description": "Turn your Obsidian into LaTeX on steroids. Dynamically numbered theorem environments & equations, enhanced theorems/equations search & link auto-completion, and live-rendering of equations inside callouts & quotes.",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
