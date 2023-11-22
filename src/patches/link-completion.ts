@@ -15,6 +15,8 @@ export const patchLinkCompletion = (plugin: MathBooster) => {
     plugin.register(around(prototype, {
         renderSuggestion(old) {
             return function (item: any, el: HTMLElement) {
+                old.call(this, item, el);
+
                 if (plugin.extraSettings.showTheoremTitleinBuiltin && item.type === 'block' && item.node.type === 'callout' && isTheoremCallout(plugin, item.node.callout.type)) {
                     let title: string = item.node.children.find((child: any) => child.type === 'callout-title')?.children[0].value ?? '';
                     const content = item.display.slice(title.length);
@@ -23,9 +25,11 @@ export const patchLinkCompletion = (plugin: MathBooster) => {
                     if (MarkdownPage.isMarkdownPage(page)) {
                         const block = page.getBlockByLineNumber(item.node.position.start.line - 1); // line number starts from 1
                         if (TheoremCalloutBlock.isTheoremCalloutBlock(block)) {
-                            el.replaceChildren();
-                            el.createDiv({ text: block.$printName });
-                            if (content) el.createDiv({ text: content });
+                            renderInSuggestionTitleEl(el, (suggestionTitleEl) => {
+                                suggestionTitleEl.replaceChildren();
+                                suggestionTitleEl.createDiv({ text: block.$printName });
+                                if (content) suggestionTitleEl.createDiv({ text: content });
+                            });
                             return;
                         }
                     }
@@ -34,19 +38,31 @@ export const patchLinkCompletion = (plugin: MathBooster) => {
                         const { type, number } = parsed;
                         if (title === capitalize(type)) title = '';
                         const formattedTitle = formatTitle(plugin, item.file as TFile, resolveSettings({ type, number, title }, plugin, item.file as TFile), true);
-                        el.replaceChildren();
-                        el.createDiv({ text: formattedTitle });
-                        if (content) el.createDiv({ text: content });
+                        renderInSuggestionTitleEl(el, (suggestionTitleEl) => {
+                            suggestionTitleEl.replaceChildren();
+                            suggestionTitleEl.createDiv({ text: formattedTitle });
+                            if (content) suggestionTitleEl.createDiv({ text: content });
+                        });
                         return;
                     }
                 } else if (plugin.extraSettings.renderEquationinBuiltin && item.type === "block" && item.node.type === 'math') {
-                    el.replaceChildren();
-                    el.appendChild(renderMath(item.node.value, true))
+                    renderInSuggestionTitleEl(el, (suggestionTitleEl) => {
+                        suggestionTitleEl.replaceChildren();
+                        suggestionTitleEl.appendChild(renderMath(item.node.value, true))
+                    });
                     return;
                 }
 
-                old.call(this, item, el);
+
             }
         }
     }));
 };
+
+
+function renderInSuggestionTitleEl(el: HTMLElement, cb: (suggestionTitleEl: HTMLElement) => void) {
+    // setTimeout(() => {
+        const suggestionTitleEl = el.querySelector<HTMLElement>('.suggestion-title');
+        if (suggestionTitleEl) cb(suggestionTitleEl);
+    // });
+}
