@@ -10,7 +10,6 @@ import { capitalize } from 'utils/general';
 
 export const patchLinkCompletion = (plugin: MathBooster) => {
     const prototype = (plugin.app.workspace as any).editorSuggest.suggests[0].constructor.prototype as EditorSuggest<any>;
-    console.log(prototype)
 
     plugin.register(around(prototype, {
         renderSuggestion(old) {
@@ -20,7 +19,6 @@ export const patchLinkCompletion = (plugin: MathBooster) => {
                 if (plugin.extraSettings.showTheoremTitleinBuiltin && item.type === 'block' && item.node.type === 'callout' && isTheoremCallout(plugin, item.node.callout.type)) {
                     let title: string = item.node.children.find((child: any) => child.type === 'callout-title')?.children[0].value ?? '';
                     const content = item.display.slice(title.length);
-                    const id = item.node.id;
                     const page = plugin.indexManager.index.load(item.file.path);
                     if (MarkdownPage.isMarkdownPage(page)) {
                         const block = page.getBlockByLineNumber(item.node.position.start.line - 1); // line number starts from 1
