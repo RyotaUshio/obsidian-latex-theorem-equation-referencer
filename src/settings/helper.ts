@@ -272,9 +272,6 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
     }
 
     makeSettingPane() {
-        const { contentEl } = this;
-
-        // contentEl.createEl("h4", { text: "Theorem callouts" });
         this.addHeading('Theorem callouts - general');
 
         this.addProfileSetting();
@@ -288,7 +285,6 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addTextSetting("titleSuffix", "Title suffix", "Ex) \"\" > Definition 2 (Group) / \".\" > Definition 2 (Group).");
         this.addTextSetting("labelPrefix", "Pandoc label prefix", 'Useful for ensuring no label collision. Ex) When "Pandoc label prefix" = "foo:", A theorem with "Pandoc label" = "bar" is assigned "thm:foo:bar."');
 
-        // contentEl.createEl("h6", { text: "Numbering" });
         this.addHeading('Theorem callouts - numbering');
 
         this.addToggleSetting(
@@ -310,7 +306,6 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addDropdownSetting("numberStyle", NUMBER_STYLES, "Style");
         this.addTextSetting("numberDefault", "Default value for the \"Number\" field");
 
-        // contentEl.createEl("h6", { text: "Referencing" });
         this.addHeading('Theorem callouts - referencing');
 
         this.addDropdownSetting("refFormat", THEOREM_REF_FORMATS, "Format");
@@ -321,8 +316,6 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
             "When a theorem callout's \"Use this theorem callout to set this note's mathLink\" setting is turned on, this format will be used for links to the note containing that theorem callout."
         );
 
-        // contentEl.createEl("h4", { text: "Equations", cls: 'equation-heading' });
-        // contentEl.createEl("h6", { text: "Numbering" });
         this.addHeading('Equations - numbering', ['equation-heading']);
 
         this.addToggleSetting(
@@ -343,19 +336,16 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addDropdownSetting("eqNumberStyle", NUMBER_STYLES, "Style");
         this.addToggleSetting("lineByLine", "Number line by line in align");
 
-        // contentEl.createEl("h6", { text: "Referencing" });
         this.addHeading('Equations - referencing');
 
         this.addTextSetting("eqRefPrefix", "Prefix");
         this.addTextSetting("eqRefSuffix", "Suffix");
 
-        // contentEl.createEl("h4", { text: "Proofs", cls: 'proof-heading' });
         this.addHeading('Proofs (experimental)', ['proof-heading']);
 
         this.addTextSetting("beginProof", "Beginning of a proof");
         this.addTextSetting("endProof", "End of a proof");
 
-        // this.contentEl.createEl("h3", { text: "Search & link auto-completion" });
         this.addHeading('Search & link auto-completion - general');
         this.addToggleSetting("insertSpace", "Insert a space after the link");
     }
@@ -389,7 +379,6 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
 
         // Suggest
 
-        // this.contentEl.createEl("h4", { text: "General" });
         this.addSliderSetting("suggestNumber", { min: 1, max: 50, step: 1 }, "Number of suggestions", "Specify how many items are suggested at one time. Set it to a smaller value if you have a performance issue when equation suggestions with math rendering on.");
         this.addToggleSetting("renderMathInSuggestion", "Render math in equation suggestions", "Turn this off if you have a performance issue and reducing the number of suggestions doesn't fix it.");
         this.addDropdownSetting("searchMethod", ["Fuzzy", "Simple"], "Search method", "Fuzzy search is more flexible, but simple search is more light-weight.");
@@ -403,16 +392,14 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         list.createEl("li", { text: "Meta is Cmd on MacOS and Win key on Windows." });
         this.addDropdownSetting("suggestLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected suggestion.")
 
-        // this.contentEl.createEl("h4", { text: "Editor link auto-completion" });
-        this.addHeading('Editor link auto-completion configuration')
+        this.addHeading('Enhance Obsidian\'s built-in link completion (experimental)')
+            .setDesc('Configure how Math Booster modifies the appearance of Obsidian\'s built-in link completion (the one that pops up when you type "[["). This feature dives deep into Obsidian\'s internals, so it might break when Obsidian is updated. If you encounter any issue, please report it on GitHub.');
+        this.addToggleSetting("showTheoremTitleinBuiltin", "Show theorem title");
+        this.addToggleSetting("renderEquationinBuiltin", "Render equation");
+
+        this.addHeading('Configure Math Booster\'s editor link auto-completion')
             .setDesc(`It is recommended to turn off unnecessary auto-completions to improve performance.`);
 
-        // this.contentEl.createDiv({
-        //     text: `It is recommended to turn off unnecessary auto-completions to improve performance.`,
-        //     cls: ["setting-item-description", "math-booster-setting-item-description"],
-        // });
-
-        // this.contentEl.createEl("h5", { text: "Theorem & equation suggestion" });
         this.addHeading('Theorem & equation suggestion')
         this.addHeading("From entire vault", ['editor-suggest-setting-indented-heading']);
         this.addToggleSetting("enableSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
@@ -424,7 +411,6 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addToggleSetting("enableSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
         this.addTextSetting("triggerSuggestActiveNote", "Trigger");
 
-        // this.contentEl.createEl("h5", { text: "Theorem suggestion" });
         this.addHeading('Theorem suggestion', ['editor-suggest-setting-heading']);
         this.addHeading("From entire vault", ['editor-suggest-setting-indented-heading']);
         this.addToggleSetting("enableTheoremSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
@@ -436,7 +422,6 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addToggleSetting("enableTheoremSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
         this.addTextSetting("triggerTheoremSuggestActiveNote", "Trigger");
 
-        // this.contentEl.createEl("h5", { text: "Equation suggestion" });
         this.addHeading('Equation suggestion', ['editor-suggest-setting-heading'])
         this.addHeading("From entire vault", ['editor-suggest-setting-indented-heading']);
         this.addToggleSetting("enableEquationSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());

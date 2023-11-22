@@ -5,6 +5,7 @@ import { generateBlockID, getAncestors } from "./obsidian";
 import { EquationBlock, MarkdownBlock, MarkdownPage, TheoremCalloutBlock } from "index/typings/markdown";
 import { getIO } from "file-io";
 import { splitIntoLines } from "./general";
+import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENV_PREFIXES } from "env";
 
 
 export function resolveSettings(settings: MinimalTheoremCalloutSettings, plugin: MathBooster, currentFile: TAbstractFile): ResolvedMathSettings;
@@ -152,4 +153,9 @@ export function insertTheoremCallout(editor: Editor, config: TheoremCalloutSetti
     if (config.label) cursorPos.line += 1;
     cursorPos.ch = 2;
     editor.setCursor(cursorPos);
+}
+
+export function isTheoremCallout(plugin: MathBooster, type: string) {
+    if (plugin.extraSettings.excludeExampleCallout && type === 'example') return false;
+    return (THEOREM_LIKE_ENV_IDs as unknown as string[]).includes(type) || (THEOREM_LIKE_ENV_PREFIXES as unknown as string[]).includes(type) || type === 'math'
 }

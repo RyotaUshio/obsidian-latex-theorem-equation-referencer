@@ -131,6 +131,8 @@ export type ExtraSettings = ImporterSettings & {
     foldDefault: FoldOption;
     noteTitleInLink: boolean;
     profiles: Record<string, Profile>;
+    showTheoremTitleinBuiltin: boolean;
+    renderEquationinBuiltin: boolean;
     triggerSuggest: string;
     triggerTheoremSuggest: string;
     triggerEquationSuggest: string;
@@ -219,6 +221,8 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     foldDefault: '',
     noteTitleInLink: true,
     profiles: DEFAULT_PROFILES,
+    showTheoremTitleinBuiltin: true,
+    renderEquationinBuiltin: true,
     triggerSuggest: "\\ref",
     triggerTheoremSuggest: "\\tref",
     triggerEquationSuggest: "\\eqref",

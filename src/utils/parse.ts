@@ -1,4 +1,4 @@
-import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENV_PREFIXES, THEOREM_LIKE_ENV_PREFIX_ID_MAP, TheoremLikeEnvPrefix } from "env";
+import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENV_PREFIXES, THEOREM_LIKE_ENV_PREFIX_ID_MAP, TheoremLikeEnvID, TheoremLikeEnvPrefix } from "env";
 import { FoldOption, MinimalTheoremCalloutSettings } from "settings/settings";
 
 export const THEOREM_CALLOUT_PATTERN = new RegExp(
@@ -32,6 +32,8 @@ export function readTheoremCalloutSettings(line: string, excludeExample: boolean
 
     let type = rawSettings.type.trim().toLowerCase();
 
+    // TODO: rewrite using _readTheoremCalloutSettings
+
     if (type === 'math' && rawSettings.number) {
         // legacy format
         const settings = JSON.parse(rawSettings.number) as MinimalTheoremCalloutSettings & { legacy: boolean };
@@ -55,6 +57,29 @@ export function readTheoremCalloutSettings(line: string, excludeExample: boolean
 
     return { type, number, title, fold, legacy: false };
 }
+
+export function _readTheoremCalloutSettings(callout: {type: string, metadata: string}, excludeExample: boolean = false): { type: string, number: string, legacy: boolean } | undefined {
+    let type = callout.type;
+
+    if (callout.type === 'math' && callout.metadata) {
+        // legacy format
+        const settings = JSON.parse(callout.metadata) as MinimalTheoremCalloutSettings & { legacy: boolean };
+        settings.legacy = true;
+        return settings;
+    }
+
+    // new format
+    if (excludeExample && callout.type === 'example') return undefined;
+
+    if (callout.type.length <= 4) { // use length to avoid iterating over all the prefixes
+        // convert a prefix to an ID (e.g. "thm" -> "theorem")
+        type = THEOREM_LIKE_ENV_PREFIX_ID_MAP[callout.type as TheoremLikeEnvPrefix];
+    }
+    const number = parseTheoremCalloutMetadata(callout.metadata);
+
+    return { type, number, legacy: false };
+}
+
 
 export function trimMathText(text: string) {
     return text.match(/\$\$([\s\S]*)\$\$/)?.[1].trim() ?? text;

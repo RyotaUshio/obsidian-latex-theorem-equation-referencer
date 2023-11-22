@@ -4,7 +4,7 @@ import { ViewUpdate, EditorView, PluginValue, ViewPlugin } from '@codemirror/vie
 import MathBooster from 'main';
 import { TheoremCalloutModal } from 'settings/modals';
 import { TheoremCalloutSettings, TheoremCalloutPrivateFields } from 'settings/settings';
-import { generateTheoremCalloutFirstLine, resolveSettings } from 'utils/plugin';
+import { generateTheoremCalloutFirstLine, isTheoremCallout, resolveSettings } from 'utils/plugin';
 import { isEditingView } from 'utils/editor';
 import { capitalize } from 'utils/general';
 import { formatTitleWithoutSubtitle } from "utils/format";
@@ -27,9 +27,7 @@ export const createTheoremCalloutPostProcessor = (plugin: MathBooster) => async 
     for (const calloutEl of element.querySelectorAll<HTMLElement>(`.callout`)) {
         const type = calloutEl.getAttribute('data-callout')!.toLowerCase();
 
-        if ((THEOREM_LIKE_ENV_IDs as unknown as string[]).includes(type) || (THEOREM_LIKE_ENV_PREFIXES as unknown as string[]).includes(type) || type === 'math') {
-            if (plugin.extraSettings.excludeExampleCallout && type === 'example') continue;
-
+        if (isTheoremCallout(plugin, type)) {
             if (pdf) { // preprocess for theorem numbering in PDF export
                 const settings = readSettingsFromEl(calloutEl);
                 if (settings?.number === 'auto') calloutEl.setAttribute('data-theorem-index', String(index++));

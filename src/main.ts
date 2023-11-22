@@ -22,6 +22,7 @@ import { LinkAutocomplete } from 'search/editor-suggest';
 import { ActiveNoteSearchCore, RecentNotesSearchCore, WholeVaultEquationSearchCore, WholeVaultTheoremEquationSearchCore, WholeVaultTheoremSearchCore } from 'search/core';
 import { MathSearchModal } from 'search/modal';
 import { TheoremCalloutInfo, createTheoremCalloutsField } from 'theorem-callouts/state-field';
+import { patchLinkCompletion } from 'patches/link-completion';
 
 
 export const VAULT_ROOT = '/';
@@ -136,7 +137,8 @@ export default class MathBooster extends Plugin {
 
 		/** Theorem/equation link autocompletion */
 		this.updateLinkAutocomplete();
-
+		
+		this.app.workspace.onLayoutReady(() => patchLinkCompletion(this));
 
 		/** Markdown post processors */
 
