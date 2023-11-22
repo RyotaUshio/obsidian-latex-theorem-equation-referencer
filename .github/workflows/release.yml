@@ -19,6 +19,7 @@ jobs:
 
       - name: Build plugin
         run: |
+          npm install -g sass
           npm install
           npm run build
 
