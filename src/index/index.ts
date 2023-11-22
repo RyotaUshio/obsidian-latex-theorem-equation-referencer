@@ -269,7 +269,8 @@ export class MathIndex {
         let autoNumberedTheoremCount = 0;
         let mainTheorem: TheoremCalloutBlock | null = null;
 
-        let equationNumber = +(settings.eqNumberInit);
+        const equationNumberInit = +(settings.eqNumberInit);
+        let equationCount = 0;
         const eqPrefix = getEqNumberPrefix(this.plugin.app, file, settings);
         const eqSuffix = settings.eqNumberSuffix;
 
@@ -281,7 +282,10 @@ export class MathIndex {
                 // for each theorem callout.
                 // They may be additionally formatted according to the settings.
                 const resolvedSettings = Object.assign({}, settings, block.$settings);
-                if (block.$settings.number == 'auto') (resolvedSettings as ResolvedMathSettings)._index = autoNumberedTheoremCount++;
+                if (block.$settings.number == 'auto') {
+                    block.$index = autoNumberedTheoremCount;
+                    (resolvedSettings as ResolvedMathSettings)._index = autoNumberedTheoremCount++;
+                }
                 // const printName = formatTitle(this.plugin, file, resolvedSettings);
                 const mainTitle = formatTitleWithoutSubtitle(this.plugin, file, resolvedSettings);
                 const refName = this.formatMathLink(file, resolvedSettings, "refFormat");
@@ -298,8 +302,9 @@ export class MathIndex {
                 if (block.$manualTag) {
                     printName = `(${block.$manualTag})`;
                 } else if (block.$link && this.isLinked(block as Linkable)) {
-                    printName = "(" + eqPrefix + CONVERTER[settings.eqNumberStyle](equationNumber) + eqSuffix + ")";
-                    equationNumber++;
+                    block.$index = equationCount;
+                    printName = "(" + eqPrefix + CONVERTER[settings.eqNumberStyle](equationNumberInit + equationCount) + eqSuffix + ")";
+                    equationCount++;
                 }
                 if (printName !== null) refName = settings.eqRefPrefix + printName + settings.eqRefSuffix;
                 block.$printName = printName;
@@ -313,7 +318,13 @@ export class MathIndex {
         }
 
         const page = this.load(file.path);
-        if (MarkdownPage.isMarkdownPage(page)) page.$refName = mainTheorem?.$refName ?? undefined;
+        if (MarkdownPage.isMarkdownPage(page)) {
+            if (mainTheorem) {
+                const resolvedSettings = Object.assign({}, settings, mainTheorem.$settings);
+                (resolvedSettings as ResolvedMathSettings)._index = mainTheorem.$index;
+                page.$refName = this.formatMathLink(file, resolvedSettings, "noteMathLinkFormat");
+            }
+        }
 
         this.plugin.indexManager.trigger("index-updated", file);
     }

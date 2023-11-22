@@ -277,9 +277,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addProfileSetting();
         const styleSetting = this.addDropdownSetting("theoremCalloutStyle", THEOREM_CALLOUT_STYLES, "Style", undefined, undefined, () => this.plugin.forceRerender());
         styleSetting.descEl.replaceChildren(
-            "Choose between your custom style and preset styles. You might need to reopen the notes or reload the app to see the changes. See the ",
-            createEl("a", { text: "documentation", attr: { href: "https://ryotaushio.github.io/obsidian-math-booster/style-your-theorems.html" } }),
-            " for how to customize the appearance of theorem callouts. \"Custom\" is recommended, since it will give you the most control. You can view the CSS snippets for all the preset styles in the documentation or README on GitHub. The preset styles are only for a trial purpose, and they might not work well with some non-default themes.",
+            "Choose between your custom style and preset styles. You might need to reopen the notes or reload the app to see the changes. See the documentation for how to customize the appearance of theorem callouts. \"Custom\" is recommended, since it will give you the most control. You can view the CSS snippets for all the preset styles in the documentation or README on GitHub. The preset styles are only for a trial purpose, and they might not work well with some non-default themes.",
         );
         this.addToggleSetting("theoremCalloutFontInherit", "Don't override the app's font setting when using preset styles", "You will need to reload the note to see the changes.");
         this.addTextSetting("titleSuffix", "Title suffix", "Ex) \"\" > Definition 2 (Group) / \".\" > Definition 2 (Group).");
@@ -304,7 +302,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addTextSetting("numberSuffix", "Suffix");
         this.addTextSetting("numberInit", "Initial count");
         this.addDropdownSetting("numberStyle", NUMBER_STYLES, "Style");
-        this.addTextSetting("numberDefault", "Default value for the \"Number\" field");
+        this.addTextSetting("numberDefault", "Default value for the \"Number\" field of \"Insert theorem callout\" modal");
 
         this.addHeading('Theorem callouts - referencing');
 
@@ -312,8 +310,8 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addDropdownSetting(
             "noteMathLinkFormat",
             THEOREM_REF_FORMATS,
-            "Note mathLink format",
-            "When a theorem callout's \"Use this theorem callout to set this note's mathLink\" setting is turned on, this format will be used for links to the note containing that theorem callout."
+            'Format for a note that has its "main" theorem callout',
+            `When a theorem callout is set as main by a markdown comment "%% main %%", this format will be used for links to the note containing that theorem callout.`
         );
 
         this.addHeading('Equations - numbering', ['equation-heading']);
@@ -347,7 +345,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addTextSetting("endProof", "End of a proof");
 
         this.addHeading('Search & link auto-completion - general');
-        this.addToggleSetting("insertSpace", "Insert a space after the link");
+        this.addToggleSetting("insertSpace", "Append whitespace after inserted link");
     }
 
     addProfileSetting(defaultValue?: string): Setting {
@@ -381,7 +379,7 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
 
         this.addSliderSetting("suggestNumber", { min: 1, max: 50, step: 1 }, "Number of suggestions", "Specify how many items are suggested at one time. Set it to a smaller value if you have a performance issue when equation suggestions with math rendering on.");
         this.addToggleSetting("renderMathInSuggestion", "Render math in equation suggestions", "Turn this off if you have a performance issue and reducing the number of suggestions doesn't fix it.");
-        this.addDropdownSetting("searchMethod", ["Fuzzy", "Simple"], "Search method", "Fuzzy search is more flexible, but simple search is more light-weight.");
+        this.addDropdownSetting("searchMethod", ["Fuzzy", "Simple"], "Search method", "Fuzzy search is more flexible, but simple search is lighter-weight.");
         this.addToggleSetting("searchLabel", "Include theorem callout label for search target");
         this.addSliderSetting("upWeightRecent", { min: 0, max: 0.5, step: 0.01 }, "Up-weight recently opened notes by", "It takes effect only if \"Search only recently opened notes\" is turned off.");
         this.addDropdownSetting("modifierToJump", ['Mod', 'Ctrl', 'Meta', 'Shift', 'Alt'], "Modifier key for jumping to suggestion", "Press Enter and this modifier key to jump to the currently selected suggestion. Changing this option requires to reloading " + this.plugin.manifest.name + " to take effect.");

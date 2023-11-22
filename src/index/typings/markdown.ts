@@ -287,6 +287,8 @@ export abstract class MathBoosterBlock extends MarkdownBlock {
     /** Additional metadata specified via comments */
     $label?: string;
     $display?: string;
+    // set if this block is auto-numbered. This is the index of this block among all auto-numbered blocks in the file
+    $index?: number;
 
     static isMathBoosterBlock(object: Indexable | undefined): object is MathBoosterBlock {
         return object !== undefined && object.$types.includes('block-math-booster');

@@ -196,7 +196,7 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     numberStyle: "arabic",
     numberDefault: "auto", 
     refFormat: "[type] [number] ([title])",
-    noteMathLinkFormat: "[type] [number] ([title])",
+    noteMathLinkFormat: "[title] if title exists, [type] [number] otherwise",
     inferEqNumberPrefix: true,
     inferEqNumberPrefixFromProperty: "",
     inferEqNumberPrefixParseSep: "-.",

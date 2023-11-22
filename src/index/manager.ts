@@ -102,6 +102,7 @@ export class MathIndexManager extends Component {
                     this.index.touch();
                     this.trigger("update", this.revision);
                 });
+                this.addChild(init);
             })
         );
 
