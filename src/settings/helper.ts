@@ -313,6 +313,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
             'Format for a note that has its "main" theorem callout',
             `When a theorem callout is set as main by a markdown comment "%% main %%", this format will be used for links to the note containing that theorem callout.`
         );
+        this.addToggleSetting('ignoreMainTheoremCalloutWithoutTitle', 'Ignore a "main" theorem callout without its own title');
 
         this.addHeading('Equations - numbering', ['equation-heading']);
 

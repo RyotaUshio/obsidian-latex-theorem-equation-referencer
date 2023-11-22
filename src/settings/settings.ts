@@ -73,6 +73,7 @@ export interface MathContextSettings {
     numberDefault: string;
     refFormat: TheoremRefFormat;
     noteMathLinkFormat: TheoremRefFormat;
+    ignoreMainTheoremCalloutWithoutTitle: boolean;
     inferEqNumberPrefix: boolean;
     inferEqNumberPrefixFromProperty: string;
     inferEqNumberPrefixParseSep: string;
@@ -197,6 +198,7 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     numberDefault: "auto", 
     refFormat: "[type] [number] ([title])",
     noteMathLinkFormat: "[title] if title exists, [type] [number] otherwise",
+    ignoreMainTheoremCalloutWithoutTitle: false,
     inferEqNumberPrefix: true,
     inferEqNumberPrefixFromProperty: "",
     inferEqNumberPrefixParseSep: "-.",

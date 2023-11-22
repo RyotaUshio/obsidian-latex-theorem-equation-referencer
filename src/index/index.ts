@@ -261,7 +261,7 @@ export class MathIndex {
      */
     public updateNames(file: TFile) {
         const settings = resolveSettings(undefined, this.plugin, file);
-        
+
         let blockOrdinal = 1;
         let block: Indexable | undefined;
 
@@ -322,7 +322,9 @@ export class MathIndex {
             if (mainTheorem) {
                 const resolvedSettings = Object.assign({}, settings, mainTheorem.$settings);
                 (resolvedSettings as ResolvedMathSettings)._index = mainTheorem.$index;
-                page.$refName = this.formatMathLink(file, resolvedSettings, "noteMathLinkFormat");
+
+                if (!resolvedSettings.ignoreMainTheoremCalloutWithoutTitle || mainTheorem.$theoremSubtitle)
+                    page.$refName = this.formatMathLink(file, resolvedSettings, "noteMathLinkFormat");
             }
         }
 
