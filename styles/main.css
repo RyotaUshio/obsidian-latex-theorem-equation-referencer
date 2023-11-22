@@ -37,16 +37,16 @@
     padding: var(--size-4-6);
 }
 
-.math-booster-begin-proof-en {
-    font-style: italic;
+.math-booster-begin-proof {
     padding-right: 10px;
+    font-family: CMU Serif, Times, Noto Serif JP;
+    font-weight: bold;
 }
 
-.math-booster-begin-proof-ja {
-    font-weight: 600;
-    font-family: Times, Noto Sans JP;
-    padding-right: 10px;
+.math-booster-begin-proof-en {
+    font-style: italic;
 }
+
 
 .math-booster-end-proof {
     float: right;

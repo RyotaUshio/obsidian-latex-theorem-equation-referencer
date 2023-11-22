@@ -1,0 +1,21 @@
+@use 'styles/main';
+@use 'styles/framed';
+@use 'styles/plain';
+@use 'styles/mathwiki';
+@use 'styles/vivid';
+
+:has(> .theorem-callout-framed) {
+    @include framed.framed();
+}
+
+:has(> .theorem-callout-plain) {
+    @include plain.plain();
+}
+
+:has(> .theorem-callout-mathwiki) {
+    @include mathwiki.mathwiki();
+}
+
+:has(> .theorem-callout-vivid) {
+    @include vivid.vivid();
+}

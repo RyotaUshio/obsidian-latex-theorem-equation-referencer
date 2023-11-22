@@ -104,7 +104,7 @@ export class TheoremCalloutSettingsHelper {
                         labelPrefixEl.textContent = THEOREM_LIKE_ENVs[this.settings.type as TheoremLikeEnvID].prefix + ":";
                         if (this.defaultSettings.labelPrefix) {
                             labelPrefixEl.textContent += this.defaultSettings.labelPrefix;
-                        }    
+                        }
                     }
                 });
             });
@@ -139,7 +139,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
 
     abstract makeSettingPane(): void;
 
-    addDropdownSetting(name: keyof SettingsType, options: readonly string[], prettyName: string, description?: string, defaultValue?: string) {
+    addDropdownSetting(name: keyof SettingsType, options: readonly string[], prettyName: string, description?: string, defaultValue?: string, additionalOnChange?: () => void) {
         const setting = new Setting(this.contentEl).setName(prettyName);
         if (description) {
             setting.setDesc(description);
@@ -164,6 +164,7 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
                 } else {
                     Object.assign(this.settings, { [name]: value });
                 }
+                additionalOnChange?.();
             })
         });
         this.settingRefs[name] = setting;
@@ -277,9 +278,9 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addHeading('Theorem callouts - general');
 
         this.addProfileSetting();
-        const styleSetting = this.addDropdownSetting("theoremCalloutStyle", THEOREM_CALLOUT_STYLES, "Style");
+        const styleSetting = this.addDropdownSetting("theoremCalloutStyle", THEOREM_CALLOUT_STYLES, "Style", undefined, undefined, () => this.plugin.forceRerender());
         styleSetting.descEl.replaceChildren(
-            "Choose between your custom style and preset styles. You will need to reload the note to see the changes. See the ",
+            "Choose between your custom style and preset styles. You might need to reopen the notes or reload the app to see the changes. See the ",
             createEl("a", { text: "documentation", attr: { href: "https://ryotaushio.github.io/obsidian-math-booster/style-your-theorems.html" } }),
             " for how to customize the appearance of theorem callouts. \"Custom\" is recommended, since it will give you the most control. You can view the CSS snippets for all the preset styles in the documentation or README on GitHub. The preset styles are only for a trial purpose, and they might not work well with some non-default themes.",
         );

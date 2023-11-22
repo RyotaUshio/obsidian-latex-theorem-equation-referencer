@@ -1,0 +1,37 @@
+@mixin plain {
+    /* 
+    If you're going to use this file as a CSS snippet, only include the code between 
+    the START and END comments to your snippet file.
+    */
+    /* START */
+    .theorem-callout {
+        --callout-color: var(--text-normal);
+        background-color: rgb(0, 0, 0, 0);
+        padding-left: 0;
+        padding-right: 0;
+        border: none;
+        box-shadow: none;
+    }
+
+    .theorem-callout .callout-icon {
+        display: none;
+    }
+
+    .theorem-callout .callout-title-inner {
+        font-family: CMU Serif, Times, Noto Sans JP;
+        font-weight: bolder;
+
+        .theorem-callout-subtitle {
+            font-weight: normal;
+        }    
+    }
+
+    .theorem-callout .callout-content {
+        font-family: CMU Serif, Times, Noto Serif JP;
+    }
+
+    :not(.theorem-callout-axiom):not(.theorem-callout-definition):not(.theorem-callout-remark).theorem-callout-en .callout-content {
+        font-style: italic;
+    }
+    /* END */
+}

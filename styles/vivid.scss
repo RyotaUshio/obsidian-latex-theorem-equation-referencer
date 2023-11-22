@@ -1,0 +1,44 @@
+@mixin vivid {
+
+    /* 
+    If you're going to use this file as a CSS snippet, only include the code between 
+    the START and END comments to your snippet file.
+    */
+    /* START */
+    .theorem-callout {
+        --callout-color: 238, 15, 149;
+        border-top: none;
+        border-bottom: none;
+        border-left: var(--size-2-2) solid rgb(var(--callout-color));
+        border-right: none;
+        border-radius: 0px;
+        box-shadow: none;
+        padding: 0px;
+        font-family: CMU Serif, Times, Noto Serif JP;
+    }
+
+    .theorem-callout .callout-title {
+        padding: var(--size-2-3);
+        padding-left: var(--size-4-3);
+    }
+
+    .theorem-callout .callout-icon {
+        display: none;
+    }
+
+    .theorem-callout .callout-title-inner {
+        font-family: Inter;
+        font-weight: normal;
+        color: rgb(var(--callout-color));
+    }
+
+    .theorem-callout-subtitle {
+        font-weight: lighter;
+    }
+
+    .theorem-callout .callout-content {
+        background-color: var(--background-primary);
+        padding: 1px 20px 2px 20px;
+    }
+    /* END */
+}
