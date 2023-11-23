@@ -83,52 +83,45 @@ export function addSubTitle(mainTitle: string, settings: ResolvedMathSettings, n
     return title;
 }
 
-export function inferNumberPrefix(source: string, parseSep: string, printSep: string, useFirstN: number): string | undefined {
-    // ex) If filename == "1-2.A foo", then head == "1-2.A"
-    const head = source.slice(0, source.match(/\s/)?.index ?? source.length);
-    // ex) If parseSep = '.-', then labels == ["1", "2", "A"]
-    const labels = head.split(new RegExp(`[${parseSep}]`));
-    if (areValidLabels(labels)) {
-        // ex) If useFirstN == 1, then usedLabels == ["1"]
-        const usedLabels = labels.slice(0, useFirstN);
-        let prefix = usedLabels.join(printSep);
-        if (!prefix.endsWith(printSep)) {
-            prefix += printSep;
-        }
-        // ex) If printSep == ".", then prefix == "1."
+export function inferNumberPrefix(source: string, regExp: string): string | undefined {
+    const pattern = new RegExp(regExp);
+    const match = source.match(pattern);
+    if (match) {
+        let prefix = match[0].trim();
+        if (!prefix.endsWith('.')) prefix += '.';
         return prefix;
     }
 }
 
-/**
- * "A note about calculus" => The "A" at the head shouldn't be used as a prefix (indefinite article)
- * "A. note about calculus" => The "A" at the head IS a prefix
- */
-export function areValidLabels(labels: string[]): boolean {
-    function isValidLabel(label: string): boolean { // true if every label is an arabic or roman numeral
-        if (label.match(/^[0-9]+$/)) {
-            // Arabic numerals
-            return true;
-        }
-        if (label.match(/^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i)) {
-            // Roman numerals
-            // Reference: https://stackoverflow.com/a/267405/13613783
-            return true;
-        }
-        if (label.match(/^[a-z]$/i)) {
-            return true;
-        }
-        return false;
-    }
-    const blankRemoved = labels.filter((label) => label);
-    if (blankRemoved.length >= 2) {
-        return blankRemoved.every((label) => isValidLabel(label));
-    }
-    if (blankRemoved.length == 1) {
-        return labels.length == 2 && (isValidLabel(labels[0]));
-    }
-    return false;
-}
+// /**
+//  * "A note about calculus" => The "A" at the head shouldn't be used as a prefix (indefinite article)
+//  * "A. note about calculus" => The "A" at the head IS a prefix
+//  */
+// export function areValidLabels(labels: string[]): boolean {
+//     function isValidLabel(label: string): boolean { // true if every label is an arabic or roman numeral
+//         if (label.match(/^[0-9]+$/)) {
+//             // Arabic numerals
+//             return true;
+//         }
+//         if (label.match(/^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i)) {
+//             // Roman numerals
+//             // Reference: https://stackoverflow.com/a/267405/13613783
+//             return true;
+//         }
+//         if (label.match(/^[a-z]$/i)) {
+//             return true;
+//         }
+//         return false;
+//     }
+//     const blankRemoved = labels.filter((label) => label);
+//     if (blankRemoved.length >= 2) {
+//         return blankRemoved.every((label) => isValidLabel(label));
+//     }
+//     if (blankRemoved.length == 1) {
+//         return labels.length == 2 && (isValidLabel(labels[0]));
+//     }
+//     return false;
+// }
 
 /**
  * Get an appropriate prefix for theorem callout numbering.
@@ -144,9 +137,7 @@ export function getNumberPrefix(app: App, file: TFile, settings: Required<MathCo
     if (settings.inferNumberPrefix && source) {
         return inferNumberPrefix(
             source,
-            settings.inferNumberPrefixParseSep,
-            settings.inferNumberPrefixPrintSep,
-            settings.inferNumberPrefixUseFirstN
+            settings.inferNumberPrefixRegExp
         ) ?? "";
     }
     return "";
@@ -164,12 +155,12 @@ export function getEqNumberPrefix(app: App, file: TFile, settings: Required<Math
     }
     const source = settings.inferEqNumberPrefixFromProperty ? getPropertyOrLinkTextInProperty(app, file, settings.inferEqNumberPrefixFromProperty) : file.basename;
     if (settings.inferEqNumberPrefix && source) {
-        return inferNumberPrefix(
+        const prefix = inferNumberPrefix(
             source,
-            settings.inferEqNumberPrefixParseSep,
-            settings.inferEqNumberPrefixPrintSep,
-            settings.inferEqNumberPrefixUseFirstN
+            settings.inferEqNumberPrefixRegExp
         ) ?? "";
+        console.log({source, prefix});
+        return prefix;
     }
     return "";
 }

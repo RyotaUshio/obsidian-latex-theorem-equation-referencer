@@ -63,9 +63,7 @@ export interface MathContextSettings {
     titleSuffix: string;
     inferNumberPrefix: boolean;
     inferNumberPrefixFromProperty: string;
-    inferNumberPrefixParseSep: string;
-    inferNumberPrefixPrintSep: string;
-    inferNumberPrefixUseFirstN: number;
+    inferNumberPrefixRegExp: string;
     numberPrefix: string;
     numberSuffix: string;
     numberInit: number;
@@ -76,9 +74,7 @@ export interface MathContextSettings {
     ignoreMainTheoremCalloutWithoutTitle: boolean;
     inferEqNumberPrefix: boolean;
     inferEqNumberPrefixFromProperty: string;
-    inferEqNumberPrefixParseSep: string;
-    inferEqNumberPrefixPrintSep: string;
-    inferEqNumberPrefixUseFirstN: number;
+    inferEqNumberPrefixRegExp: string;
     eqNumberPrefix: string;
     eqNumberSuffix: string;
     eqNumberInit: number;
@@ -188,9 +184,7 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     titleSuffix: ".",
     inferNumberPrefix: true,
     inferNumberPrefixFromProperty: "",
-    inferNumberPrefixParseSep: "-.",
-    inferNumberPrefixPrintSep: ".",
-    inferNumberPrefixUseFirstN: 1,
+    inferNumberPrefixRegExp: "^[0-9]+(\\.[0-9]+)*",
     numberPrefix: "",
     numberSuffix: "",
     numberInit: 1,
@@ -201,9 +195,7 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     ignoreMainTheoremCalloutWithoutTitle: false,
     inferEqNumberPrefix: true,
     inferEqNumberPrefixFromProperty: "",
-    inferEqNumberPrefixParseSep: "-.",
-    inferEqNumberPrefixPrintSep: ".",
-    inferEqNumberPrefixUseFirstN: 1,
+    inferEqNumberPrefixRegExp: "^[0-9]+(\\.[0-9]+)*",
     eqNumberPrefix: "",
     eqNumberSuffix: "",
     eqNumberInit: 1,
