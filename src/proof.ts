@@ -35,7 +35,7 @@ function parseAtSignLink(codeEl: HTMLElement) {
     const afterAfterNext = afterNext?.nextSibling;
     if (afterNext) {
         if (next.nodeType == Node.TEXT_NODE && next.textContent == "@"
-            && afterNext instanceof HTMLElement && afterNext.matches("a.internal-link")
+            && afterNext instanceof HTMLElement && afterNext.matches("a.original-internal-link")
             && afterAfterNext instanceof HTMLElement && afterAfterNext.matches("a.mathLink-internal-link")) {
             return { atSign: next, links: [afterNext, afterAfterNext] };
         }
@@ -120,7 +120,9 @@ export class ProofRenderer extends MarkdownRenderChild {
 export const createProofProcessor = (plugin: MathBooster) => (element: HTMLElement, context: MarkdownPostProcessorContext) => {
     if (!plugin.extraSettings.enableProof) return;
 
-    const file = plugin.app.vault.getAbstractFileByPath(context.sourcePath);
+    const { app } = plugin;
+
+    const file = app.vault.getAbstractFileByPath(context.sourcePath);
     if (!(file instanceof TFile)) return;
 
     const settings = resolveSettings(undefined, plugin, file);
