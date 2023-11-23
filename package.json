@@ -7,7 +7,8 @@
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && sass styles.scss styles.css",
 		"dev-style": "sass --watch styles.scss styles.css",
 		"build-style": "sass --watch styles.scss styles.css",
-		"version": "node version-bump.mjs && git add manifest.json versions.json"
+		"version": "node version-bump.mjs && git add manifest.json versions.json",
+		"test": "mkdir -p ../../../../Math\\ Booster\\ Test/.obsidian/plugins/math-booster && cp main.js styles.css manifest.json ../../../../Math\\ Booster\\ Test/.obsidian/plugins/math-booster && rm ../../../../Math\\ Booster\\ Test/.obsidian/plugins/math-booster/data.json"
 	},
 	"keywords": [],
 	"author": "Ryota Ushio",

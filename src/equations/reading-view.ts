@@ -24,6 +24,7 @@ export const createEquationNumberProcessor = (plugin: MathBooster) => async (el:
             new EquationNumberRenderer(mjxContainerEl, plugin, sourceFile, ctx)
         );
     }
+    finishRenderMath();
 }
 
 
@@ -113,7 +114,7 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
     }
 
     onunload() {
-        // I don't know when to call finishRenderMath...
+        // I don't know if this is really necessary, but just in case...
         finishRenderMath();
     }
 

@@ -83,8 +83,12 @@ export function createEquationNumberPlugin(plugin: MathBooster) {
             for (const mjxContainerEl of mjxContainerElements) {
                 try {
                     const pos = view.posAtDOM(mjxContainerEl);
-                    const line = view.state.doc.lineAt(pos).number - 1; // sometimes throws an error for reasons that I don't understand
-                    const block = page.getBlockByLineNumber(line);
+                    let block = page.getBlockByOffset(pos);
+                    if (!block) {
+                        // try again
+                        const line = view.state.doc.lineAt(pos).number - 1; // sometimes throws an error for reasons that I don't understand
+                        block = page.getBlockByLineNumber(line);
+                    }
                     if (!(block instanceof EquationBlock)) continue;
 
                     // only update if necessary
@@ -97,10 +101,14 @@ export function createEquationNumberPlugin(plugin: MathBooster) {
                     // never mind, try again later
                 }
             }
+            // DON'T FOREGET THIS CALL!!
+            // https://github.com/RyotaUshio/obsidian-math-booster/issues/203
+            // https://github.com/RyotaUshio/obsidian-math-booster/issues/200
+            finishRenderMath();
         }
 
         destroy() {
-            // I don't know when to call finishRenderMath...
+            // I don't know if this is really necessary, but just in case...
             finishRenderMath();
         }
     });
