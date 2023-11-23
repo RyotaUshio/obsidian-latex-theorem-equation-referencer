@@ -4,7 +4,7 @@
 
 import { EditorState, StateEffect } from '@codemirror/state';
 import { PluginValue, ViewPlugin, EditorView, ViewUpdate } from '@codemirror/view';
-import { EquationBlock, MarkdownPage } from 'index/typings/markdown';
+import { EquationBlock, MarkdownBlock, MarkdownPage } from 'index/typings/markdown';
 import MathBooster from 'main';
 import { MarkdownView, TFile, editorInfoField, finishRenderMath } from 'obsidian';
 import { resolveSettings } from 'utils/plugin';
@@ -81,25 +81,23 @@ export function createEquationNumberPlugin(plugin: MathBooster) {
             const mjxContainerElements = view.contentDOM.querySelectorAll<HTMLElement>(':scope > .cm-embed-block.math > mjx-container.MathJax[display="true"]');
 
             for (const mjxContainerEl of mjxContainerElements) {
-                try {
-                    const pos = view.posAtDOM(mjxContainerEl);
-                    let block = page.getBlockByOffset(pos);
-                    if (!block) {
-                        // try again
-                        const line = view.state.doc.lineAt(pos).number - 1; // sometimes throws an error for reasons that I don't understand
-                        block = page.getBlockByLineNumber(line);
-                    }
-                    if (!(block instanceof EquationBlock)) continue;
 
-                    // only update if necessary
-                    if (mjxContainerEl.getAttribute('data-equation-print-name') !== block.$printName) {
-                        replaceMathTag(mjxContainerEl, block, this.settings);
-                    }
-                    if (block.$printName !== null) mjxContainerEl.setAttribute('data-equation-print-name', block.$printName);
-                    else mjxContainerEl.removeAttribute('data-equation-print-name');
+                const pos = view.posAtDOM(mjxContainerEl);
+                let block: MarkdownBlock | undefined;
+                try {
+                    const line = view.state.doc.lineAt(pos).number - 1; // sometimes throws an error for reasons that I don't understand
+                    block = page.getBlockByLineNumber(line);
                 } catch (err) {
-                    // never mind, try again later
+                    block = page.getBlockByOffset(pos);
                 }
+                if (!(block instanceof EquationBlock)) continue;
+
+                // only update if necessary
+                if (mjxContainerEl.getAttribute('data-equation-print-name') !== block.$printName) {
+                    replaceMathTag(mjxContainerEl, block, this.settings);
+                }
+                if (block.$printName !== null) mjxContainerEl.setAttribute('data-equation-print-name', block.$printName);
+                else mjxContainerEl.removeAttribute('data-equation-print-name');
             }
             // DON'T FOREGET THIS CALL!!
             // https://github.com/RyotaUshio/obsidian-math-booster/issues/203
