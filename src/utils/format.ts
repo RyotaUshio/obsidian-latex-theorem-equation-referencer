@@ -159,7 +159,6 @@ export function getEqNumberPrefix(app: App, file: TFile, settings: Required<Math
             source,
             settings.inferEqNumberPrefixRegExp
         ) ?? "";
-        console.log({source, prefix});
         return prefix;
     }
     return "";
