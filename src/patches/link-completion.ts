@@ -1,4 +1,4 @@
-import { EditorSuggest, TFile, renderMath } from "obsidian";
+import { EditorSuggest, Notice, TFile, renderMath } from "obsidian";
 import { around } from "monkey-around";
 
 import MathBooster from "main";
@@ -9,7 +9,9 @@ import { _readTheoremCalloutSettings } from 'utils/parse';
 import { capitalize } from 'utils/general';
 
 export const patchLinkCompletion = (plugin: MathBooster) => {
-    const prototype = (plugin.app.workspace as any).editorSuggest.suggests[0].constructor.prototype as EditorSuggest<any>;
+    const suggest = (plugin.app.workspace as any).editorSuggest.suggests[0]; // built-in link completion
+    if (!Object.hasOwn(suggest, 'suggestManager')) new Notice(`Failed to patch Obsidian\'s built-in link completion. Please reload ${plugin.manifest.name}.`);
+    const prototype = suggest.constructor.prototype as EditorSuggest<any>;
 
     plugin.register(around(prototype, {
         renderSuggestion(old) {

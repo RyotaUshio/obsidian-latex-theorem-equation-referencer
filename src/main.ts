@@ -441,7 +441,9 @@ export default class MathBooster extends Plugin {
 		setTimeout(async () => {
 			for (const leaf of this.app.workspace.getLeavesOfType('markdown')) {
 				const view = leaf.view as MarkdownView;
+				const state = view.getEphemeralState();
 				view.previewMode.rerender(true);
+				view.setEphemeralState(state);
 			}
 		}, 800);
 	}
