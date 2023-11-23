@@ -56,13 +56,9 @@ export class DependencyNotificationModal extends Modal {
          * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
          * SOFTWARE.
          */
-        for (const depenedency of [
-            { id: "mathlinks", name: "MathLinks" },
-            // { id: "dataview", name: "Dataview" }
-        ]) {
+        for (const depenedency of Object.values(this.plugin.dependencies)) {
             const depPlugin = this.app.plugins.getPlugin(depenedency.id);
-            const requiredVersion = this.plugin.dependencies[depenedency.id];
-            const isValid = depPlugin && !isPluginOlderThan(depPlugin, requiredVersion);
+            const isValid = depPlugin && !isPluginOlderThan(depPlugin, depenedency.version);
             const setting = new Setting(this.contentEl)
                 .setName(depenedency.name)
                 .addExtraButton((button) => {
@@ -75,7 +71,7 @@ export class DependencyNotificationModal extends Modal {
             setting.descEl.createDiv(
                 {
                     text:
-                        `Required version: ${requiredVersion}+ / `
+                        `Required version: ${depenedency.version}+ / `
                         + (depPlugin ? `Currently installed: ${depPlugin.manifest.version}`
                             : `Not installed or enabled`)
                 }

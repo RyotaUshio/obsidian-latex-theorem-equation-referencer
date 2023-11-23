@@ -32,9 +32,8 @@ export default class MathBooster extends Plugin {
 	settings: Record<string, Partial<MathContextSettings>>;
 	extraSettings: ExtraSettings;
 	excludedFiles: string[];
-	dependencies: Record<string, string> = {
-		"mathlinks": "0.5.2",
-		// "dataview": "0.5.56",
+	dependencies: Record<string, { id: string, name: string, version: string }> = {
+		"mathlinks": { id: "mathlinks", name: "MathLinks", version: "0.5.3" }
 	};
 	indexManager: MathIndexManager;
 	editorExtensions: Extension[];
@@ -137,7 +136,7 @@ export default class MathBooster extends Plugin {
 
 		/** Theorem/equation link autocompletion */
 		this.updateLinkAutocomplete();
-		
+
 		this.app.workspace.onLayoutReady(() => patchLinkCompletion(this));
 
 		/** Markdown post processors */
@@ -317,7 +316,7 @@ export default class MathBooster extends Plugin {
 		}
 		const depPlugin = this.app.plugins.getPlugin(id);
 		if (depPlugin) {
-			return !isPluginOlderThan(depPlugin, this.dependencies[id])
+			return !isPluginOlderThan(depPlugin, this.dependencies[id].version)
 		}
 		return false;
 	}
