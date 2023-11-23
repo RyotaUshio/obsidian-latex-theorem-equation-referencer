@@ -1,5 +1,5 @@
 import { EquationBlock } from "index/typings/markdown";
-import { renderMath } from "obsidian";
+import { finishRenderMath, renderMath } from "obsidian";
 import { MathContextSettings } from "settings/settings";
 import { parseLatexComment } from "utils/parse";
 
@@ -16,7 +16,7 @@ export function replaceMathTag(displayMathEl: HTMLElement, equation: EquationBlo
             displayMathEl.style.cssText = mjxContainerEl.style.cssText;
         } else {
             displayMathEl.removeAttribute('width');
-            displayMathEl.style.cssText = '';
+            displayMathEl.removeAttribute('style');
         }
         displayMathEl.replaceChildren(...mjxContainerEl.childNodes);
     }

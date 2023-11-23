@@ -120,6 +120,14 @@ export class MarkdownPage implements File, Linkbearing, Indexable {
         return block;
     }
 
+    public getBlockByOffset(offset: number) {
+        for (const section of this.$sections) {
+            for (const block of section.$blocks) {
+                if (block.$pos.start.offset <= offset && offset <= block.$pos.end.offset) return block;
+            }
+        }
+    }
+
     static isMarkdownPage(object: Indexable | undefined): object is MarkdownPage {
         return object !== undefined && '$typename' in object && (object as any).$typename === 'Page';
     }

@@ -147,9 +147,12 @@ export default class MathBooster extends Plugin {
 
 		// equation numbers
 		this.registerMarkdownPostProcessor(createEquationNumberProcessor(this));
+
+		// UPDATE: The quick fix below is no longer necessary. The root cause was not calling finishRenderMath() after markdown post processing or CM6 view plugin updates.
+
 		// Quick fix for https://github.com/RyotaUshio/obsidian-math-booster/issues/200
 		// But I don't really understand why this works. Please let me know if you know the reason.
-		this.app.workspace.onLayoutReady(() => this.forceRerender());
+		// this.app.workspace.onLayoutReady(() => this.forceRerender());
 
 		// proof environments
 		this.registerMarkdownPostProcessor(createProofProcessor(this));
