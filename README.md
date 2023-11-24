@@ -54,7 +54,7 @@ Since version 2 is still beta, it's not on the community plugin browser yet.
 
 ### Obsidian plugins
 
-Math Booster requires [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) version 0.5.2 or higher installed to work properly ([Clever referencing](https://ryotaushio.github.io/obsidian-math-booster/clever-referencing.html)).
+Math Booster requires [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) version 0.5.3 or higher installed to work properly ([Clever referencing](https://ryotaushio.github.io/obsidian-math-booster/clever-referencing.html)).
 
 In version 2, [Dataview](https://github.com/blacksmithgu/obsidian-dataview) is no longer required. But I strongly recommend installing it because it enhances Math Booster's [search](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/search-modal.html) functionality significantly.
 
