@@ -114,18 +114,19 @@ To fully enjoy Math Booster v2, click the button below to convert the old theore
             `### What's new in version 2
 
 - [New format for theorem callouts](https://ryotaushio.github.io/obsidian-math-booster/theorem-callouts/theorem-callouts.html):
-    - much cleaner,
-    - more intuitive,
-    - more keyboard-friendly,
-    - and less plugin-dependent than the previous format
-- New indexing mechanism:
-    - no longer blocks UI
-    - no longer hard-codes theorem indices in notes directly
-- [Editor auto-completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/editor-auto-completion.html) improvements: filter theorems & equations (entire vault/recent notes/active note/dataview queries)
-- [Search modal](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/search-modal.html): more control & flexibility than editor auto-completion
-- Adding metadata to theorems and equations with comments
-    - e.g. display name of equations
-- Theorem/equation numbers now can be displayed *almost everywhere*:
+    -   *much cleaner*,
+    -   *more intuitive*,
+    -   *more keyboard-friendly*,
+    -   and *less plugin-dependent* than the previous format
+-   New indexing mechanism:
+    -   no longer blocks UI
+    -   no longer hard-codes theorem indices in notes directly
+-   [Enhancing Obsidian's built-in link completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/enhancing-obsidian's-built-in-link-completion.html): now equations are rendered in the built-in completion as well.
+-   [Custom link completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/custom-link-completion.html) improvements: filter theorems & equations (*entire vault/recent notes/active note*)
+-   [Search modal](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/search-modal.html): more control & flexibility than editor auto-completion, including *Dataview queries*
+-   Adding metadata to [theorems](https://ryotaushio.github.io/obsidian-math-booster/theorem-callouts/theorem-callouts.html) and [equations](https://ryotaushio.github.io/obsidian-math-booster/equations.html) with comments
+- Theorem numbers and [equation numbers](https://ryotaushio.github.io/obsidian-math-booster/equations.html) now can be displayed *almost everywhere*:
+        
 ##### Version 1:
 
 |                    | Theorem number | Equation number |
