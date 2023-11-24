@@ -131,7 +131,7 @@ export class MathIndexManager extends Component {
     private async rename(file: TAbstractFile, oldPath: string) {
         if (!(file instanceof TFile)) return;
 
-        this.plugin.settings[file.path] = JSON.parse(JSON.stringify(this.plugin.settings[oldPath]));
+        this.plugin.settings[file.path] = structuredClone(this.plugin.settings[oldPath]);
         delete this.plugin.settings[oldPath];
         this.plugin.excludedFiles.remove(oldPath);
         this.plugin.excludedFiles.push(file.path);
