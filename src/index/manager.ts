@@ -247,9 +247,9 @@ export class MathIndexManager extends Component {
         // recompute theorem/equation numbers for the previously linked files
         toBeUpdated.forEach((fileToBeUpdated) => {
             this.index.updateNames(fileToBeUpdated);
-            MathLinks.update(this.app, fileToBeUpdated);
         });
         this.trigger("update", this.revision);
+        MathLinks.update(this.app);
     }
 
     // Event propogation.
