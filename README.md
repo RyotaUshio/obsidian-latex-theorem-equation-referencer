@@ -1,13 +1,11 @@
 # Math Booster for Obsidian
 
 > [!note]
-> Math Booster is moving forward to major version 2! Check out our [new documentation site](https://ryotaushio.github.io/obsidian-math-booster).
+> Now ***Math Booster version 2*** is available with a bunch of improvements! Check out the [new docs](https://ryotaushio.github.io/obsidian-math-booster).
 
-Turn your Obsidian into ***LaTeX on steroids*** with Math Booster. 
+**Math Booster** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience, turning your Obsidian into ***LaTeX on steroids***.
 
 ![Screenshot](https://raw.githubusercontent.com/RyotaUshio/obsidian-math-booster/1c7b106fcfbddccdcda8451de1c21a094994b686/docs/fig/screenshot.png)
-
-**Math Booster** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience.
 
 (The theorem in the screenshot is cited from [Tao, Terence, ed. An introduction to measure theory. Vol. 126. American Mathematical Soc., 2011.](https://terrytao.files.wordpress.com/2012/12/gsm-126-tao5-measure-book.pdf))
 
@@ -22,7 +20,10 @@ https://ryotaushio.github.io/obsidian-math-booster
 - [Rendering equations inside callouts](https://ryotaushio.github.io/obsidian-math-booster/extending-obsidian's-math-rendering-functionalities/rendering-equations-inside-callouts.html)
 - [Multi-line equation support inside blockquotes](https://ryotaushio.github.io/obsidian-math-booster/extending-obsidian's-math-rendering-functionalities/multi-line-equation-support-inside-blockquotes.html)
 - [Clever referencing](https://ryotaushio.github.io/obsidian-math-booster/clever-referencing.html)
-- [Search modal](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/search-modal.html)
+- [Search & link auto-completion](chrome-extension://pcmpcfapbekmbjjkdalcgopdkipoggdi//search-&-link-auto-completion/search-&-link-auto-completion.html)
+  - [Enhancing Obsidian's built-in link completion](chrome-extension://pcmpcfapbekmbjjkdalcgopdkipoggdi//Enhancing Obsidian's built-in link completion)[Enhancing Obsidian's built-in link completion](chrome-extension://pcmpcfapbekmbjjkdalcgopdkipoggdi//search-&-link-auto-completion/enhancing-obsidian's-built-in-link-completion.html)
+  - [Custom link completion](chrome-extension://pcmpcfapbekmbjjkdalcgopdkipoggdi//Custom link completion)[Custom link completion](chrome-extension://pcmpcfapbekmbjjkdalcgopdkipoggdi//search-&-link-auto-completion/custom-link-completion.html)
+  - [Search modal](chrome-extension://pcmpcfapbekmbjjkdalcgopdkipoggdi//Search modal)[Search modal](chrome-extension://pcmpcfapbekmbjjkdalcgopdkipoggdi//search-&-link-auto-completion/search-modal.html)
 - [Proof environment (experimental)](https://ryotaushio.github.io/obsidian-math-booster/proof-environment.html)
 
 Theorems & equations can be **dynamically/automatically numbered**, while you can statically/manually number them if you want.
@@ -30,21 +31,24 @@ The number prefix can be either explicitly specified or automatically inferred f
 
 Thanks to the integration with [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks), links to theorems/equations are [displayed with their title or number](https://ryotaushio.github.io/obsidian-math-booster//cleveref), similarly to the `cleveref` package in LaTeX. (No need for manually typing aliases!)
 
-You can also customize the appearance of theorem callouts using CSS snippets. See the [styles gallery](#styles-gallery) for examples.
+You can also customize the appearance of theorem callouts using CSS snippets; see [here](https://ryotaushio.github.io/obsidian-math-booster/theorem-callouts/styling.html).
 
 Also check out the [No More Flickering Inline Math](https://github.com/RyotaUshio/obsidian-inline-math) plugin, which lets you work with inline math much more comfortably.
 
 ## Installation
 
-Since version 2 is still beta, it's not on the community plugin browser yet.
+## Installation
 
-But you can install the latest beta release using [BRAT](https://github.com/TfTHacker/obsidian42-brat):
+You can install this plugin via Obsidian's community plugin browser (see [here](https://help.obsidian.md/Extending+Obsidian/Community+plugins#Install+a+community+plugin) for instructions).
+
+Also, you can test the latest beta release using [BRAT](https://github.com/TfTHacker/obsidian42-brat):
 
 1.  Install BRAT and enable it.
-2.  Go to `Options`. In the `Beta Plugin List` section, click on the `Add Beta plugin` button.
+2.  Go to **Options**. In the **Beta Plugin List** section, click on the **Add Beta plugin** button.
 3.  Copy and paste `RyotaUshio/obsidian-math-booster` in the pop-up prompt and click on **Add Plugin**.
-4.  _(Optional but highly recommended)_ Turn on `Auto-update plugins at startup` at the top of the page.
-5.  Go to `Community plugins > Installed plugins`. You will find “Math Booster” in the list. Click on the toggle button to enable it.
+4.  _(Optional)_ Turn on **Auto-update plugins at startup** at the top of the page.
+5.  Go to **Community plugins > Installed plugins**. You will find "Math Booster" in the list. Click on the toggle button to enable it.
+Since version 2 is still beta, it's not on the community plugin browser yet.
 
 ## Dependencies
 
@@ -77,4 +81,3 @@ Additionally, [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP
 If you find this plugin useful, please support my work by buying me a coffee!
 
 <a href="https://www.buymeacoffee.com/ryotaushio" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
