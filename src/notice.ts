@@ -27,7 +27,7 @@ export class DependencyNotificationModal extends Modal {
 
     showDependencies() {
         this.contentEl.createDiv({
-            text: `${this.plugin.manifest.name} requires the following plugins to work properly. Disable it once, install/update & enable the dependencies and enable it again.`,
+            text: `${this.plugin.manifest.name} requires the following plugin to work properly.`,
             attr: { style: "margin-bottom: 1em;" }
         });
 
