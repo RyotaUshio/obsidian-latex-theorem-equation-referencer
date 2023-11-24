@@ -60,7 +60,7 @@ In version 2, [Dataview](https://github.com/blacksmithgu/obsidian-dataview) is n
 
 ### Fonts
 
-You have to install [CMU Serif](https://www.cufonfonts.com/font/cmu-serif) (which this documentation uses) to get some of the preset styles for [[Theorem callouts|theorem callouts]] displayed properly.
+You have to install [CMU Serif](https://www.cufonfonts.com/font/cmu-serif) to get some of the [preset styles for theorem callouts](https://ryotaushio.github.io/obsidian-math-booster/theorem-callouts/styling.html) displayed properly.
 
 Additionally, [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) is required for render the preset styles properly in Japanese.
 
@@ -68,8 +68,7 @@ Additionally, [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP
 
 - Feel free to create a new issue if something is not working well. Questions are also welcomed.
 - Please send a pull request if you have any ideas to improve Math Booster and our experience!
-  - **Even if you don't code, your help is still needed to improve the documentation and README.** For example, the active update of this plugin has already made some of the images in the documentation outdated...
-  - Of course, programmers' contributions are highly welcomed.
+- Contribution to the docs is also highly appreciated: see [here](https://github.com/RyotaUshio/math-booster-docs).
 
 ## Roadmaps
 
