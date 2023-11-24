@@ -20,16 +20,16 @@ https://ryotaushio.github.io/obsidian-math-booster
 - [Rendering equations inside callouts](https://ryotaushio.github.io/obsidian-math-booster/extending-obsidian's-math-rendering-functionalities/rendering-equations-inside-callouts.html)
 - [Multi-line equation support inside blockquotes](https://ryotaushio.github.io/obsidian-math-booster/extending-obsidian's-math-rendering-functionalities/multi-line-equation-support-inside-blockquotes.html)
 - [Clever referencing](https://ryotaushio.github.io/obsidian-math-booster/clever-referencing.html)
-- [Search & link auto-completion](chrome-extension://pcmpcfapbekmbjjkdalcgopdkipoggdi//search-&-link-auto-completion/search-&-link-auto-completion.html)
-  - [Enhancing Obsidian's built-in link completion](chrome-extension://pcmpcfapbekmbjjkdalcgopdkipoggdi//Enhancing Obsidian's built-in link completion)[Enhancing Obsidian's built-in link completion](chrome-extension://pcmpcfapbekmbjjkdalcgopdkipoggdi//search-&-link-auto-completion/enhancing-obsidian's-built-in-link-completion.html)
-  - [Custom link completion](chrome-extension://pcmpcfapbekmbjjkdalcgopdkipoggdi//Custom link completion)[Custom link completion](chrome-extension://pcmpcfapbekmbjjkdalcgopdkipoggdi//search-&-link-auto-completion/custom-link-completion.html)
-  - [Search modal](chrome-extension://pcmpcfapbekmbjjkdalcgopdkipoggdi//Search modal)[Search modal](chrome-extension://pcmpcfapbekmbjjkdalcgopdkipoggdi//search-&-link-auto-completion/search-modal.html)
+- [Search & link auto-completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/search-&-link-auto-completion.html)
+  - [Enhancing Obsidian's built-in link completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/enhancing-obsidian's-built-in-link-completion.html): now equations are rendered in the built-in completion as well.
+  - [Custom link completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/custom-link-completion.html) improvements: filter theorems & equations (*entire vault/recent notes/active note*)
+  - [Search modal](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/search-modal.html): more control & flexibility than editor auto-completion, including *Dataview queries*
 - [Proof environment (experimental)](https://ryotaushio.github.io/obsidian-math-booster/proof-environment.html)
 
 Theorems & equations can be **dynamically/automatically numbered**, while you can statically/manually number them if you want.
 The number prefix can be either explicitly specified or automatically inferred from the note title.
 
-Thanks to the integration with [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks), links to theorems/equations are [displayed with their title or number](https://ryotaushio.github.io/obsidian-math-booster//cleveref), similarly to the `cleveref` package in LaTeX. (No need for manually typing aliases!)
+Thanks to the integration with [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks), links to theorems/equations are displayed with their title or number, similarly to the `cleveref` package in LaTeX. (No need for manually typing aliases!)
 
 You can also customize the appearance of theorem callouts using CSS snippets; see [here](https://ryotaushio.github.io/obsidian-math-booster/theorem-callouts/styling.html).
 
