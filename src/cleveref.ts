@@ -1,16 +1,17 @@
+import { EquationBlock } from 'index/typings/markdown';
 import { TFile, HeadingSubpathResult, BlockSubpathResult, App } from 'obsidian';
 import * as MathLinks from 'obsidian-mathlinks';
 
-import { MathIndex } from './index/index';
-import { MarkdownPage, MathBoosterBlock } from './index/typings/markdown';
-import MathBooster from './main';
+import MathBooster from 'main';
+import { MathIndex } from 'index/index';
+import { MarkdownPage, MathBoosterBlock, TheoremCalloutBlock } from 'index/typings/markdown';
 
 
 export class CleverefProvider extends MathLinks.Provider {
     app: App;
     index: MathIndex;
 
-    constructor(mathLinks: any, plugin: MathBooster) {
+    constructor(mathLinks: any, public plugin: MathBooster) {
         super(mathLinks);
         this.app = plugin.app;
         this.index = plugin.indexManager.index;
@@ -43,9 +44,9 @@ export class CleverefProvider extends MathLinks.Provider {
 
             if (MathBoosterBlock.isMathBoosterBlock(block)) {
                 // display text set manually: higher priority
-                if (block.$display) return path ? processedPath + ' > ' + block.$display : block.$display;
+                if (block.$display) return path && this.shouldShowNoteTitle(block) ? processedPath + ' > ' + block.$display : block.$display;
                 // display text computed automatically: lower priority
-                if (block.$refName) return path ? processedPath + ' > ' + block.$refName : block.$refName;
+                if (block.$refName) return path && this.shouldShowNoteTitle(block) ? processedPath + ' > ' + block.$refName : block.$refName;
             }
         } else {
             // handle heading links
@@ -56,5 +57,11 @@ export class CleverefProvider extends MathLinks.Provider {
         }
 
         return null;
+    }
+
+    shouldShowNoteTitle(block: MathBoosterBlock): boolean {
+        if (TheoremCalloutBlock.isTheoremCalloutBlock(block)) return this.plugin.extraSettings.noteTitleInTheoremLink;
+        if (EquationBlock.isEquationBlock(block)) return this.plugin.extraSettings.noteTitleInEquationLink;
+        return true;
     }
 }

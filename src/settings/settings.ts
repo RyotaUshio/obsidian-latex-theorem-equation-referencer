@@ -126,7 +126,8 @@ export interface ImporterSettings {
 
 export type ExtraSettings = ImporterSettings & {
     foldDefault: FoldOption;
-    noteTitleInLink: boolean;
+    noteTitleInTheoremLink: boolean;
+    noteTitleInEquationLink: boolean;
     profiles: Record<string, Profile>;
     showTheoremTitleinBuiltin: boolean;
     renderEquationinBuiltin: boolean;
@@ -213,7 +214,8 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
 
 export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     foldDefault: '',
-    noteTitleInLink: true,
+    noteTitleInTheoremLink: true,
+    noteTitleInEquationLink: true,
     profiles: DEFAULT_PROFILES,
     showTheoremTitleinBuiltin: true,
     renderEquationinBuiltin: true,
