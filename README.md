@@ -21,8 +21,10 @@ https://ryotaushio.github.io/obsidian-math-booster
 - [Multi-line equation support inside blockquotes](https://ryotaushio.github.io/obsidian-math-booster/extending-obsidian's-math-rendering-functionalities/multi-line-equation-support-inside-blockquotes.html)
 - [Clever referencing](https://ryotaushio.github.io/obsidian-math-booster/clever-referencing.html)
 - [Search & link auto-completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/search-&-link-auto-completion.html)
-  - [Enhancing Obsidian's built-in link completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/enhancing-obsidian's-built-in-link-completion.html): now equations are rendered in the built-in completion as well.
-  - [Custom link completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/custom-link-completion.html) improvements: filter theorems & equations (*entire vault/recent notes/active note*)
+  - [Enhancing Obsidian's built-in link completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/enhancing-obsidian's-built-in-link-completion.html): equations are rendered in Obsidian's built-in link autocomplete.
+  - [Custom link completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/custom-link-completion.html)
+    - Easily find & insert link to theorems & equations.
+    - Filter theorems & equations based on their locations (*entire vault/recent notes/active note*)
   - [Search modal](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/search-modal.html): more control & flexibility than editor auto-completion, including *Dataview queries*
 - [Proof environment (experimental)](https://ryotaushio.github.io/obsidian-math-booster/proof-environment.html)
 
@@ -33,9 +35,13 @@ Thanks to the integration with [MathLinks](https://github.com/zhaoshenzhai/obsid
 
 You can also customize the appearance of theorem callouts using CSS snippets; see [here](https://ryotaushio.github.io/obsidian-math-booster/theorem-callouts/styling.html).
 
-Also check out the [No More Flickering Inline Math](https://github.com/RyotaUshio/obsidian-inline-math) plugin, which lets you work with inline math much more comfortably.
+## Companion plugins
 
-## Installation
+Here's a list of other math-related plugins I've developed:
+
+- [No More Flickering Inline Math](https://github.com/RyotaUshio/obsidian-inline-math)
+- [Better Math in Callouts & Blockquotes](https://github.com/RyotaUshio/obsidian-math-in-callout)
+- [MathJax Preamble Manager](https://github.com/RyotaUshio/obsidian-mathjax-preamble-manager)
 
 ## Installation
 
