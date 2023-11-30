@@ -3,7 +3,7 @@
 > [!note]
 > Now ***Math Booster version 2*** is available with a bunch of improvements! Check out the [new docs](https://ryotaushio.github.io/obsidian-math-booster).
 
-**Math Booster** is an [Obsidian.md](https://obsidian.md/) plugin that provides a powerful indexing & referencing system for theorems & equations in your vault and brings $\LaTeX$-like workflow into Obsidian.
+**Math Booster** is an [Obsidian.md](https://obsidian.md/) plugin that provides a powerful indexing & referencing system for theorems & equations in your vault, bringing $\LaTeX$-like workflow into Obsidian.
 
 ![Screenshot](https://raw.githubusercontent.com/RyotaUshio/obsidian-math-booster/1c7b106fcfbddccdcda8451de1c21a094994b686/docs/fig/screenshot.png)
 
