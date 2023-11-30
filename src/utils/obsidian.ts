@@ -57,6 +57,10 @@ export function isEqualToOrChildOf(file1: TAbstractFile, file2: TAbstractFile): 
     }
 }
 
+export function getFile(app: App): TAbstractFile {
+    return app.workspace.getActiveFile() ?? app.vault.getRoot();
+}
+
 //////////////////////
 // Cache & metadata //
 //////////////////////

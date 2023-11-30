@@ -3,6 +3,7 @@ import { ensureSyntaxTree, syntaxTree } from '@codemirror/language';
 
 import MathBooster from 'main';
 import { readTheoremCalloutSettings } from 'utils/parse';
+import { editorInfoField } from 'obsidian';
 
 export const CALLOUT = /HyperMD-callout_HyperMD-quote_HyperMD-quote-([1-9][0-9]*)/;
 
@@ -15,10 +16,18 @@ export class TheoremCalloutInfo extends RangeValue {
 
 export const createTheoremCalloutsField = (plugin: MathBooster) => StateField.define<RangeSet<TheoremCalloutInfo>>({
     create(state: EditorState) {
+        // Since because canvas files cannot be indexed currently,
+        // do not number theorems in canvas to make live preview consistent with reading view
+        if (!state.field(editorInfoField).file) return RangeSet.empty;
+
         const ranges = getTheoremCalloutInfos(plugin, state, state.doc, 0, 0);
         return RangeSet.of(ranges);
     },
     update(value: RangeSet<TheoremCalloutInfo>, tr: Transaction) {
+        // Since because canvas files cannot be indexed currently,
+        // do not number theorems in canvas to make live preview consistent with reading view
+        if (!tr.state.field(editorInfoField).file) return RangeSet.empty;
+
         // Because the field can be perfectly determined by the document content, 
         // we don't need to update it when the document is not changed
         if (!tr.docChanged) return value;

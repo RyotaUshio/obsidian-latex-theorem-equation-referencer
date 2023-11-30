@@ -1,7 +1,7 @@
 import MathBooster from "main";
 import { CachedMetadata, Editor, MarkdownFileInfo, MarkdownView, Notice, TAbstractFile, TFile } from "obsidian";
 import { DEFAULT_SETTINGS, MathContextSettings, MinimalTheoremCalloutSettings, ResolvedMathSettings, TheoremCalloutSettings } from "settings/settings";
-import { generateBlockID, getAncestors } from "./obsidian";
+import { generateBlockID, getAncestors, getFile } from "./obsidian";
 import { EquationBlock, MarkdownBlock, MarkdownPage, TheoremCalloutBlock } from "index/typings/markdown";
 import { getIO } from "file-io";
 import { splitIntoLines } from "./general";
@@ -126,7 +126,7 @@ export const convertTheoremCalloutFromV1ToV2 = (data: string, page: MarkdownPage
     }
 
     return newLines.join('\n');
-} 
+}
 
 export function generateTheoremCalloutFirstLine(config: TheoremCalloutSettings): string {
     const metadata = config.number === 'auto' ? '' : config.number === '' ? '|*' : `|${config.number}`;
@@ -161,10 +161,8 @@ export function isTheoremCallout(plugin: MathBooster, type: string) {
 }
 
 export function insertProof(plugin: MathBooster, editor: Editor, context: MarkdownView | MarkdownFileInfo) {
-    if (context.file) {
-        const settings = resolveSettings(undefined, plugin, context.file);
-        const cursor = editor.getCursor();
-        editor.replaceRange(`\`${settings.beginProof}\`\n\n\`${settings.endProof}\``, cursor);
-        editor.setCursor({ line: cursor.line + 1, ch: 0 });
-    }
+    const settings = resolveSettings(undefined, plugin, context.file ?? getFile(plugin.app));
+    const cursor = editor.getCursor();
+    editor.replaceRange(`\`${settings.beginProof}\`\n\n\`${settings.endProof}\``, cursor);
+    editor.setCursor({ line: cursor.line + 1, ch: 0 });
 }

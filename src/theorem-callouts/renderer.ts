@@ -18,7 +18,7 @@ import { MutationObservingChild, getSectionCacheFromMouseEvent, getSectionCacheO
 
 
 export const createTheoremCalloutPostProcessor = (plugin: MathBooster) => async (element: HTMLElement, context: MarkdownPostProcessorContext) => {
-    const file = plugin.app.vault.getAbstractFileByPath(context.sourcePath);
+    const file = plugin.app.vault.getAbstractFileByPath(context.sourcePath) ?? plugin.app.workspace.getActiveFile();
     if (!(file instanceof TFile)) return null;
 
     const pdf = isPdfExport(element);
