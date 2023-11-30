@@ -1,7 +1,7 @@
 import { PluginValue, EditorView, ViewUpdate, ViewPlugin } from '@codemirror/view';
 
 import MathBooster from 'main';
-import { MathIndex } from 'index';
+import { MathIndex } from 'index/math-index';
 
 
 export const createTheoremCalloutNumberingViewPlugin = (plugin: MathBooster) => ViewPlugin.fromClass(

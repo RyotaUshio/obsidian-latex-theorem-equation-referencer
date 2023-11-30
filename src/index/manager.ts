@@ -2,7 +2,7 @@ import { App, Component, EventRef, Events, MetadataCache, TAbstractFile, TFile, 
 import { Deferred, deferred } from "./utils/deferred";
 import { ImporterSettings } from "../settings/settings";
 import { MathImporter } from "./web-worker/importer";
-import { MathIndex } from "./index";
+import { MathIndex } from "./math-index";
 import { ImportResult } from "./web-worker/message";
 import { MarkdownPage } from "./typings/markdown";
 import MathBooster from "../main";

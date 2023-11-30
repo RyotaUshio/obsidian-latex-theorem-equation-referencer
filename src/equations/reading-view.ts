@@ -7,7 +7,7 @@ import { App, MarkdownRenderChild, finishRenderMath, MarkdownPostProcessorContex
 import MathBooster from 'main';
 import { resolveSettings } from 'utils/plugin';
 import { EquationBlock, MarkdownPage } from "index/typings/markdown";
-import { MathIndex } from "index";
+import { MathIndex } from "index/math-index";
 import { isPdfExport, resolveLinktext } from "utils/obsidian";
 import { replaceMathTag } from "./common";
 

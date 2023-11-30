@@ -3,7 +3,7 @@ import { TFile, HeadingSubpathResult, BlockSubpathResult, App } from 'obsidian';
 import * as MathLinks from 'obsidian-mathlinks';
 
 import MathBooster from 'main';
-import { MathIndex } from 'index/index';
+import { MathIndex } from 'index/math-index';
 import { MarkdownPage, MathBoosterBlock, TheoremCalloutBlock } from 'index/typings/markdown';
 
 

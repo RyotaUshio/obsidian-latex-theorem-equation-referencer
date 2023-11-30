@@ -10,7 +10,7 @@ import { capitalize } from 'utils/general';
 import { formatTitleWithoutSubtitle } from "utils/format";
 import { renderTextWithMath } from "utils/render";
 import { MarkdownPage, TheoremCalloutBlock } from "index/typings/markdown";
-import { MathIndex } from 'index/index';
+import { MathIndex } from 'index/math-index';
 import { parseTheoremCalloutMetadata, readTheoremCalloutSettings } from 'utils/parse';
 import { THEOREM_LIKE_ENV_ID_PREFIX_MAP, THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENV_PREFIXES, THEOREM_LIKE_ENV_PREFIX_ID_MAP, TheoremLikeEnvID, TheoremLikeEnvPrefix } from 'env';
 import { getIO } from 'file-io';

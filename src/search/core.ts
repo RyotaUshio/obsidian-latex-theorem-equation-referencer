@@ -1,7 +1,7 @@
 import { App, EditorSuggestContext, Instruction, Notice, Scope, SearchResult, TFile, finishRenderMath, getAllTags, prepareFuzzySearch, prepareSimpleSearch, renderMath, sortSearchResults } from 'obsidian';
 
 import MathBooster from 'main';
-import { MathIndex } from 'index/index';
+import { MathIndex } from 'index/math-index';
 import { EquationBlock, MarkdownBlock, MarkdownPage, MathBoosterBlock, TheoremCalloutBlock } from 'index/typings/markdown';
 import { getFileTitle } from 'index/utils/normalizers';
 import { LEAF_OPTION_TO_ARGS } from 'settings/settings';
