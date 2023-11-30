@@ -14,8 +14,7 @@ import { createEquationNumberProcessor } from 'equations/reading-view';
 import { createEquationNumberPlugin } from 'equations/live-preview';
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote, hideDisplayMathPreviewInQuote } from 'render-math-in-callouts';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, isPluginOlderThan } from 'utils/obsidian';
-import { getProfile, staticifyEqNumber, insertDisplayMath, insertTheoremCallout } from 'utils/plugin';
-import { proofPositionFieldFactory, proofDecorationFactory, ProofPosition, proofFoldFactory, insertProof, createProofProcessor } from 'proof';
+import { getProfile, staticifyEqNumber, insertDisplayMath, insertTheoremCallout, insertProof } from 'utils/plugin';
 import { MathIndexManager } from './index/manager';
 import { DependencyNotificationModal, MigrationModal } from 'notice';
 import { LinkAutocomplete } from 'search/editor-suggest';
@@ -23,6 +22,8 @@ import { ActiveNoteSearchCore, RecentNotesSearchCore, WholeVaultEquationSearchCo
 import { MathSearchModal } from 'search/modal';
 import { TheoremCalloutInfo, createTheoremCalloutsField } from 'theorem-callouts/state-field';
 import { patchLinkCompletion } from 'patches/link-completion';
+import { ProofPosition, proofDecorationFactory, proofFoldFactory, proofPositionFieldFactory } from 'proof/live-preview';
+import { createProofProcessor } from 'proof/reading-view';
 
 
 export const VAULT_ROOT = '/';

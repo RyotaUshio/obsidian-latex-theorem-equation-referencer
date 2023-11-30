@@ -1,5 +1,5 @@
 import MathBooster from "main";
-import { CachedMetadata, Editor, Notice, TAbstractFile, TFile } from "obsidian";
+import { CachedMetadata, Editor, MarkdownFileInfo, MarkdownView, Notice, TAbstractFile, TFile } from "obsidian";
 import { DEFAULT_SETTINGS, MathContextSettings, MinimalTheoremCalloutSettings, ResolvedMathSettings, TheoremCalloutSettings } from "settings/settings";
 import { generateBlockID, getAncestors } from "./obsidian";
 import { EquationBlock, MarkdownBlock, MarkdownPage, TheoremCalloutBlock } from "index/typings/markdown";
@@ -158,4 +158,13 @@ export function insertTheoremCallout(editor: Editor, config: TheoremCalloutSetti
 export function isTheoremCallout(plugin: MathBooster, type: string) {
     if (plugin.extraSettings.excludeExampleCallout && type === 'example') return false;
     return (THEOREM_LIKE_ENV_IDs as unknown as string[]).includes(type) || (THEOREM_LIKE_ENV_PREFIXES as unknown as string[]).includes(type) || type === 'math'
+}
+
+export function insertProof(plugin: MathBooster, editor: Editor, context: MarkdownView | MarkdownFileInfo) {
+    if (context.file) {
+        const settings = resolveSettings(undefined, plugin, context.file);
+        const cursor = editor.getCursor();
+        editor.replaceRange(`\`${settings.beginProof}\`\n\n\`${settings.endProof}\``, cursor);
+        editor.setCursor({ line: cursor.line + 1, ch: 0 });
+    }
 }
