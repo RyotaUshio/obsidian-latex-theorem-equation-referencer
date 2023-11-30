@@ -3,7 +3,7 @@
 > [!note]
 > Now ***Math Booster version 2*** is available with a bunch of improvements! Check out the [new docs](https://ryotaushio.github.io/obsidian-math-booster).
 
-**Math Booster** is an [Obsidian.md](https://obsidian.md/) plugin that enhances your mathematical note-taking experience, turning your Obsidian into ***LaTeX on steroids***.
+**Math Booster** is an [Obsidian.md](https://obsidian.md/) plugin that provides a powerful indexing & referencing system for theorems & equations in your vault and brings $\LaTeX$-like workflow into Obsidian.
 
 ![Screenshot](https://raw.githubusercontent.com/RyotaUshio/obsidian-math-booster/1c7b106fcfbddccdcda8451de1c21a094994b686/docs/fig/screenshot.png)
 
@@ -17,16 +17,20 @@ https://ryotaushio.github.io/obsidian-math-booster
 
 - [Theorem environments](https://ryotaushio.github.io/obsidian-math-booster/theorem-callouts/theorem-callouts.html)
 - [Automatic equation numbering](https://ryotaushio.github.io/obsidian-math-booster/equations.html)
-- [Rendering equations inside callouts](https://ryotaushio.github.io/obsidian-math-booster/extending-obsidian's-math-rendering-functionalities/rendering-equations-inside-callouts.html)
-- [Multi-line equation support inside blockquotes](https://ryotaushio.github.io/obsidian-math-booster/extending-obsidian's-math-rendering-functionalities/multi-line-equation-support-inside-blockquotes.html)
 - [Clever referencing](https://ryotaushio.github.io/obsidian-math-booster/clever-referencing.html)
-- [Search & link auto-completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/search-&-link-auto-completion.html)
-  - [Enhancing Obsidian's built-in link completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/enhancing-obsidian's-built-in-link-completion.html): equations are rendered in Obsidian's built-in link autocomplete.
-  - [Custom link completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/custom-link-completion.html)
+- [Search & link autocomplete](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-autocomplete/search-&-link-autocomplete.html)
+  - [Enhancing Obsidian's built-in link autocomplete](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-autocomplete/enhancing-obsidian's-built-in-link-autocomplete.html): equations are rendered in Obsidian's built-in link autocomplete.
+  - [Custom link autocomplete](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-autocomplete/custom-link-autocomplete.html)
     - Easily find & insert link to theorems & equations.
     - Filter theorems & equations based on their locations (*entire vault/recent notes/active note*)
-  - [Search modal](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/search-modal.html): more control & flexibility than editor auto-completion, including *Dataview queries*
+  - [Search modal](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-autocomplete/search-modal.html): more control & flexibility than editor autocomplete, including *Dataview queries*
 - [Proof environment (experimental)](https://ryotaushio.github.io/obsidian-math-booster/proof-environment.html)
+
+> The following features will be removed from Math Booster in the near future, and instead provided by my another plugin [Better Math in Callouts & Blockquotes](https://github.com/RyotaUshio/obsidian-math-in-callout).
+> 
+> - [Rendering equations inside callouts](https://ryotaushio.github.io/obsidian-math-booster/extending-obsidian's-math-rendering-functionalities/rendering-equations-inside-callouts.html)
+> - [Multi-line equation support inside blockquotes](https://ryotaushio.github.io/obsidian-math-booster/extending-obsidian's-math-rendering-functionalities/multi-line-equation-support-inside-blockquotes.html)
+
 
 Theorems & equations can be **dynamically/automatically numbered**, while you can statically/manually number them if you want.
 The number prefix can be either explicitly specified or automatically inferred from the note title.
