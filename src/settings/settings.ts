@@ -72,6 +72,7 @@ export interface MathContextSettings {
     refFormat: TheoremRefFormat;
     noteMathLinkFormat: TheoremRefFormat;
     ignoreMainTheoremCalloutWithoutTitle: boolean;
+    numberOnlyReferencedEquations: boolean;
     inferEqNumberPrefix: boolean;
     inferEqNumberPrefixFromProperty: string;
     inferEqNumberPrefixRegExp: string;
@@ -115,6 +116,8 @@ export type TheoremCalloutSettings = MinimalTheoremCalloutSettings & {
     // setAsNoteMathLink: boolean;
 }
 
+// legacy interface; currently only used temporarily when computing formatted theorem titles
+// TODO: refactor
 export interface TheoremCalloutPrivateFields {
     _index?: number;
 }
@@ -194,6 +197,7 @@ export const DEFAULT_SETTINGS: Required<MathContextSettings> = {
     refFormat: "[type] [number] ([title])",
     noteMathLinkFormat: "[title] if title exists, [type] [number] otherwise",
     ignoreMainTheoremCalloutWithoutTitle: false,
+    numberOnlyReferencedEquations: true,
     inferEqNumberPrefix: true,
     inferEqNumberPrefixFromProperty: "",
     inferEqNumberPrefixRegExp: "^[0-9]+(\\.[0-9]+)*",

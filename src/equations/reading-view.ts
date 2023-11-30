@@ -39,8 +39,8 @@ function preprocessForPdfExport(plugin: MathBooster, el: HTMLElement, ctx: Markd
     try {
         const topLevelMathDivs = el.querySelectorAll<HTMLElement>(':scope > div.math.math-block > mjx-container.MathJax[display="true"]');
 
-        const page = plugin.indexManager.index.load(ctx.sourcePath);
-        if (!MarkdownPage.isMarkdownPage(page)) {
+        const page = plugin.indexManager.index.getMarkdownPage(ctx.sourcePath);
+        if (!page) {
             new Notice(`${plugin.manifest.name}: Failed to fetch the metadata for PDF export; equation numbers will not be displayed in the exported PDF.`);
             return;
         }
@@ -51,7 +51,7 @@ function preprocessForPdfExport(plugin: MathBooster, el: HTMLElement, ctx: Markd
                 if (!EquationBlock.isEquationBlock(block)) continue;
 
                 const div = topLevelMathDivs[equationIndex++];
-                if (block.$printName && block.$blockId) div.setAttribute('data-equation-block-id', block.$blockId);
+                if (block.$printName) div.setAttribute('data-equation-id', block.$id);
             }
         }
 
@@ -88,24 +88,13 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
 
     getEquationCache(lineOffset: number = 0): EquationBlock | null {
         const info = this.context.getSectionInfo(this.containerEl);
-        const page = this.index.load(this.file.path);
-        if (!info || !MarkdownPage.isMarkdownPage(page)) return null;
+        const page = this.index.getMarkdownPage(this.file.path);
+        if (!info || !page) return null;
 
         // get block ID
         const block = page.getBlockByLineNumber(info.lineStart + lineOffset) ?? page.getBlockByLineNumber(info.lineEnd + lineOffset);
-        const id = block?.$blockId;
-
-        // get EquationBlock from block ID
-        if (id) return this.getEquationCacheFromId(id);
-
-        return null;
-    }
-
-    getEquationCacheFromId(id: string): EquationBlock | null {
-        const page = this.plugin.indexManager.index.load(this.file.path);
-        if (!MarkdownPage.isMarkdownPage(page)) return null
-        const block = page.$blocks.get(id);
         if (EquationBlock.isEquationBlock(block)) return block;
+
         return null;
     }
 
@@ -120,9 +109,9 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
 
     update() {
         // for PDF export
-        const id = this.containerEl.getAttribute('data-equation-block-id');
+        const id = this.containerEl.getAttribute('data-equation-id');
 
-        const equation = id ? this.getEquationCacheFromId(id) : this.getEquationCacheCaringHoverAndEmbed();
+        const equation = id ? this.index.getEquationBlock(id) : this.getEquationCacheCaringHoverAndEmbed();
         if (!equation) return;
         const settings = resolveSettings(undefined, this.plugin, this.file);
         replaceMathTag(this.containerEl, equation, settings);

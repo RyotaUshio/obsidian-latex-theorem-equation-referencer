@@ -311,6 +311,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
 
         this.addHeading('Equations - numbering', ['equation-heading']);
 
+        this.addToggleSetting("numberOnlyReferencedEquations", "Number only referenced equations");
         this.addToggleSetting(
             "inferEqNumberPrefix",
             "Infer prefix from note title or properties",

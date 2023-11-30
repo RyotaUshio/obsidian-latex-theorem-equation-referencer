@@ -301,7 +301,7 @@ export class MathIndex {
                 let refName: string | null = null;
                 if (block.$manualTag) {
                     printName = `(${block.$manualTag})`;
-                } else if (block.$link && this.isLinked(block as Linkable)) {
+                } else if (!settings.numberOnlyReferencedEquations || block.$link && this.isLinked(block as Linkable)) {
                     block.$index = equationCount;
                     printName = "(" + eqPrefix + CONVERTER[settings.eqNumberStyle](equationNumberInit + equationCount) + eqSuffix + ")";
                     equationCount++;
@@ -349,6 +349,21 @@ export class MathIndex {
 
     getByType(type: string) {
         return this.types.get(type);
+    }
+
+    getMarkdownPage(path: string): MarkdownPage | null {
+        const page = this.load(path);
+        return MarkdownPage.isMarkdownPage(page) ? page : null;
+    }
+
+    getTheoremCalloutBlock(id: string): TheoremCalloutBlock | null {
+        const block = this.load(id);
+        return TheoremCalloutBlock.isTheoremCalloutBlock(block) ? block : null;
+    }
+
+    getEquationBlock(id: string): EquationBlock | null {
+        const block = this.load(id);
+        return EquationBlock.isEquationBlock(block) ? block : null;
     }
 }
 
