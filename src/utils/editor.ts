@@ -1,4 +1,4 @@
-import { EditorState, ChangeSet, RangeValue, RangeSet } from '@codemirror/state';
+import { EditorState, ChangeSet, RangeValue, RangeSet, SelectionRange } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
 import { MathInfoSet } from 'render-math-in-callouts';
 import { EditorPosition, Loc, MarkdownView, editorLivePreviewField } from "obsidian";
@@ -75,4 +75,12 @@ export function rangeSetSome<T extends RangeValue>(set: RangeSet<T>, predicate: 
 
 export function hasOverlap(range1: { from: number, to: number }, range2: { from: number, to: number }): boolean {
     return range1.from <= range2.to && range2.from <= range1.to;
+}
+
+export function rangesHaveOverlap(ranges: readonly SelectionRange[], from: number, to: number) {
+    for (const range of ranges) {
+        if (range.from <= to && range.to >= from)
+            return true;
+    }
+    return false;
 }

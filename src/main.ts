@@ -22,7 +22,7 @@ import { ActiveNoteSearchCore, RecentNotesSearchCore, WholeVaultEquationSearchCo
 import { MathSearchModal } from 'search/modal';
 import { TheoremCalloutInfo, createTheoremCalloutsField } from 'theorem-callouts/state-field';
 import { patchLinkCompletion } from 'patches/link-completion';
-import { ProofPosition, proofDecorationFactory, proofFoldFactory, proofPositionFieldFactory } from 'proof/live-preview';
+import { createProofDecoration } from 'proof/live-preview';
 import { createProofProcessor } from 'proof/reading-view';
 
 
@@ -39,7 +39,7 @@ export default class MathBooster extends Plugin {
 	indexManager: MathIndexManager;
 	editorExtensions: Extension[];
 	theoremCalloutsField: StateField<RangeSet<TheoremCalloutInfo>>;
-	proofPositionField: StateField<ProofPosition[]>;
+	// proofPositionField: StateField<ProofPosition[]>;
 	lastHoverLinktext: string | null;
 
 	async onload() {
@@ -359,9 +359,10 @@ export default class MathBooster extends Plugin {
 		}
 		// proofs
 		if (this.extraSettings.enableProof) {
-			this.editorExtensions.push(this.proofPositionField = proofPositionFieldFactory(this));
-			this.editorExtensions.push(proofDecorationFactory(this));
-			this.editorExtensions.push(proofFoldFactory(this));
+			this.editorExtensions.push(createProofDecoration(this));
+			// this.editorExtensions.push(this.proofPositionField = proofPositionFieldFactory(this));
+			// this.editorExtensions.push(proofDecorationFactory(this));
+			// this.editorExtensions.push(proofFoldFactory(this));
 		}
 
 		this.app.workspace.updateOptions();
