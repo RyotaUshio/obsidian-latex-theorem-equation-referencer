@@ -121,9 +121,9 @@ To fully enjoy Math Booster v2, click the button below to convert the old theore
 -   New indexing mechanism:
     -   no longer blocks UI
     -   no longer hard-codes theorem indices in notes directly
--   [Enhancing Obsidian's built-in link completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/enhancing-obsidian's-built-in-link-completion.html): now equations are rendered in the built-in completion as well.
--   [Custom link completion](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/custom-link-completion.html) improvements: filter theorems & equations (*entire vault/recent notes/active note*)
--   [Search modal](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-auto-completion/search-modal.html): more control & flexibility than editor auto-completion, including *Dataview queries*
+-   [Enhancing Obsidian's built-in link autocomplete](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-autocomplete/enhancing-obsidian's-built-in-link-autocomplete.html): now equations are rendered in the built-in autocomplete as well.
+-   [Custom link autocomplete](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-autocomplete/custom-link-autocomplete.html) improvements: filter theorems & equations (*entire vault/recent notes/active note*)
+-   [Search modal](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-autocomplete/search-modal.html): more control & flexibility than editor autocomplete, including *Dataview queries*
 -   Adding metadata to [theorems](https://ryotaushio.github.io/obsidian-math-booster/theorem-callouts/theorem-callouts.html) and [equations](https://ryotaushio.github.io/obsidian-math-booster/equations.html) with comments
 - Theorem numbers and [equation numbers](https://ryotaushio.github.io/obsidian-math-booster/equations.html) now can be displayed *almost everywhere*:
         
