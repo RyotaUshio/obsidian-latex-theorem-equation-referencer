@@ -11,23 +11,20 @@
         padding-right: 0;
         border: none;
         box-shadow: none;
+        font-family: CMU Serif, Times, Noto Serif JP;
     }
 
     .theorem-callout .callout-icon {
         display: none;
     }
 
-    .theorem-callout .callout-title-inner {
+    .theorem-callout-main-title {
         font-family: CMU Serif, Times, Noto Sans JP;
         font-weight: bolder;
-
-        .theorem-callout-subtitle {
-            font-weight: normal;
-        }    
     }
 
-    .theorem-callout .callout-content {
-        font-family: CMU Serif, Times, Noto Serif JP;
+    .theorem-callout-subtitle {
+        font-weight: normal;
     }
 
     :not(.theorem-callout-axiom):not(.theorem-callout-definition):not(.theorem-callout-remark).theorem-callout-en .callout-content {
