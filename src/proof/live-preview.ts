@@ -106,7 +106,11 @@ export const createProofDecoration = (plugin: MathBooster) => ViewPlugin.fromCla
 
         update(update: ViewUpdate) {
             if (update.docChanged || update.viewportChanged || update.selectionSet) {
-                this.decorations = this.makeDeco(update.view);
+                if (update.view.composing) {
+                    this.decorations = this.decorations.map(update.changes); // User is using IME
+                } else {
+                    this.decorations = this.makeDeco(update.view);
+                }
             }
         }
 
