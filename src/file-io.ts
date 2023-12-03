@@ -12,27 +12,6 @@ export abstract class FileIO {
     abstract insertLine(lineNumber: number, text: string): Promise<void>;
     abstract getLine(lineNumber: number): Promise<string>;
     abstract getRange(position: Pos): Promise<string>;
-    /**
-     * Check if the line at `lineNumber` can be safely overwritten.
-     * It was necessary for sure before, but I'm not sure if it is now, 
-     * because now the JSON metadata of theorem callouts are hidden by a view plugin.
-     * I'll check it later.
-     * @param lineNumber 
-     */
-    abstract isSafe(lineNumber: number): boolean;
-
-    async getBlockTextFromID(blockID: string, cache?: CachedMetadata): Promise<string | undefined> {
-        cache = cache ?? this.plugin.app.metadataCache.getFileCache(this.file) ?? undefined;
-        if (cache) {
-            const sectionCache = cache.sections?.find(
-                (sectionCache) => sectionCache.id == blockID
-            );
-            const position = sectionCache?.position;
-            if (position) {
-                return await this.getRange(position);
-            }
-        }
-    }
 }
 
 
@@ -71,11 +50,6 @@ export class ActiveNoteIO extends FileIO {
         const text = this.editor.getRange(from, to);
         return text;
     }
-
-    isSafe(lineNumber: number): boolean {
-        const cursorPos = this.editor.getCursor();
-        return cursorPos.line != lineNumber;
-    }
 }
 
 
@@ -88,10 +62,6 @@ export class NonActiveNoteIO extends FileIO {
      */
     constructor(plugin: MathBooster, file: TFile) {
         super(plugin, file);
-    }
-
-    async getData(): Promise<string> {
-        return this._data ?? (this._data = await this.plugin.app.vault.cachedRead(this.file));
     }
 
     async setLine(lineNumber: number, text: string): Promise<void> {
@@ -125,10 +95,6 @@ export class NonActiveNoteIO extends FileIO {
     async getRange(position: Pos): Promise<string> {
         const content = await this.plugin.app.vault.cachedRead(this.file);
         return content.slice(position.start.offset, position.end.offset);
-    }
-
-    isSafe(lineNumber: number): boolean {
-        return true;
     }
 }
 
