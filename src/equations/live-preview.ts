@@ -52,6 +52,7 @@ export function createEquationNumberPlugin(plugin: MathBooster) {
 
         updateFile(state: EditorState) {
             this.file = state.field(editorInfoField).file;
+            if (this.file) this.settings = resolveSettings(undefined, plugin, this.file);
         }
 
         async updatePage(file: TFile): Promise<MarkdownPage> {
@@ -81,6 +82,11 @@ export function createEquationNumberPlugin(plugin: MathBooster) {
             const mjxContainerElements = view.contentDOM.querySelectorAll<HTMLElement>(':scope > .cm-embed-block.math > mjx-container.MathJax[display="true"]');
 
             for (const mjxContainerEl of mjxContainerElements) {
+
+                // skip if the equation is being edited to avoid the delay of preview
+                const mightBeClosingDollars = mjxContainerEl.parentElement?.previousElementSibling?.lastElementChild;
+                const isBeingEdited = mightBeClosingDollars?.matches('span.cm-formatting-math-end');
+                if (isBeingEdited) continue;
 
                 const pos = view.posAtDOM(mjxContainerEl);
                 let block: MarkdownBlock | undefined;
