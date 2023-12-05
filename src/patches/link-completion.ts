@@ -7,6 +7,7 @@ import { isTheoremCallout, resolveSettings } from 'utils/plugin';
 import { formatTitle } from 'utils/format';
 import { _readTheoremCalloutSettings } from 'utils/parse';
 import { capitalize } from 'utils/general';
+import { renderTextWithMath } from "utils/render";
 
 export const patchLinkCompletion = (plugin: MathBooster) => {
     const suggest = (plugin.app.workspace as any).editorSuggest.suggests[0]; // built-in link completion
@@ -19,7 +20,7 @@ export const patchLinkCompletion = (plugin: MathBooster) => {
                 old.call(this, item, el);
 
                 if (plugin.extraSettings.showTheoremTitleinBuiltin && item.type === 'block' && item.node.type === 'callout' && isTheoremCallout(plugin, item.node.callout.type)) {
-                    let title: string = item.node.children.find((child: any) => child.type === 'callout-title')?.children[0].value ?? '';
+                    let title: string = item.node.children.find((child: any) => child.type === 'callout-title')?.children.map((child: any) => child.value).join('') ?? '';
                     const content = item.display.slice(title.length);
                     const page = plugin.indexManager.index.load(item.file.path);
                     if (MarkdownPage.isMarkdownPage(page)) {
@@ -27,7 +28,10 @@ export const patchLinkCompletion = (plugin: MathBooster) => {
                         if (TheoremCalloutBlock.isTheoremCalloutBlock(block)) {
                             renderInSuggestionTitleEl(el, (suggestionTitleEl) => {
                                 suggestionTitleEl.replaceChildren();
-                                suggestionTitleEl.createDiv({ text: block.$printName });
+                                const children = renderTextWithMath(block.$printName);
+                                suggestionTitleEl
+                                    .createDiv()
+                                    .replaceChildren(...children);
                                 if (content) suggestionTitleEl.createDiv({ text: content });
                             });
                             return;
@@ -40,7 +44,10 @@ export const patchLinkCompletion = (plugin: MathBooster) => {
                         const formattedTitle = formatTitle(plugin, item.file as TFile, resolveSettings({ type, number, title }, plugin, item.file as TFile), true);
                         renderInSuggestionTitleEl(el, (suggestionTitleEl) => {
                             suggestionTitleEl.replaceChildren();
-                            suggestionTitleEl.createDiv({ text: formattedTitle });
+                            const children = renderTextWithMath(formattedTitle);
+                            suggestionTitleEl
+                                .createDiv()
+                                .replaceChildren(...children);
                             if (content) suggestionTitleEl.createDiv({ text: content });
                         });
                         return;
@@ -62,7 +69,7 @@ export const patchLinkCompletion = (plugin: MathBooster) => {
 
 function renderInSuggestionTitleEl(el: HTMLElement, cb: (suggestionTitleEl: HTMLElement) => void) {
     // setTimeout(() => {
-        const suggestionTitleEl = el.querySelector<HTMLElement>('.suggestion-title');
-        if (suggestionTitleEl) cb(suggestionTitleEl);
+    const suggestionTitleEl = el.querySelector<HTMLElement>('.suggestion-title');
+    if (suggestionTitleEl) cb(suggestionTitleEl);
     // });
 }

@@ -1,4 +1,4 @@
-import { App, EditorSuggestContext, Instruction, Notice, Scope, SearchResult, TFile, finishRenderMath, getAllTags, prepareFuzzySearch, prepareSimpleSearch, renderMath, sortSearchResults } from 'obsidian';
+import { App, EditorSuggestContext, Instruction, Notice, Scope, SearchResult, TFile, finishRenderMath, prepareFuzzySearch, prepareSimpleSearch, renderMath, sortSearchResults } from 'obsidian';
 
 import MathBooster from 'main';
 import { MathIndex } from 'index/math-index';
@@ -9,6 +9,7 @@ import { formatLabel } from 'utils/format';
 import { getModifierNameInPlatform, openFileAndSelectPosition } from 'utils/obsidian';
 import { insertBlockIdIfNotExist, resolveSettings } from 'utils/plugin';
 import { MathSearchModal } from './modal';
+import { renderTextWithMath } from 'utils/render';
 
 
 export type ScoredMathBoosterBlock = { match: SearchResult, block: MathBoosterBlock };
@@ -119,7 +120,10 @@ export abstract class MathSearchCore {
     renderSuggestion(block: MathBoosterBlock, el: HTMLElement): void {
         const baseEl = el.createDiv({ cls: "math-booster-search-item" });
         if (block.$printName) {
-            baseEl.createDiv({ text: block.$printName });
+            const children = renderTextWithMath(block.$printName);
+            baseEl.createDiv()
+                .replaceChildren(...children);
+
         }
         const smallEl = baseEl.createEl(
             "small", {
