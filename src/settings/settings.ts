@@ -2,8 +2,7 @@ import { Modifier } from "obsidian";
 
 import { DEFAULT_PROFILES, Profile } from "./profile";
 import { LeafArgs } from "../typings/type";
-import { QueryType } from "search/core";
-import { SearchRange } from "search/modal";
+import { QueryType, SearchRange } from "search/core";
 
 // Types
 
@@ -143,7 +142,10 @@ export type ExtraSettings = ImporterSettings & {
     triggerSuggestRecentNotes: string;
     triggerTheoremSuggestRecentNotes: string;
     triggerEquationSuggestRecentNotes: string;
-    enableSuggest: boolean;
+    triggerSuggestDataview: string;
+    triggerTheoremSuggestDataview: string;
+    triggerEquationSuggestDataview: string;
+   enableSuggest: boolean;
     enableTheoremSuggest: boolean;
     enableEquationSuggest: boolean;
     enableSuggestActiveNote: boolean;
@@ -152,6 +154,9 @@ export type ExtraSettings = ImporterSettings & {
     enableSuggestRecentNotes: boolean;
     enableTheoremSuggestRecentNotes: boolean;
     enableEquationSuggestRecentNotes: boolean;
+    enableSuggestDataview: boolean;
+    enableTheoremSuggestDataview: boolean;
+    enableEquationSuggestDataview: boolean;
     renderMathInSuggestion: boolean;
     suggestNumber: number;
     searchMethod: SearchMethod;
@@ -171,6 +176,7 @@ export type ExtraSettings = ImporterSettings & {
     excludeExampleCallout: boolean;
     enableProof: boolean;
     enableMathPreviewInCalloutAndQuote: boolean;
+    autocompleteDvQuery: string;
     // searchModal*: not congigurable from the setting tab, just remenbers the last state
     searchModalQueryType: QueryType;
     searchModalRange: SearchRange;
@@ -228,12 +234,15 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     triggerSuggest: "\\ref",
     triggerTheoremSuggest: "\\tref",
     triggerEquationSuggest: "\\eqref",
-    triggerSuggestActiveNote: "\\rea",
-    triggerTheoremSuggestActiveNote: "\\trea",
-    triggerEquationSuggestActiveNote: "\\eqrea",
-    triggerSuggestRecentNotes: "\\rer",
-    triggerTheoremSuggestRecentNotes: "\\trer",
-    triggerEquationSuggestRecentNotes: "\\eqrer",
+    triggerSuggestActiveNote: "\\ref:a",
+    triggerTheoremSuggestActiveNote: "\\tref:a",
+    triggerEquationSuggestActiveNote: "\\eqref:a",
+    triggerSuggestRecentNotes: "\\ref:r",
+    triggerTheoremSuggestRecentNotes: "\\tref:r",
+    triggerEquationSuggestRecentNotes: "\\eqref:r",
+    triggerSuggestDataview: "\\ref:d",
+    triggerTheoremSuggestDataview: "\\tref:d",
+    triggerEquationSuggestDataview: "\\eqref:d",
     enableSuggest: true,
     enableTheoremSuggest: true,
     enableEquationSuggest: true,
@@ -243,6 +252,9 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     enableSuggestRecentNotes: true,
     enableTheoremSuggestRecentNotes: true,
     enableEquationSuggestRecentNotes: true,
+    enableSuggestDataview: true,
+    enableTheoremSuggestDataview: true,
+    enableEquationSuggestDataview: true,
     renderMathInSuggestion: true,
     suggestNumber: 20,
     searchMethod: "Fuzzy",
@@ -264,6 +276,7 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     excludeExampleCallout: false,
     enableProof: true,
     enableMathPreviewInCalloutAndQuote: true,
+    autocompleteDvQuery: '',
     searchModalQueryType: 'both',
     searchModalRange: 'recent',
     searchModalDvQuery: '',

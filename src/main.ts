@@ -242,68 +242,13 @@ export default class MathBooster extends Plugin {
 	}
 
 	updateLinkAutocomplete() {
-		// reset all editor suggests registered by this plugin
+		// reset editor suggest(s) registered by this plugin
 		const suggestManager = (this.app.workspace as any).editorSuggest;
 		for (const suggest of suggestManager.suggests) {
 			if (suggest instanceof LinkAutocomplete) suggestManager.removeSuggest(suggest);
 		}
 
-		if (this.extraSettings.enableSuggest) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerSuggest,
-				(parent) => new WholeVaultTheoremEquationSearchCore(parent)
-			));
-		}
-		if (this.extraSettings.enableTheoremSuggest) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerTheoremSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggest,
-				(parent) => new WholeVaultTheoremSearchCore(parent)
-			));
-		}
-		if (this.extraSettings.enableEquationSuggest) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerEquationSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggest,
-				(parent) => new WholeVaultEquationSearchCore(parent)
-			));
-		}
-
-		if (this.extraSettings.enableSuggestRecentNotes) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerSuggestRecentNotes,
-				(parent) => new RecentNotesSearchCore(parent, 'both')
-			));
-		}
-		if (this.extraSettings.enableTheoremSuggestRecentNotes) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerTheoremSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggestRecentNotes,
-				(parent) => new RecentNotesSearchCore(parent, 'theorem')
-			));
-		}
-		if (this.extraSettings.enableEquationSuggestRecentNotes) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerEquationSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggestRecentNotes,
-				(parent) => new RecentNotesSearchCore(parent, 'equation')
-			));
-		}
-
-		if (this.extraSettings.enableSuggestActiveNote) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerSuggestActiveNote,
-				(parent) => new ActiveNoteSearchCore(parent, 'both')
-			));
-		}
-		if (this.extraSettings.enableTheoremSuggestActiveNote) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerTheoremSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggestActiveNote,
-				(parent) => new ActiveNoteSearchCore(parent, 'theorem')
-			));
-		}
-		if (this.extraSettings.enableEquationSuggestActiveNote) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerEquationSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggestActiveNote,
-				(parent) => new ActiveNoteSearchCore(parent, 'equation')
-			));
-		}
+		this.registerEditorSuggest(new LinkAutocomplete(this));
 	}
 
 	/**

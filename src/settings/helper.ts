@@ -392,38 +392,49 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addHeading('Configure Math Booster\'s editor link auto-completion')
             .setDesc(`It is recommended to turn off unnecessary auto-completions to improve performance.`);
 
+        this.addTextSetting("autocompleteDvQuery", "Dataview query for editor link auto-completion", "Only LIST queries are supported.");
+
         this.addHeading('Theorem & equation suggestion')
         this.addHeading("From entire vault", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableSuggest", "Enable");
         this.addTextSetting("triggerSuggest", "Trigger");
         this.addHeading("From recently opened notes", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableSuggestRecentNotes", "Enable");
         this.addTextSetting("triggerSuggestRecentNotes", "Trigger");
         this.addHeading("From active note", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableSuggestActiveNote", "Enable");
         this.addTextSetting("triggerSuggestActiveNote", "Trigger");
+        this.addHeading("From Dataview query", ['editor-suggest-setting-indented-heading']);
+        this.addToggleSetting("enableSuggestDataview", "Enable");
+        this.addTextSetting("triggerSuggestDataview", "Trigger");
 
         this.addHeading('Theorem suggestion', ['editor-suggest-setting-heading']);
         this.addHeading("From entire vault", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableTheoremSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableTheoremSuggest", "Enable");
         this.addTextSetting("triggerTheoremSuggest", "Trigger");
         this.addHeading("From recently opened notes", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableTheoremSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableTheoremSuggestRecentNotes", "Enable");
         this.addTextSetting("triggerTheoremSuggestRecentNotes", "Trigger");
         this.addHeading("From active note", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableTheoremSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableTheoremSuggestActiveNote", "Enable");
         this.addTextSetting("triggerTheoremSuggestActiveNote", "Trigger");
+        this.addHeading("From Dataview query", ['editor-suggest-setting-indented-heading']);
+        this.addToggleSetting("enableTheoremSuggestDataview", "Enable");
+        this.addTextSetting("triggerTheoremSuggestDataview", "Trigger");
 
         this.addHeading('Equation suggestion', ['editor-suggest-setting-heading'])
         this.addHeading("From entire vault", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableEquationSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableEquationSuggest", "Enable");
         this.addTextSetting("triggerEquationSuggest", "Trigger");
         this.addHeading("From recently opened notes", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableEquationSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableEquationSuggestRecentNotes", "Enable");
         this.addTextSetting("triggerEquationSuggestRecentNotes", "Trigger");
         this.addHeading("From active note", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableEquationSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableEquationSuggestActiveNote", "Enable");
         this.addTextSetting("triggerEquationSuggestActiveNote", "Trigger");
+        this.addHeading("From Dataview query", ['editor-suggest-setting-indented-heading']);
+        this.addToggleSetting("enableEquationSuggestDataview", "Enable");
+        this.addTextSetting("triggerEquationSuggestDataview", "Trigger");
 
         // projects
         // this.addTextSetting("projectInfix", "Link infix", "Specify the infix to connect a project name and a theorem title or an equation number.");
