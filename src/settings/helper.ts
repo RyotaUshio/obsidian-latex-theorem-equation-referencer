@@ -391,6 +391,7 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addHeading('Enhance Obsidian\'s built-in link auto-completion (experimental)')
             .setDesc('Configure how Math Booster modifies the appearance of Obsidian\'s built-in link auto-completion (the one that pops up when you type "[["). This feature dives deep into Obsidian\'s internals, so it might break when Obsidian is updated. If you encounter any issue, please report it on GitHub.');
         this.addToggleSetting("showTheoremTitleinBuiltin", "Show theorem title");
+        this.addToggleSetting("showTheoremContentinBuiltin", "Show theorem content", "Only effective when \"Show theorem title\" is turned on.");
         this.addToggleSetting("renderEquationinBuiltin", "Render equation");
 
         this.addHeading('Configure Math Booster\'s editor link auto-completion')

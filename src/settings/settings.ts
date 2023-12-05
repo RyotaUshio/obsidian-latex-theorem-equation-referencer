@@ -132,6 +132,7 @@ export type ExtraSettings = ImporterSettings & {
     noteTitleInEquationLink: boolean;
     profiles: Record<string, Profile>;
     showTheoremTitleinBuiltin: boolean;
+    showTheoremContentinBuiltin: boolean;
     renderEquationinBuiltin: boolean;
     triggerSuggest: string;
     triggerTheoremSuggest: string;
@@ -230,6 +231,7 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     noteTitleInEquationLink: true,
     profiles: DEFAULT_PROFILES,
     showTheoremTitleinBuiltin: true,
+    showTheoremContentinBuiltin: false,
     renderEquationinBuiltin: true,
     triggerSuggest: "\\ref",
     triggerTheoremSuggest: "\\tref",
