@@ -1,4 +1,3 @@
-import { patchPagePreview } from './patches/page-preview';
 import { MarkdownView, Plugin } from 'obsidian';
 import { StateField, Extension, RangeSet } from '@codemirror/state';
 
@@ -15,12 +14,13 @@ import { createEquationNumberPlugin } from 'equations/live-preview';
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote, hideDisplayMathPreviewInQuote } from 'render-math-in-callouts';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, isPluginOlderThan } from 'utils/obsidian';
 import { getProfile, staticifyEqNumber, insertDisplayMath, insertTheoremCallout, insertProof } from 'utils/plugin';
-import { MathIndexManager } from './index/manager';
+import { MathIndexManager } from 'index/manager';
 import { DependencyNotificationModal, MigrationModal } from 'notice';
 import { LinkAutocomplete } from 'search/editor-suggest';
 import { ActiveNoteSearchCore, RecentNotesSearchCore, WholeVaultEquationSearchCore, WholeVaultTheoremEquationSearchCore, WholeVaultTheoremSearchCore } from 'search/core';
 import { MathSearchModal } from 'search/modal';
 import { TheoremCalloutInfo, createTheoremCalloutsField } from 'theorem-callouts/state-field';
+import { patchPagePreview } from 'patches/page-preview';
 import { patchLinkCompletion } from 'patches/link-completion';
 import { createProofDecoration } from 'proof/live-preview';
 import { createProofProcessor } from 'proof/reading-view';

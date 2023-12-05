@@ -1,8 +1,8 @@
-import { Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile } from "obsidian";
+import { Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, HoverParent, HoverPopover, Keymap, UserEvent } from "obsidian";
 
 import MathBooster from "main";
 import { MathBoosterBlock } from "index/typings/markdown";
-import { MathSearchCore, MathSearchCoreCreator, SuggestParent } from "./core";
+import { KeyupHandlingHoverParent, MathSearchCore, MathSearchCoreCreator, SuggestParent } from "./core";
 
 
 export class LinkAutocomplete extends EditorSuggest<MathBoosterBlock> implements SuggestParent {
@@ -15,6 +15,19 @@ export class LinkAutocomplete extends EditorSuggest<MathBoosterBlock> implements
         super(plugin.app);
         this.core = coreCreator(this);
         this.core.setScope();
+        this.suggestEl.addClass('math-booster');
+
+        // @ts-ignore
+        window.suggest = this;
+
+        this.plugin.registerDomEvent(window, 'keydown', (event: UserEvent) => {
+            // @ts-ignore
+            if (this.isOpen && Keymap.isModifier(event, 'Alt')) {
+                const item = this.getSelectedItem();
+                const parent = new KeyupHandlingHoverParent(this.plugin, this);
+                this.app.workspace.trigger('link-hover', parent, null, item.$file, "", { scroll: item.$position.start })
+            }
+        });
     }
 
     getContext() {
@@ -24,6 +37,16 @@ export class LinkAutocomplete extends EditorSuggest<MathBoosterBlock> implements
     getSelectedItem() {
         // Reference: https://github.com/tadashi-aikawa/obsidian-various-complements-plugin/blob/be4a12c3f861c31f2be3c0f81809cfc5ab6bb5fd/src/ui/AutoCompleteSuggest.ts#L595-L619
         return this.suggestions.values[this.suggestions.selectedItem];
+    }
+
+    moveUp(event: KeyboardEvent): void {
+        // @ts-ignore
+        this.suggestions.moveUp(event);
+    }
+
+    moveDown(event: KeyboardEvent): void {
+        // @ts-ignore
+        this.suggestions.moveDown(event);
     }
 
     onTrigger(cursor: EditorPosition, editor: Editor): EditorSuggestTriggerInfo | null {

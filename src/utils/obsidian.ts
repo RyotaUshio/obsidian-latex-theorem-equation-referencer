@@ -161,8 +161,14 @@ export async function openFileAndSelectPosition(app: App, file: TFile, position:
         editor.setSelection(from, to);
         editor.scrollIntoView({ from, to }, true);
 
-        // Reading view: thank you NothingIsLost (https://discord.com/channels/686053708261228577/840286264964022302/952218718711189554)
-        leaf.view.setEphemeralState({ line: position.start.line });
+        // Reading view
+        // @ts-ignore
+        leaf.view.previewMode.renderer.applyScroll(position.start.line, {
+            highlight: true,
+            center: true
+        })
+        // thank you NothingIsLost (https://discord.com/channels/686053708261228577/840286264964022302/952218718711189554)
+        // leaf.view.setEphemeralState({ line: position.start.line });
     }
 }
 

@@ -1,3 +1,12 @@
+.math-booster.compact-font.hover-popover .markdown-rendered {
+    font-size: 100%;
+}
+
+.math-booster.suggestion-container,
+.modal-container:has( .math-booster.prompt) {
+    z-index: calc(var(--layer-popover) - 1);
+}
+
 .math-booster-version-2-release-note-modal {
     --table-border-width: 2px;
 }

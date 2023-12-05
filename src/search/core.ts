@@ -1,4 +1,4 @@
-import { App, EditorSuggestContext, Instruction, Notice, Scope, SearchResult, TFile, finishRenderMath, prepareFuzzySearch, prepareSimpleSearch, renderMath, sortSearchResults } from 'obsidian';
+import { App, EditorSuggestContext, HoverParent, HoverPopover, Instruction, Notice, Scope, SearchResult, TFile, finishRenderMath, prepareFuzzySearch, prepareSimpleSearch, renderMath, sortSearchResults } from 'obsidian';
 
 import MathBooster from 'main';
 import { MathIndex } from 'index/math-index';
@@ -24,6 +24,8 @@ export interface SuggestParent {
     getContext(): Omit<EditorSuggestContext, 'query'> | null;
     setInstructions(instructions: Instruction[]): void;
     getSelectedItem(): MathBoosterBlock;
+    moveUp(event: KeyboardEvent): void;
+    moveDown(event: KeyboardEvent): void;
 }
 
 export abstract class MathSearchCore {
@@ -69,6 +71,7 @@ export abstract class MathSearchCore {
                 { command: "↵", purpose: "to insert link" },
                 { command: `${getModifierNameInPlatform(this.plugin.extraSettings.modifierToNoteLink)} + ↵`, purpose: "to insert link to note" },
                 { command: `${getModifierNameInPlatform(this.plugin.extraSettings.modifierToJump)} + ↵`, purpose: "to jump" },
+                { command: `Hold down ${getModifierNameInPlatform(this.plugin.extraSettings.modifierToPreview)}`, purpose: "to preview" },
             ]);
         }
     }
@@ -284,5 +287,45 @@ export class DataviewQuerySearchCore extends PartialSearchCore {
             return links.map((link) => link.path);
         }
         return [];
+    }
+}
+
+export class KeyupHandlingHoverParent implements HoverParent {
+    #hoverPopover: HoverPopover | null;
+
+    constructor(private plugin: MathBooster, private suggestParent: SuggestParent) {
+        this.#hoverPopover = null;
+    }
+
+    get hoverPopover() {
+        return this.#hoverPopover;
+    }
+
+    set hoverPopover(hoverPopover: HoverPopover | null) {
+        this.#hoverPopover = hoverPopover;
+        if (this.#hoverPopover) {
+            this.#hoverPopover.hoverEl.addClass('math-booster');
+            this.#hoverPopover.hoverEl.toggleClass('compact-font', this.plugin.extraSettings.compactPreview);
+            this.#hoverPopover.registerDomEvent(document.body, 'keydown', (event: KeyboardEvent) => {
+                if (event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    this.hideChild();
+                    this.suggestParent.moveUp(event);
+                } else if (event.key === 'ArrowDown') {
+                    event.preventDefault();
+                    this.hideChild();
+                    this.suggestParent.moveDown(event);
+                }
+
+            })
+            this.#hoverPopover.registerDomEvent(document.body, 'keyup', (event: KeyboardEvent) => {
+                if (event.key === 'Alt') this.hideChild();
+            })
+        }
+    }
+
+    hideChild() {
+        /// @ts-ignore
+        this.#hoverPopover!.hide();
     }
 }

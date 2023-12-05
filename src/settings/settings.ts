@@ -159,6 +159,8 @@ export type ExtraSettings = ImporterSettings & {
     searchLabel: boolean;
     modifierToJump: Modifier;
     modifierToNoteLink: Modifier;
+    modifierToPreview: Modifier;
+    compactPreview: boolean;
     showModifierInstruction: boolean;
     suggestLeafOption: LeafOption;
     // projectInfix: string;
@@ -248,6 +250,8 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     searchLabel: false,
     modifierToJump: "Mod",
     modifierToNoteLink: "Shift",
+    modifierToPreview: "Alt",
+    compactPreview: true,
     showModifierInstruction: true,
     suggestLeafOption: "Current tab", 
     // projectInfix: " > ",

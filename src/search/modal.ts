@@ -1,7 +1,7 @@
-import { ActiveNoteSearchCore, DataviewQuerySearchCore, QueryType, RecentNotesSearchCore, WholeVaultEquationSearchCore, WholeVaultTheoremEquationSearchCore, WholeVaultTheoremSearchCore } from 'search/core';
+import { ActiveNoteSearchCore, DataviewQuerySearchCore, KeyupHandlingHoverParent, QueryType, RecentNotesSearchCore, WholeVaultEquationSearchCore, WholeVaultTheoremEquationSearchCore, WholeVaultTheoremSearchCore } from 'search/core';
 
 import MathBooster from "main";
-import { App, EditorSuggestContext, MarkdownView, Setting, SuggestModal, TextAreaComponent } from "obsidian";
+import { App, Component, EditorSuggestContext, Keymap, MarkdownView, Setting, SuggestModal, TextAreaComponent, UserEvent } from "obsidian";
 import { MathSearchCore, SuggestParent } from "./core";
 import { MathBoosterBlock } from "index/typings/markdown";
 
@@ -14,12 +14,14 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
     range: SearchRange;
     dvQueryField: Setting;
     topEl: HTMLElement;
+    component: Component;
 
     constructor(public plugin: MathBooster) {
         super(plugin.app);
         this.app = plugin.app;
         this.core = new WholeVaultTheoremEquationSearchCore(this);
         this.core.setScope();
+        this.component = new Component();
         this.setPlaceholder('Type here...');
 
         this.queryType = this.plugin.extraSettings.searchModalQueryType;
@@ -27,6 +29,7 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
 
         this.topEl = this.modalEl.createDiv({ cls: 'math-booster-modal-top' });
         this.modalEl.insertBefore(this.topEl, this.modalEl.firstChild)
+        this.modalEl.addClass('math-booster');
         this.inputEl.addClass('math-booster-search-input');
 
         this.limit = this.plugin.extraSettings.suggestNumber;
@@ -144,6 +147,16 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
         return this.chooser.values[this.chooser.selectedItem];
     };
 
+    moveUp(event: KeyboardEvent): void {
+        // @ts-ignore
+        this.chooser.moveUp(event);
+    }
+
+    moveDown(event: KeyboardEvent): void {
+        // @ts-ignore
+        this.chooser.moveDown(event);
+    }
+
     getSuggestions(query: string) {
         return this.core.getSuggestions(query);
     }
@@ -154,5 +167,23 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
 
     onChooseSuggestion(item: MathBoosterBlock, evt: MouseEvent | KeyboardEvent) {
         this.core.selectSuggestion(item, evt);
+    }
+
+    onOpen() {
+        super.onOpen();
+        this.component.registerDomEvent(window, 'keydown', (event: UserEvent) => {
+            // @ts-ignore
+            if (Keymap.isModifier(event, 'Alt')) {
+                const item = this.getSelectedItem();
+                const parent = new KeyupHandlingHoverParent(this.plugin, this);
+                this.app.workspace.trigger('link-hover', parent, null, item.$file, "", { scroll: item.$position.start })
+            }
+        });
+        this.component.load();
+    }
+
+    onClose() {
+        super.onClose();
+        this.component.unload();
     }
 }
