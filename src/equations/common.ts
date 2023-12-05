@@ -34,24 +34,34 @@ export function getMathTextWithTag(equation: EquationBlock, lineByLine?: boolean
 }
 
 export function insertTagInMathText(text: string, tagContent: string, lineByLine?: boolean): string {
-    if (lineByLine) {
-        const alignResult = text.match(/^\s*\\begin\{align\}([\s\S]*)\\end\{align\}\s*$/);
-        if (alignResult) {
-            // remove comments
-            let alignContent = alignResult[1]
-                .split('\n')
-                .map(line => parseLatexComment(line).nonComment)
-                .join('\n');
-            // add tags
-            let index = 1;
-            alignContent = alignContent
-                .split("\\\\")
-                .map(alignLine => (!alignLine.trim() || alignLine.contains("\\nonumber"))
-                    ? alignLine
-                    : (alignLine + `\\tag{${tagContent}-${index++}}`)
-                ).join("\\\\");
-            return "\\begin{align}" + alignContent + "\\end{align}";
-        }
-    }
-    return text + `\\tag{${tagContent}}`;
+    if (!lineByLine) return text + `\\tag{${tagContent}}`;
+
+    const alignResult = text.match(/^\s*\\begin\{align\}([\s\S]*)\\end\{align\}\s*$/);
+    if (!alignResult) return text + `\\tag{${tagContent}}`;
+
+    const envStack: string[] = [];
+
+    // remove comments
+    let alignContent = alignResult[1]
+        .split('\n')
+        .map(line => parseLatexComment(line).nonComment)
+        .join('\n');
+    // add tags
+    let index = 1;
+    alignContent = alignContent
+        .split("\\\\")
+        .map((alignLine) => {
+            const pattern = /\\(?<which>begin|end)\{(?<env>.*?)\}/g;
+            let result;
+            while (result = pattern.exec(alignLine)) {
+                const { which, env } = result.groups!;
+                if (which === 'begin' || envStack.pop() !== env) envStack.push(env);
+            }
+            if (envStack.length || !alignLine.trim() || alignLine.contains("\\nonumber")) return alignLine;
+            return alignLine + `\\tag{${tagContent}-${index++}}`;
+        }).join("\\\\");
+
+    if (index <= 2) return text + `\\tag{${tagContent}}`;
+
+    return "\\begin{align}" + alignContent + "\\end{align}";
 }
