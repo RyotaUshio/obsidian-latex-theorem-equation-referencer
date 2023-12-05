@@ -55,7 +55,8 @@ export function insertTagInMathText(text: string, tagContent: string, lineByLine
             let result;
             while (result = pattern.exec(alignLine)) {
                 const { which, env } = result.groups!;
-                if (which === 'begin' || envStack.pop() !== env) envStack.push(env);
+                if (which === 'begin') envStack.push(env);
+                else if (envStack.last() === env) envStack.pop();
             }
             if (envStack.length || !alignLine.trim() || alignLine.contains("\\nonumber")) return alignLine;
             return alignLine + `\\tag{${tagContent}-${index++}}`;
