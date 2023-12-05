@@ -1,4 +1,4 @@
-import { Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, Keymap, UserEvent } from "obsidian";
+import { Component, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, Keymap, UserEvent } from "obsidian";
 
 import MathBooster from "main";
 import { MathBoosterBlock } from "index/typings/markdown";
@@ -11,6 +11,7 @@ export class LinkAutocomplete extends EditorSuggest<MathBoosterBlock> implements
     range: SearchRange;
     core: MathSearchCore;
     triggers: Map<string, { range: SearchRange, queryType: QueryType }>;
+    component: Component;
 
     /**
      * @param type The type of the block to search for. See: index/typings/markdown.ts
@@ -21,12 +22,14 @@ export class LinkAutocomplete extends EditorSuggest<MathBoosterBlock> implements
         this.core = new WholeVaultTheoremEquationSearchCore(this);
         this.core.setScope();
         this.suggestEl.addClass('math-booster');
+        this.plugin.addChild(this.component = new Component());
 
-        this.plugin.registerDomEvent(window, 'keydown', (event: UserEvent) => {
+        this.component.registerDomEvent(window, 'keydown', (event: UserEvent) => {
             // @ts-ignore
-            if (this.isOpen && Keymap.isModifier(event, 'Alt')) {
+            if (this.isOpen && Keymap.isModifier(event, this.plugin.extraSettings.modifierToPreview)) {
                 const item = this.getSelectedItem();
                 const parent = new KeyupHandlingHoverParent(this);
+                this.component.addChild(parent);
                 this.app.workspace.trigger('link-hover', parent, null, item.$file, "", { scroll: item.$position.start })
             }
         });

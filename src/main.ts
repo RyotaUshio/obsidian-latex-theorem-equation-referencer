@@ -245,7 +245,10 @@ export default class MathBooster extends Plugin {
 		// reset editor suggest(s) registered by this plugin
 		const suggestManager = (this.app.workspace as any).editorSuggest;
 		for (const suggest of suggestManager.suggests) {
-			if (suggest instanceof LinkAutocomplete) suggestManager.removeSuggest(suggest);
+			if (suggest instanceof LinkAutocomplete) {
+				suggest.component.unload();
+				suggestManager.removeSuggest(suggest);
+			};
 		}
 
 		this.registerEditorSuggest(new LinkAutocomplete(this));

@@ -19,7 +19,7 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
         this.app = plugin.app;
         this.core = new WholeVaultTheoremEquationSearchCore(this);
         this.core.setScope();
-        this.component = new Component();
+        this.plugin.addChild(this.component = new Component());
         this.setPlaceholder('Type here...');
 
         this.queryType = this.plugin.extraSettings.searchModalQueryType;
@@ -165,9 +165,10 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
         super.onOpen();
         this.component.registerDomEvent(window, 'keydown', (event: UserEvent) => {
             // @ts-ignore
-            if (Keymap.isModifier(event, 'Alt')) {
+            if (Keymap.isModifier(event, this.plugin.extraSettings.modifierToPreview)) {
                 const item = this.getSelectedItem();
                 const parent = new KeyupHandlingHoverParent(this);
+                this.component.addChild(parent);
                 this.app.workspace.trigger('link-hover', parent, null, item.$file, "", { scroll: item.$position.start })
             }
         });

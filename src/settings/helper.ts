@@ -396,7 +396,8 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addHeading('Configure Math Booster\'s editor link auto-completion')
             .setDesc(`It is recommended to turn off unnecessary auto-completions to improve performance.`);
 
-        this.addTextSetting("autocompleteDvQuery", "Dataview query for editor link auto-completion", "Only LIST queries are supported.");
+        this.addTextSetting("autocompleteDvQuery", "Dataview query for editor link auto-completion", "Only LIST queries are supported.")
+            .then((setting) => (setting.components[0] as TextComponent).setPlaceholder('LIST ...'));
 
         this.addHeading('Theorem & equation suggestion')
         this.addHeading("From entire vault", ['editor-suggest-setting-indented-heading']);

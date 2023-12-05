@@ -1,4 +1,4 @@
-import { App, EditorSuggestContext, HoverParent, HoverPopover, Instruction, Notice, Scope, SearchResult, TFile, finishRenderMath, prepareFuzzySearch, prepareSimpleSearch, renderMath, sortSearchResults } from 'obsidian';
+import { App, Component, EditorSuggestContext, HoverParent, HoverPopover, Instruction, Notice, Scope, SearchResult, TFile, finishRenderMath, prepareFuzzySearch, prepareSimpleSearch, renderMath, sortSearchResults } from 'obsidian';
 
 import MathBooster from 'main';
 import { MathIndex } from 'index/math-index';
@@ -313,11 +313,17 @@ export class DataviewQuerySearchCore extends PartialSearchCore {
     }
 }
 
-export class KeyupHandlingHoverParent implements HoverParent {
+export class KeyupHandlingHoverParent extends Component implements HoverParent {
     #hoverPopover: HoverPopover | null;
 
     constructor(private suggestParent: SuggestParent) {
+        super();
         this.#hoverPopover = null;
+    }
+
+    onunload() {
+        super.onunload();
+        this.hideChild();
     }
 
     get hoverPopover() {
@@ -327,6 +333,7 @@ export class KeyupHandlingHoverParent implements HoverParent {
     set hoverPopover(hoverPopover: HoverPopover | null) {
         this.#hoverPopover = hoverPopover;
         if (this.#hoverPopover) {
+            this.addChild(this.#hoverPopover);
             this.#hoverPopover.hoverEl.addClass('math-booster');
             this.#hoverPopover.hoverEl.toggleClass('compact-font', this.suggestParent.plugin.extraSettings.compactPreview);
             this.#hoverPopover.registerDomEvent(document.body, 'keydown', (event: KeyboardEvent) => {
@@ -341,8 +348,8 @@ export class KeyupHandlingHoverParent implements HoverParent {
                 }
 
             })
-            this.#hoverPopover.registerDomEvent(document.body, 'keyup', (event: KeyboardEvent) => {
-                if (event.key === 'Alt') this.hideChild();
+            this.#hoverPopover.registerDomEvent(window, 'keyup', (event: KeyboardEvent) => {
+                if (event.key === this.suggestParent.plugin.extraSettings.modifierToPreview) this.hideChild();
             })
         }
     }
