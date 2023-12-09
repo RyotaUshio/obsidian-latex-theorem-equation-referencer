@@ -19,17 +19,23 @@ https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/
 - [Automatic equation numbering](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/equations.html)
 - [Clever referencing](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/clever-referencing.html)
 - [Search & link autocomplete](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/search-&-link-autocomplete/search-&-link-autocomplete.html)
-  - [Enhancing Obsidian's built-in link autocomplete](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/search-&-link-autocomplete/enhancing-obsidian's-built-in-link-autocomplete.html): equations are rendered in Obsidian's built-in link autocomplete.
   - [Custom link autocomplete](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/search-&-link-autocomplete/custom-link-autocomplete.html)
     - Easily find & insert link to theorems & equations.
     - Filter theorems & equations based on their locations (*entire vault/recent notes/active note*)
   - [Search modal](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/search-&-link-autocomplete/search-modal.html): more control & flexibility than editor autocomplete, including *Dataview queries*
 - [Proof environment (experimental)](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/proof-environment.html)
 
-> The following features will be removed from Math Booster in the near future, and instead provided by my another plugin [Better Math in Callouts & Blockquotes](https://github.com/RyotaUshio/obsidian-math-in-callout).
+> [!note]
+> For more modular and focused enhancements, some features are planned to be transitioned from this plugin to dedicated, specialized plugins in the near future. Below are the upcoming changes:
+> 
+> #### Transitioning to [**Better Math in Callouts & Blockquotes**](https://github.com/RyotaUshio/obsidian-math-in-callout)
 > 
 > - Rendering equations inside callouts
 > - Multi-line equation support inside blockquotes
+> 
+> #### Transitioning to [**Rendered Block Link Suggestions**](https://github.com/RyotaUshio/obsidian-rendered-block-link-suggestions)
+> 
+> - [Render equations in Obsidian's built-in link suggestions](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/search-&-link-autocomplete/enhancing-obsidian's-built-in-link-autocomplete.html)
 
 Theorems & equations can be **dynamically/automatically numbered**, while you can statically/manually number them if you want.
 The number prefix can be either explicitly specified or automatically inferred from the note title.
