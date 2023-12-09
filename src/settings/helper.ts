@@ -337,7 +337,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addHeading('Search & link auto-completion - general')
             .then(async (setting) => {
                 setting.descEl.addClass('math-booster-new-feature');
-                await MarkdownRenderer.render(this.plugin.app, '**NOTE:** If you have the [**Quick Preview**](https://github.com/RyotaUshio/obsidian-quick-preview) plugin installed, holding down `Alt`/`Option` _(by default)_ will trigger a quick preview of the selected suggestion.', setting.descEl, '', this);
+                await MarkdownRenderer.render(this.plugin.app, '**NOTE:** If you have the [**Quick Preview**](https://github.com/RyotaUshio/obsidian-quick-preview) plugin installed, holding down `Alt`/`Option` _(by default)_ will trigger a quick preview of the selected suggestion with the context around it.', setting.descEl, '', this);
             })
         this.addToggleSetting("insertSpace", "Append whitespace after inserted link");
     }
