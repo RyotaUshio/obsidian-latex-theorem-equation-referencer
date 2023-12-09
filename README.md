@@ -70,9 +70,9 @@ Since version 2 is still beta, it's not on the community plugin browser yet.
 
 ### Obsidian plugins
 
-Math Booster requires [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) version 0.5.3 or higher installed to work properly ([Clever referencing](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/clever-referencing.html)).
+This plugin requires [MathLinks](https://github.com/zhaoshenzhai/obsidian-mathlinks) version 0.5.3 or higher installed to work properly ([Clever referencing](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/clever-referencing.html)).
 
-In version 2, [Dataview](https://github.com/blacksmithgu/obsidian-dataview) is no longer required. But I strongly recommend installing it because it enhances Math Booster's [search](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/search-&-link-auto-completion/search-modal.html) functionality significantly.
+In version 2, [Dataview](https://github.com/blacksmithgu/obsidian-dataview) is no longer required. But I strongly recommend installing it because it enhances this plugin's [search](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/search-&-link-auto-completion/search-modal.html) functionality significantly.
 
 ### Fonts
 
@@ -83,8 +83,8 @@ Additionally, [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP
 ## Contributing
 
 - Feel free to create a new issue if something is not working well. Questions are also welcomed.
-- Please send a pull request if you have any ideas to improve Math Booster and our experience!
-- Contribution to the docs is also highly appreciated: see [here](https://github.com/RyotaUshio/math-booster-docs).
+- Please send a pull request if you have any ideas to improve this plugin and our experience!
+- Contribution to the docs is also highly appreciated: see [here](https://github.com/RyotaUshio/obsidian-latex-theorem-equation-referencer-docs).
 
 ## Roadmaps
 
