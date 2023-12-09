@@ -1,6 +1,6 @@
 import { ButtonComponent, DropdownComponent, Modal, Notice, Setting, TextComponent } from 'obsidian';
 
-import MathBooster, { VAULT_ROOT } from '../main';
+import LatexReferencer, { VAULT_ROOT } from '../main';
 import { THEOREM_LIKE_ENV_IDs, TheoremLikeEnvID } from '../env';
 import { MathContextSettingsHelper } from '../settings/helper';
 import { DEFAULT_SETTINGS } from './settings';
@@ -89,7 +89,7 @@ export const DEFAULT_PROFILES: Record<string, Profile> = {
 
 
 export class ManageProfileModal extends Modal {
-    constructor(public plugin: MathBooster, public helper: MathContextSettingsHelper, public profileSetting: Setting) {
+    constructor(public plugin: LatexReferencer, public helper: MathContextSettingsHelper, public profileSetting: Setting) {
         super(plugin.app);
     }
 
@@ -145,7 +145,6 @@ export class ManageProfileModal extends Modal {
         contentEl.empty();
 
         await this.plugin.saveSettings();
-        // this.app.metadataCache.trigger("math-booster:global-settings-updated");
         this.plugin.indexManager.trigger('global-settings-updated');
 
         this.profileSetting.settingEl.replaceWith(
@@ -411,7 +410,7 @@ class UpdateProfileModal extends Modal {
 }
 
 
-function getAffectedFiles(plugin: MathBooster, oldProfileId: string) {
+function getAffectedFiles(plugin: LatexReferencer, oldProfileId: string) {
     const affected: string[] = [];
     for (const path in plugin.settings) {
         const localSettings = plugin.settings[path];
@@ -435,7 +434,7 @@ function makeIdOfCopy(oldID: string, profiles: Record<string, Profile>) {
 }
 
 
-function updateProfile(plugin: MathBooster, paths: string[], newID?: string) {
+function updateProfile(plugin: LatexReferencer, paths: string[], newID?: string) {
     for (const path of paths) {
         const localSettings = plugin.settings[path];
         if (newID) {

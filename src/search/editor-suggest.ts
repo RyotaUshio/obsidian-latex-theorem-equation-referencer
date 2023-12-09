@@ -1,12 +1,12 @@
 import { Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, Keymap, UserEvent } from "obsidian";
 
-import MathBooster from "main";
-import { MathBoosterBlock } from "index/typings/markdown";
+import LatexReferencer from "main";
+import { MathBlock } from "index/typings/markdown";
 import { MathSearchCore, SuggestParent, WholeVaultTheoremEquationSearchCore } from "./core";
 import { QueryType, SearchRange } from './core';
 
 
-export class LinkAutocomplete extends EditorSuggest<MathBoosterBlock> implements SuggestParent {
+export class LinkAutocomplete extends EditorSuggest<MathBlock> implements SuggestParent {
     queryType: QueryType;
     range: SearchRange;
     core: MathSearchCore;
@@ -15,7 +15,7 @@ export class LinkAutocomplete extends EditorSuggest<MathBoosterBlock> implements
     /**
      * @param type The type of the block to search for. See: index/typings/markdown.ts
      */
-    constructor(public plugin: MathBooster) {
+    constructor(public plugin: LatexReferencer) {
         super(plugin.app);
         this.setTriggers();
         this.core = new WholeVaultTheoremEquationSearchCore(this);
@@ -59,15 +59,15 @@ export class LinkAutocomplete extends EditorSuggest<MathBoosterBlock> implements
         return null;
     }
 
-    getSuggestions(context: EditorSuggestContext): Promise<MathBoosterBlock[]> {
+    getSuggestions(context: EditorSuggestContext): Promise<MathBlock[]> {
         return this.core.getSuggestions(context.query);
     }
 
-    renderSuggestion(block: MathBoosterBlock, el: HTMLElement): void {
+    renderSuggestion(block: MathBlock, el: HTMLElement): void {
         this.core.renderSuggestion(block, el);
     }
 
-    selectSuggestion(item: MathBoosterBlock, evt: MouseEvent | KeyboardEvent): void {
+    selectSuggestion(item: MathBlock, evt: MouseEvent | KeyboardEvent): void {
         this.core.selectSuggestion(item, evt);
     }
 

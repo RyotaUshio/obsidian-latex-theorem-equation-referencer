@@ -16,7 +16,7 @@ import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, 
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, isPluginOlderThan } from 'utils/obsidian';
 import { getProfile, staticifyEqNumber, insertDisplayMath, insertTheoremCallout, insertProof } from 'utils/plugin';
 import { MathIndexManager } from 'index/manager';
-import { DependencyNotificationModal, MigrationModal } from 'notice';
+import { DependencyNotificationModal, MigrationModal, RenameNoticeModal } from 'notice';
 import { LinkAutocomplete } from 'search/editor-suggest';
 import { MathSearchModal } from 'search/modal';
 import { TheoremCalloutInfo, createTheoremCalloutsField } from 'theorem-callouts/state-field';
@@ -24,13 +24,13 @@ import { patchLinkCompletion } from 'patches/link-completion';
 import { patchPagePreview } from 'patches/page-preview';
 import { createProofDecoration } from 'proof/live-preview';
 import { createProofProcessor } from 'proof/reading-view';
-import { MathBoosterBlock } from 'index/typings/markdown';
+import { MathBlock } from 'index/typings/markdown';
 
 
 export const VAULT_ROOT = '/';
 
 
-export default class MathBooster extends Plugin {
+export default class LatexReferencer extends Plugin {
 	settings: Record<string, Partial<MathContextSettings>>;
 	extraSettings: ExtraSettings;
 	excludedFiles: string[];
@@ -61,6 +61,10 @@ export default class MathBooster extends Plugin {
 			const dependenciesOK = Object.keys(this.dependencies).every((id) => this.checkDependency(id));
 			const v1 = !first && ((version as string | undefined)?.startsWith("1.") ?? true);
 
+			if (v1 || version.localeCompare('2.2.0', undefined, { numeric: true }) < 0) {
+				new RenameNoticeModal(this).open();
+			}
+
 			if (!dependenciesOK || v1) {
 				new DependencyNotificationModal(this, dependenciesOK, v1).open();
 			}
@@ -83,7 +87,6 @@ export default class MathBooster extends Plugin {
 
 
 		this.registerEvent(
-			// this.app.metadataCache.on("math-booster:local-settings-updated", async (file) => {
 			this.indexManager.on("local-settings-updated", async (file) => {
 				// Add profile's tags as CSS classes
 				this.app.workspace.iterateRootLeaves((leaf) => {
@@ -96,7 +99,6 @@ export default class MathBooster extends Plugin {
 
 		this.registerEvent(
 			this.indexManager.on("global-settings-updated", async () => {
-				// this.app.metadataCache.on("math-booster:global-settings-updated", async () => {
 				// Add profile's tags as CSS classes
 				this.app.workspace.iterateRootLeaves((leaf) => {
 					if (leaf.view instanceof MarkdownView) {
@@ -139,7 +141,7 @@ export default class MathBooster extends Plugin {
 		/** Theorem/equation link autocompletion */
 		this.updateLinkAutocomplete();
 		this.app.workspace.onLayoutReady(() => patchLinkCompletion(this));
-		const itemNormalizer = (item: MathBoosterBlock) => {
+		const itemNormalizer = (item: MathBlock) => {
 			return {
 				linktext: item.$file,
 				sourcePath: '',
@@ -279,11 +281,14 @@ export default class MathBooster extends Plugin {
 	setProfileTagAsCSSClass(view: MarkdownView) {
 		if (!view.file) return;
 		const profile = getProfile(this, view.file);
-		const classes = profile.meta.tags.map((tag) => `math-booster-${tag}`);
+		const classes = [
+			...profile.meta.tags.map((tag) => `math-booster-${tag}`), // deprecated
+			...profile.meta.tags.map((tag) => `latex-referencer-${tag}`),
+		];
 		for (const el of [getMarkdownSourceViewEl(view), getMarkdownPreviewViewEl(view)]) {
 			if (el) {
 				el.classList.forEach((cls) => {
-					if (cls.startsWith("math-booster-")) {
+					if (cls.startsWith("math-booster-") || cls.startsWith("latex-referencer-")) {
 						el.classList.remove(cls);
 					}
 				});

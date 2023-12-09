@@ -1,11 +1,11 @@
-import MathBooster from "main";
+import LatexReferencer from "main";
 import { App, MarkdownPostProcessorContext, MarkdownRenderChild, TFile } from "obsidian";
 import { resolveSettings } from "utils/plugin";
 import { makeProofClasses, makeProofElement } from "./common";
 import { renderMarkdown } from "utils/render";
 import { Profile } from "settings/profile";
 
-export const createProofProcessor = (plugin: MathBooster) => (element: HTMLElement, context: MarkdownPostProcessorContext) => {
+export const createProofProcessor = (plugin: LatexReferencer) => (element: HTMLElement, context: MarkdownPostProcessorContext) => {
     if (!plugin.extraSettings.enableProof) return;
 
     const { app } = plugin;
@@ -51,7 +51,7 @@ function parseAtSignLink(codeEl: HTMLElement) {
 export class ProofRenderer extends MarkdownRenderChild {
     atSignParseResult: { atSign: ChildNode, links: HTMLElement[] } | undefined;
 
-    constructor(public app: App, public plugin: MathBooster, containerEl: HTMLElement, public which: "begin" | "end", public file: TFile, public display?: string) {
+    constructor(public app: App, public plugin: LatexReferencer, containerEl: HTMLElement, public which: "begin" | "end", public file: TFile, public display?: string) {
         super(containerEl);
         this.atSignParseResult = parseAtSignLink(this.containerEl);
     }
@@ -60,7 +60,6 @@ export class ProofRenderer extends MarkdownRenderChild {
         this.update();
         this.registerEvent(
             this.plugin.indexManager.on("local-settings-updated", (file) => {
-            // this.app.metadataCache.on("math-booster:local-settings-updated", (file) => {
                 if (file == this.file) {
                     this.update();
                 }

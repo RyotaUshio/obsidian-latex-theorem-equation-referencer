@@ -4,7 +4,7 @@
 
 import { App, MarkdownRenderChild, finishRenderMath, MarkdownPostProcessorContext, TFile, Notice } from "obsidian";
 
-import MathBooster from 'main';
+import LatexReferencer from 'main';
 import { resolveSettings } from 'utils/plugin';
 import { EquationBlock, MarkdownPage } from "index/typings/markdown";
 import { MathIndex } from "index/math-index";
@@ -12,7 +12,7 @@ import { isPdfExport, resolveLinktext } from "utils/obsidian";
 import { replaceMathTag } from "./common";
 
 
-export const createEquationNumberProcessor = (plugin: MathBooster) => async (el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+export const createEquationNumberProcessor = (plugin: LatexReferencer) => async (el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
     if (isPdfExport(el)) preprocessForPdfExport(plugin, el, ctx);
 
     const sourceFile = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
@@ -34,7 +34,7 @@ export const createEquationNumberProcessor = (plugin: MathBooster) => async (el:
  * so that EquationNumberRenderer can find the corresponding block from the index
  * without relying on the line number.
  */
-function preprocessForPdfExport(plugin: MathBooster, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+function preprocessForPdfExport(plugin: LatexReferencer, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
 
     try {
         const topLevelMathDivs = el.querySelectorAll<HTMLElement>(':scope > div.math.math-block > mjx-container.MathJax[display="true"]');
@@ -69,7 +69,7 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
     app: App
     index: MathIndex;
 
-    constructor(containerEl: HTMLElement, public plugin: MathBooster, public file: TFile, public context: MarkdownPostProcessorContext) {
+    constructor(containerEl: HTMLElement, public plugin: LatexReferencer, public file: TFile, public context: MarkdownPostProcessorContext) {
         // containerEl, currentEL are mjx-container.MathJax elements
         super(containerEl);
         this.app = plugin.app;
@@ -119,7 +119,7 @@ export class EquationNumberRenderer extends MarkdownRenderChild {
 
     getEquationCacheCaringHoverAndEmbed(): EquationBlock | null {
         /**
-         * https://github.com/RyotaUshio/obsidian-math-booster/issues/179
+         * https://github.com/RyotaUshio/obsidian-latex-theorem-equation-referencer/issues/179
          * 
          * In the case of embeds or hover popovers, the line numbers contained 
          * in the result of MarkdownPostProcessorContext.getSectionInfo() is 

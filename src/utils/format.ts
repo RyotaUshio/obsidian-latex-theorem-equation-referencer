@@ -1,6 +1,6 @@
 import { App, TFile } from "obsidian";
 
-import MathBooster from "main";
+import LatexReferencer from "main";
 import { getPropertyOrLinkTextInProperty } from "utils/obsidian";
 import { DEFAULT_SETTINGS, MathContextSettings, NumberStyle, ResolvedMathSettings } from "settings/settings";
 import { THEOREM_LIKE_ENVs, TheoremLikeEnvID } from "env";
@@ -44,12 +44,12 @@ export const CONVERTER = {
     "Roman": toRomanUpper,
 }
 
-export function formatTheoremCalloutType(plugin: MathBooster, settings: { type: string, profile: string }): string {
+export function formatTheoremCalloutType(plugin: LatexReferencer, settings: { type: string, profile: string }): string {
     const profile = plugin.extraSettings.profiles[settings.profile];
     return profile.body.theorem[settings.type as TheoremLikeEnvID];
 }
 
-export function formatTitleWithoutSubtitle(plugin: MathBooster, file: TFile, settings: ResolvedMathSettings): string {
+export function formatTitleWithoutSubtitle(plugin: LatexReferencer, file: TFile, settings: ResolvedMathSettings): string {
     let title = formatTheoremCalloutType(plugin, settings);
 
     if (settings.number) {
@@ -67,7 +67,7 @@ export function formatTitleWithoutSubtitle(plugin: MathBooster, file: TFile, set
     return title;
 }
 
-export function formatTitle(plugin: MathBooster, file: TFile, settings: ResolvedMathSettings, noTitleSuffix: boolean = false): string {
+export function formatTitle(plugin: LatexReferencer, file: TFile, settings: ResolvedMathSettings, noTitleSuffix: boolean = false): string {
     let title = formatTitleWithoutSubtitle(plugin, file, settings);
     return addSubTitle(title, settings, noTitleSuffix);
 }

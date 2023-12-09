@@ -1,7 +1,7 @@
 import { StateField, EditorState, Transaction, RangeSet, RangeValue, Range, Text } from '@codemirror/state';
 import { ensureSyntaxTree, syntaxTree } from '@codemirror/language';
 
-import MathBooster from 'main';
+import LatexReferencer from 'main';
 import { readTheoremCalloutSettings } from 'utils/parse';
 import { editorInfoField } from 'obsidian';
 
@@ -14,7 +14,7 @@ export class TheoremCalloutInfo extends RangeValue {
 }
 
 
-export const createTheoremCalloutsField = (plugin: MathBooster) => StateField.define<RangeSet<TheoremCalloutInfo>>({
+export const createTheoremCalloutsField = (plugin: LatexReferencer) => StateField.define<RangeSet<TheoremCalloutInfo>>({
     create(state: EditorState) {
         // Since because canvas files cannot be indexed currently,
         // do not number theorems in canvas to make live preview consistent with reading view
@@ -62,7 +62,7 @@ export const createTheoremCalloutsField = (plugin: MathBooster) => StateField.de
 });
 
 
-function getTheoremCalloutInfos(plugin: MathBooster, state: EditorState, doc: Text, from: number, init: number): Range<TheoremCalloutInfo>[] {
+function getTheoremCalloutInfos(plugin: LatexReferencer, state: EditorState, doc: Text, from: number, init: number): Range<TheoremCalloutInfo>[] {
     const ranges: Range<TheoremCalloutInfo>[] = [];
     // syntaxTree returns a potentially imcomplete tree (limited by viewport), so we need to ensure it's complete
     const tree = ensureSyntaxTree(state, doc.length) ?? syntaxTree(state);

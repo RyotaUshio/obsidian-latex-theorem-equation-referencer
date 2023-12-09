@@ -1,8 +1,8 @@
 import { App, EditorSuggestContext, Instruction, Notice, Scope, SearchResult, TFile, finishRenderMath, prepareFuzzySearch, prepareSimpleSearch, renderMath, sortSearchResults } from 'obsidian';
 
-import MathBooster from 'main';
+import LatexReferencer from 'main';
 import { MathIndex } from 'index/math-index';
-import { EquationBlock, MarkdownBlock, MarkdownPage, MathBoosterBlock, TheoremCalloutBlock } from 'index/typings/markdown';
+import { EquationBlock, MarkdownBlock, MarkdownPage, MathBlock, TheoremCalloutBlock } from 'index/typings/markdown';
 import { getFileTitle } from 'index/utils/normalizers';
 import { LEAF_OPTION_TO_ARGS } from 'settings/settings';
 import { formatLabel } from 'utils/format';
@@ -12,7 +12,7 @@ import { MathSearchModal } from './modal';
 import { renderTextWithMath } from 'utils/render';
 
 
-export type ScoredMathBoosterBlock = { match: SearchResult, block: MathBoosterBlock };
+export type ScoredMathBlock = { match: SearchResult, block: MathBlock };
 
 export type SearchRange = 'active' | 'vault' | 'recent' | 'dataview';
 export type QueryType = 'theorem' | 'equation' | 'both';
@@ -21,19 +21,19 @@ export type MathSearchCoreCreator = (parent: SuggestParent) => MathSearchCore;
 
 export interface SuggestParent {
     app: App;
-    plugin: MathBooster;
+    plugin: LatexReferencer;
     scope: Scope;
     range: SearchRange;
     queryType: QueryType;
     dvQuery: string;
     getContext(): Omit<EditorSuggestContext, 'query'> | null;
     setInstructions(instructions: Instruction[]): void;
-    getSelectedItem(): MathBoosterBlock;
+    getSelectedItem(): MathBlock;
 }
 
 export abstract class MathSearchCore {
     app: App;
-    plugin: MathBooster;
+    plugin: LatexReferencer;
     index: MathIndex;
     scope: Scope;
 
@@ -96,7 +96,7 @@ export abstract class MathSearchCore {
         }
     }
 
-    async getSuggestions(query: string): Promise<MathBoosterBlock[]> {
+    async getSuggestions(query: string): Promise<MathBlock[]> {
         const ids = await this.getUnsortedSuggestions();
         const results = this.gradeSuggestions(ids, query);
         this.postProcessResults(results);
@@ -106,14 +106,14 @@ export abstract class MathSearchCore {
 
     abstract getUnsortedSuggestions(): Promise<Array<string>> | Promise<Set<string>>;
 
-    postProcessResults(results: ScoredMathBoosterBlock[]) { }
+    postProcessResults(results: ScoredMathBlock[]) { }
 
     gradeSuggestions(ids: Array<string> | Set<string>, query: string) {
         const callback = (this.plugin.extraSettings.searchMethod == "Fuzzy" ? prepareFuzzySearch : prepareSimpleSearch)(query);
-        const results: ScoredMathBoosterBlock[] = [];
+        const results: ScoredMathBlock[] = [];
 
         for (const id of ids) {
-            const block = this.index.load(id) as MathBoosterBlock;
+            const block = this.index.load(id) as MathBlock;
 
             let text = `${block.$printName} ${block.$file}}`;
 
@@ -140,7 +140,7 @@ export abstract class MathSearchCore {
         return results;
     }
 
-    renderSuggestion(block: MathBoosterBlock, el: HTMLElement): void {
+    renderSuggestion(block: MathBlock, el: HTMLElement): void {
         const baseEl = el.createDiv({ cls: "math-booster-search-item" });
         if (block.$printName) {
             const children = renderTextWithMath(block.$printName);
@@ -164,13 +164,13 @@ export abstract class MathSearchCore {
         }
     }
 
-    selectSuggestion(item: MathBoosterBlock, evt: MouseEvent | KeyboardEvent): void {
+    selectSuggestion(item: MathBlock, evt: MouseEvent | KeyboardEvent): void {
         this.selectSuggestionImpl(item, false);
         // I don't know when to call finishRenderMath...
         finishRenderMath();
     }
 
-    async selectSuggestionImpl(block: MathBoosterBlock, insertNoteLink: boolean): Promise<void> {
+    async selectSuggestionImpl(block: MathBlock, insertNoteLink: boolean): Promise<void> {
         const context = this.parent.getContext();
         if (!context) return;
         const fileContainingBlock = this.app.vault.getAbstractFileByPath(block.$file);
@@ -219,7 +219,7 @@ export abstract class MathSearchCore {
 
 
 abstract class WholeVaultSearchCore extends MathSearchCore {
-    postProcessResults(results: ScoredMathBoosterBlock[]) {
+    postProcessResults(results: ScoredMathBlock[]) {
         results.forEach((result) => {
             if (this.app.workspace.getLastOpenFiles().contains(result.block.$file)) {
                 result.match.score += this.plugin.extraSettings.upWeightRecent;
@@ -258,7 +258,7 @@ export abstract class PartialSearchCore extends MathSearchCore {
     filterBlock(block: MarkdownBlock): boolean {
         if (this.type === 'theorem') return TheoremCalloutBlock.isTheoremCalloutBlock(block);
         if (this.type === 'equation') return EquationBlock.isEquationBlock(block);
-        return MathBoosterBlock.isMathBoosterBlock(block);
+        return MathBlock.isMathBlock(block);
     }
 
     async getUnsortedSuggestions() {

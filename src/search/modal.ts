@@ -1,11 +1,11 @@
 import { DataviewQuerySearchCore, QueryType, SearchRange, WholeVaultTheoremEquationSearchCore } from 'search/core';
 
-import MathBooster from "main";
+import LatexReferencer from "main";
 import { App, EditorSuggestContext, MarkdownView, Setting, SuggestModal, TextAreaComponent } from "obsidian";
 import { MathSearchCore, SuggestParent } from "./core";
-import { MathBoosterBlock } from "index/typings/markdown";
+import { MathBlock } from "index/typings/markdown";
 
-export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements SuggestParent {
+export class MathSearchModal extends SuggestModal<MathBlock> implements SuggestParent {
     app: App;
     core: MathSearchCore;
     queryType: QueryType;
@@ -13,7 +13,7 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
     dvQueryField: Setting;
     topEl: HTMLElement;
 
-    constructor(public plugin: MathBooster) {
+    constructor(public plugin: LatexReferencer) {
         super(plugin.app);
         this.app = plugin.app;
         this.core = new WholeVaultTheoremEquationSearchCore(this);
@@ -131,20 +131,19 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
         return { file: view.file, editor: view.editor, start, end }
     }
 
-    getSelectedItem(): MathBoosterBlock {
-        if (!this.chooser.values) throw Error('Math Booster: chooser is not ready.');
-        return this.chooser.values[this.chooser.selectedItem];
+    getSelectedItem(): MathBlock {
+        return this.chooser.values![this.chooser.selectedItem];
     };
 
     getSuggestions(query: string) {
         return this.core.getSuggestions(query);
     }
 
-    renderSuggestion(value: MathBoosterBlock, el: HTMLElement) {
+    renderSuggestion(value: MathBlock, el: HTMLElement) {
         this.core.renderSuggestion(value, el);
     }
 
-    onChooseSuggestion(item: MathBoosterBlock, evt: MouseEvent | KeyboardEvent) {
+    onChooseSuggestion(item: MathBlock, evt: MouseEvent | KeyboardEvent) {
         this.core.selectSuggestion(item, evt);
     }
 }

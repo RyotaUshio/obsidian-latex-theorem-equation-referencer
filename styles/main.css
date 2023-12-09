@@ -1,5 +1,5 @@
 .math-booster-new-feature > p {
-    color: #7dc535;
+    color: var(--text-warning);
     margin: 0;
 }
 

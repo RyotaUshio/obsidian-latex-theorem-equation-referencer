@@ -5,14 +5,14 @@
 import { EditorState, StateEffect } from '@codemirror/state';
 import { PluginValue, ViewPlugin, EditorView, ViewUpdate } from '@codemirror/view';
 import { EquationBlock, MarkdownBlock, MarkdownPage } from 'index/typings/markdown';
-import MathBooster from 'main';
+import LatexReferencer from 'main';
 import { MarkdownView, TFile, editorInfoField, finishRenderMath } from 'obsidian';
 import { resolveSettings } from 'utils/plugin';
 import { replaceMathTag } from './common';
 import { DEFAULT_SETTINGS, MathContextSettings } from 'settings/settings';
 
 
-export function createEquationNumberPlugin(plugin: MathBooster) {
+export function createEquationNumberPlugin(plugin: LatexReferencer) {
 
     const { app, indexManager: { index } } = plugin;
 
@@ -106,8 +106,8 @@ export function createEquationNumberPlugin(plugin: MathBooster) {
                 else mjxContainerEl.removeAttribute('data-equation-print-name');
             }
             // DON'T FOREGET THIS CALL!!
-            // https://github.com/RyotaUshio/obsidian-math-booster/issues/203
-            // https://github.com/RyotaUshio/obsidian-math-booster/issues/200
+            // https://github.com/RyotaUshio/obsidian-latex-theorem-equation-referencer/issues/203
+            // https://github.com/RyotaUshio/obsidian-latex-theorem-equation-referencer/issues/200
             finishRenderMath();
         }
 

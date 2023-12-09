@@ -1,6 +1,6 @@
-import { ButtonComponent, Setting, SliderComponent, TAbstractFile, TFile, TFolder, TextComponent, ToggleComponent, MarkdownRenderer } from 'obsidian';
+import { ButtonComponent, Setting, SliderComponent, TAbstractFile, TFile, TFolder, TextComponent, ToggleComponent, MarkdownRenderer, Component } from 'obsidian';
 
-import MathBooster from 'main';
+import LatexReferencer from 'main';
 import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from 'env';
 import { DEFAULT_SETTINGS, ExtraSettings, LEAF_OPTIONS, THEOREM_REF_FORMATS, THEOREM_CALLOUT_STYLES, TheoremCalloutSettings, MathContextSettings, NUMBER_STYLES, FoldOption, DEFAULT_EXTRA_SETTINGS } from 'settings/settings';
 import { formatTheoremCalloutType } from 'utils/format';
@@ -13,7 +13,7 @@ export class TheoremCalloutSettingsHelper {
         public contentEl: HTMLElement,
         public settings: TheoremCalloutSettings,
         public defaultSettings: Required<MathContextSettings> & Partial<TheoremCalloutSettings>,
-        public plugin: MathBooster,
+        public plugin: LatexReferencer,
         public file: TFile,
     ) { }
 
@@ -114,17 +114,18 @@ export class TheoremCalloutSettingsHelper {
 }
 
 
-export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraSettings> {
+export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraSettings> extends Component {
     settingRefs: Record<keyof SettingsType, Setting>;
 
     constructor(
         public contentEl: HTMLElement,
         public settings: Partial<SettingsType>,
         public defaultSettings: Required<SettingsType>,
-        public plugin: MathBooster,
+        public plugin: LatexReferencer,
         public allowUnset: boolean,
         public addClear: boolean,
     ) {
+        super();
         this.settingRefs = {} as Record<keyof SettingsType, Setting>;
     }
 
@@ -136,8 +137,6 @@ export abstract class SettingsHelper<SettingsType = MathContextSettings | ExtraS
             })
         });
     }
-
-    abstract makeSettingPane(): void;
 
     addDropdownSetting(name: keyof SettingsType, options: readonly string[], prettyName: string, description?: string, defaultValue?: string, additionalOnChange?: () => void) {
         const setting = new Setting(this.contentEl).setName(prettyName);
@@ -264,14 +263,14 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         contentEl: HTMLElement,
         settings: Partial<MathContextSettings>,
         defaultSettings: Required<MathContextSettings>,
-        plugin: MathBooster,
+        plugin: LatexReferencer,
         public file: TAbstractFile,
     ) {
         const isRoot = file instanceof TFolder && file.isRoot();
         super(contentEl, settings, defaultSettings, plugin, !isRoot, !isRoot);
     }
 
-    makeSettingPane() {
+    onload() {
         this.addHeading('Theorem callouts - general');
 
         this.addProfileSetting();
@@ -336,9 +335,9 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addTextSetting("endProof", "End of a proof");
 
         this.addHeading('Search & link auto-completion - general')
-            .then(setting => {
-                MarkdownRenderer.render(this.plugin.app, '**New in 2.2.0**: If you have the **Quick Preview** plugin installed, holding down `Alt`/`Option` _(by default)_ will trigger quick preview of the selected suggestion.', setting.descEl, '', this.plugin);
+            .then(async (setting) => {
                 setting.descEl.addClass('math-booster-new-feature');
+                await MarkdownRenderer.render(this.plugin.app, '**NOTE:** If you have the [**Quick Preview**](https://github.com/RyotaUshio/obsidian-quick-preview) plugin installed, holding down `Alt`/`Option` _(by default)_ will trigger a quick preview of the selected suggestion.', setting.descEl, '', this);
             })
         this.addToggleSetting("insertSpace", "Append whitespace after inserted link");
     }
@@ -357,7 +356,7 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
 
 
 export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
-    makeSettingPane(): void {
+    onload(): void {
         this.settingRefs["foldDefault"] = addFoldOptionSetting(
             this.contentEl, 'Default collapsibility when using the "Insert theorem callout" command', (fold) => {
                 this.settings.foldDefault = fold;
@@ -370,8 +369,8 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addToggleSetting("setLabelInModal", "Show LaTeX/Pandoc label input form in theorem callout insert/edit modal");
         this.addToggleSetting("enableMathPreviewInCalloutAndQuote", "Render equations inside callouts & add multi-line equation support to blockquotes", undefined, () => this.plugin.updateEditorExtensions())
             .then(async (setting) => {
-                await MarkdownRenderer.render(this.plugin.app, '**NOTE:** This feature is planned to be removed from this plugin and will be instead released as a separate plugin [Better Math in Callouts & Blockquotes](https://github.com/RyotaUshio/obsidian-math-in-callout), featuring a bunch of improvements. Currently awaiting for approval by the Obsidian team.', setting.descEl, '', this.plugin);
-                
+                setting.descEl.addClass('math-booster-new-feature');
+                await MarkdownRenderer.render(this.plugin.app, '**NOTE:** This feature is planned to be removed from this plugin, and instead, it will be available as a separate plugin [**Better Math in Callouts & Blockquotes**](https://github.com/RyotaUshio/obsidian-math-in-callout), featuring a bunch of improvements. Currently awaiting for approval by the Obsidian team.', setting.descEl, '', this);
             });
         this.addToggleSetting("enableProof", "Enable proof environment", `For example, you can replace a pair of inline codes \`${DEFAULT_SETTINGS.beginProof}\` & \`${DEFAULT_SETTINGS.endProof}\` with \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.begin}\" & \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.end}\". You can style it with CSS snippets. See the documentation for the details.`, () => this.plugin.updateEditorExtensions());
 
@@ -391,12 +390,16 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addDropdownSetting("suggestLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected suggestion.")
 
         this.addHeading('Enhance Obsidian\'s built-in link auto-completion (experimental)')
-            .setDesc('Configure how Math Booster modifies the appearance of Obsidian\'s built-in link auto-completion (the one that pops up when you type "[["). This feature dives deep into Obsidian\'s internals, so it might break when Obsidian is updated. If you encounter any issue, please report it on GitHub.');
+            .setDesc('Configure how this plugin modifies the appearance of Obsidian\'s built-in link auto-completion (the one that pops up when you type "[["). This feature dives deep into Obsidian\'s internals, so it might break when Obsidian is updated. If you encounter any issue, please report it on GitHub.');
         this.addToggleSetting("showTheoremTitleinBuiltin", "Show theorem title");
         this.addToggleSetting("showTheoremContentinBuiltin", "Show theorem content", "Only effective when \"Show theorem title\" is turned on.");
-        this.addToggleSetting("renderEquationinBuiltin", "Render equation");
+        this.addToggleSetting("renderEquationinBuiltin", "Render equation")
+            .then(async (setting) => {
+                setting.descEl.addClass('math-booster-new-feature');
+                await MarkdownRenderer.render(this.plugin.app, '**NOTE:** This feature is planned to be removed from this plugin, and instead, it will be available as a separate plugin [**Rendered Block Link Suggestions**](https://github.com/RyotaUshio/obsidian-rendered-block-link-suggestions), which supports all types of blocks not limited to display math. Currently awaiting for approval by the Obsidian team.', setting.descEl, '', this);
+            });
 
-        this.addHeading('Configure Math Booster\'s editor link auto-completion')
+        this.addHeading('Configure this plugin\'s custom editor link auto-completion')
             .setDesc(`It is recommended to turn off unnecessary auto-completions to improve performance.`);
 
         this.addTextSetting("autocompleteDvQuery", "Dataview query for editor link auto-completion", "Only LIST queries are supported.");
@@ -458,7 +461,7 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
 
 
 // export class ProjectSettingsHelper {
-//     plugin: MathBooster;
+//     plugin: LatexReferencer;
 //     file: TAbstractFile;
 
 //     constructor(public contentEl: HTMLElement, public parent: ContextSettingModal) {

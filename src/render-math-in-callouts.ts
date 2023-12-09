@@ -79,7 +79,7 @@ class MathInfo extends RangeValue {
         return Decoration[which]({
             widget: this.toWidget(),
             block: this.display,
-            side: which == "widget" ? 1 : undefined, // To fix https://github.com/RyotaUshio/obsidian-math-booster/issues/173
+            side: which == "widget" ? 1 : undefined, // To fix https://github.com/RyotaUshio/obsidian-latex-theorem-equation-referencer/issues/173
         })
     }
 }

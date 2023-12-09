@@ -2,16 +2,16 @@ import { EquationBlock } from 'index/typings/markdown';
 import { TFile, HeadingSubpathResult, BlockSubpathResult, App } from 'obsidian';
 import * as MathLinks from 'obsidian-mathlinks';
 
-import MathBooster from 'main';
+import LatexReferencer from 'main';
 import { MathIndex } from 'index/math-index';
-import { MarkdownPage, MathBoosterBlock, TheoremCalloutBlock } from 'index/typings/markdown';
+import { MarkdownPage, MathBlock, TheoremCalloutBlock } from 'index/typings/markdown';
 
 
 export class CleverefProvider extends MathLinks.Provider {
     app: App;
     index: MathIndex;
 
-    constructor(mathLinks: any, public plugin: MathBooster) {
+    constructor(mathLinks: any, public plugin: LatexReferencer) {
         super(mathLinks);
         this.app = plugin.app;
         this.index = plugin.indexManager.index;
@@ -42,7 +42,7 @@ export class CleverefProvider extends MathLinks.Provider {
             // get the target block
             const block = page.$blocks.get(targetSubpathResult.block.id);
 
-            if (MathBoosterBlock.isMathBoosterBlock(block)) {
+            if (MathBlock.isMathBlock(block)) {
                 // display text set manually: higher priority
                 if (block.$display) return path && this.shouldShowNoteTitle(block) ? processedPath + ' > ' + block.$display : block.$display;
                 // display text computed automatically: lower priority
@@ -59,7 +59,7 @@ export class CleverefProvider extends MathLinks.Provider {
         return null;
     }
 
-    shouldShowNoteTitle(block: MathBoosterBlock): boolean {
+    shouldShowNoteTitle(block: MathBlock): boolean {
         if (TheoremCalloutBlock.isTheoremCalloutBlock(block)) return this.plugin.extraSettings.noteTitleInTheoremLink;
         if (EquationBlock.isEquationBlock(block)) return this.plugin.extraSettings.noteTitleInEquationLink;
         return true;

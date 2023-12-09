@@ -1,7 +1,7 @@
 import { EditorSuggest, Notice, TFile, renderMath } from "obsidian";
 import { around } from "monkey-around";
 
-import MathBooster from "main";
+import LatexReferencer from "main";
 import { MarkdownPage, TheoremCalloutBlock } from 'index/typings/markdown';
 import { isTheoremCallout, resolveSettings } from 'utils/plugin';
 import { formatTitle } from 'utils/format';
@@ -9,7 +9,7 @@ import { _readTheoremCalloutSettings } from 'utils/parse';
 import { capitalize } from 'utils/general';
 import { renderTextWithMath } from "utils/render";
 
-export const patchLinkCompletion = (plugin: MathBooster) => {
+export const patchLinkCompletion = (plugin: LatexReferencer) => {
     const suggest = (plugin.app.workspace as any).editorSuggest.suggests[0]; // built-in link completion
     if (!Object.hasOwn(suggest, 'suggestManager')) new Notice(`Failed to patch Obsidian\'s built-in link completion. Please reload ${plugin.manifest.name}.`);
     const prototype = suggest.constructor.prototype as EditorSuggest<any>;
@@ -27,7 +27,6 @@ export const patchLinkCompletion = (plugin: MathBooster) => {
                         const block = page.getBlockByLineNumber(item.node.position.start.line - 1); // line number starts from 1
                         if (TheoremCalloutBlock.isTheoremCalloutBlock(block)) {
                             renderInSuggestionTitleEl(el, (suggestionTitleEl) => {
-                                console.log(el)
                                 el.addClass('math-booster', 'suggestion-item-theorem-callout');
                                 suggestionTitleEl.replaceChildren();
                                 const children = renderTextWithMath(block.$printName);

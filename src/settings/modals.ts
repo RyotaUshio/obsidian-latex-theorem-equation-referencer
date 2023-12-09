@@ -1,6 +1,6 @@
-import { TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder } from 'obsidian';
+import { TAbstractFile, TFile, App, Modal, Setting, FuzzySuggestModal, TFolder, Component } from 'obsidian';
 
-import MathBooster from 'main';
+import LatexReferencer from 'main';
 import { MathSettings, MathContextSettings, DEFAULT_SETTINGS, MinimalTheoremCalloutSettings } from 'settings/settings';
 import { MathSettingTab } from "settings/tab";
 import { TheoremCalloutSettingsHelper, MathContextSettingsHelper } from "settings/helper";
@@ -13,7 +13,7 @@ abstract class MathSettingModal<SettingsType> extends Modal {
 
     constructor(
         app: App,
-        public plugin: MathBooster,
+        public plugin: LatexReferencer,
         public callback?: (settings: SettingsType) => void,
     ) {
         super(app);
@@ -63,7 +63,7 @@ export class TheoremCalloutModal extends MathSettingModal<MathSettings> {
 
     constructor(
         app: App,
-        plugin: MathBooster,
+        plugin: LatexReferencer,
         public file: TFile,
         callback: (settings: MathSettings) => void,
         public buttonText: string,
@@ -119,20 +119,23 @@ export class TheoremCalloutModal extends MathSettingModal<MathSettings> {
 
 
 export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
+    component: Component;
 
     constructor(
         app: App,
-        plugin: MathBooster,
+        plugin: LatexReferencer,
         public file: TAbstractFile,
         callback?: (settings: MathContextSettings) => void,
         public parent?: TheoremCalloutModal | undefined
     ) {
         super(app, plugin, callback);
+        this.component = new Component();
     }
 
     onOpen(): void {
         const { contentEl } = this;
         contentEl.empty();
+        this.component.load();
 
         // contentEl.createEl('h4', { text: 'Local settings for ' + this.file.path });
         this.titleEl.setText('Local settings for ' + this.file.path);
@@ -149,7 +152,7 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
         const defaultSettings = this.file.parent ? resolveSettings(undefined, this.plugin, this.file.parent) : DEFAULT_SETTINGS;
 
         const contextSettingsHelper = new MathContextSettingsHelper(contentEl, this.plugin.settings[this.file.path], defaultSettings, this.plugin, this.file);
-        contextSettingsHelper.makeSettingPane();
+        this.component.addChild(contextSettingsHelper);
 
         // if (!(this.file instanceof TFolder && this.file.isRoot())) {
         //     new ProjectSettingsHelper(contentEl, this).makeSettingPane();
@@ -162,19 +165,20 @@ export class ContextSettingModal extends MathSettingModal<MathContextSettings> {
         super.onClose();
 
         this.plugin.saveSettings();
-        // this.app.metadataCache.trigger("math-booster:local-settings-updated", this.file);
         this.plugin.indexManager.trigger('local-settings-updated', this.file);
 
         if (this.parent) {
             this.parent.open();
         }
+
+        this.component.unload();
     }
 }
 
 
 abstract class FileSuggestModal extends FuzzySuggestModal<TAbstractFile> {
 
-    constructor(app: App, public plugin: MathBooster) {
+    constructor(app: App, public plugin: LatexReferencer) {
         super(app);
     }
 
@@ -208,7 +212,7 @@ abstract class FileSuggestModal extends FuzzySuggestModal<TAbstractFile> {
 
 
 export class LocalContextSettingsSuggestModal extends FileSuggestModal {
-    constructor(app: App, plugin: MathBooster, public settingTab: MathSettingTab) {
+    constructor(app: App, plugin: LatexReferencer, public settingTab: MathSettingTab) {
         super(app, plugin);
     }
 
@@ -221,7 +225,7 @@ export class LocalContextSettingsSuggestModal extends FileSuggestModal {
 
 
 export class FileExcludeSuggestModal extends FileSuggestModal {
-    constructor(app: App, plugin: MathBooster, public manageModal: ExcludedFileManageModal) {
+    constructor(app: App, plugin: LatexReferencer, public manageModal: ExcludedFileManageModal) {
         super(app, plugin);
     }
 
@@ -242,7 +246,7 @@ export class FileExcludeSuggestModal extends FileSuggestModal {
 
 
 export class ExcludedFileManageModal extends Modal {
-    constructor(app: App, public plugin: MathBooster) {
+    constructor(app: App, public plugin: LatexReferencer) {
         super(app);
     }
 

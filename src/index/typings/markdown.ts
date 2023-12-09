@@ -287,9 +287,10 @@ export class MarkdownBlock implements Indexable, Linkbearing {
 
 
 
-export abstract class MathBoosterBlock extends MarkdownBlock {
+export abstract class MathBlock extends MarkdownBlock {
     // only set after backlinks are ready
-    abstract $printName: string | null; // declaring as abstract to treat like an interface
+    abstract $printName: string | null;
+    // declaring as abstract to treat like an interface
     $refName: string | null;
 
     /** Additional metadata specified via comments */
@@ -298,12 +299,12 @@ export abstract class MathBoosterBlock extends MarkdownBlock {
     // set if this block is auto-numbered. This is the index of this block among all auto-numbered blocks in the file
     $index?: number;
 
-    static isMathBoosterBlock(object: Indexable | undefined): object is MathBoosterBlock {
+    static isMathBlock(object: Indexable | undefined): object is MathBlock {
         return object !== undefined && object.$types.includes('block-math-booster');
     }
 }
 
-export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing {
+export class TheoremCalloutBlock extends MathBlock implements Linkbearing {
     static TYPES = ["markdown", "block", "block-math-booster", "block-theorem", LINKBEARING_TYPE];
 
     $types: string[] = TheoremCalloutBlock.TYPES;
@@ -388,7 +389,7 @@ export class TheoremCalloutBlock extends MathBoosterBlock implements Linkbearing
     }
 }
 
-export class EquationBlock extends MathBoosterBlock {
+export class EquationBlock extends MathBlock {
     static TYPES = ["markdown", "block", "block-math-booster", "block-equation"];
 
     $types: string[] = EquationBlock.TYPES;

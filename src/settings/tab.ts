@@ -1,6 +1,6 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, Component, PluginSettingTab, Setting } from "obsidian";
 
-import MathBooster, { VAULT_ROOT } from "../main";
+import LatexReferencer, { VAULT_ROOT } from "../main";
 import { DEFAULT_EXTRA_SETTINGS, DEFAULT_SETTINGS } from "./settings";
 import { ExtraSettingsHelper, MathContextSettingsHelper } from "./helper";
 import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "settings/modals";
@@ -8,8 +8,11 @@ import { ExcludedFileManageModal, LocalContextSettingsSuggestModal } from "setti
 
 
 export class MathSettingTab extends PluginSettingTab {
-    constructor(app: App, public plugin: MathBooster) {
+    component: Component;
+
+    constructor(app: App, public plugin: LatexReferencer) {
         super(app, plugin);
+        this.component = new Component();
     }
 
     addRestoreDefaultsButton() {
@@ -27,6 +30,7 @@ export class MathSettingTab extends PluginSettingTab {
     display() {
         const { containerEl } = this;
         containerEl.empty();
+        this.component.load();
 
         containerEl.createEl("h4", { text: "Global" });
 
@@ -38,7 +42,7 @@ export class MathSettingTab extends PluginSettingTab {
             this.plugin,
             root
         );
-        globalHelper.makeSettingPane();
+        this.component.addChild(globalHelper);
 
         const extraHelper = new ExtraSettingsHelper(
             this.containerEl,
@@ -48,7 +52,7 @@ export class MathSettingTab extends PluginSettingTab {
             false, 
             false
         );
-        extraHelper.makeSettingPane();
+        this.component.addChild(extraHelper);
 
         const heading = extraHelper.addHeading('Equations - general');
         const numberingHeading = this.containerEl.querySelector<HTMLElement>('.equation-heading')!;
@@ -141,5 +145,6 @@ export class MathSettingTab extends PluginSettingTab {
         await this.plugin.saveSettings();
         this.plugin.indexManager.trigger('global-settings-updated');
         this.plugin.updateLinkAutocomplete();
+        this.component.unload();
     }
 }

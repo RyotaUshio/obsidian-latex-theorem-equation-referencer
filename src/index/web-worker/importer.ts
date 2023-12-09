@@ -1,7 +1,7 @@
 /** Controls and creates Dataview file importers, allowing for asynchronous loading and parsing of files. */
 
 import { Component, MetadataCache, TFile, Vault } from "obsidian";
-import MathBooster from 'main';
+import LatexReferencer from 'main';
 import { Transferable } from "./transferable";
 import ImportWorker from "index/web-worker/importer.worker";
 import { ImportCommand } from "./message";
@@ -36,7 +36,7 @@ export class MathImporter extends Component {
     /** Throttle settings. */
     throttle: () => ImportThrottle;
 
-    public constructor(public plugin: MathBooster, public vault: Vault, public metadataCache: MetadataCache, throttle?: () => ImportThrottle) {
+    public constructor(public plugin: LatexReferencer, public vault: Vault, public metadataCache: MetadataCache, throttle?: () => ImportThrottle) {
         super();
         this.workers = new Map();
         this.shutdown = false;

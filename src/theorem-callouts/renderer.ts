@@ -1,7 +1,6 @@
 import { App, ExtraButtonComponent, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, Notice, TFile, editorInfoField } from "obsidian";
-import { ViewUpdate, EditorView, PluginValue, ViewPlugin } from '@codemirror/view';
 
-import MathBooster from 'main';
+import LatexReferencer from 'main';
 import { TheoremCalloutModal } from 'settings/modals';
 import { TheoremCalloutSettings, TheoremCalloutPrivateFields } from 'settings/settings';
 import { generateTheoremCalloutFirstLine, isTheoremCallout, resolveSettings } from 'utils/plugin';
@@ -12,12 +11,12 @@ import { renderTextWithMath } from "utils/render";
 import { MarkdownPage, TheoremCalloutBlock } from "index/typings/markdown";
 import { MathIndex } from 'index/math-index';
 import { parseTheoremCalloutMetadata, readTheoremCalloutSettings } from 'utils/parse';
-import { THEOREM_LIKE_ENV_ID_PREFIX_MAP, THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENV_PREFIXES, THEOREM_LIKE_ENV_PREFIX_ID_MAP, TheoremLikeEnvID, TheoremLikeEnvPrefix } from 'env';
+import { THEOREM_LIKE_ENV_ID_PREFIX_MAP, THEOREM_LIKE_ENV_PREFIX_ID_MAP, TheoremLikeEnvID, TheoremLikeEnvPrefix } from 'env';
 import { getIO } from 'file-io';
 import { MutationObservingChild, getSectionCacheFromMouseEvent, getSectionCacheOfDOM, isPdfExport, resolveLinktext } from 'utils/obsidian';
 
 
-export const createTheoremCalloutPostProcessor = (plugin: MathBooster) => async (element: HTMLElement, context: MarkdownPostProcessorContext) => {
+export const createTheoremCalloutPostProcessor = (plugin: LatexReferencer) => async (element: HTMLElement, context: MarkdownPostProcessorContext) => {
     const file = plugin.app.vault.getAbstractFileByPath(context.sourcePath) ?? plugin.app.workspace.getActiveFile();
     if (!(file instanceof TFile)) return null;
 
@@ -82,7 +81,7 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
         containerEl: HTMLElement,
         public context: MarkdownPostProcessorContext,
         public file: TFile,
-        public plugin: MathBooster
+        public plugin: LatexReferencer
     ) {
         super(containerEl);
         this.app = plugin.app;
@@ -107,7 +106,7 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
             }
         }));
 
-        // remove the edit button when Math Booster gets disabled
+        // remove the edit button when this plugin gets disabled
         this.plugin.addChild(this);
         this.register(() => this.removeEditButton());
         // remove the edit button when the relevent setting is disabled
@@ -332,7 +331,7 @@ class TheoremCalloutRenderer extends MarkdownRenderChild {
 
     renderTitle(info: TheoremCalloutInfo, existingMainTitleEl?: HTMLElement | null) {
         const titleInner = this.containerEl.querySelector<HTMLElement>('.callout-title-inner');
-        if (!titleInner) throw Error(`Math Booster: Failed to find the title element of a theorem callout.`);
+        if (!titleInner) throw Error(`${this.plugin.manifest.name}: Failed to find the title element of a theorem callout.`);
 
         const newMainTitleEl = createSpan({
             text: info.theoremMainTitle,

@@ -5,7 +5,7 @@ import { MathImporter } from "./web-worker/importer";
 import { MathIndex } from "./math-index";
 import { ImportResult } from "./web-worker/message";
 import { MarkdownPage } from "./typings/markdown";
-import MathBooster from "../main";
+import LatexReferencer from "../main";
 import { iterDescendantFiles } from "utils/obsidian";
 import * as MathLinks from "obsidian-mathlinks";
 
@@ -31,7 +31,7 @@ export class MathIndexManager extends Component {
     initialized: boolean;
 
     constructor(
-        public plugin: MathBooster,
+        public plugin: LatexReferencer,
         // public version: string, 
         public settings: ImporterSettings
     ) {
@@ -115,7 +115,7 @@ export class MathIndexManager extends Component {
 
             const durationSecs = (stats.durationMs / 1000.0).toFixed(3);
             console.log(
-                `Math Booster: Imported all theorems and equations in the vault in ${durationSecs}s ` +
+                `${this.plugin.manifest.name}: Imported all theorems and equations in the vault in ${durationSecs}s ` +
                 `(${stats.imported} notes imported, ${stats.skipped} notes skipped).`
             );
 
@@ -257,8 +257,8 @@ export class MathIndexManager extends Component {
     /** From Datacore: Called whenever the index updates to a new revision. This is the broadest possible datacore event. */
     public on(evt: "update", callback: (revision: number) => any, context?: any): EventRef;
 
-    /** Math Booster custom events */
-    // triggered when the index is updated, which means the datacore-level metadata or math-booster-level metadata (such as $printName) are updated
+    /** This plugin's custom events */
+    // triggered when the index is updated, which means the datacore-level metadata or latex-referencer-level metadata (such as $printName) are updated
     public on(evt: "index-updated", callback: (file: TFile) => any): EventRef;
     public on(evt: "local-settings-updated", callback: (file: TAbstractFile) => any): EventRef;
     public on(evt: "global-settings-updated", callback: () => any): EventRef;
@@ -280,7 +280,7 @@ export class MathIndexManager extends Component {
 
     /** From Datacore: Trigger an update event. */
     public trigger(evt: "update", revision: number): void;
-    /** Math Booster custom events */
+    /** This plugin's custom events */
     public trigger(evt: "index-updated", file: TFile): void;
     public trigger(evt: "local-settings-updated", file: TAbstractFile): void;
     public trigger(evt: "global-settings-updated"): void;
@@ -405,7 +405,7 @@ export class MathIndexInitializer extends Component {
             await this.manager.reload(file);
             return { status: "imported" };
         } catch (ex) {
-            console.log("Math Booster: Failed to import file: ", ex);
+            console.log(`${this.manager.plugin.manifest.name}: Failed to import file: `, ex);
             return { status: "skipped" };
         }
     }

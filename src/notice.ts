@@ -1,20 +1,61 @@
-import { Modal, Setting, Component, MarkdownRenderer, App, Notice } from "obsidian";
+import { Modal, Setting, Component, MarkdownRenderer, Notice } from "obsidian";
 
-import MathBooster from "main";
+import LatexReferencer from "main";
 import { isPluginOlderThan } from "utils/obsidian";
 import { rewriteTheoremCalloutFromV1ToV2 } from "utils/plugin";
+
+
+export class RenameNoticeModal extends Modal {
+    component: Component;
+
+    constructor(public plugin: LatexReferencer) {
+        super(plugin.app);
+        this.component = new Component();
+    }
+
+    onOpen() {
+        this.plugin.addChild(this.component)
+        
+        const { contentEl, titleEl } = this;
+        contentEl.empty();
+
+        titleEl.setText('Math Booster has been renamed');
+
+        MarkdownRenderer.render(
+            this.app,
+            `Starting from version 2.2.0, Math Booster has been renamed to ***LaTeX-like Theorem & Equation Referencer*** for better clarity and discoverability.\n\nWhile the display name in the community plugin browser may still reflect the previous version, it will be updated shortly.\n\nA big thank you for those who shared their ideas [here](https://github.com/RyotaUshio/obsidian-math-booster/issues/210)!\n\n> [!warning]\n> If you have custom CSS snippets with CSS classes <code>.math-booster-&#42</code>, don't worry, they still work!\n> \n> But I do recommend you to replace them with <code>.latex-referencer-&#42</code> as the old class names might be removed in the future.`,
+            contentEl,
+            '',
+            this.component
+        );
+
+        new Setting(contentEl)
+            .addButton((button) => {
+                button.setCta()
+                    .setButtonText('Okay, I got it')
+                    .onClick(() => this.close());
+            })
+            .then((setting) => setting.settingEl.style.border = 'none');
+    }
+
+    onClose() {
+        this.contentEl.empty();
+        this.component.unload();
+    }
+}
 
 
 export class DependencyNotificationModal extends Modal {
     component: Component;
 
-    constructor(public plugin: MathBooster, public dependenciesOK: boolean, public v1: boolean) {
+    constructor(public plugin: LatexReferencer, public dependenciesOK: boolean, public v1: boolean) {
         super(plugin.app);
         this.component = new Component();
-        this.plugin.addChild(this.component);
     }
 
     async onOpen() {
+        this.plugin.addChild(this.component);
+
         const { contentEl, titleEl } = this;
         contentEl.empty();
 
@@ -84,9 +125,9 @@ export class DependencyNotificationModal extends Modal {
 
         MarkdownRenderer.render(
             this.app,
-`Math Booster introduces a [new format for theorem callouts](https://ryotaushio.github.io/obsidian-math-booster/theorem-callouts/theorem-callouts.html). 
+`LaTeX-like Theorem & Equation Referencer (formerly called Math Booster) version 2 introduces a [new format for theorem callouts](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/theorem-callouts/theorem-callouts.html). 
 
-To fully enjoy Math Booster v2, click the button below to convert the old theorem format to the new one. Alternatively, you can do it later by running the command "Migrate from version 1".`,
+To fully enjoy version 2, click the button below to convert the old theorem format to the new one. Alternatively, you can do it later by running the command "Migrate from version 1".`,
             this.contentEl.createDiv(),
             '',
             this.component
@@ -113,7 +154,7 @@ To fully enjoy Math Booster v2, click the button below to convert the old theore
         await MarkdownRenderer.render(this.app,
             `### What's new in version 2
 
-- [New format for theorem callouts](https://ryotaushio.github.io/obsidian-math-booster/theorem-callouts/theorem-callouts.html):
+- [New format for theorem callouts](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/theorem-callouts/theorem-callouts.html):
     -   *much cleaner*,
     -   *more intuitive*,
     -   *more keyboard-friendly*,
@@ -121,11 +162,11 @@ To fully enjoy Math Booster v2, click the button below to convert the old theore
 -   New indexing mechanism:
     -   no longer blocks UI
     -   no longer hard-codes theorem indices in notes directly
--   [Enhancing Obsidian's built-in link autocomplete](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-autocomplete/enhancing-obsidian's-built-in-link-autocomplete.html): now equations are rendered in the built-in autocomplete as well.
--   [Custom link autocomplete](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-autocomplete/custom-link-autocomplete.html) improvements: filter theorems & equations (*entire vault/recent notes/active note*)
--   [Search modal](https://ryotaushio.github.io/obsidian-math-booster/search-&-link-autocomplete/search-modal.html): more control & flexibility than editor autocomplete, including *Dataview queries*
--   Adding metadata to [theorems](https://ryotaushio.github.io/obsidian-math-booster/theorem-callouts/theorem-callouts.html) and [equations](https://ryotaushio.github.io/obsidian-math-booster/equations.html) with comments
-- Theorem numbers and [equation numbers](https://ryotaushio.github.io/obsidian-math-booster/equations.html) now can be displayed *almost everywhere*:
+-   [Enhancing Obsidian's built-in link autocomplete](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/search-&-link-autocomplete/enhancing-obsidian's-built-in-link-autocomplete.html): now equations are rendered in the built-in autocomplete as well.
+-   [Custom link autocomplete](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/search-&-link-autocomplete/custom-link-autocomplete.html) improvements: filter theorems & equations (*entire vault/recent notes/active note*)
+-   [Search modal](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/search-&-link-autocomplete/search-modal.html): more control & flexibility than editor autocomplete, including *Dataview queries*
+-   Adding metadata to [theorems](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/theorem-callouts/theorem-callouts.html) and [equations](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/equations.html) with comments
+- Theorem numbers and [equation numbers](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/equations.html) now can be displayed *almost everywhere*:
         
 ##### Version 1:
 
@@ -149,9 +190,9 @@ To fully enjoy Math Booster v2, click the button below to convert the old theore
 
 ### No longer supported
 
-- ["Show backlinks" right-click menu](https://github.com/RyotaUshio/obsidian-math-booster/blob/1.0.4/docs/backlinks.md)
+- ["Show backlinks" right-click menu](https://github.com/RyotaUshio/obsidian-latex-theorem-equation-referencer/blob/1.0.4/docs/backlinks.md)
     - Use [Strange New Worlds](https://github.com/TfTHacker/obsidian42-strange-new-worlds) instead.
-- [Projects](https://github.com/RyotaUshio/obsidian-math-booster/blob/1.0.4/docs/projects.md)
+- [Projects](https://github.com/RyotaUshio/obsidian-latex-theorem-equation-referencer/blob/1.0.4/docs/projects.md)
     - might be supported later with some improvements
 
 `, descEl, '', this.component);
@@ -168,7 +209,7 @@ To fully enjoy Math Booster v2, click the button below to convert the old theore
 export class MigrationModal extends Modal {
     component: Component;
 
-    constructor(public plugin: MathBooster) {
+    constructor(public plugin: LatexReferencer) {
         super(plugin.app);
         this.component = new Component();
         this.plugin.addChild(this.component);
@@ -185,7 +226,7 @@ export class MigrationModal extends Modal {
         await MarkdownRenderer.render(
             this.app,
             `
-In order to enjoy Math Booster v2, you need to convert the old theorem format:
+In order to enjoy LaTeX-like Theorem & Equation Referencer, you need to convert the old theorem format from Math Booster version 1:
 
 \`\`\`md
 > [!math|{"type":"theorem","number":"auto","title":"Main result","label":"main-result","_index":0}] Theorem 1 (Main result).

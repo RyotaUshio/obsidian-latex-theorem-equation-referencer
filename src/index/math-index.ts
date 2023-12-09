@@ -5,7 +5,7 @@ import { Indexable, LINKBEARING_TYPE, Linkable } from './typings/indexable';
 import { Link } from 'index/expression/literal';
 import { EquationBlock, MarkdownPage, TheoremCalloutBlock } from './typings/markdown';
 
-import MathBooster from 'main';
+import LatexReferencer from 'main';
 import { CONVERTER, formatTitle, formatTitleWithoutSubtitle, getEqNumberPrefix } from 'utils/format';
 import { resolveSettings } from 'utils/plugin';
 import { ResolvedMathSettings, TheoremRefFormat } from 'settings/settings';
@@ -41,7 +41,7 @@ export class MathIndex {
      */
     // private folder: FolderIndex; // irrelevant because we are not going to search/query
 
-    public constructor(public plugin: MathBooster, public vault: Vault, public metadataCache: MetadataCache,
+    public constructor(public plugin: LatexReferencer, public vault: Vault, public metadataCache: MetadataCache,
         // public settings: Settings // irrelevant because we are not going to search/query
     ) {
         this.revision = 0;

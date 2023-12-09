@@ -4,7 +4,7 @@ import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpd
 import { SyntaxNodeRef } from '@lezer/common';
 import { syntaxTree } from '@codemirror/language';
 
-import MathBooster from 'main';
+import LatexReferencer from 'main';
 import { nodeText, rangesHaveOverlap } from 'utils/editor';
 import { Profile } from 'settings/profile';
 import { renderMarkdown } from 'utils/render';
@@ -20,7 +20,7 @@ export const LINK_END = "formatting-link_formatting-link-end";
 abstract class ProofWidget extends WidgetType {
     containerEl: HTMLElement | null;
 
-    constructor(public plugin: MathBooster, public profile: Profile) {
+    constructor(public plugin: LatexReferencer, public profile: Profile) {
         super();
         this.containerEl = null;
     }
@@ -45,7 +45,7 @@ class BeginProofWidget extends ProofWidget {
     containerEl: HTMLElement | null;
 
     constructor(
-        plugin: MathBooster, profile: Profile,
+        plugin: LatexReferencer, profile: Profile,
         public display: string | null,
         public linktext: string | null,
         public sourcePath: string
@@ -71,7 +71,7 @@ class BeginProofWidget extends ProofWidget {
         return makeProofElement("begin", this.profile);
     }
 
-    static async renderDisplay(el: HTMLElement, display: string, sourcePath: string, plugin: MathBooster) {
+    static async renderDisplay(el: HTMLElement, display: string, sourcePath: string, plugin: LatexReferencer) {
         const children = await renderMarkdown(display, sourcePath, plugin);
         if (children) {
             el.replaceChildren(...children);
@@ -96,7 +96,7 @@ export interface ProofPosition {
 }
 
 
-export const createProofDecoration = (plugin: MathBooster) => ViewPlugin.fromClass(
+export const createProofDecoration = (plugin: LatexReferencer) => ViewPlugin.fromClass(
     class implements PluginValue {
         decorations: DecorationSet;
 
@@ -200,7 +200,7 @@ export const createProofDecoration = (plugin: MathBooster) => ViewPlugin.fromCla
     decorations: instance => instance.decorations
 });
 
-// export const proofFoldFactory = (plugin: MathBooster) => foldService.of((state: EditorState, lineStart: number, lineEnd: number) => {
+// export const proofFoldFactory = (plugin: LatexReferencer) => foldService.of((state: EditorState, lineStart: number, lineEnd: number) => {
 //     const positions = state.field(plugin.proofPositionField);
 //     for (const pos of positions) {
 //         if (pos.begin && pos.end && lineStart <= pos.begin.from && pos.begin.to <= lineEnd) {

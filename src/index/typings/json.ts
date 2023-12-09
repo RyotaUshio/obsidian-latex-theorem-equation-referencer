@@ -62,20 +62,20 @@ export interface JsonMarkdownBlock {
     $type: string;
 }
 
-export interface JsonMathBoosterBlock extends JsonMarkdownBlock {
+export interface JsonMathBlock extends JsonMarkdownBlock {
     $type: "theorem" | "equation";
     $label?: string;
     $display?: string;
 }
 
-export interface JsonTheoremCalloutBlock extends JsonMathBoosterBlock {
+export interface JsonTheoremCalloutBlock extends JsonMathBlock {
     $type: "theorem";
     $settings: MinimalTheoremCalloutSettings;
     $main: boolean;
     $v1: boolean;
 }
 
-export interface JsonEquationBlock extends JsonMathBoosterBlock {
+export interface JsonEquationBlock extends JsonMathBlock {
     $type: "equation";
     $manualTag: string | null;
     $mathText: string;

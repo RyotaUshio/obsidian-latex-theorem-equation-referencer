@@ -1,4 +1,4 @@
-import MathBooster from "main";
+import LatexReferencer from "main";
 import { CachedMetadata, Editor, MarkdownFileInfo, MarkdownView, Notice, TAbstractFile, TFile } from "obsidian";
 import { DEFAULT_SETTINGS, MathContextSettings, MinimalTheoremCalloutSettings, ResolvedMathSettings, TheoremCalloutSettings } from "settings/settings";
 import { generateBlockID, getAncestors, getFile } from "./obsidian";
@@ -8,9 +8,9 @@ import { splitIntoLines } from "./general";
 import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENV_PREFIXES } from "env";
 
 
-export function resolveSettings(settings: MinimalTheoremCalloutSettings, plugin: MathBooster, currentFile: TAbstractFile): ResolvedMathSettings;
-export function resolveSettings(settings: undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings>;
-export function resolveSettings(settings: MinimalTheoremCalloutSettings | undefined, plugin: MathBooster, currentFile: TAbstractFile): Required<MathContextSettings> {
+export function resolveSettings(settings: MinimalTheoremCalloutSettings, plugin: LatexReferencer, currentFile: TAbstractFile): ResolvedMathSettings;
+export function resolveSettings(settings: undefined, plugin: LatexReferencer, currentFile: TAbstractFile): Required<MathContextSettings>;
+export function resolveSettings(settings: MinimalTheoremCalloutSettings | undefined, plugin: LatexReferencer, currentFile: TAbstractFile): Required<MathContextSettings> {
     /** Resolves settings. Does not overwride, but returns a new settings object.
      * Returned settings can be either 
      * - ResolvedMathContextSettings or 
@@ -25,18 +25,18 @@ export function resolveSettings(settings: MinimalTheoremCalloutSettings | undefi
     return resolvedSettings;
 }
 
-export function getProfile(plugin: MathBooster, file: TFile) {
+export function getProfile(plugin: LatexReferencer, file: TFile) {
     const settings = resolveSettings(undefined, plugin, file);
     const profile = plugin.extraSettings.profiles[settings.profile];
     return profile;
 }
 
-export function getProfileByID(plugin: MathBooster, profileID: string) {
+export function getProfileByID(plugin: LatexReferencer, profileID: string) {
     const profile = plugin.extraSettings.profiles[profileID];
     return profile;
 }
 
-export function staticifyEqNumber(plugin: MathBooster, file: TFile) {
+export function staticifyEqNumber(plugin: LatexReferencer, file: TFile) {
     const page = plugin.indexManager.index.load(file.path);
     if (!MarkdownPage.isMarkdownPage(page)) {
         new Notice(`Failed to fetch the metadata of file ${file.path}.`);
@@ -53,7 +53,7 @@ export function staticifyEqNumber(plugin: MathBooster, file: TFile) {
     }
 }
 
-export async function insertBlockIdIfNotExist(plugin: MathBooster, targetFile: TFile, cache: CachedMetadata, block: MarkdownBlock, length: number = 6): Promise<{ id: string, lineAdded: number } | undefined> {
+export async function insertBlockIdIfNotExist(plugin: LatexReferencer, targetFile: TFile, cache: CachedMetadata, block: MarkdownBlock, length: number = 6): Promise<{ id: string, lineAdded: number } | undefined> {
     // Make sure the section cache is fresh enough!
     if (!(cache?.sections)) return;
 
@@ -92,7 +92,7 @@ export function insertDisplayMath(editor: Editor) {
     editor.setCursor(cursorPos);
 }
 
-export async function rewriteTheoremCalloutFromV1ToV2(plugin: MathBooster, file: TFile) {
+export async function rewriteTheoremCalloutFromV1ToV2(plugin: LatexReferencer, file: TFile) {
     const { app, indexManager } = plugin;
 
     const page = await indexManager.reload(file);
@@ -155,12 +155,12 @@ export function insertTheoremCallout(editor: Editor, config: TheoremCalloutSetti
     editor.setCursor(cursorPos);
 }
 
-export function isTheoremCallout(plugin: MathBooster, type: string) {
+export function isTheoremCallout(plugin: LatexReferencer, type: string) {
     if (plugin.extraSettings.excludeExampleCallout && type === 'example') return false;
     return (THEOREM_LIKE_ENV_IDs as unknown as string[]).includes(type) || (THEOREM_LIKE_ENV_PREFIXES as unknown as string[]).includes(type) || type === 'math'
 }
 
-export function insertProof(plugin: MathBooster, editor: Editor, context: MarkdownView | MarkdownFileInfo) {
+export function insertProof(plugin: LatexReferencer, editor: Editor, context: MarkdownView | MarkdownFileInfo) {
     const settings = resolveSettings(undefined, plugin, context.file ?? getFile(plugin.app));
     const cursor = editor.getCursor();
     editor.replaceRange(`\`${settings.beginProof}\`\n\n\`${settings.endProof}\``, cursor);
