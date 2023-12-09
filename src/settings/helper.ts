@@ -1,4 +1,4 @@
-import { ButtonComponent, Setting, SliderComponent, TAbstractFile, TFile, TFolder, TextComponent, ToggleComponent } from 'obsidian';
+import { ButtonComponent, Setting, SliderComponent, TAbstractFile, TFile, TFolder, TextComponent, ToggleComponent, MarkdownRenderer } from 'obsidian';
 
 import MathBooster from 'main';
 import { THEOREM_LIKE_ENV_IDs, THEOREM_LIKE_ENVs, TheoremLikeEnvID } from 'env';
@@ -335,7 +335,11 @@ export class MathContextSettingsHelper extends SettingsHelper<MathContextSetting
         this.addTextSetting("beginProof", "Beginning of a proof");
         this.addTextSetting("endProof", "End of a proof");
 
-        this.addHeading('Search & link auto-completion - general');
+        this.addHeading('Search & link auto-completion - general')
+            .then(setting => {
+                MarkdownRenderer.render(this.plugin.app, '**New in 2.2.0**: If you have the **Quick Preview** plugin installed, holding down `Alt`/`Option` _(by default)_ will trigger quick preview of the selected suggestion.', setting.descEl, '', this.plugin);
+                setting.descEl.addClass('math-booster-new-feature');
+            })
         this.addToggleSetting("insertSpace", "Append whitespace after inserted link");
     }
 
@@ -364,7 +368,11 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addToggleSetting("showTheoremCalloutEditButton", "Show an edit button on a theorem callout");
         this.addToggleSetting("setOnlyTheoremAsMain", "If a note has only one theorem callout, automatically set it as main", 'Regardless of this setting, putting "%% main %%" or "%% main: true %%" in a theorem callout will set it as main one of the note, which means any link to that note will be displayed with the theorem\'s title. Enabling this option implicitly sets a theorem callout as main when it\'s the only one in the note.');
         this.addToggleSetting("setLabelInModal", "Show LaTeX/Pandoc label input form in theorem callout insert/edit modal");
-        this.addToggleSetting("enableMathPreviewInCalloutAndQuote", "Render equations inside callouts & add multi-line equation support to blockquotes", undefined, () => this.plugin.updateEditorExtensions());
+        this.addToggleSetting("enableMathPreviewInCalloutAndQuote", "Render equations inside callouts & add multi-line equation support to blockquotes", undefined, () => this.plugin.updateEditorExtensions())
+            .then(async (setting) => {
+                await MarkdownRenderer.render(this.plugin.app, '**NOTE:** This feature is planned to be removed from this plugin and will be instead released as a separate plugin [Better Math in Callouts & Blockquotes](https://github.com/RyotaUshio/obsidian-math-in-callout), featuring a bunch of improvements. Currently awaiting for approval by the Obsidian team.', setting.descEl, '', this.plugin);
+                
+            });
         this.addToggleSetting("enableProof", "Enable proof environment", `For example, you can replace a pair of inline codes \`${DEFAULT_SETTINGS.beginProof}\` & \`${DEFAULT_SETTINGS.endProof}\` with \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.begin}\" & \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.end}\". You can style it with CSS snippets. See the documentation for the details.`, () => this.plugin.updateEditorExtensions());
 
         // Suggest
@@ -382,46 +390,58 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         list.createEl("li", { text: "Meta is Cmd on MacOS and Win key on Windows." });
         this.addDropdownSetting("suggestLeafOption", LEAF_OPTIONS, "Opening option", "Specify how to open the selected suggestion.")
 
-        this.addHeading('Enhance Obsidian\'s built-in link completion (experimental)')
-            .setDesc('Configure how Math Booster modifies the appearance of Obsidian\'s built-in link completion (the one that pops up when you type "[["). This feature dives deep into Obsidian\'s internals, so it might break when Obsidian is updated. If you encounter any issue, please report it on GitHub.');
+        this.addHeading('Enhance Obsidian\'s built-in link auto-completion (experimental)')
+            .setDesc('Configure how Math Booster modifies the appearance of Obsidian\'s built-in link auto-completion (the one that pops up when you type "[["). This feature dives deep into Obsidian\'s internals, so it might break when Obsidian is updated. If you encounter any issue, please report it on GitHub.');
         this.addToggleSetting("showTheoremTitleinBuiltin", "Show theorem title");
+        this.addToggleSetting("showTheoremContentinBuiltin", "Show theorem content", "Only effective when \"Show theorem title\" is turned on.");
         this.addToggleSetting("renderEquationinBuiltin", "Render equation");
 
         this.addHeading('Configure Math Booster\'s editor link auto-completion')
             .setDesc(`It is recommended to turn off unnecessary auto-completions to improve performance.`);
 
+        this.addTextSetting("autocompleteDvQuery", "Dataview query for editor link auto-completion", "Only LIST queries are supported.");
+
         this.addHeading('Theorem & equation suggestion')
         this.addHeading("From entire vault", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableSuggest", "Enable");
         this.addTextSetting("triggerSuggest", "Trigger");
         this.addHeading("From recently opened notes", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableSuggestRecentNotes", "Enable");
         this.addTextSetting("triggerSuggestRecentNotes", "Trigger");
         this.addHeading("From active note", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableSuggestActiveNote", "Enable");
         this.addTextSetting("triggerSuggestActiveNote", "Trigger");
+        this.addHeading("From Dataview query", ['editor-suggest-setting-indented-heading']);
+        this.addToggleSetting("enableSuggestDataview", "Enable");
+        this.addTextSetting("triggerSuggestDataview", "Trigger");
 
         this.addHeading('Theorem suggestion', ['editor-suggest-setting-heading']);
         this.addHeading("From entire vault", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableTheoremSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableTheoremSuggest", "Enable");
         this.addTextSetting("triggerTheoremSuggest", "Trigger");
         this.addHeading("From recently opened notes", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableTheoremSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableTheoremSuggestRecentNotes", "Enable");
         this.addTextSetting("triggerTheoremSuggestRecentNotes", "Trigger");
         this.addHeading("From active note", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableTheoremSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableTheoremSuggestActiveNote", "Enable");
         this.addTextSetting("triggerTheoremSuggestActiveNote", "Trigger");
+        this.addHeading("From Dataview query", ['editor-suggest-setting-indented-heading']);
+        this.addToggleSetting("enableTheoremSuggestDataview", "Enable");
+        this.addTextSetting("triggerTheoremSuggestDataview", "Trigger");
 
         this.addHeading('Equation suggestion', ['editor-suggest-setting-heading'])
         this.addHeading("From entire vault", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableEquationSuggest", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableEquationSuggest", "Enable");
         this.addTextSetting("triggerEquationSuggest", "Trigger");
         this.addHeading("From recently opened notes", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableEquationSuggestRecentNotes", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableEquationSuggestRecentNotes", "Enable");
         this.addTextSetting("triggerEquationSuggestRecentNotes", "Trigger");
         this.addHeading("From active note", ['editor-suggest-setting-indented-heading']);
-        this.addToggleSetting("enableEquationSuggestActiveNote", "Enable", undefined, () => this.plugin.updateLinkAutocomplete());
+        this.addToggleSetting("enableEquationSuggestActiveNote", "Enable");
         this.addTextSetting("triggerEquationSuggestActiveNote", "Trigger");
+        this.addHeading("From Dataview query", ['editor-suggest-setting-indented-heading']);
+        this.addToggleSetting("enableEquationSuggestDataview", "Enable");
+        this.addTextSetting("triggerEquationSuggestDataview", "Trigger");
 
         // projects
         // this.addTextSetting("projectInfix", "Link infix", "Specify the infix to connect a project name and a theorem title or an equation number.");

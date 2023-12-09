@@ -1,11 +1,9 @@
-import { ActiveNoteSearchCore, DataviewQuerySearchCore, QueryType, RecentNotesSearchCore, WholeVaultEquationSearchCore, WholeVaultTheoremEquationSearchCore, WholeVaultTheoremSearchCore } from 'search/core';
+import { DataviewQuerySearchCore, QueryType, SearchRange, WholeVaultTheoremEquationSearchCore } from 'search/core';
 
 import MathBooster from "main";
 import { App, EditorSuggestContext, MarkdownView, Setting, SuggestModal, TextAreaComponent } from "obsidian";
 import { MathSearchCore, SuggestParent } from "./core";
 import { MathBoosterBlock } from "index/typings/markdown";
-
-export type SearchRange = 'active' | 'vault' | 'recent' | 'dataview';
 
 export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements SuggestParent {
     app: App;
@@ -77,7 +75,7 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
 
         this.dvQueryField = new Setting(this.topEl)
             .setName('Dataview query')
-            .setDesc('Only LIST query is supported.')
+            .setDesc('Only LIST queries are supported.')
             .then(setting => {
                 setting.controlEl.style.width = '60%';
             })
@@ -106,27 +104,21 @@ export class MathSearchModal extends SuggestModal<MathBoosterBlock> implements S
     }
 
     resetCore() {
+        const core = MathSearchCore.getCore(this);
+        if (core) this.core = core;
         if (this.range === 'dataview') {
-            const dv = this.app.plugins.plugins.dataview?.api;
-            if (!dv) {
+            if (!core) {
                 this.dvQueryField.setDisabled(true);
                 this.dvQueryField.setDesc('Retry after enabling Dataview.')
                     .then(setting => setting.descEl.style.color = '#ea5555');
-                this.dvQueryField.settingEl.show();
-                return;
             }
-            this.core = new DataviewQuerySearchCore(this, this.queryType, dv, (this.dvQueryField.components[0] as TextAreaComponent).getValue());
             this.dvQueryField.settingEl.show();
-            return;
         }
-        this.dvQueryField.settingEl.hide();
+        else this.dvQueryField.settingEl.hide();
+    }
 
-        if (this.range === 'vault') {
-            if (this.queryType === 'both') this.core = new WholeVaultTheoremEquationSearchCore(this);
-            else if (this.queryType === 'theorem') this.core = new WholeVaultTheoremSearchCore(this);
-            else if (this.queryType === 'equation') this.core = new WholeVaultEquationSearchCore(this);
-        } else if (this.range === 'recent') this.core = new RecentNotesSearchCore(this, this.queryType);
-        else if (this.range === 'active') this.core = new ActiveNoteSearchCore(this, this.queryType);
+    get dvQuery(): string {
+        return (this.dvQueryField.components[0] as TextAreaComponent).getValue();
     }
 
     getContext(): Omit<EditorSuggestContext, 'query'> | null {

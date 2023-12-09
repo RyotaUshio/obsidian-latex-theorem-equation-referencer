@@ -1,8 +1,8 @@
-import { patchPagePreview } from './patches/page-preview';
 import { MarkdownView, Plugin } from 'obsidian';
 import { StateField, Extension, RangeSet } from '@codemirror/state';
 
 import * as MathLinks from 'obsidian-mathlinks';
+import { registerQuickPreview } from 'obsidian-quick-preview';
 
 import { MathContextSettings, DEFAULT_SETTINGS, ExtraSettings, DEFAULT_EXTRA_SETTINGS, UNION_TYPE_MATH_CONTEXT_SETTING_KEYS, UNION_TYPE_EXTRA_SETTING_KEYS } from 'settings/settings';
 import { MathSettingTab } from "settings/tab";
@@ -15,15 +15,16 @@ import { createEquationNumberPlugin } from 'equations/live-preview';
 import { mathPreviewInfoField, inlineMathPreview, displayMathPreviewForCallout, displayMathPreviewForQuote, hideDisplayMathPreviewInQuote } from 'render-math-in-callouts';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, isPluginOlderThan } from 'utils/obsidian';
 import { getProfile, staticifyEqNumber, insertDisplayMath, insertTheoremCallout, insertProof } from 'utils/plugin';
-import { MathIndexManager } from './index/manager';
+import { MathIndexManager } from 'index/manager';
 import { DependencyNotificationModal, MigrationModal } from 'notice';
 import { LinkAutocomplete } from 'search/editor-suggest';
-import { ActiveNoteSearchCore, RecentNotesSearchCore, WholeVaultEquationSearchCore, WholeVaultTheoremEquationSearchCore, WholeVaultTheoremSearchCore } from 'search/core';
 import { MathSearchModal } from 'search/modal';
 import { TheoremCalloutInfo, createTheoremCalloutsField } from 'theorem-callouts/state-field';
 import { patchLinkCompletion } from 'patches/link-completion';
+import { patchPagePreview } from 'patches/page-preview';
 import { createProofDecoration } from 'proof/live-preview';
 import { createProofProcessor } from 'proof/reading-view';
+import { MathBoosterBlock } from 'index/typings/markdown';
 
 
 export const VAULT_ROOT = '/';
@@ -137,8 +138,16 @@ export default class MathBooster extends Plugin {
 
 		/** Theorem/equation link autocompletion */
 		this.updateLinkAutocomplete();
-
 		this.app.workspace.onLayoutReady(() => patchLinkCompletion(this));
+		const itemNormalizer = (item: MathBoosterBlock) => {
+			return {
+				linktext: item.$file,
+				sourcePath: '',
+				line: item.$position.start,
+			};
+		};
+		registerQuickPreview(this.app, this, LinkAutocomplete, itemNormalizer);
+		registerQuickPreview(this.app, this, MathSearchModal, itemNormalizer);
 
 		/** Markdown post processors */
 
@@ -242,68 +251,13 @@ export default class MathBooster extends Plugin {
 	}
 
 	updateLinkAutocomplete() {
-		// reset all editor suggests registered by this plugin
+		// reset editor suggest(s) registered by this plugin
 		const suggestManager = (this.app.workspace as any).editorSuggest;
 		for (const suggest of suggestManager.suggests) {
 			if (suggest instanceof LinkAutocomplete) suggestManager.removeSuggest(suggest);
 		}
 
-		if (this.extraSettings.enableSuggest) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerSuggest,
-				(parent) => new WholeVaultTheoremEquationSearchCore(parent)
-			));
-		}
-		if (this.extraSettings.enableTheoremSuggest) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerTheoremSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggest,
-				(parent) => new WholeVaultTheoremSearchCore(parent)
-			));
-		}
-		if (this.extraSettings.enableEquationSuggest) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerEquationSuggest ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggest,
-				(parent) => new WholeVaultEquationSearchCore(parent)
-			));
-		}
-
-		if (this.extraSettings.enableSuggestRecentNotes) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerSuggestRecentNotes,
-				(parent) => new RecentNotesSearchCore(parent, 'both')
-			));
-		}
-		if (this.extraSettings.enableTheoremSuggestRecentNotes) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerTheoremSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggestRecentNotes,
-				(parent) => new RecentNotesSearchCore(parent, 'theorem')
-			));
-		}
-		if (this.extraSettings.enableEquationSuggestRecentNotes) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerEquationSuggestRecentNotes ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggestRecentNotes,
-				(parent) => new RecentNotesSearchCore(parent, 'equation')
-			));
-		}
-
-		if (this.extraSettings.enableSuggestActiveNote) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerSuggestActiveNote,
-				(parent) => new ActiveNoteSearchCore(parent, 'both')
-			));
-		}
-		if (this.extraSettings.enableTheoremSuggestActiveNote) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerTheoremSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerTheoremSuggestActiveNote,
-				(parent) => new ActiveNoteSearchCore(parent, 'theorem')
-			));
-		}
-		if (this.extraSettings.enableEquationSuggestActiveNote) {
-			this.registerEditorSuggest(new LinkAutocomplete(this,
-				() => this.extraSettings.triggerEquationSuggestActiveNote ?? DEFAULT_EXTRA_SETTINGS.triggerEquationSuggestActiveNote,
-				(parent) => new ActiveNoteSearchCore(parent, 'equation')
-			));
-		}
+		this.registerEditorSuggest(new LinkAutocomplete(this));
 	}
 
 	/**

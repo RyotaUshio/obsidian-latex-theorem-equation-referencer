@@ -27,12 +27,14 @@ export const patchLinkCompletion = (plugin: MathBooster) => {
                         const block = page.getBlockByLineNumber(item.node.position.start.line - 1); // line number starts from 1
                         if (TheoremCalloutBlock.isTheoremCalloutBlock(block)) {
                             renderInSuggestionTitleEl(el, (suggestionTitleEl) => {
+                                console.log(el)
+                                el.addClass('math-booster', 'suggestion-item-theorem-callout');
                                 suggestionTitleEl.replaceChildren();
                                 const children = renderTextWithMath(block.$printName);
                                 suggestionTitleEl
                                     .createDiv()
                                     .replaceChildren(...children);
-                                if (content) suggestionTitleEl.createDiv({ text: content });
+                                if (plugin.extraSettings.showTheoremContentinBuiltin && content) suggestionTitleEl.createDiv({ text: content });
                             });
                             return;
                         }
@@ -43,17 +45,19 @@ export const patchLinkCompletion = (plugin: MathBooster) => {
                         if (title === capitalize(type)) title = '';
                         const formattedTitle = formatTitle(plugin, item.file as TFile, resolveSettings({ type, number, title }, plugin, item.file as TFile), true);
                         renderInSuggestionTitleEl(el, (suggestionTitleEl) => {
+                            el.addClass('math-booster', 'suggestion-item-theorem-callout');
                             suggestionTitleEl.replaceChildren();
                             const children = renderTextWithMath(formattedTitle);
                             suggestionTitleEl
                                 .createDiv()
                                 .replaceChildren(...children);
-                            if (content) suggestionTitleEl.createDiv({ text: content });
+                            if (plugin.extraSettings.showTheoremContentinBuiltin && content) suggestionTitleEl.createDiv({ text: content });
                         });
                         return;
                     }
                 } else if (plugin.extraSettings.renderEquationinBuiltin && item.type === "block" && item.node.type === 'math') {
                     renderInSuggestionTitleEl(el, (suggestionTitleEl) => {
+                        el.addClass('math-booster', 'suggestion-item-equation');
                         suggestionTitleEl.replaceChildren();
                         suggestionTitleEl.appendChild(renderMath(item.node.value, true))
                     });

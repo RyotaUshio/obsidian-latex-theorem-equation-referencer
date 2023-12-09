@@ -14,13 +14,18 @@ import { renderTextWithMath } from 'utils/render';
 
 export type ScoredMathBoosterBlock = { match: SearchResult, block: MathBoosterBlock };
 
+export type SearchRange = 'active' | 'vault' | 'recent' | 'dataview';
 export type QueryType = 'theorem' | 'equation' | 'both';
 
 export type MathSearchCoreCreator = (parent: SuggestParent) => MathSearchCore;
 
 export interface SuggestParent {
+    app: App;
     plugin: MathBooster;
     scope: Scope;
+    range: SearchRange;
+    queryType: QueryType;
+    dvQuery: string;
     getContext(): Omit<EditorSuggestContext, 'query'> | null;
     setInstructions(instructions: Instruction[]): void;
     getSelectedItem(): MathBoosterBlock;
@@ -37,6 +42,24 @@ export abstract class MathSearchCore {
         this.app = this.plugin.app;
         this.index = this.plugin.indexManager.index;
         this.scope = parent.scope;
+    }
+
+    static getCore(parent: SuggestParent): MathSearchCore | null {
+        const { app, range, queryType, dvQuery } = parent;
+        if (range === 'dataview') {
+            const dv = app.plugins.plugins.dataview?.api;
+            if (!dv) return null;
+            return new DataviewQuerySearchCore(parent, queryType, dv, dvQuery);
+        }
+
+        if (range === 'vault') {
+            if (queryType === 'both') return new WholeVaultTheoremEquationSearchCore(parent);
+            else if (queryType === 'theorem') return new WholeVaultTheoremSearchCore(parent);
+            else if (queryType === 'equation') return new WholeVaultEquationSearchCore(parent);
+        } else if (range === 'recent') return new RecentNotesSearchCore(parent, queryType);
+        else if (range === 'active') return new ActiveNoteSearchCore(parent, queryType);
+
+        return null;
     }
 
     setScope() {

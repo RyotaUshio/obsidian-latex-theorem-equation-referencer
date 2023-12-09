@@ -1,3 +1,8 @@
+.math-booster-new-feature > p {
+    color: #7dc535;
+    margin: 0;
+}
+
 .math-booster-version-2-release-note-modal {
     --table-border-width: 2px;
 }
