@@ -1,12 +1,12 @@
 {
 	"id": "math-booster",
-	"name": "Math Booster",
-	"version": "2.1.4",
+	"name": "LaTeX-like Theorem & Equation Referencer",
+	"version": "2.2.0",
 	"minAppVersion": "1.3.5",
-	"description": "Turn your Obsidian into LaTeX on steroids. Dynamically numbered theorem environments & equations, enhanced theorems/equations search & link auto-completion, and live-rendering of equations inside callouts & quotes.",
+	"description": "A powerful indexing & referencing system for theorems & equations in your vault. Bring LaTeX-like workflow into Obsidian with theorem environments, automatic equation numbering, and more.",
 	"author": "Ryota Ushio",
 	"authorUrl": "https://github.com/RyotaUshio",
 	"fundingUrl": "https://www.buymeacoffee.com/ryotaushio",
-	"helpUrl": "https://ryotaushio.github.io/obsidian-math-booster/",
+	"helpUrl": "https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/",
 	"isDesktopOnly": false
 }
