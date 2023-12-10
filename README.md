@@ -1,7 +1,7 @@
 # LaTeX-like Theorem & Equation Referencer for Obsidian
 
 > [!important]
-> This plugin had been called **Math Booster** until version 2.2.0, but has been renamed for better clarity and discoverability. A big thank you to those who shared their thoughts [here](https://github.com/RyotaUshio/obsidian-math-booster/issues/210).
+> This plugin had been called **Math Booster** until version 2.1.4, but has been renamed for better clarity and discoverability. A big thank you to those who shared their thoughts [here](https://github.com/RyotaUshio/obsidian-math-booster/issues/210).
 
 **LaTeX-like Theorem & Equation Referencer** is an [Obsidian.md](https://obsidian.md/) plugin that provides a powerful indexing & referencing system for theorems & equations in your vault, bringing $\LaTeX$-like workflow into Obsidian.
 
