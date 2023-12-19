@@ -5,6 +5,63 @@ import { isPluginOlderThan } from "utils/obsidian";
 import { rewriteTheoremCalloutFromV1ToV2 } from "utils/plugin";
 
 
+export class PluginSplitNoticeModal extends Modal {
+    component: Component;
+
+    constructor(public plugin: LatexReferencer) {
+        super(plugin.app);
+        this.component = new Component();
+    }
+
+    onOpen() {
+        const { app, plugin, contentEl, titleEl } = this;
+        plugin.addChild(this.component);
+        contentEl.empty();
+
+        titleEl.setText(`${plugin.manifest.name} ver. ${plugin.manifest.version}`);
+
+        new Setting(contentEl)
+            .setName('Some features of this plugin have been rewritten with a bunch of improvements, and they are now available as the following separate plugins:')
+            .setHeading();
+
+        for (const { name, id, desc } of [
+            {
+                name: 'Better Math in Callouts & Blockquotes',
+                id: 'math-in-callout',
+                desc: 'Add better Live Preview support for math rendering inside callouts & blockquotes. It renders math expressions in callouts and provides appropriate handling of multi-line equations inside blockquotes.'
+            },
+            {
+                name: 'Rendered Block Link Suggestions',
+                id: 'rendered-block-link-suggestions',
+                desc: 'Render equations and other types of blocks in Obsidian\'s built-in link suggestions'
+            }
+        ]) {
+            const installed = id in (app.plugins as any).manifests;
+            const enabled = app.plugins.enabledPlugins.has(id);
+
+            new Setting(contentEl)
+                .setName(name)
+                .setDesc(desc)
+                .addButton((button) => {
+                    button
+                        .setButtonText(enabled ? 'Already enabled!' : installed ? 'Enable' : 'Install')
+                        .then((button) => enabled || button.setCta())
+                        .onClick(() => {
+                            self.open(`obsidian://show-plugin?id=${id}`);
+                            this.component.registerDomEvent(window, 'click', (evt) => {
+                                this.onOpen();
+                            })
+                        });
+                })
+        }
+    }
+
+    onClose() {
+        this.contentEl.empty();
+        this.component.unload();
+    }
+}
+
 export class RenameNoticeModal extends Modal {
     component: Component;
 
@@ -15,7 +72,7 @@ export class RenameNoticeModal extends Modal {
 
     onOpen() {
         this.plugin.addChild(this.component)
-        
+
         const { contentEl, titleEl } = this;
         contentEl.empty();
 
@@ -125,7 +182,7 @@ export class DependencyNotificationModal extends Modal {
 
         MarkdownRenderer.render(
             this.app,
-`LaTeX-like Theorem & Equation Referencer (formerly called Math Booster) version 2 introduces a [new format for theorem callouts](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/theorem-callouts/theorem-callouts.html). 
+            `LaTeX-like Theorem & Equation Referencer (formerly called Math Booster) version 2 introduces a [new format for theorem callouts](https://ryotaushio.github.io/obsidian-latex-theorem-equation-referencer/theorem-callouts/theorem-callouts.html). 
 
 To fully enjoy version 2, click the button below to convert the old theorem format to the new one. Alternatively, you can do it later by running the command "Migrate from version 1".`,
             this.contentEl.createDiv(),

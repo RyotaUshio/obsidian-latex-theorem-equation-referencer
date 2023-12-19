@@ -133,7 +133,6 @@ export type ExtraSettings = ImporterSettings & {
     profiles: Record<string, Profile>;
     showTheoremTitleinBuiltin: boolean;
     showTheoremContentinBuiltin: boolean;
-    renderEquationinBuiltin: boolean;
     triggerSuggest: string;
     triggerTheoremSuggest: string;
     triggerEquationSuggest: string;
@@ -174,7 +173,6 @@ export type ExtraSettings = ImporterSettings & {
     setLabelInModal: boolean;
     excludeExampleCallout: boolean;
     enableProof: boolean;
-    enableMathPreviewInCalloutAndQuote: boolean;
     autocompleteDvQuery: string;
     // searchModal*: not congigurable from the setting tab, just remenbers the last state
     searchModalQueryType: QueryType;
@@ -230,7 +228,6 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     profiles: DEFAULT_PROFILES,
     showTheoremTitleinBuiltin: true,
     showTheoremContentinBuiltin: false,
-    renderEquationinBuiltin: true,
     triggerSuggest: "\\ref",
     triggerTheoremSuggest: "\\tref",
     triggerEquationSuggest: "\\eqref",
@@ -273,7 +270,6 @@ export const DEFAULT_EXTRA_SETTINGS: Required<ExtraSettings> = {
     setLabelInModal: false,
     excludeExampleCallout: false,
     enableProof: true,
-    enableMathPreviewInCalloutAndQuote: true,
     autocompleteDvQuery: '',
     searchModalQueryType: 'both',
     searchModalRange: 'recent',

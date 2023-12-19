@@ -61,10 +61,6 @@ export class MathSettingTab extends PluginSettingTab {
             numberingHeading
         );
         this.containerEl.insertAfter(
-            extraHelper.settingRefs.enableMathPreviewInCalloutAndQuote.settingEl,
-            heading.settingEl
-        );
-        this.containerEl.insertAfter(
             extraHelper.settingRefs.enableProof.settingEl,
             this.containerEl.querySelector('.proof-heading')!
         );

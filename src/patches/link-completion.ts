@@ -54,16 +54,7 @@ export const patchLinkCompletion = (plugin: LatexReferencer) => {
                         });
                         return;
                     }
-                } else if (plugin.extraSettings.renderEquationinBuiltin && item.type === "block" && item.node.type === 'math') {
-                    renderInSuggestionTitleEl(el, (suggestionTitleEl) => {
-                        el.addClass('math-booster', 'suggestion-item-equation');
-                        suggestionTitleEl.replaceChildren();
-                        suggestionTitleEl.appendChild(renderMath(item.node.value, true))
-                    });
-                    return;
                 }
-
-
             }
         }
     }));

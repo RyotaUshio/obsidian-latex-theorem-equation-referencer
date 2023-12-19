@@ -367,11 +367,6 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
         this.addToggleSetting("showTheoremCalloutEditButton", "Show an edit button on a theorem callout");
         this.addToggleSetting("setOnlyTheoremAsMain", "If a note has only one theorem callout, automatically set it as main", 'Regardless of this setting, putting "%% main %%" or "%% main: true %%" in a theorem callout will set it as main one of the note, which means any link to that note will be displayed with the theorem\'s title. Enabling this option implicitly sets a theorem callout as main when it\'s the only one in the note.');
         this.addToggleSetting("setLabelInModal", "Show LaTeX/Pandoc label input form in theorem callout insert/edit modal");
-        this.addToggleSetting("enableMathPreviewInCalloutAndQuote", "Render equations inside callouts & add multi-line equation support to blockquotes", undefined, () => this.plugin.updateEditorExtensions())
-            .then(async (setting) => {
-                setting.descEl.addClass('math-booster-new-feature');
-                await MarkdownRenderer.render(this.plugin.app, '**NOTE:** This feature is planned to be removed from this plugin, and instead, it will be available as a separate plugin [**Better Math in Callouts & Blockquotes**](https://github.com/RyotaUshio/obsidian-math-in-callout), featuring a bunch of improvements. Currently awaiting for approval by the Obsidian team.', setting.descEl, '', this);
-            });
         this.addToggleSetting("enableProof", "Enable proof environment", `For example, you can replace a pair of inline codes \`${DEFAULT_SETTINGS.beginProof}\` & \`${DEFAULT_SETTINGS.endProof}\` with \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.begin}\" & \"${DEFAULT_PROFILES[DEFAULT_SETTINGS.profile].body.proof.end}\". You can style it with CSS snippets. See the documentation for the details.`, () => this.plugin.updateEditorExtensions());
 
         // Suggest
@@ -393,11 +388,6 @@ export class ExtraSettingsHelper extends SettingsHelper<ExtraSettings> {
             .setDesc('Configure how this plugin modifies the appearance of Obsidian\'s built-in link auto-completion (the one that pops up when you type "[["). This feature dives deep into Obsidian\'s internals, so it might break when Obsidian is updated. If you encounter any issue, please report it on GitHub.');
         this.addToggleSetting("showTheoremTitleinBuiltin", "Show theorem title");
         this.addToggleSetting("showTheoremContentinBuiltin", "Show theorem content", "Only effective when \"Show theorem title\" is turned on.");
-        this.addToggleSetting("renderEquationinBuiltin", "Render equation")
-            .then(async (setting) => {
-                setting.descEl.addClass('math-booster-new-feature');
-                await MarkdownRenderer.render(this.plugin.app, '**NOTE:** This feature is planned to be removed from this plugin, and instead, it will be available as a separate plugin [**Rendered Block Link Suggestions**](https://github.com/RyotaUshio/obsidian-rendered-block-link-suggestions), which supports all types of blocks not limited to display math. Currently awaiting for approval by the Obsidian team.', setting.descEl, '', this);
-            });
 
         this.addHeading('Configure this plugin\'s custom editor link auto-completion')
             .setDesc(`It is recommended to turn off unnecessary auto-completions to improve performance.`);
