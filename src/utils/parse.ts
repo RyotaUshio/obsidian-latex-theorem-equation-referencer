@@ -58,7 +58,7 @@ export function readTheoremCalloutSettings(line: string, excludeExample: boolean
     return { type, number, title, fold, legacy: false };
 }
 
-export function _readTheoremCalloutSettings(callout: {type: string, metadata: string}, excludeExample: boolean = false): { type: string, number: string, legacy: boolean } | undefined {
+export function _readTheoremCalloutSettings(callout: { type: string, metadata: string }, excludeExample: boolean = false): { type: string, number: string, legacy: boolean } | undefined {
     let type = callout.type;
 
     if (callout.type === 'math' && callout.metadata) {
