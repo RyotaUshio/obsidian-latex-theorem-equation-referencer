@@ -15,7 +15,7 @@ import { createEquationNumberPlugin } from 'equations/live-preview';
 import { getMarkdownPreviewViewEl, getMarkdownSourceViewEl, isPluginOlderThan } from 'utils/obsidian';
 import { getProfile, staticifyEqNumber, insertDisplayMath, insertTheoremCallout, insertProof } from 'utils/plugin';
 import { MathIndexManager } from 'index/manager';
-import { DependencyNotificationModal, MigrationModal, PluginSplitNoticeModal, RenameNoticeModal } from 'notice';
+import { DependencyNotificationModal, MigrationModal, PluginSplitNoticeModal, RenameNoticeModal, areSplitPluginsEnabled } from 'notice';
 import { LinkAutocomplete } from 'search/editor-suggest';
 import { MathSearchModal } from 'search/modal';
 import { TheoremCalloutInfo, createTheoremCalloutsField } from 'theorem-callouts/state-field';
@@ -64,7 +64,8 @@ export default class LatexReferencer extends Plugin {
 				new RenameNoticeModal(this).open();
 			}
 
-			if (v1 || version.localeCompare('2.3.0', undefined, { numeric: true }) < 0) {
+			// Only nag if at least one of the split-off plugins is missing or disabled
+			if (!areSplitPluginsEnabled(this.app) && (v1 || version.localeCompare('2.3.0', undefined, { numeric: true }) < 0)) {
 				new PluginSplitNoticeModal(this).open();
 			}
 
@@ -151,8 +152,17 @@ export default class LatexReferencer extends Plugin {
 				line: item.$position.start,
 			};
 		};
-		registerQuickPreview(this.app, this, LinkAutocomplete, itemNormalizer);
-		registerQuickPreview(this.app, this, MathSearchModal, itemNormalizer);
+		// Quick Preview is an optional companion plugin. Only hook into it when it is enabled,
+		// otherwise registerQuickPreview() throws "Quick Preview is not enabled".
+		this.app.workspace.onLayoutReady(() => {
+			if (!this.app.plugins.getPlugin('quick-preview')) return;
+			try {
+				registerQuickPreview(this.app, this, LinkAutocomplete, itemNormalizer);
+				registerQuickPreview(this.app, this, MathSearchModal, itemNormalizer);
+			} catch (e) {
+				console.warn(`${this.manifest.name}: failed to enable Quick Preview integration`, e);
+			}
+		});
 
 		/** Markdown post processors */
 
@@ -394,7 +404,9 @@ export default class LatexReferencer extends Plugin {
 	forceRerender() {
 		setTimeout(async () => {
 			for (const leaf of this.app.workspace.getLeavesOfType('markdown')) {
-				const view = leaf.view as MarkdownView;
+				const view = leaf.view;
+				// Background tabs are deferred in newer Obsidian and are not MarkdownView instances yet
+				if (!(view instanceof MarkdownView) || !view.previewMode) continue;
 				const state = view.getEphemeralState();
 				view.previewMode.rerender(true);
 				view.setEphemeralState(state);

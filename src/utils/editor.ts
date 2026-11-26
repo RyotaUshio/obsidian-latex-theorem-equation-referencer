@@ -1,6 +1,5 @@
 import { EditorState, ChangeSet, RangeValue, RangeSet, SelectionRange } from '@codemirror/state';
 import { SyntaxNodeRef } from '@lezer/common';
-import { MathInfoSet } from 'render-math-in-callouts';
 import { EditorPosition, Loc, MarkdownView, editorLivePreviewField } from "obsidian";
 
 export function locToEditorPosition(loc: Loc): EditorPosition {
@@ -34,14 +33,6 @@ export function printNode(node: SyntaxNodeRef, state: EditorState) {
     console.log(
         `${node.from}-${node.to}: "${nodeText(node, state)}" (${node.name})`
     );
-}
-
-export function printMathInfoSet(set: MathInfoSet, state: EditorState) {
-    // Debugging utility
-    console.log("MathInfoSet:");
-    set.between(0, state.doc.length, (from, to, value) => {
-        console.log(`  ${from}-${to}: ${value.mathText} ${value.display ? "(display)" : ""} ${value.insideCallout ? "(in callout)" : ""} ${value.overlap === undefined ? "(overlap not checked yet)" : value.overlap ? "(overlapping)" : "(non-overlapping)"}`);
-    });
 }
 
 export function nodeTextQuoteSymbolTrimmed(node: SyntaxNodeRef, state: EditorState, quoteLevel: number): string | undefined {
