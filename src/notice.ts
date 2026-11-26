@@ -1,9 +1,17 @@
-import { Modal, Setting, Component, MarkdownRenderer, Notice } from "obsidian";
+import { App, Modal, Setting, Component, MarkdownRenderer, Notice } from "obsidian";
 
 import LatexReferencer from "main";
 import { isPluginOlderThan } from "utils/obsidian";
 import { rewriteTheoremCalloutFromV1ToV2 } from "utils/plugin";
 
+
+/** IDs of the plugins that replaced features that used to be part of this plugin. */
+export const SPLIT_PLUGIN_IDS = ['math-in-callout', 'rendered-block-link-suggestions'];
+
+/** True if every split-off plugin is installed and enabled. */
+export function areSplitPluginsEnabled(app: App): boolean {
+    return SPLIT_PLUGIN_IDS.every((id) => app.plugins.enabledPlugins.has(id) && id in (app.plugins as any).manifests);
+}
 
 export class PluginSplitNoticeModal extends Modal {
     component: Component;
